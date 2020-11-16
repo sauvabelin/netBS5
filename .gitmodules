@@ -1,0 +1,3 @@
+[submodule "netBS/core"]
+	path = netBS/core
+	url = https://github.com/sauvabelin/netBS-core
