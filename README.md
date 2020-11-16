@@ -41,6 +41,7 @@ d'exécuter certaines actions ou d'accéder à certaines parties de l'applicatio
 
 ## installation
 - faites un git clone de ce repository
+- chargez les sous-modules avec `git submodule update --init --recursive`
 - Configurez votre fichier d'environnement `.env.local`
 - Ouvrez un terminal à l'intérieur du dossier ainsi cloné, et utilisez composer pour faire un composer install
 - Une fois l'installation terminée, assurez-vous que les paramètres de base de donnée soient corrects.
