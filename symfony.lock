@@ -1,4 +1,7 @@
 {
+    "bacon/bacon-qr-code": {
+        "version": "2.0.3"
+    },
     "beberlei/doctrineextensions": {
         "version": "v1.2.9"
     },
@@ -7,6 +10,9 @@
     },
     "composer/package-versions-deprecated": {
         "version": "1.11.99.1"
+    },
+    "dasprid/enum": {
+        "version": "1.0.3"
     },
     "doctrine/annotations": {
         "version": "1.0",
@@ -102,8 +108,23 @@
     "egulias/email-validator": {
         "version": "2.1.24"
     },
+    "endroid/qr-code": {
+        "version": "3.9.3"
+    },
     "gedmo/doctrine-extensions": {
         "version": "v3.0.0"
+    },
+    "genkgo/camt": {
+        "version": "1.1.1"
+    },
+    "jschaedl/iban-validation": {
+        "version": "v1.6"
+    },
+    "khanamiryan/qrcode-detector-decoder": {
+        "version": "1.0.3"
+    },
+    "kmukku/php-iso11649": {
+        "version": "1.6"
     },
     "laminas/laminas-code": {
         "version": "3.5.0"
@@ -129,8 +150,14 @@
             "./config/packages/lexik_jwt_authentication.yaml"
         ]
     },
+    "moneyphp/money": {
+        "version": "v3.3.1"
+    },
     "monolog/monolog": {
         "version": "2.1.1"
+    },
+    "myclabs/php-enum": {
+        "version": "1.7.7"
     },
     "namshi/jose": {
         "version": "7.2.3"
@@ -191,6 +218,9 @@
     },
     "setasign/fpdf": {
         "version": "1.8.2"
+    },
+    "sprain/swiss-qr-bill": {
+        "version": "v2.18"
     },
     "stof/doctrine-extensions-bundle": {
         "version": "1.2",

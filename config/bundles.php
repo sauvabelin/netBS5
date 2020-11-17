@@ -21,4 +21,6 @@ return [
     \NetBS\FichierBundle\NetBSFichierBundle::class => ['all' => true],
     \NetBS\ListBundle\NetBSListBundle::class => ['all' => true],
     \NetBS\SecureBundle\NetBSSecureBundle::class => ['all' => true],
+
+    \Ovesco\FacturationBundle\OvescoFacturationBundle::class => ['all' => true]
 ];

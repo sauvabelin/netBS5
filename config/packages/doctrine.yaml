@@ -38,6 +38,12 @@ doctrine:
                 is_bundle: true
                 prefix: NetBS\SecureBundle\Entity
                 alias: NetBSSecureBundle
+            OvescoFacturationBundle:
+                type: annotation
+                dir: 'Entity'
+                is_bundle: true
+                prefix: Ovesco\FacturationBundle\Entity
+                alias: OvescoFacturationBundle
         dql:
             datetime_functions:
                 convert_tz: DoctrineExtensions\Query\Mysql\ConvertTz

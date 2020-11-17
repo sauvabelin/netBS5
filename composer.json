@@ -12,11 +12,13 @@
         "doctrine/doctrine-fixtures-bundle": "^3.4",
         "doctrine/doctrine-migrations-bundle": "^3.0",
         "doctrine/orm": "^2.7",
+        "genkgo/camt": "^1.1",
         "lexik/jwt-authentication-bundle": "^2.9",
         "nelmio/cors-bundle": "^2.1",
         "phpdocumentor/reflection-docblock": "^5.2",
         "sensio/framework-extra-bundle": "^5.1",
         "setasign/fpdf": "^1.8",
+        "sprain/swiss-qr-bill": "^2.18",
         "stof/doctrine-extensions-bundle": "^1.5",
         "symfony/asset": "5.1.*",
         "symfony/console": "5.1.*",
@@ -68,7 +70,8 @@
             "NetBS\\CoreBundle\\": "netBS/core/CoreBundle",
             "NetBS\\SecureBundle\\": "netBS/core/SecureBundle",
             "NetBS\\FichierBundle\\": "netBS/core/FichierBundle",
-            "NetBS\\ListBundle\\": "netBS/core/ListBundle"
+            "NetBS\\ListBundle\\": "netBS/core/ListBundle",
+            "Ovesco\\FacturationBundle\\": "netBS/ovesco/FacturationBundle"
         }
     },
     "autoload-dev": {

@@ -21,17 +21,42 @@ services:
             - '../src/Kernel.php'
             - '../src/Tests/'
 
-    # controllers are imported separately to make sure services can be injected
-    # as action arguments even if you don't extend any base controller class
+#    App\Automatics\:
+#        resource: '../src/Automatics/'
+#        tags: ['netbs.list.model', 'netbs.automatic_list']
+#
+#    App\ListModel\:
+#        resource: '../src/ListModel/'
+#        tags: ['netbs.list.model']
+#
+#    App\Searcher\:
+#        resource: '../src/Searcher/'
+#        tags: ['netbs.list.model', 'netbs.searcher']
+#
+#    App\Binder\:
+#        resource: '../src/Binder/'
+#        tags: ['netbs.searcher.binder']
+#
+#    App\Exporter\:
+#        resource: '../src/Exporter/'
+#        tags: ['netbs.exporter']
+#
+#    App\DataFixtures\:
+#        resource: '../src/DataFixtures/'
+#        tags: ['doctrine.fixture.orm']
+#
+#    App\ApiController\:
+#        resource: '../src/ApiController/'
+#        tags: ['controller.service_arguments']
+#
     App\Controller\:
         resource: '../src/Controller/'
         tags: ['controller.service_arguments']
 
-    # add more service definitions when explicit configuration is needed
-    # please note that last definitions always *replace* previous ones
 
 imports:
     - { resource: "@NetBSCoreBundle/Resources/config/services.yml" }
     - { resource: "@NetBSFichierBundle/Resources/config/services.yml" }
     - { resource: "@NetBSSecureBundle/Resources/config/services.yml" }
     - { resource: "@NetBSListBundle/Resources/config/services.yml" }
+    - { resource: "@OvescoFacturationBundle/Resources/config/services.yml" }
