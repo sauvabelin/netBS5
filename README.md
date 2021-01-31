@@ -1,3 +1,6 @@
+# BEFORE MIGRATE
+Update DB -> compte -> qrIban column (doctrine schema update fail, dump sql and manual patch)
+
 # NetBS
 
 Bienvenue sur le système de gestion d'organisation de la brigade de Sauvabelin. Cette application a pour but de rendre

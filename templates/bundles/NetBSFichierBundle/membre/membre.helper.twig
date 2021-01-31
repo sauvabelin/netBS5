@@ -1,0 +1,34 @@
+{% extends '@NetBSCore/helper/base.helper.twig' %}
+
+{% block helper %}
+
+    {% set adresse      = membre.sendableAdresse %}
+    {% set telephone    = membre.sendableTelephone %}
+    {% set email        = membre.sendableEmail %}
+
+    {% if membre.totem %}
+        <b>{{ membre.totem }}</b>
+    {% endif %}
+    {% if membre.numeroAvs %}
+        <p>Num. AVS: {{ membre.numeroAvs }}</p>
+    {% endif %}
+    <p>{{ membre.age }} ans - {{ membre.statut }}</p>
+    <p>{{ membre.activeAttribution }}</p>
+    {% if telephone %}
+        <p>{{ telephone.telephone }}</p>
+    {% endif %}
+    {% if email %}
+        <p>{{ email.email }}</p>
+    {% endif %}
+
+    {% if adresse %}
+        <br/>
+        <u>Adresse</u>
+        <p>{{ adresse.rue }}</p>
+        <p>{{ adresse.npa }} {{ adresse.localite }}</p>
+    {% else %}
+        <p class="alert alert-danger" style="padding:3px 1em;margin:1em 0 0 0;">Aucune adresse trouvée!</p>
+    {% endif %}
+
+
+{% endblock %}
