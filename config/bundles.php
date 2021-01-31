@@ -16,11 +16,10 @@ return [
     Lexik\Bundle\JWTAuthenticationBundle\LexikJWTAuthenticationBundle::class => ['all' => true],
     Nelmio\CorsBundle\NelmioCorsBundle::class => ['all' => true],
     Stof\DoctrineExtensionsBundle\StofDoctrineExtensionsBundle::class => ['all' => true],
-
-    \NetBS\CoreBundle\NetBSCoreBundle::class => ['all' => true],
-    \NetBS\FichierBundle\NetBSFichierBundle::class => ['all' => true],
-    \NetBS\ListBundle\NetBSListBundle::class => ['all' => true],
-    \NetBS\SecureBundle\NetBSSecureBundle::class => ['all' => true],
-
-    \Ovesco\FacturationBundle\OvescoFacturationBundle::class => ['all' => true]
+    NetBS\CoreBundle\NetBSCoreBundle::class => ['all' => true],
+    NetBS\FichierBundle\NetBSFichierBundle::class => ['all' => true],
+    NetBS\ListBundle\NetBSListBundle::class => ['all' => true],
+    NetBS\SecureBundle\NetBSSecureBundle::class => ['all' => true],
+    Ovesco\FacturationBundle\OvescoFacturationBundle::class => ['all' => true],
+    Liip\ImagineBundle\LiipImagineBundle::class => ['all' => true],
 ];

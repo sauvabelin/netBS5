@@ -21,38 +21,39 @@ services:
             - '../src/Kernel.php'
             - '../src/Tests/'
 
-#    App\Automatics\:
-#        resource: '../src/Automatics/'
-#        tags: ['netbs.list.model', 'netbs.automatic_list']
-#
-#    App\ListModel\:
-#        resource: '../src/ListModel/'
-#        tags: ['netbs.list.model']
-#
-#    App\Searcher\:
-#        resource: '../src/Searcher/'
-#        tags: ['netbs.list.model', 'netbs.searcher']
-#
-#    App\Binder\:
-#        resource: '../src/Binder/'
-#        tags: ['netbs.searcher.binder']
-#
-#    App\Exporter\:
-#        resource: '../src/Exporter/'
-#        tags: ['netbs.exporter']
-#
-#    App\DataFixtures\:
-#        resource: '../src/DataFixtures/'
-#        tags: ['doctrine.fixture.orm']
-#
-#    App\ApiController\:
-#        resource: '../src/ApiController/'
-#        tags: ['controller.service_arguments']
-#
+    App\Automatics\:
+        resource: '../src/Automatics/'
+        tags: ['netbs.list.model', 'netbs.automatic_list']
+
+    App\ListModel\:
+        resource: '../src/ListModel/'
+        tags: ['netbs.list.model']
+
+    App\Searcher\:
+        resource: '../src/Searcher/'
+        tags: ['netbs.list.model', 'netbs.searcher']
+
+    App\Binder\:
+        resource: '../src/Binder/'
+        tags: ['netbs.searcher.binder']
+
+    App\ApiController\:
+        resource: '../src/ApiController/'
+        tags: ['controller.service_arguments']
+
+    App\Serializer\:
+        resource: '../src/Serializer/'
+        tags: ['serializer.normalizer']
+
     App\Controller\:
         resource: '../src/Controller/'
         tags: ['controller.service_arguments']
 
+
+    App\Serializer\MediaNormalizer:
+        arguments:
+            $webPath: '%env(GALERIE_WEBPATH)%'
+            $extension: "@twig.extension.assets"
 
 imports:
     - { resource: "@NetBSCoreBundle/Resources/config/services.yml" }

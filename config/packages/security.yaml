@@ -1,13 +1,13 @@
 security:
     encoders:
-        NetBS\SecureBundle\Entity\User:
+        App\Entity\BSUser:
             algorithm: sha512
             iterations: 5000
 
     providers:
         database:
             entity:
-                class: NetBS\SecureBundle\Entity\User
+                class: App\Entity\BSUser
                 property: username
 
     firewalls:

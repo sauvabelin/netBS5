@@ -111,11 +111,17 @@
     "endroid/qr-code": {
         "version": "3.9.3"
     },
+    "erusev/parsedown": {
+        "version": "1.7.4"
+    },
     "gedmo/doctrine-extensions": {
         "version": "v3.0.0"
     },
     "genkgo/camt": {
         "version": "1.1.1"
+    },
+    "imagine/imagine": {
+        "version": "1.2.4"
     },
     "jschaedl/iban-validation": {
         "version": "v1.6"
@@ -135,6 +141,9 @@
     "laminas/laminas-zendframework-bridge": {
         "version": "1.1.1"
     },
+    "lcobucci/clock": {
+        "version": "2.0.0"
+    },
     "lcobucci/jwt": {
         "version": "3.3.3"
     },
@@ -148,6 +157,19 @@
         },
         "files": [
             "./config/packages/lexik_jwt_authentication.yaml"
+        ]
+    },
+    "liip/imagine-bundle": {
+        "version": "1.8",
+        "recipe": {
+            "repo": "github.com/symfony/recipes-contrib",
+            "branch": "master",
+            "version": "1.8",
+            "ref": "5a5bdc2d0e2533ed6935d5ae562f2b318a8fc1ee"
+        },
+        "files": [
+            "./config/packages/liip_imagine.yaml",
+            "./config/routes/liip_imagine.yaml"
         ]
     },
     "moneyphp/money": {
@@ -179,6 +201,9 @@
     },
     "ocramius/proxy-manager": {
         "version": "2.10.0"
+    },
+    "php": {
+        "version": "7.4"
     },
     "phpdocumentor/reflection-common": {
         "version": "2.2.0"
@@ -523,6 +548,9 @@
     "symfony/string": {
         "version": "v5.1.8"
     },
+    "symfony/templating": {
+        "version": "v5.1.8"
+    },
     "symfony/test-pack": {
         "version": "v1.0.7"
     },
@@ -606,9 +634,6 @@
     },
     "twig/twig": {
         "version": "v3.1.1"
-    },
-    "webimpress/safe-writer": {
-        "version": "2.1.0"
     },
     "webmozart/assert": {
         "version": "1.9.1"

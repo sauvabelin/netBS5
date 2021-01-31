@@ -1,0 +1,13 @@
+<h1>Une sale erreur s'est produite!</h1>
+<h2>
+    Désolé, le système a rencontré une erreur fatale et ne s'en est pas
+    remis. Si vous souhaitez aider votre dévoué chef comm', vous pouvez
+    copier coller le texte ci-dessous et le lui transmettre, merci :)
+</h2>
+
+<code>
+    {{ exception.message }}
+    <pre>
+        {{ exception.traceAsString  }}
+    </pre>
+</code>

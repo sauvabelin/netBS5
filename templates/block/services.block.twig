@@ -1,0 +1,42 @@
+{% set styleService %}
+<style>
+    .service {
+        border:1px solid #eee;
+    }
+
+    .service:hover {
+        background:#eee;
+        text-decoration: none;
+    }
+    .service img {
+        display:block;
+        width: 50%;
+        padding:1em 0;
+    }
+</style>
+{% endset %}
+
+{{ registerStyle(styleService) }}
+
+<div class="row">
+    <div class="col-6 col-md-4">
+        <a href="https://stammbox.sauvabelin.ch" target="_blank" class="d-flex flex-column align-items-center service">
+            <img src="{{ asset('images/stammbox.png') }}" />
+            <h4>Stammbox</h4>
+        </a>
+    </div>
+
+    <div class="col-6 col-md-4">
+        <a href="https://galerie.sauvabelin.ch" target="_blank" class="d-flex flex-column align-items-center service">
+            <img src="{{ asset('images/galerie.png') }}" />
+            <h4>Galerie</h4>
+        </a>
+    </div>
+
+    <div class="col-6 col-md-4">
+        <a href="https://wiki.sauvabelin.ch" target="_blank" class="d-flex flex-column align-items-center service">
+            <img src="{{ asset('images/wikipedia.png') }}" />
+            <h4>Wiki</h4>
+        </a>
+    </div>
+</div>

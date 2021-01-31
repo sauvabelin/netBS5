@@ -1,0 +1,53 @@
+{% extends '@NetBSCore/layout/backend.layout.twig' %}
+
+{% set style %}
+<style>
+    .chooser {
+        height:400px;
+        overflow:auto;
+    }
+</style>
+{% endset %}
+
+{% block main %}
+
+    {{ registerStyle(style) }}
+    <div class="container">
+        {% include '@NetBSCore/includes/header.include.twig' with {
+            header: 'Fusion de familles',
+            subHeader: "Fusionnez plusieurs familles en une seule"
+        } %}
+
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">Choisissez les familles à fusionner</h3>
+            </div>
+            <div class="card-body">
+                <form  method="post" action="{{ path('sauvabelin.merge_family.choose_what') }}">
+                    <div class="chooser">
+                        {% for famille in familles %}
+                            <div>
+                                <input name="famille[]" type="checkbox" value="{{ famille.id }}" />
+                                Famille {{ famille.nom }}<br/>
+                                {% set adresse = famille.sendableAdresse %}
+                                {% if adresse %}
+                                    Adresse: {{ adresse.rue }}, {{ adresse.npa }}, {{ adresse.localite }}<br/>
+                                {% endif %}
+                                Enfants:
+                                {% for enfant in famille.membres %}
+                                    {{ enfant.prenom }}{% if not loop.last %}, {% endif %}
+                                {% endfor %}
+                                <hr />
+                            </div>
+                        {% endfor %}
+                    </div>
+                    <br />
+                    <hr/>
+                    <input type="submit" class="btn btn-primary" value="Fusionner" />
+                </form>
+            </div>
+        </div>
+    </div>
+
+{% endblock %}
+

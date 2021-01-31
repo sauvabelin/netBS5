@@ -1,6 +1,7 @@
 controllers:
     resource: ../../src/Controller/
     type: annotation
+    prefix: /netBS/bs
 
 kernel:
     resource: ../../src/Kernel.php
