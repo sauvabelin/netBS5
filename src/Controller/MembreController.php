@@ -5,11 +5,11 @@ namespace App\Controller;
 use NetBS\FichierBundle\Select2\FamilleProvider;
 use NetBS\FichierBundle\Service\FichierConfig;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
-use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use App\Form\InscriptionType;
 use App\Model\Inscription;
+use Symfony\Component\Routing\Annotation\Route;
 
 class MembreController extends AbstractController
 {
@@ -21,7 +21,7 @@ class MembreController extends AbstractController
     public function pageAddMembreAction(Request $request, FichierConfig $config) {
 
         $infos = new Inscription();
-        $em = $this->get('doctrine.orm.entity_manager');
+        $em = $this->getDoctrine()->getManager();
         $form = $this->createForm(InscriptionType::class, $infos);
 
         $form->handleRequest($request);
