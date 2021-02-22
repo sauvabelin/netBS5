@@ -53,7 +53,7 @@ class Inscription implements GroupSequenceProviderInterface
     /**
      * @var \DateTime
      * @Assert\NotBlank(groups={"default"})
-     * @Assert\DateTime
+     * @Assert\Type("\DateTimeInterface")
      */
     public $naissance;
 
