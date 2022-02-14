@@ -1,0 +1,20 @@
+
+<div class="row">
+    <div class="col-md-8">
+        <h4>Attributions</h4>
+        {{ render_list('netbs.fichier.membre.attributions', 'basic', {membreId: membre.id}) }}
+
+        {% if app.user.hasRole('ROLE_SG') %}
+        <button class="btn btn-primary btn-space" data-modal data-modal-url="{{ path('netbs.fichier.attribution.modal_creation', {membreId: membre.id}) }}">Nouvelle attribution</button>
+        {% endif %}
+    </div>
+
+    <div class="col-md-4">
+        <h4>Distinctions</h4>
+        {{ render_list('netbs.fichier.membre.obtentions_distinction', 'basic', {membreId: membre.id}) }}
+
+        {% if app.user.hasRole('ROLE_SG') %}
+        <button class="btn btn-primary btn-space" data-modal data-modal-url="{{ path('netbs.fichier.obtention_distinction.modal_creation', {membreId: membre.id}) }}">Ajouter une distinction</button>
+        {% endif %}
+    </div>
+</div>

@@ -1,0 +1,60 @@
+{% extends '@NetBSCore/layout/modal.layout.twig' %}
+
+{% block widthClass %}modal-lg{% endblock %}
+
+{% set class = facture.statut == 'annulee' ? 'secondary' : facture.statut == 'ouverte' ? 'info' : 'success' %}
+{% block title %}Facture #{{ facture.factureId }}{% endblock %}
+
+{% block content %}
+
+    <h2>Facture #{{ facture.factureId }}</h2>
+
+    <div class="row">
+        <div class="col-md-5">
+            <table class="table table-bordered">
+                <tbody>
+                <tr>
+                    <th>Statut</th>
+                    <td><span class="badge badge-{{ class }}">{{ facture.statut }}</span></td>
+                </tr>
+                <tr>
+                    <th>Adressée à</th>
+                    <td>{{ facture.debiteur }}</td>
+                </tr>
+                <tr>
+                    <th>Date de création</th>
+                    <td>{{ facture.date|date(param('format', 'php_date')) }}</td>
+                </tr>
+                <tr>
+                    <th>Première impression</th>
+                    <td>{% if facture.dateImpression %}{{ facture.dateImpression|date(param('format', 'php_date')) }}{% endif %}</td>
+                </tr>
+                <tr>
+                    <th>Dernière impression</th>
+                    <td>{% if facture.latestImpression %}{{ facture.latestImpression|date(param('format', 'php_date')) }}{% endif %}</td>
+                </tr>
+                <tr>
+                    <th>Montant total</th>
+                    <td>{{ facture.montant }}</td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+        <div class="col-md-7">
+        </div>
+    </div>
+
+    <h5>Créances</h5>
+    {{ render_list('ovesco.facturation.facture_creances', 'basic', { facture: facture }) }}
+
+    <div class="row mt-5">
+        <div class="col-12 col-md-7">
+            <h5>Paiements effectués</h5>
+            {{ render_list('ovesco.facturation.facture_paiements', 'basic', { facture: facture }) }}
+        </div>
+        <div class="col-12 col-md-5">
+            <h5>Rappels générés</h5>
+            {{ render_list('ovesco.facturation.facture_rappels', 'basic', { facture: facture }) }}
+        </div>
+    </div>
+{% endblock %}

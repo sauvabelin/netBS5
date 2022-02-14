@@ -1,0 +1,24 @@
+{% extends '@NetBSCore/layout/backend.layout.twig' %}
+
+{% block main %}
+    <div class="container-fluid">
+
+        {% include '@NetBSCore/includes/header.include.twig' with {
+            header: "Paramètres système"
+        } %}
+
+        <div class="col-12">
+
+            <div class="card card-table">
+                <div class="card-header">
+                    <h5 class="card-title">Paramètres système</h5>
+                    <h6 class="card-subtitle">Attention, ne bousillez pas tout en mettant une valeur invalide à un de ces petits bails inchallah</h6>
+                </div>
+
+                <div class="card-body">
+                    {{ render_list('netbs.core.parameters', 'netbs') }}
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}

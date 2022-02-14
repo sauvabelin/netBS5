@@ -1,0 +1,3 @@
+net_bs_secure:
+  entities:
+    user_class: App\Entity\BSUser

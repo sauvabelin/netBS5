@@ -1,0 +1,137 @@
+{% extends '@NetBSCore/layout/backend.layout.twig' %}
+
+{% block wrapperClass %}be-aside{% endblock %}
+
+{% set title = "export" %}
+
+{% import _self as former %}
+
+{% macro expose(form) %}
+    {% import _self as former2 %}
+    {% if form.children|length > 0 %}
+        {% for child in form.children %}
+            {{ former2.expose(child) }}
+        {% endfor %}
+    {% elseif form.vars.name != "_token" %}
+        {% if 'number' in form.vars.block_prefixes or 'switch' in form.vars.block_prefixes %}
+            <div class="row">
+                <div class="col-12 col-md-8" style="line-height:30px;">{{ form_label(form) }}</div>
+                <div class="col-12 col-md-4">{{ form_widget(form, {attr: {style: "font-size:0.9em;height:30px;"}}) }}</div>
+                {% if form.vars.errors|length > 0 %}
+                    {% for error in form.vars.errors %}
+                    <div class="col-md-12"><small class="text-danger">{{ error.message }}</small></div>
+                    {% endfor %}
+                {% endif %}
+            </div>
+        {% else %}
+            <div class="row">
+                <div class="col-12">
+                    {{ form_row(form) }}
+                </div>
+            </div>
+        {% endif %}
+        {% if form.vars.errors|length > 0 %}
+            <div class="row">
+                <div class="col-12">
+                    {{ form_errors(form) }}
+                </div>
+            </div>
+        {% endif %}
+    {% endif %}
+{% endmacro %}
+
+{% set style %}
+    <style>
+        iframe {
+            height:calc(100vh - 4rem) !important;
+        }
+    </style>
+{% endset %}
+
+{% block main %}
+
+    {{ registerStyle(style) }}
+
+    <div class="modal" tabindex="-1" role="dialog" id="config-modal">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Configuration de base</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <p>Choisissez une base pour cette configuration</p>
+                    {% for config in exporter.basicConfig %}
+                        <a href="{{ path('netbs.core.export.switch_config', {blobKey: blob.key, configId: "model__" ~ get_class(config)|toBase64}) }}">
+                            {{ config.name }}
+                            {% if config.description %}
+                                <br/>
+                                <span class="text-muted">{{ config.description }}</span>
+                            {% endif %}
+                        </a>
+                        <hr/>
+                    {% endfor %}
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Annuler</button>
+                    <button type="button" class="btn btn-primary">Valider</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="d-flex flex-row">
+
+        <aside class="page-aside">
+            <div class="content">
+
+                <div class="aside-head">
+                    <h3>Exportation</h3>
+                </div>
+
+                <table class="table table-condensed table-bordered">
+                    <tbody>
+                    {% for config in configs %}
+                        <tr {% if config.id == blob.configId %}style="background:#bfffab;"{% endif %}>
+                            <td style="width:75%;">{{ xeditable(config, 'nom', 'Symfony\\Component\\Form\\Extension\\Core\\Type\\TextType')|raw }}</td>
+                            <td style="width:25%;">
+                                <a data-toggle="tooltip" title="Utiliser" href="{{ path('netbs.core.export.switch_config', {blobKey: blob.key, configId: config.id}) }}"><i class="fas fa-check-circle fa-sm"></i></a>
+                                <a data-toggle="tooltip" title="Supprimer" href="{{ path('netbs.core.export.remove_config', {blobKey: blob.key, configId: config.id}) }}"><i class="fas fa-times fa-sm"></i></a>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                    <tr>
+                        {% if exporter.basicConfig is iterable %}
+                            <td colspan="2"><a href="#" data-toggle="modal" data-target="#config-modal">Nouvelle configuration</a></td>
+                        {% else %}
+                            <td colspan="2"><a href="{{ path('netbs.core.export.switch_config', {blobKey: blob.key, configId: 'new'}) }}">Nouvelle configuration</a></td>
+                        {% endif %}
+                    </tr>
+                    </tbody>
+                </table>
+
+                {{ form_start(form) }}
+
+                <div style="display: none">{{ form_row(form._token) }}</div>
+                {{ former.expose(form) }}
+
+                <div style="display: none">{{ form_rest(form) }}</div>
+
+                <div class="d-flex justify-content-between">
+                    <button type="submit" class="btn btn-primary" style="flex:1; margin-right:12px;">Mettre à jour</button>
+                    <a href="{{ path('netbs.core.export.generate', {blobKey: blob.key}) }}" target="_blank" class="btn btn-success">Télécharger</a>
+                </div>
+                {{ form_end(form) }}
+            </div>
+        </aside>
+
+        <div>
+            <iframe style="width:100%;border:none;border-left:1px solid #eee;" src="{{ path('netbs.core.export.preview', {blobKey: blob.key}) }}"></iframe>
+        </div>
+
+
+    </div>
+
+{% endblock %}

@@ -1,0 +1,33 @@
+{% extends '@NetBSCore/layout/backend.layout.twig' %}
+
+{% set title = "Listes automatiques" %}
+
+{% block main %}
+
+    <div class="container-fluid">
+
+        {% include '@NetBSCore/includes/header.include.twig' with {
+            header: "Listes automatiques",
+            subHeader: "Pour faire les trucs un peu compliqué"
+        } %}
+
+        <div class="row">
+
+            {% for model in models | filter(model => model.isAllowed(app.user)) %}
+                <div class="col-12 col-sm-6 col-md-3">
+                    <a href="{{ path('netbs.core.automatic_list.view_list', {alias: model.alias}) }}" class="card text-white bg-info mb-3">
+                        <div class="card-header">
+                            <h5 class="card-title">{{ model.name }}</h5>
+                        </div>
+                        <div class="card-body">
+                            {{ model.description }}
+                        </div>
+                    </a>
+                </div>
+            {% endfor %}
+
+        </div>
+
+    </div>
+
+{% endblock %}

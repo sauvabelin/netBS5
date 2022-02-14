@@ -1,0 +1,113 @@
+imports:
+    - { resource: "list.yml" }
+    - { resource: "helper.yml" }
+    - { resource: "exporter.yml" }
+    - { resource: "security.yml" }
+    - { resource: "form.yml" }
+    - { resource: "log_representer.yml" }
+
+services:
+
+    _defaults:
+        autowire: true
+        autoconfigure: true
+
+    NetBS\FichierBundle\Controller\:
+        resource: '../../Controller'
+        tags: ['controller.service_arguments']
+
+    NetBS\FichierBundle\DataFixtures\:
+        resource: '../../DataFixtures'
+        tags: ['doctrine.fixture.orm']
+
+    NetBS\FichierBundle\Service\FichierConfig:
+        arguments:
+            - "%netbs.fichier.config%"
+
+    NetBS\FichierBundle\MassUpdater\AttributionMassUpdater:
+        tags:
+            - { name: netbs.mass_updater }
+
+    NetBS\FichierBundle\MassUpdater\ObtentionDistinctionMassUpdater:
+        tags:
+            - { name: netbs.mass_updater }
+
+
+    NetBS\FichierBundle\MassUpdater\MembreMassUpdater:
+        tags:
+            - { name: netbs.mass_updater }
+
+
+    NetBS\FichierBundle\Service\ContactManager: ~
+
+    NetBS\FichierBundle\Searcher\ActiveAttributionBinder:
+        tags:
+            - { name: netbs.searcher.binder }
+
+#dynamic stuff
+    NetBS\FichierBundle\Bridge\AttributionToMembreBridge:
+        tags:
+            - { name: netbs.bridge }
+
+    NetBS\FichierBundle\Bridge\GroupeToAttribution:
+        tags:
+              - { name: netbs.bridge }
+
+    NetBS\FichierBundle\Bridge\MembreToAdressable:
+        tags:
+              - { name: netbs.bridge }
+
+    NetBS\FichierBundle\Bridge\FamilleToAdressable:
+        tags:
+              - { name: netbs.bridge }
+
+#select2 providers
+    NetBS\FichierBundle\Select2\MembreProvider:
+        tags:
+            - { name: netbs.select2_provider }
+
+    NetBS\FichierBundle\Select2\DistinctionProvider:
+        tags:
+            - { name: netbs.select2_provider }
+
+    NetBS\FichierBundle\Select2\FonctionProvider:
+        tags:
+            - { name: netbs.select2_provider }
+
+    NetBS\FichierBundle\Select2\GroupeProvider:
+        tags:
+            - { name: netbs.select2_provider }
+
+    NetBS\FichierBundle\Select2\GroupeTypeProvider:
+        tags:
+            - { name: netbs.select2_provider }
+
+    NetBS\FichierBundle\Select2\FamilleProvider:
+        public: true
+        tags:
+            - { name: netbs.select2_provider }
+
+    NetBS\FichierBundle\Select2\GroupeCategorieProvider:
+        tags:
+            - { name: netbs.select2_provider }
+
+#listeners
+    NetBS\FichierBundle\Listener\PreRenderLayoutListener:
+        tags:
+            - { name: kernel.event_listener, event: netbs.block.pre_render_layout, method: preRender }
+
+    NetBS\FichierBundle\Listener\MainMenuListener:
+        tags:
+            - { name: kernel.event_listener, event: netbs.menu.extend, method: onMenuConfigure, priority: 80 }
+
+    NetBS\FichierBundle\Subscriber\DoctrineMapperSubscriber:
+        tags:
+            - { name: doctrine.event_subscriber }
+
+    NetBS\FichierBundle\Subscriber\DoctrinePostLoadContactSubscriber:
+        tags:
+            - { name: doctrine.event_subscriber }
+
+    NetBS\FichierBundle\Loader\AdressableLoader:
+        tags:
+            - { name: netbs.loader }

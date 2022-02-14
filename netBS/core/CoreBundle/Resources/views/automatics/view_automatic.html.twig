@@ -1,0 +1,49 @@
+{% extends '@NetBSCore/layout/backend.layout.twig' %}
+
+{% set title = model.name %}
+
+{% block main %}
+
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-12 col-sm-6 col-md-3">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="card-title">{{ model.name }}</h5>
+                        <h6 class="card-subtitle card-divider text-muted">{{ model.description }}</h6>
+                    </div>
+                    <div class="card-body">
+
+                        {% if form is null %}
+                            <p class="text-muted">Aucune configuration requise</p>
+                        {% else %}
+                            {{ form_start(form) }}
+                            {{ form_rest(form) }}
+                            <button class="btn btn-primary">Valider</button>
+                            {{ form_end(form) }}
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-12 col-sm-6 col-md-9">
+                <div class="card {% if form and form.vars.submitted and form.vars.valid %}card-table{% endif %}">
+                    <div class="card-header">
+                        <h5 class="card-title">Résultats</h5>
+                    </div>
+                    <div class="card-body">
+                        {% if form is null or (form.vars.submitted and form.vars) %}
+                            {{ render_list(model, 'netbs') }}
+                        {% elseif not form.vars.submitted %}
+                            <div class="alert alert-primary m-0">Veuillez choisir des valeurs à soumettre</div>
+                        {% else %}
+                            <div class="alert alert-danger m-0">Une erreur s'est produite, veuillez vérifier la configuration</div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+{% endblock %}

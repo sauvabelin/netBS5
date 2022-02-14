@@ -1,0 +1,81 @@
+
+<a href="{{ path('netbs.fichier.famille.page_famille', {id: membre.famille.id}) }}" class="btn btn-primary btn-block">Vers la {{ membre.famille }}</a>
+
+<div style="margin:0.5em 0;"></div>
+
+<div class="row no-gutters">
+    <div class="col-6 pr-1">
+        <div class="btn-group btn-hspace" style="width:100%;">
+
+            <button type="button" data-toggle="dropdown" class="btn btn-secondary btn-block dropdown-toggle" aria-expanded="false">
+                Ajouter à une liste
+                <span class="icon-dropdown mdi mdi-chevron-down"></span>
+            </button>
+            <div role="menu" class="dropdown-menu">
+                {% for list in lists %}
+                    <a href="#" class="dropdown-item membre-list-add" data-list-id="{{ list.id }}" data-list-class="{{ list.itemsClass|toBase64 }}">{{ list.name }}</a>
+                {% endfor %}
+                {% if lists|length > 0 %}
+                    <div class="dropdown-divider"></div>
+                {% endif %}
+                <a href="#" class="dropdown-item add-to-new-list">Nouvelle liste</a>
+            </div>
+        </div>
+    </div>
+    <div class="col-6 pl-1">
+        <div class="btn-group btn-hspace" style="width:100%;">
+
+            <button type="button" data-toggle="dropdown" class="btn btn-secondary btn-block dropdown-toggle" aria-expanded="false">
+                Exportation rapide
+                <span class="icon-dropdown mdi mdi-chevron-down"></span>
+            </button>
+            <div role="menu" class="dropdown-menu">
+                {% for exporter in exporters %}
+                    <a href="#" class="dropdown-item membre-exporter" data-exporter-alias="{{ exporter.alias }}">{{ exporter.name }}</a>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+
+{% if app.user.hasRole('ROLE_SG') %}
+    <a href="{{ path('netbs.fichier.membre.remove', { id: membre.id}) }}" class="btn btn-outline-danger btn-block mt-2" onclick="return confirm('Etes-vous VRAIMENT sûr? Toutes les données liées (compte utilisateur, factures, créances) seront supprimées et peuvent entraîner des erreurs de données.');">Supprimer ce membre</a>
+{% endif %}
+
+{% include '@NetBSCore/javascript/dynamic.javascript.twig' %}
+
+{% set membreDynamicsScript %}
+    <script type="text/javascript">
+
+        $('.membre-list-add').click(function() {
+
+            var listId  = $(this).attr("data-list-id");
+            var lclass  = $(this).attr("data-list-class");
+
+            BSDynamic.addToList(listId, lclass, [{{ membre.id }}]);
+        });
+
+        $('.add-to-new-list').on('click', function() {
+
+            var classe  = '{{ get_class(membre)|toBase64 }}';
+
+            BSDynamic.createList(classe, function(listId) {
+                BSDynamic.addToList(listId, classe, [{{ membre.id }}]);
+            });
+        });
+
+        $('.membre-exporter').on('click', function() {
+
+            var data = {
+                itemsClass:     "{{ exportClass }}",
+                exporterAlias:  $(this).attr('data-exporter-alias'),
+                selectedIds:    [{{ membre.id }}]
+            };
+
+            PostLink("{{ path('netbs.core.export.export_selected') }}", data);
+        });
+    </script>
+{% endset %}
+
+{{ registerJs(asset('bundles/netbscore/js/modal.js')) }}
+{{ registerScript(membreDynamicsScript) }}

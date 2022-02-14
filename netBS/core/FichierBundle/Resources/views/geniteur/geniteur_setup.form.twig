@@ -1,0 +1,17 @@
+<div class="panel panel-border">
+    <div class="panel-body">
+        <div class="row">
+            <div class="col-lg-6">{{ form_row(geniteur.prenom) }}</div>
+            <div class="col-lg-6">{{ form_row(geniteur.nom) }}</div>
+        </div>
+
+        <div class="row">
+            <div class="col-lg-4">{{ form_row(geniteur.sexe) }}</div>
+            <div class="col-lg-4">{{ form_row(geniteur.statut) }}</div>
+            <div class="col-lg-4">{{ form_row(geniteur.profession) }}</div>
+            <div class="col-lg-4">{{ form_row(geniteur.remarques) }}</div>
+        </div>
+
+        {% include '@NetBSFichier/partial/contact_form_accordion.partial.twig' with {form: geniteur} %}
+    </div>
+</div>

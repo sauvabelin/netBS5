@@ -1,0 +1,3 @@
+{% if app.user.hasRole('ROLE_SG') %}
+    <a href="{{ path('netbs.fichier.famille.remove', { id: famille.id}) }}" class="btn btn-outline-danger btn-block mt-2" onclick="return confirm('Etes-vous VRAIMENT sûr? Toutes les données liées (membres, factures etc.) seront supprimées et peuvent entraîner des erreurs de données.');">Supprimer cette famille</a>
+{% endif %}

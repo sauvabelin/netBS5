@@ -1,0 +1,65 @@
+{% extends '@NetBSCore/layout/backend.layout.twig' %}
+
+{% block main %}
+
+    {{ registerJs(asset('bundles/netbscore/js/modal.js')) }}
+
+    <div class="container-fluid">
+
+        {% include '@NetBSCore/includes/header.include.twig' with {
+            header: "Mes listes",
+            subHeader: "Les listes définies ici sont liées à votre compte et seront disponibles sur toutes vos sessions"
+        } %}
+
+        <div class="row">
+
+            {% for list in lists %}
+                <div class="col-12 col-md-2">
+                    <a class="card bg-primary text-white" href="{{ path('netbs.core.dynamics_list.manage_list', {id: list.id}) }}">
+                        <div class="card-header">
+                            <h5 class="card-title">{{ list.name }}</h5>
+                        </div>
+                        <div class="card-body">
+                            {{ list.items|length }} élément(s)
+                        </div>
+                    </a>
+                </div>
+            {% endfor %}
+
+            <div class="col-12 col-md-2">
+                <a class="card bg-success text-white" href="#" id="list_create">
+                    <div class="card-header">
+                        <h5 class="card-title">Nouvelle liste</h5>
+                    </div>
+                    <div class="card-body">
+                        Créer une nouvelle liste
+                    </div>
+                </a>
+            </div>
+
+        </div>
+    </div>
+
+    {% set scriptum %}
+    <script>
+        var modal = new BSModal("{{ path('netbs.core.dynamic_list.modal_add') }}");
+
+        modal.handleSubmit = function(data, status, response) {
+
+            var code    = parseInt(response.status);
+
+            if(code === 202)
+                location.reload();
+            else
+                this.remove();
+        };
+
+        document.getElementById('list_create').addEventListener('click', function() {
+            modal.launch();
+        });
+    </script>
+    {% endset %}
+
+    {{ registerScript(scriptum) }}
+
+{% endblock %}

@@ -1,0 +1,23 @@
+
+{% set uniq = uniqid() %}
+
+<div class="card {% if table %} card-table{% endif %}">
+
+    <div class="card-header">
+        <ul class="nav nav-tabs card-header-tabs">
+            {% for tab in tabs %}
+                <li class="nav-item">
+                    <a class="nav-link{% if loop.index0 == 0 %} active{% endif %}" href="#{{ loop.index0 }}-{{ uniq }}" data-toggle="tab">{{ tab.title }}</a>
+                </li>
+            {% endfor %}
+        </ul>
+    </div>
+
+    <div class="card-body tab-content">
+        {% for tab in tabs %}
+            <div id="{{ loop.index0 }}-{{ uniq }}" class="tab-pane fade{% if loop.index0 == 0 %} show active{% endif %}">
+                {{ tab.content|raw }}
+            </div>
+        {% endfor %}
+    </div>
+</div>

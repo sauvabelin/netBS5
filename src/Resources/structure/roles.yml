@@ -1,0 +1,96 @@
+roles:
+    ROLE_COMMANDANT:
+        description: "Role du commandant"
+        poids: 1000
+        children:
+            ROLE_QM:
+                description: "Role du QM"
+                poids: 990
+                children:
+                    ROLE_MEMBRE_EDC:
+                        description: "membre de l'EDC"
+                        poids: 980
+                    ROLE_TRESORIER:
+                        description: "Trésorier"
+                        poids: 980
+                    ROLE_RESPONSABLE_COMM:
+                        description: "Responsable communication"
+                        poids: 980
+                        children:
+                            ROLE_RESPONSABLE_PUBLICATIONS:
+                                poids: 800
+                                description: "Responsable publications"
+                    ROLE_RESPONSABLE_FORMATION_EXTERNE:
+                        description: "Responsable formation externe"
+                        poids: 980
+                    ROLE_RESPONSABLE_FORMATION_INTERNE:
+                        description: "Responsable formation interne"
+                        poids: 980
+                    ROLE_RESPONSABLE_LOCAUX:
+                        description: "Responsable des locaux"
+                        poids: 980
+                    ROLE_COACH:
+                        description: "Responsable formation externe"
+                        poids: 980
+                    ROLE_CHEF_MAT:
+                        description: "Chef mat'"
+                        poids: 800
+                        children:
+                            ROLE_CHEF_MAT_ADJOINT:
+                                poids: 700
+                                description: "Chef mat' adjoint"
+                    ROLE_CHEF_TENTES:
+                        description: "Chef tentes"
+                        poids: 800
+                        children:
+                            ROLE_CHEF_TENTES_ADJOINT:
+                                poids: 700
+                                description: "Chef tentes adjoint"
+                    ROLE_RESPONSABLE_ECONOMAT:
+                        description: "Responsable de l'économat"
+                        poids: 800
+                        children:
+                            ROLE_RESPONSABLE_ECONOMAT_ADJOINT:
+                                poids: 700
+                                description: "Chef économat adjoint"
+            ROLE_CB:
+                description: "Chef de branche"
+                poids: 980
+                children:
+                    ROLE_CB_ADJ:
+                        description: "Chef de branche adjoint"
+                        poids: 950
+                        children:
+                            ROLE_CHEF_MEUTE:
+                                description: "Chef de meute"
+                                poids: 300
+                                children:
+                                    ROLE_CHEF_MEUTE_ADJOINT:
+                                        description: "adjoint chef de meute"
+                                        poids: 250
+
+
+            ROLE_CHEF_CLAN:
+                description: "Chef de clan"
+                poids: 650
+                children:
+                    ROLE_MEMBRE_CLAN:
+                        poids: 100
+                        description: "Membre d'un clan"
+            ROLE_CHEF_EQUIPE:
+                description: "Chef d'équipe"
+                poids: 650
+                children:
+                    ROLE_ADJOINT_CHEF_EQUIPE:
+                        description: "Adjoint chef d'équipe"
+                        poids: 500
+            ROLE_CHEF_CE:
+                description: "Chef de camp d'été"
+                poids: 300
+                children:
+                    ROLE_ADJOINT_CHEF_CE:
+                        description: "Adjoint chef de camp d'été"
+                        poids: 250
+            ROLE_CHEF_SAINT_GEORGES:
+                description: "Chef de la St-Georges"
+                poids: 300

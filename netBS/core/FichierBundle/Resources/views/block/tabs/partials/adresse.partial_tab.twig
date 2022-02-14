@@ -1,0 +1,41 @@
+
+{% set definedAdresse = item.adresse %}
+{% set sendingAdresse = item.sendingAdresse %}
+
+<div class="row">
+    <div class="col-md-6">
+
+        <h4>Adresse utilisée pour les envois</h4>
+        {% if sendingAdresse %}
+            {% if sendingAdresse.equals(definedAdresse) %}
+                <h5>Adresse définie</h5>
+                {% include '@NetBSFichier/adresse/adresse.editable.twig' with {adresse: form.adresse, well: true} %}
+            {% else %}
+                <h5>Adresse de {{ sendingAdresse.owner }}</h5>
+                {% include '@NetBSFichier/adresse/adresse.partial.twig' with {adresse: sendingAdresse} %}
+            {% endif %}
+        {% else %}
+            <div role="alert" class="alert alert-contrast alert-danger">
+                <div class="icon"><span class="mdi mdi-alert-triangle"></span></div>
+                <div class="message">
+                    <strong>Attention</strong> Cette famille ne possède aucune adresse!
+                </div>
+            </div>
+            <button data-modal data-modal-url="{{ path('netbs.fichier.adresse.modal_creation', {ownerType: get_class(item)|toBase64, ownerId: item.id}) }}" class="btn btn-secondary">Définir une adresse pour {{ item }}</button>
+        {% endif %}
+    </div>
+
+    {% if not sendingAdresse.equals(definedAdresse) %}
+        <div class="col-md-6">
+            <h4>Adresse définie</h4>
+            <h5>Pour {{ item }}</h5>
+
+            {% if definedAdresse %}
+                {% include '@NetBSFichier/adresse/adresse.editable.twig' with {adresse: form.adresse, well: true} %}
+            {% else %}
+                <p class="text-muted">Aucune adresse définie.</p>
+                <button data-modal data-modal-url="{{ path('netbs.fichier.adresse.modal_creation', {ownerType: get_class(item)|toBase64, ownerId: item.id}) }}" class="btn btn-secondary">Définir une adresse</button>
+            {% endif %}
+        </div>
+    {% endif %}
+</div>

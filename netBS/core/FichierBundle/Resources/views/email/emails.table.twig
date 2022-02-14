@@ -1,0 +1,31 @@
+{% if form.emails|length > 0 %}
+    <table class="table table-condensed table-bordered">
+        <thead>
+        <tr>
+            <th>Email</th>
+            <th>Prioritaire</th>
+            <th>Remarques</th>
+            <th></th>
+        </tr>
+        </thead>
+        <tbody>
+        {% for email in form.emails %}
+            <tr>
+                <td>{{ form_widget(email.email) }}</td>
+                <td>{{ form_widget(email.expediable) }}</td>
+                <td>{{ form_widget(email.remarques) }}</td>
+                <td>
+                    <a onclick="return confirm('Etes-vous sûr de supprimer cette adresse e-mail ?');"
+                       class="btn btn-danger btn-xs"
+                       href="{{ path('netbs.fichier.email.delete', {ownerId: item.id, ownerType: get_class(item)|toBase64, emailId: email.vars.data.id}) }}"><i class="fas fa-times fa-sm"></i></a>
+                </td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+{% else %}
+    <p class="text-muted">Aucune adresse e-mail enregistrée</p>
+{% endif %}
+
+<button class="btn btn-space btn-primary"
+        data-modal data-modal-url="{{ path('netbs.fichier.email.modal_creation', {ownerId: item.id, ownerType: get_class(item)|toBase64}) }}">Nouvel E-mail</button>

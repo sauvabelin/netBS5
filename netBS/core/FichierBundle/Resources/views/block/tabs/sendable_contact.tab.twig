@@ -1,0 +1,48 @@
+
+{{ registerJs(asset('bundles/netbscore/js/modal.js')) }}
+
+{% set email        = item.sendableEmail %}
+{% set telephone    = item.sendableTelephone %}
+{% set adresse      = item.sendableAdresse %}
+<div class="row">
+
+    <div class="col-md-6">
+        <H4>Adresse postale</H4>
+        {% if adresse %}
+            <h5 class="text-muted">Définie pour {{ adresse.owner }}</h5>
+            {% include '@NetBSFichier/adresse/adresse.partial.twig' with {well: true} %}
+        {% else %}
+            <p class="alert alert-danger">
+                Aucune adresse postale n'a pu être trouvée pour {{ item }}.
+            </p>
+            {% if idealOwner is defined %}
+                <button data-modal data-modal-url="{{ path('netbs.fichier.adresse.modal_creation', {ownerType: get_class(idealOwner)|toBase64, ownerId: idealOwner.id}) }}" class="btn btn-primary">Définir une adresse pour {{ idealOwner }}</button>
+            {% endif %}
+            <button data-modal data-modal-url="{{ path('netbs.fichier.adresse.modal_creation', {ownerType: get_class(item)|toBase64, ownerId: item.id}) }}" class="btn btn-secondary">Définir une adresse pour {{ item }}</button>
+        {% endif %}
+
+    </div>
+
+    <div class="col-md-6">
+        <H4>Téléphone</H4>
+        {% if telephone %}
+            <h5><b>{{ telephone.telephone }}</b> - <span class="text-muted">Défini pour {{ telephone.owner }}</span></h5>
+        {% else %}
+            <p class="text-muted">Aucun numéro de téléphone trouvé pour {{ item }}</p>
+            <button data-modal data-modal-url="{{ path('netbs.fichier.telephone.modal_creation', {ownerType: get_class(item)|toBase64, ownerId: item.id}) }}" class="btn btn-secondary">Ajouter un numéro à {{ item }}</button>
+        {% endif %}
+
+        <br/>
+        <br/>
+
+
+        <H4>E-mail</H4>
+        {% if email %}
+            <h5><b>{{ email.email }}</b> - <span class="text-muted">Défini pour {{ email.owner }}</span></h5>
+        {% else %}
+            <p class="text-muted">Aucun e-mail trouvé pour {{ item }}</p>
+            <button data-modal data-modal-url="{{ path('netbs.fichier.email.modal_creation', {ownerType: get_class(item)|toBase64, ownerId: item.id}) }}" class="btn btn-secondary">Ajouter un e-mail à {{ item }}</button>
+        {% endif %}
+
+    </div>
+</div>

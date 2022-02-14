@@ -1,0 +1,21 @@
+net_bs_secure:
+    resource: "@NetBSSecureBundle/Controller/"
+    type:     annotation
+    prefix:   /secure
+
+net_bs_fichier:
+    resource: "@NetBSFichierBundle/Controller/"
+    type:     annotation
+    prefix:   /fichier
+
+net_bs_core:
+    resource: "@NetBSCoreBundle/Controller/"
+    type:     annotation
+    prefix:   /
+
+home:
+    path: /
+    controller: Symfony\Bundle\FrameworkBundle\Controller\RedirectController::urlRedirectAction
+    defaults:
+        path: /netBS
+        permanent: true

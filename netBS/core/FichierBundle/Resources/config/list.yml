@@ -1,0 +1,57 @@
+
+services:
+    _defaults:
+        autowire: true
+        autoconfigure: true
+
+    NetBS\FichierBundle\Listener\NetBSToolbarListener:
+        tags:
+            - { name: kernel.event_listener, event: netbs.list_model.renderer.toolbar, method: extend }
+
+    NetBS\FichierBundle\Searcher\MembreSearcher:
+        tags:
+            - { name: netbs.searcher }
+            - { name: netbs.list.model }
+
+    NetBS\FichierBundle\ListModel\FonctionsList:
+        tags:
+            - { name: netbs.list.model }
+
+    NetBS\FichierBundle\ListModel\GroupeTypesList:
+        tags:
+            - { name: netbs.list.model }
+
+    NetBS\FichierBundle\ListModel\GroupeCategoriesList:
+        tags:
+            - { name: netbs.list.model }
+
+    NetBS\FichierBundle\ListModel\DistinctionsList:
+        tags:
+            - { name: netbs.list.model }
+
+    NetBS\FichierBundle\ListModel\FamilleMembresList:
+        tags:
+            - { name: netbs.list.model }
+
+    NetBS\FichierBundle\ListModel\DynamicMembreList:
+        tags:
+            - { name: netbs.list.model }
+            - { name: netbs.dynamic_model }
+
+    NetBS\FichierBundle\ListModel\MembreAttributionsList:
+        tags:
+            - { name: netbs.list.model }
+
+
+    NetBS\FichierBundle\ListModel\MembreObtentionsDistinctionList:
+        tags:
+            - { name: netbs.list.model }
+
+    NetBS\FichierBundle\ListModel\GroupeAttributionsList:
+        tags:
+            - { name: netbs.list.model }
+
+    NetBS\FichierBundle\Automatics\BirtdayAutomatic:
+        tags:
+            - { name: netbs.list.model }
+            - { name: netbs.automatic_list }

@@ -1,0 +1,29 @@
+{% extends '@NetBSCore/layout/backend.layout.twig' %}
+
+{% block main %}
+
+    <div class="container-fluid">
+
+        {% set addAutorisationBtn %}<a href="{{ path('netbs.secure.autorisation.add') }}" class="btn btn-primary">Ajouter une autorisation</a>{% endset %}
+
+        {% include '@NetBSCore/includes/header.include.twig' with {
+            header: "Autorisations",
+            subHeader: "Liste des autorisations spéciales enregistrées",
+            actions: [addAutorisationBtn]
+        } %}
+
+        <div class="row">
+            <div class="col-12">
+
+                <div class="card card-table">
+                    <div class="card-body">
+                        {{ render_list('netbs.secure.autorisations', 'basic') }}
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+    </div>
+
+{% endblock %}

@@ -1,0 +1,64 @@
+{% extends '@NetBSCore/layout/base.layout.twig' %}
+
+{% block body %}
+
+    {{ registerCss(asset('bundles/netbscore/css/quickfix.css')) }}
+    {{ registerCss('https://unpkg.com/nprogress@0.2.0/nprogress.css') }}
+    {{ registerJs('https://unpkg.com/nprogress@0.2.0/nprogress.js') }}
+
+    <div class="app">
+
+        <!-- Sidebar -->
+        {{ render(controller('NetBS\\CoreBundle\\Controller\\MenuController::renderMainMenuAction')) }}
+        <!-- END Sidebar -->
+
+        <div class="main">
+
+            <!-- Header -->
+            {% include '@NetBSCore/partial/header.partial.twig' %}
+            <!-- END Header -->
+
+            <!-- Main Container -->
+            <div class="main-content">
+                {% block main %}{% endblock %}
+            </div>
+            <!-- END Main Container -->
+
+        </div>
+    </div>
+
+    {{ registerCss(asset('bundles/netbscore/lib/toastr/toastr.min.css')) }}
+    {{ registerJs(asset('bundles/netbscore/lib/toastr/toastr.min.js')) }}
+
+    {% set _flash_script %}
+
+        <script type="text/javascript">
+            $(document).ready(function() {
+
+                {% for type, messages in app.session.flashbag.all %}
+
+                    {% for message in messages %}
+                        toastr["{{ type }}"]("{{ message }}");
+                    {% endfor %}
+
+                {% endfor %}
+            });
+        </script>
+    {% endset %}
+
+    {{ registerScript(_flash_script) }}
+
+    {% set _ajax_loader_script %}
+    <script>
+        $(document).bind("ajaxSend", function(){
+            NProgress.start();
+        }).bind("ajaxComplete", function(){
+            NProgress.done();
+        });
+    </script>
+    {% endset %}
+
+    {{ registerScript(_ajax_loader_script) }}
+
+    {% include '@NetBSCore/helper/init.javascript.twig' %}
+{% endblock %}

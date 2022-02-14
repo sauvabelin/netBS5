@@ -1,0 +1,197 @@
+mailing_lists_el:
+
+    apmbs@sauvabelin.ch:
+        rule: "user.isInGroup('APMBS')"
+        description: "Tous les membres de l'APMBS"
+    adabs@sauvabelin.ch:
+        rule: "user.isInGroup('ADABS')"
+        description: "Tous les membres de l'ADABS"
+    edc@sauvabelin.ch:
+        rule: "user.isInGroup('équipe de commandement') or user.hasFonction('chef de branche')"
+        description: "Tous les membres de l'EDC"
+
+    #roles edc
+    cdt@sauvabelin.ch:
+        rule: 'user.hasFonction("commandant")'
+        description: "Le commandant"
+    qm@sauvabelin.ch:
+        rule: 'user.hasFonction("quartier-maitre") or user.hasFonction("quartier-maitre adjoint")'
+        description: "Le QM et le QM adjoint"
+    com@sauvabelin.ch:
+        rule: 'user.hasFonction("responsable communication")'
+        description: "Le chef comm'"
+    coach@sauvabelin.ch:
+        rule: 'user.hasFonction("coach JS")'
+        description: "Les coachs JS"
+    formation@sauvabelin.ch:
+        rule: 'user.hasFonction("responsable formation interne") or user.hasFonction("responsable formation externe")'
+        description: "Les responsables formation interne et externe"
+    sg@sauvabelin.ch:
+        rule: 'user.hasFonction("secrétaire général") or user.hasFonction("secrétaire général adjoint")'
+        description: "Le SG et le SG adjoint"
+
+    #branches
+    louvettes@sauvabelin.ch:
+        rule: 'user.hasFonctionInGroup("chef de branche", "branche louvettes")'
+        description: "Le CB louvettes"
+    louveteaux@sauvabelin.ch:
+        rule: 'user.hasFonctionInGroup("chef de branche", "branche louveteaux")'
+        description: "Le CB louveteaux"
+    eclaireurs@sauvabelin.ch:
+        rule: 'user.hasFonctionInGroup("chef de branche", "branche éclaireurs")'
+        description: "Le CB éclaireurs"
+    eclaireuses@sauvabelin.ch:
+        rule: 'user.hasFonctionInGroup("chef de branche", "branche éclaireuses")'
+        description: "Le CB éclaireuses"
+    rouge@sauvabelin.ch:
+        rule: 'user.hasFonctionInGroup("chef de branche", "troisième branche")'
+        description: "Le CB rouges"
+
+    #postes admin
+    economat@sauvabelin.ch:
+        rule: 'user.hasFonction("responsable économat") or user.hasFonction("responsable économat adjoint")'
+        description: "Les responsables de l'économat"
+    mat@sauvabelin.ch:
+        rule: 'user.hasFonction("chef du matériel") or user.hasFonction("chef du matériel adjoint")'
+        description: "Les responsables du matériel BS"
+    tentes@sauvabelin.ch:
+        rule: 'user.hasFonction("chef tentes") or user.hasFonction("chef tentes adjoint")'
+        description: "Les chefs tentes"
+    publications@sauvabelin.ch:
+        rule: 'user.hasFonction("chef publications")'
+        description: "Les chefs publications"
+
+    #embs
+    embs@sauvabelin.ch:
+        rule: 'user.hasDistinction("Cravate Bleue (EMBS)")'
+        description: "Les membres de l'EMBS"
+
+
+    #meutes
+    montdor@sauvabelin.ch:
+        rule: 'user.hasFonctionInGroup("chef de meute", "mont d''or") or user.hasFonctionInGroup("chef de meute adjoint", "mont d''or")'
+        description: "CM et CMa de Mont-d'or"
+    clairiere@sauvabelin.ch:
+        rule: 'user.hasFonctionInGroup("chef de meute", "clairière") or user.hasFonctionInGroup("chef de meute adjoint", "clairière")'
+        description: "CM et CMa de Clairière"
+    chenaulaz@sauvabelin.ch:
+        rule: 'user.hasFonctionInGroup("chef de meute", "chenaulaz") or user.hasFonctionInGroup("chef de meute adjoint", "chenaulaz")'
+        description: "CM et CMa de Chenaulaz"
+    caberu@sauvabelin.ch:
+        rule: 'user.hasFonctionInGroup("chef de meute", "cabéru") or user.hasFonctionInGroup("chef de meute adjoint", "cabéru")'
+        description: "CM et CMa de cabéru"
+
+    #troupes gars
+    zanfleuron@sauvabelin.ch:
+        rule: 'user.hasFonctionInGroup("chef de troupe", "zanfleuron") or user.hasFonctionInGroup("chef de troupe adjoint", "zanfleuron")'
+        description: "CT et CTa de Zanfleuron"
+    manloud@sauvabelin.ch:
+        rule: 'user.hasFonctionInGroup("chef de troupe", "manloud") or user.hasFonctionInGroup("chef de troupe adjoint", "manloud")'
+        description: "CT et CTa de Manloud"
+    neuvaz@sauvabelin.ch:
+        rule: 'user.hasFonctionInGroup("chef de troupe", "la neuvaz") or user.hasFonctionInGroup("chef de troupe adjoint", "la neuvaz")'
+        description: "CT et CTa de la glorieuse Neuvaz"
+    chandelard@sauvabelin.ch:
+        rule: 'user.hasFonctionInGroup("chef de troupe", "chandelard") or user.hasFonctionInGroup("chef de troupe adjoint", "chandelard")'
+        description: "CT et CTa de Chandelard"
+    berisal@sauvabelin.ch:
+        rule: 'user.hasFonctionInGroup("chef de troupe", "berisal") or user.hasFonctionInGroup("chef de troupe adjoint", "berisal")'
+        description: "CT et CTa de Bièrisal"
+    montfort@sauvabelin.ch:
+        rule: 'user.hasFonctionInGroup("chef de troupe", "montfort") or user.hasFonctionInGroup("chef de troupe adjoint", "montfort")'
+        description: "CT et CTa de Montfort"
+    lovegno@sauvabelin.ch:
+        rule: 'user.hasFonctionInGroup("chef de troupe", "lovégno") or user.hasFonctionInGroup("chef de troupe adjoint", "lovégno")'
+        description: "CT et CTa de Lovégno"
+
+    #troupes filles
+    solalex@sauvabelin.ch:
+        rule: 'user.hasFonctionInGroup("chef de troupe", "solalex") or user.hasFonctionInGroup("chef de troupe adjoint", "solalex")'
+        description: "CT et CTa de Solalex"
+    grammont@sauvabelin.ch:
+        rule: 'user.hasFonctionInGroup("chef de troupe", "grammont") or user.hasFonctionInGroup("chef de troupe adjoint", "grammont")'
+        description: "CT et CTa de Grammont"
+    armina@sauvabelin.ch:
+         rule: 'user.hasFonctionInGroup("chef de troupe", "armina") or user.hasFonctionInGroup("chef de troupe adjoint", "armina")'
+         description: "CT et CTa d'Armina"
+    santis@sauvabelin.ch:
+        rule: 'user.hasFonctionInGroup("chef de troupe", "säntis") or user.hasFonctionInGroup("chef de troupe adjoint", "säntis")'
+        description: "CT et CTa de Säntis"
+
+    #troupes rouges
+    rovereaz@sauvabelin.ch:
+        rule: 'user.hasFonctionInGroup("chef de troupe", "rovéréaz") or user.hasFonctionInGroup("chef de troupe adjoint", "rovéréaz")'
+        description: "CT et CTa de Rovéréaz"
+    orzival@sauvabelin.ch:
+        rule: 'user.hasFonctionInGroup("chef de troupe", "orzival") or user.hasFonctionInGroup("chef de troupe adjoint", "orzival")'
+        description: "CT et CTa d'Orzival"
+    tsalion@sauvabelin.ch:
+        rule: 'user.hasFonctionInGroup("chef de troupe", "tsalion") or user.hasFonctionInGroup("chef de troupe adjoint", "tsalion")'
+        description: "CT et CTa de Tsalion"
+    sesal@sauvabelin.ch:
+        rule: 'user.hasFonctionInGroup("chef de troupe", "sésal") or user.hasFonctionInGroup("chef de troupe adjoint", "sésal")'
+        description: "CT et CTa de Sésal"
+
+    #gris
+    clan@sauvabelin.ch:
+        rule: 'user.isInGroup("le clan")'
+        description: "Tous les membres du clan"
+    gamaiun@sauvabelin.ch:
+        rule: 'user.isInGroup("gamaiun")'
+        description: "Toutes les membres de Gamaiun"
+    ccs@sauvabelin.ch:
+        rule: 'user.hasFonction("chef de clan")'
+        description: "Les chefs de clan"
+
+    #smt
+    someo@sauvabelin.ch:
+        rule: 'user.hasFonctionInGroup("chef de troupe", "someo") or user.hasFonctionInGroup("chef de troupe adjoint", "someo")'
+        description: "CT et CTa de Someo"
+
+mailing_lists_redirect:
+    edc@sauvabelin.ch:
+        to_addresses: [cdt@sauvabelin.ch, qm@sauvabelin.ch, com@sauvabelin.ch, coach@sauvabelin.ch, formation@sauvabelin.ch, sg@sauvabelin.ch, cbs@sauvabelin.ch]
+        description: "Tous les membres de l'EDC"
+    cbs@sauvabelin.ch:
+        to_addresses: [louvettes@sauvabelin.ch, louveteaux@sauvabelin.ch, eclaireuses@sauvabelin.ch, eclaireurs@sauvabelin.ch, rouges@sauvabelin.ch]
+        description: "Tous les chefs de branche"
+    location@sauvabelin.ch:
+        to_addresses: [apmbs@sauvabelin.ch]
+        description: "Pour louer une cabane"
+
+    cts@sauvabelin.ch:
+        to_addresses: [cts_rouges@sauvabelin.ch, cts_2e@sauvabelin.ch, smt@sauvabelin.ch]
+        description: "Tous les CTs gars, filles, rouges et SMT"
+    cms@sauvabelin.ch:
+        to_addresses: [cms_louvettes@sauvabelin.ch, cms_louveteaux@sauvabelin.ch]
+        description: "Les CMs"
+    cms_louvettes@sauvabelin.ch:
+        to_addresses: [chenaulaz@sauvabelin.ch, caberu@sauvabelin.ch, louvettes@sauvabelin.ch]
+        description: "Les CMs louvettes"
+    cms_louveteaux@sauvabelin.ch:
+        to_addresses: [montdor@sauvabelin.ch, clairiere@sauvabelin.ch, louveteaux@sauvabelin.ch]
+        description: "Les CMs louveteaux"
+
+    cts_2e@sauvabelin.ch:
+        to_addresses: [cts_filles@sauvabelin.ch, cts_gars@sauvabelin.ch]
+        description: "Les CTs 2ème branche filles et gars"
+    cts_filles@sauvabelin.ch:
+        to_addresses: [solalex@sauvabelin.ch, grammont@sauvabelin.ch, armina@sauvabelin.ch, santis@sauvabelin.ch, eclaireuses@sauvabelin.ch]
+        description: "Les CTs 2ème branche filles"
+    cts_gars@sauvabelin.ch:
+        to_addresses: [zanfleuron@sauvabelin.ch, manloud@sauvabelin.ch, neuvaz@sauvabelin.ch, chandelard@sauvabelin.ch, berisal@sauvabelin.ch, montfort@sauvabelin.ch, lovegno@sauvabelin.ch, eclaireurs@sauvabelin.ch]
+        description: "Les CTs 2ème branche gars"
+
+    cts_rouges@sauvabelin.ch:
+        to_addresses: [rovereaz@sauvabelin.ch, orzival@sauvabelin.ch, tsalion@sauvabelin.ch, sesal@sauvabelin.ch, rouge@sauvabelin.ch]
+        description: "Les CTs des rouges"
+
+    clans@sauvabelin.ch:
+        to_addresses: [clan@sauvabelin.ch, gamaiun@sauvabelin.ch]
+        description: "Tous les membres des clans"
+    smt@sauvabelin.ch:
+        to_addresses: [someo@sauvabelin.ch]
+        description: "Responsable des SMTs"
+    it@sauvabelin.ch:
+        to_addresses: [com@sauvabelin.ch]
+        description: "Responsable informatique"

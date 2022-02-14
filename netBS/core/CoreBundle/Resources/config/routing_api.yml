@@ -1,0 +1,4 @@
+net_bs_api_secure:
+    resource: "@NetBSSecureBundle/ApiController/"
+    type:     annotation
+    prefix:   /

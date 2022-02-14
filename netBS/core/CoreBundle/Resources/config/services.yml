@@ -1,0 +1,153 @@
+imports:
+    - { resource: "voter.yml" }
+    - { resource: "block.yml" }
+    - { resource: "form.yml" }
+    - { resource: "list.yml" }
+    - { resource: "export.yml" }
+
+
+services:
+
+    _defaults:
+        autowire: true
+        autoconfigure: true
+
+    NetBS\CoreBundle\Controller\:
+        resource: '../../Controller'
+        tags: ['controller.service_arguments']
+
+    NetBS\CoreBundle\Command\:
+        resource: '../../Command'
+
+    NetBS\CoreBundle\DataFixtures\:
+        resource: '../../DataFixtures'
+        tags: ['doctrine.fixture.orm']
+
+    NetBS\CoreBundle\Service\FormTypesRegistrer: ~
+
+    NetBS\CoreBundle\Validator\Constraints\UserValidator:
+        tags:
+            - { name: validator.constraint_validator }
+
+    NetBS\CoreBundle\Serializer\NewsNormalizer:
+        tags:
+            - { name: serializer.normalizer }
+
+    NetBS\CoreBundle\Service\UserLogger: ~
+
+    NetBS\CoreBundle\Service\QueryMaker: ~
+
+    NetBS\CoreBundle\Listener\PostLoadDynamicListListener:
+        tags:
+            - { name: doctrine.event_listener, event: postLoad }
+
+    NetBS\CoreBundle\Service\Notifier: ~
+
+    NetBS\CoreBundle\Service\ParameterManager: ~
+
+    NetBS\CoreBundle\Service\History: ~
+
+    NetBS\CoreBundle\Service\LoggerManager: ~
+
+    NetBS\CoreBundle\Service\PostInstallScriptManager: ~
+
+    NetBS\CoreBundle\Service\ListActionsManager: ~
+
+    NetBS\CoreBundle\Select2\Select2ProviderManager: ~
+
+
+    NetBS\CoreBundle\Listener\NetbsToolbarListener:
+        tags:
+            - { name: kernel.event_listener, event: netbs.list_model.renderer.toolbar, method: extend }
+
+    NetBS\CoreBundle\Listener\HistoryListener:
+        tags:
+            - { name: kernel.event_listener, event: kernel.request }
+
+    NetBS\CoreBundle\Service\HelperManager: ~
+
+    NetBS\CoreBundle\Service\AutomaticListsManager: ~
+
+    NetBS\CoreBundle\Service\ListBridgeManager: ~
+
+    NetBS\CoreBundle\Service\LoaderManager: ~
+
+    NetBS\CoreBundle\Service\ExporterManager: ~
+
+    NetBS\CoreBundle\Service\PreviewerManager: ~
+
+    NetBS\CoreBundle\Listener\MainMenuListener:
+        tags:
+            - { name: kernel.event_listener, event: netbs.menu.extend, method: onMenuConfigure, priority: 100 }
+
+    NetBS\CoreBundle\Service\DynamicListManager: ~
+
+    NetBS\CoreBundle\Service\MassUpdaterManager: ~
+
+    NetBS\CoreBundle\Service\DeleterManager: ~
+
+    NetBS\CoreBundle\Form\DynamicListType:
+        tags:
+            - { name: form.type }
+
+    NetBS\CoreBundle\Twig\Extension\AssetsExtension:
+        tags:
+            - { name: twig.extension }
+
+    NetBS\CoreBundle\Twig\Extension\HelperExtension:
+        tags:
+            - { name: twig.extension }
+
+    NetBS\CoreBundle\Twig\Extension\UtilExtension:
+        tags:
+            - { name: twig.extension }
+
+    NetBS\CoreBundle\Twig\Extension\XEditableExtension:
+        tags:
+            - { name: twig.extension }
+
+    NetBS\CoreBundle\Twig\Extension\OutputExtension:
+        tags:
+            - { name: twig.extension }
+
+    NetBS\CoreBundle\Twig\Extension\ParamExtension:
+        tags:
+            - { name: twig.extension }
+
+    NetBS\CoreBundle\Searcher\SearcherManager: ~
+
+    NetBS\CoreBundle\Searcher\EqualBinder:
+        tags:
+            - { name: netbs.searcher.binder }
+
+    NetBS\CoreBundle\Searcher\DaterangeBinder:
+        tags:
+            - { name: netbs.searcher.binder }
+
+    NetBS\CoreBundle\Searcher\NumberrangeBinder:
+        tags:
+            - { name: netbs.searcher.binder }
+
+    NetBS\CoreBundle\Searcher\Select2Binder:
+        tags:
+            - { name: netbs.searcher.binder }
+
+    NetBS\CoreBundle\Subscriber\DoctrineMapperSubscriber:
+        tags:
+            - { name: doctrine.event_subscriber }
+
+    NetBS\CoreBundle\Subscriber\DoctrineUserConstraintSubscriber:
+        tags:
+            - { name: doctrine.event_subscriber }
+
+    NetBS\CoreBundle\Subscriber\DoctrineLoggerSubscriber:
+        tags:
+            - { name: doctrine.event_subscriber }
+
+    NetBS\CoreBundle\Listener\DashboardListener:
+        tags:
+            - { name: kernel.event_listener, event: netbs.block.pre_render_layout, method: preRender, priority: 1000 }
+
+    NetBS\CoreBundle\Profiler\NetBSCollector:
+        tags:
+            - { name: data_collector, template: '@NetBSCore/Profiler/layout.html.twig', id: 'netbs.core.netbs_collector' }

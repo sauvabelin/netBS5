@@ -1,0 +1,116 @@
+
+{{ registerCss(asset('bundles/netbscore/lib/datatables/datatables.min.css')) }}
+{{ registerCss(asset('bundles/netbscore/css/netbs.datatables.css')) }}
+
+{{ registerJs(asset('bundles/netbscore/lib/moment/moment.min.js')) }}
+{{ registerJs(asset('bundles/netbscore/lib/datatables/datatables.min.js')) }}
+{{ registerJs(asset('bundles/netbscore/lib/datatables/datatables-moment.js')) }}
+{{ registerJs(asset('bundles/netbscore/js/netbsTable.js')) }}
+
+{% set mainCheckboxId           = tableId ~ '_main_cb' %}
+{% set checkboxClass            = tableId ~ '_cb' %}
+{% set updateCountFunction      = tableId ~ '_update_function' %}
+{% set retrieveSelectedFunction = tableId ~ 'retrieve_selected_function' %}
+{% set buildMassParamsFunction  = tableId ~ 'build_mass_params_function' %}
+{% set updateCountClass         = tableId ~ '_count_class' %}
+{% set itemClass                = table.model.managedItemsClass %}
+
+<div class="netbs-renderer" style="border:1px solid #eee">
+    <table id="{{ tableId }}" class="table table-hover dataTable table-responsive-md table-striped table-fw-widget" style="margin:0 !important;">
+        <thead>
+        <tr>
+            <th data-orderDataType="checkbox" style="width:30px;">
+                <div class="custom-control custom-checkbox">
+                    <input id="{{ mainCheckboxId }}" class="custom-control-input" type="checkbox">
+                    <label class="custom-control-label" for="{{ mainCheckboxId }}"></label>
+                </div>
+            </th>
+
+            {% for header in table.headers %}
+                <th>{{ header }}</th>
+            {% endfor %}
+        </tr>
+        </thead>
+
+        <tbody>
+        {% for item in table.items %}
+
+            {% set row = table.data[loop.index0] %}
+            <tr data-id="{{ loader_id(item, table.model.managedItemsClass) }}">
+                <td>
+                    <div class="custom-control custom-checkbox">
+                        <input id="{{ tableId }}_{{ loop.index }}" class="{{ checkboxClass }} custom-control-input" type="checkbox">
+                        <label class="custom-control-label" for="{{ tableId }}_{{ loop.index }}"></label>
+                    </div>
+                </td>
+                {% for value in row %}
+                    <td>{{ value|raw }}</td>
+                {% endfor %}
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+
+    {% if toolbar.items|length > 0 %}
+    <div class="netbs-toolbar dropup">
+
+        <div class="row">
+
+            <div class="col-md-6">
+                {% for item in toolbar.items('left') %}
+                    {{ item.render()|raw }}
+                {% endfor %}
+                {#
+                Nature des éléments : <b>{{ table.model.containedItemsName }}</b>
+                #}
+            </div>
+
+            <div class="col-md-6">
+                {% for item in toolbar.items('right') %}
+                    {{ item.render()|raw }}
+                {% endfor %}
+            </div>
+
+        </div>
+    </div>
+    {% endif %}
+
+</div>
+
+{% set disableSortColumns       = [] %}
+{% for column in table.configuration.columns %}
+    {% if not column.params.sortable %}
+        {% set disableSortColumns = disableSortColumns|merge([loop.index]) %}
+    {% endif %}
+{% endfor %}
+
+{% set tableJs %}
+
+    <script type="text/javascript">
+
+        $.fn.dataTable.moment( '{{ param('format', 'js_moment_date') }}' );
+
+        var {{ tableId }};
+
+        $(document).ready(function() {
+
+            var dtbl_{{ tableId }} = $('#' + '{{ tableId }}').DataTable({
+                columns: [
+                    {orderable: false},
+                    {% for column in table.configuration.columns %}
+                    {orderable: {% if loop.index in disableSortColumns %}false{% else %}true{% endif %} }{% if not loop.last %},{% endif %}
+                    {% endfor %}
+                ]
+            });
+
+            {{ tableId }} = new netBSTable(
+                '{{ tableId }}',
+                dtbl_{{ tableId }},
+                '{{ mainCheckboxId }}',
+                '{{ table.model.alias }}',
+                '{{ updateCountClass }}');
+        });
+    </script>
+{% endset %}
+
+{{ registerScript(tableJs) }}

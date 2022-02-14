@@ -1,0 +1,47 @@
+{% extends '@NetBSCore/pdf/pdf.layout.twig' %}
+
+{% block style %}
+<style>
+    table.table {
+
+        font-size:{{ config.fontSize }}px;
+    }
+</style>
+{% endblock %}
+
+{% block body %}
+
+    {% if config.nom %}
+        <h3>{{ config.nom }}</h3>
+    {% endif %}
+<table class="table">
+    <thead>
+    <tr>
+        <th style="width:15%">Nom</th>
+        <th style="width:15%">Prénom</th>
+        <th style="width:10%">Naissance</th>
+        <th>Rue</th>
+        <th>Npa</th>
+        <th>Localité</th>
+        <th>Téléphone</th>
+    </tr>
+    </thead>
+    <tbody>
+    {% for item in items %}
+
+        {% set adresse = item.sendableAdresse %}
+        {% set telephone = item.sendableTelephone %}
+
+        <tr>
+            <td>{% if item.famille %}{{ item.famille.nom }}{% endif %}</td>
+            <td>{{ item.prenom }}</td>
+            <td>{{ item.naissance|date('d.m.Y') }}</td>
+            <td>{% if adresse %}{{ adresse.rue }}{% endif %}</td>
+            <td>{% if adresse %}{{ adresse.npa }}{% endif %}</td>
+            <td>{% if adresse %}{{ adresse.localite }}{% endif %}</td>
+            <td>{% if telephone %}{{ telephone.telephone }}{% endif %}</td>
+        </tr>
+    {% endfor %}
+    </tbody>
+</table>
+{% endblock %}

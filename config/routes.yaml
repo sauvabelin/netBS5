@@ -1,0 +1,20 @@
+
+
+netbs:
+  resource: '@NetBSCoreBundle/Resources/config/routing.yml'
+  prefix: /netBS
+
+netbs_api:
+  resource: "@NetBSCoreBundle/Resources/config/routing_api.yml"
+  prefix: /api/v1/netBS
+
+facturation:
+  resource: '@OvescoFacturationBundle/Resources/config/routing.yml'
+  prefix: /netBS/facturation
+
+home:
+  path: /
+  controller: Symfony\Bundle\FrameworkBundle\Controller\RedirectController::urlRedirectAction
+  defaults:
+    path: /netBS
+    permanent: true

@@ -1,0 +1,50 @@
+
+{% set _main_content %}
+    {% block body %}{% endblock %}
+{% endset %}
+
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <title>{{ param('app', 'name') }} {% if title is defined and title is not empty %}| {{ title }}{% endif %}</title>
+
+    <meta charset="utf-8">
+    <meta name="author" content="{{ param('developer', 'name') }}">
+    <meta name="robots" content="noindex, nofollow">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+
+    <link href="https://fonts.googleapis.com/css?family=Roboto:300,400,700" rel="stylesheet">
+    <script src="https://kit.fontawesome.com/0055db7061.js" crossorigin="anonymous"></script>
+
+    <!-- dumpCss -->
+    {{ dumpCss() }}
+    <!-- /dumpCss -->
+
+    <link rel="stylesheet" type="text/css" href="{{ asset('bundles/netbscore/dist/app.css') }}">
+
+    <!-- dumpStyle -->
+    {{ dumpStyle() }}
+    <!-- /dumpStyle -->
+</head>
+<body class="{% block bodyClass %}{% endblock %}">
+
+{{ _main_content }}
+
+<!-- dumpHtml -->
+{{ dumpHtml() }}
+<!-- /dumpHtml -->
+<script src="{{ asset('bundles/netbscore/lib/jquery/jquery.min.js') }}" type="text/javascript"></script>
+<script src="{{ asset('bundles/netbscore/lib/bootstrap/js/bootstrap.bundle.min.js') }}" type="text/javascript"></script>
+
+<script src="{{ asset('bundles/netbscore/dist/app.js') }}"></script>
+
+<!-- dumpJs -->
+{{ dumpJs() }}
+<!-- /dumpJs -->
+
+<!-- dumpScript -->
+{{ dumpScript() }}
+<!-- /dumpScript -->
+
+</body>
+</html>

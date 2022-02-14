@@ -1,0 +1,21 @@
+
+<div class="card {% if borderColor %} border-{{ borderColor }}{% endif %}{% if table %} card-table{% endif %}{% if backgroundColor %} bg-{{ backgroundColor }}{% endif %}">
+
+    {% set heading %}
+    <h5 class="card-title">{{ title }}</h5>
+    {% if subtitle %}<h6 class="card-subtitle">{{ subtitle }}</h6>{% endif %}
+    {% endset %}
+
+    {% if divider %}
+    <div class="card-header">
+        {{ heading }}
+    </div>
+    {% endif %}
+
+    <div class="card-body">
+        {% if not divider %}
+        {{ heading }}
+        {% endif %}
+        {{ body|raw }}
+    </div>
+</div>

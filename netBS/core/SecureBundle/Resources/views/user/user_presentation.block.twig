@@ -1,0 +1,7 @@
+{% form_theme userForm '@NetBSCore/form/xeditable.theme.twig' %}
+
+<div class="form-horizontal">
+    {{ fake_row("Nom d'utilisateur", user.username) }}
+    {{ form_row(userForm.email) }}
+    {{ fake_row("Email utilisé", user.sendableEmail) }}
+</div>

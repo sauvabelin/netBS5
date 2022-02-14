@@ -1,0 +1,4 @@
+net_bs_fichier:
+  entities:
+    membre_class: App\Entity\BSMembre
+    groupe_class: App\Entity\BSGroupe

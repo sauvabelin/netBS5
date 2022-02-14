@@ -1,0 +1,47 @@
+{% set _modal %}
+
+    {% set title %}{% block title %}{% endblock %}{% endset %}
+
+    <div class="modal-dialog {% block widthClass %}custom-width{% endblock %}" {% block modalAttrs %}{% endblock %}>
+        <div class="modal-content">
+            {% if title %}
+                <div class="modal-header">
+                    <h5 class="modal-title">{{ title }}</h5>
+                    <button type="button" data-dismiss="modal" aria-hidden="true" class="close"><span class="fas fa-times"></span></button>
+                </div>
+            {% endif %}
+
+            <div class="modal-body" {% block bodyAttr %}{% endblock %}>
+                {% block content %}{% endblock %}
+            </div>
+
+            <div class="modal-footer">
+                {% block footer %}
+                    <button type="button" data-dismiss="modal" class="btn btn-secondary">Fermer</button>
+                    <button type="button" data-modal-validate id="validate-modal-btn" class="btn btn-primary">Valider</button>
+                {% endblock %}
+            </div>
+        </div>
+    </div>
+{% endset %}
+
+<!doctype HTML>
+
+{{ dumpStyle() }}
+
+{{ dumpCss() }}
+
+{{ dumpJs() }}
+
+{{ _modal }}
+
+<script type="text/javascript">
+    $('[data-type="select2"]').css('width', '100%');
+    $('[data-type="ajax-select2"]').css('width', '100%');
+
+    $('.modal-dialog form').submit(function(e) {
+        e.preventDefault();
+        $('#validate-modal-btn').trigger('click');
+    });
+</script>
+{{ dumpScript() }}

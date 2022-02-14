@@ -1,0 +1,7 @@
+{% form_theme form '@NetBSCore/form/xeditable.theme.twig' %}
+
+<form class="form-horizontal">
+    {% for field in form %}
+        {{ form_row(field) }}
+    {% endfor %}
+</form>

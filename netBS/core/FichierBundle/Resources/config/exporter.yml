@@ -1,0 +1,17 @@
+services:
+
+    _defaults:
+        autowire: true
+        autoconfigure: true
+
+    NetBS\FichierBundle\Exporter\CSVMembre:
+        tags:
+            - { name: netbs.exporter }
+
+    NetBS\FichierBundle\Exporter\PDFEtiquettesV2:
+        tags:
+            - { name: netbs.exporter }
+
+    NetBS\FichierBundle\Exporter\CSVRega:
+        tags:
+            - { name: netbs.exporter }

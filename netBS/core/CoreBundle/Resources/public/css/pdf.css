@@ -1,0 +1,11 @@
+
+table.table {
+
+    width:100%;
+    font-size:11px;
+}
+
+table.table th {
+
+    text-align:left;
+}

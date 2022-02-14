@@ -1,0 +1,32 @@
+
+{% if form.telephones|length > 0 %}
+    <table class="table table-condensed table-bordered">
+        <thead>
+        <tr>
+            <th>Numéro</th>
+            <th>Prioritaire</th>
+            <th>Remarques</th>
+            <th></th>
+        </tr>
+        </thead>
+        <tbody>
+        {% for telephone in form.telephones %}
+            <tr>
+                <td>{{ form_widget(telephone.telephone) }}</td>
+                <td>{{ form_widget(telephone.expediable) }}</td>
+                <td>{{ form_widget(telephone.remarques) }}</td>
+                <td>
+                    <a onclick="return confirm('Etes-vous sûr de supprimer ce numéro ?');"
+                       class="btn btn-danger btn-xs"
+                       href="{{ path('netbs.fichier.telephone.delete', {ownerId: item.id, ownerType: get_class(item)|toBase64, telephoneId: telephone.vars.data.id}) }}"><i class="fas fa-times fa-sm"></i></a>
+                </td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+{% else %}
+    <p class="text-muted">Aucune adresse e-mail enregistrée</p>
+{% endif %}
+
+<button class="btn btn-space btn-primary"
+        data-modal data-modal-url="{{ path('netbs.fichier.telephone.modal_creation', {ownerId: item.id, ownerType: get_class(item)|toBase64}) }}">Nouveau numéro</button>

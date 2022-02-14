@@ -1,0 +1,37 @@
+<table class="table table-striped table-hover {{ tableClass }}" id="mass-items-table-{{ _updater_id }}" style="width:auto;">
+    <thead>
+        <tr>
+            {% if showToString %}
+            <th>Elément</th>
+            {% endif %}
+            {% for header in itemsForm %}
+                <th>{{ header.vars.label }}</th>
+            {% endfor %}
+            {% if allowDelete %}
+                <th></th> {# les options #}
+            {% endif %}
+        </tr>
+    </thead>
+
+    <tbody>
+    {% for item in items %}
+        {% set width = 100 / ((item.children|length) + (showToString ? 1 : 0)) %}
+        <tr>
+            {% if showToString %}
+                <td style="width:{{ width }}%">{{ item.vars.value }}</td>
+            {% endif %}
+            {% for field in item.children %}
+                <td style="width:{{ width }}%">
+                    {{ form_widget(field, {attr: {style: 'width:100%'}}) }}
+                    {{ form_errors(field) }}
+                </td>
+            {% endfor %}
+            {% if allowDelete %}
+                <td>
+                    <button class="btn btn-rounded btn-space btn-secondary" type="button" data-delete-element-{{ _updater_id }}><i class="fas fa-times fa-sm"></i></button>
+                </td>
+            {% endif %}
+        </tr>
+    {% endfor %}
+    </tbody>
+</table>

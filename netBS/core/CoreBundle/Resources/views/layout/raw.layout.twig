@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <title>{% if title is defined and title is not empty %}{{ title }}{% else %}{{ param('app', 'name') }}{% endif %}</title>
+
+    <meta charset="utf-8">
+    <meta name="author" content="{{ param('developer', 'name') }}">
+    <meta name="robots" content="noindex, nofollow">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+
+    {% block stylesheets %}{% endblock %}
+</head>
+<body>
+    {% block body %}{% endblock %}
+</body>
+</html>

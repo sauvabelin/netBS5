@@ -1,0 +1,55 @@
+{% extends '@NetBSCore/layout/backend.layout.twig' %}
+
+{% set title = "Ajouter un représentant légal" %}
+
+{% block main %}
+
+    <div class="container">
+
+        {% include '@NetBSCore/includes/header.include.twig' %}
+
+            <div class="card">
+                <div class="card-body">
+                    {{ form_start(form) }}
+
+                        {{ form_errors(form) }}
+                        <div class="row">
+                            <div class="col-md-6">{{ form_row(form.prenom) }}</div>
+                            <div class="col-md-6">{{ form_row(form.nom, {label: "Nom (si différent de " ~ famille.nom ~ ")"}) }}</div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-3">{{ form_row(form.statut) }}</div>
+                            <div class="col-md-3">{{ form_row(form.sexe) }}</div>
+                            <div class="col-md-6">{{ form_row(form.profession) }}</div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-lg-12">
+                                <h4>Informations de contact</h4>
+                                <h6>Ne saisir ces informations que si elles sont propres au représentant légal</h6>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-lg-12">
+                                {% include '@NetBSFichier/partial/contact_form_accordion.partial.twig' %}
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-lg-12">
+                                {{ form_row(form.remarques) }}
+                            </div>
+                        </div>
+
+                        <div style="display:none;">{{ form_rest(form) }}</div>
+
+                        <input type="submit" class="btn btn-primary" value="Ajouter le représentant légal" />
+                    {{ form_end(form) }}
+                </div>
+            </div>
+
+    </div>
+
+{% endblock %}

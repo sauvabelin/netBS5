@@ -1,0 +1,73 @@
+{% set baseSelect2Script %}
+
+<script type="text/javascript">
+
+    var Select2Triggerer    = {
+
+        getSelect2Parent: function() {
+
+            var $parent = $(document.body);
+            var $modals = $('.netbs-modal');
+            if($modals.length) {
+                $parent = $modals.first();
+            }
+
+            return $parent;
+        },
+
+        triggerSelect2: function($item) {
+
+            var parent      = Select2Triggerer.getSelect2Parent();
+
+            $item.select2({
+                dropdownParent: parent
+            });
+        },
+
+        triggerAjaxSelect2: function($items) {
+
+            var parent      = Select2Triggerer.getSelect2Parent();
+            var url         = '{{ path('netbs.core.select2.results') }}';
+
+            $items.each(function(i, item) {
+
+                var $item       = $(item);
+                var ajaxClass   = $item.attr("data-ajax-class");
+                var nullOption  = $item.attr("data-null-option");
+
+                $item.select2({
+
+                    dropdownParent: parent,
+
+                    ajax: {
+                        url: url,
+                        dataType: 'json',
+                        delay: 250,
+                        data: function (params) {
+
+                            return {
+                                query:      params.term,
+                                nullOption: nullOption,
+                                ajaxClass:  ajaxClass
+                            };
+                        }
+                    }
+                });
+
+
+            });
+        }
+    };
+
+    $(document).ready(function() {
+
+        Select2Triggerer.triggerSelect2($('[data-type="select2"]'));
+        Select2Triggerer.triggerAjaxSelect2($('[data-type="ajax-select2"]'));
+    });
+
+
+</script>
+
+{% endset %}
+
+{{ registerScript(baseSelect2Script) }}

@@ -1,0 +1,9 @@
+{% extends '@NetBSCore/layout/modal.layout.twig' %}
+
+{% block title %}Nouvelle adresse pour {{ item }}{% endblock %}
+
+{% block content %}
+    {{ form_start(form) }}
+    {% include '@NetBSFichier/adresse/adresse_setup.form.twig' %}
+    {{ form_end(form) }}
+{% endblock %}

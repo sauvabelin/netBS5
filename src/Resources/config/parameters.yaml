@@ -1,0 +1,36 @@
+bs:
+    fonction.commandant_id:             -1
+    fonction.secretaire_general_id:     -1
+    distinction.cravate_bleue_id:       -1
+
+    fonction.louveteau_id:              -1
+    fonction.eclaireur_id:              -1
+    fonction.cp_id:                     -1
+    fonction.cl_id:                     -1
+    fonction.rouge_id:                  -1
+
+    fonction.weight.user_account:       100
+    fonction.weight.mail_redirect:      500
+    fonction.weight.mailbox:            1000
+
+    groupe.adabs_id:                    -1
+    groupe.branche_eclaireurs_id:       -1
+    groupe.branche_eclaireuses_id:      -1
+    groupe.branche_louveteaux_id:       -1
+    groupe.branche_louvettes_id:        -1
+    groupe.branche_smt_id:              -1
+
+    groupe_categorie.unite_id:          -1
+    groupe_categorie.sous_unite_id:     -1
+
+    groupe_type.troupe_id:              -1
+    groupe_type.meute_id:               -1
+    groupe_type.clan_id:                -1
+    groupe_type.association_id:         -1
+    groupe_type.edc_id:                 -1
+    groupe_type.equipe_interne_id:      -1
+    groupe_type.branche_id:             -1
+
+    facturation.coti_lvtx:              65
+    facturation.coti_eclai:             75
+    facturation.coti_adabs:             75

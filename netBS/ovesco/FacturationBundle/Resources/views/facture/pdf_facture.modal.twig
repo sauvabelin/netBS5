@@ -1,0 +1,17 @@
+{% extends '@NetBSCore/layout/modal.layout.twig' %}
+
+{% block widthClass %}modal-lg{% endblock %}
+
+{% block title %}Facture #{{ facture.factureId }}{% endblock %}
+
+{% block content %}
+
+    <div class="alert alert-warning">
+        <h3 class="m-0">Ne pas imprimer</h3>
+        <p class="m-0">
+            N'imprimez pas la facture depuis ici, elle ne sera pas marquée comme imprimée. Faites le depuis l'exportation normale (liste -> exporter -> Factures PDF).
+            Une configuration d'exportation basique a été appliquée (aucun paramètre personnel n'est pris en compte)
+        </p>
+    </div>
+    <iframe style="width:100%;height:600px;" src="{{ path('ovesco.facturation.export_pdf_facture_no_date', {id: facture.id}) }}"></iframe>
+{% endblock %}

@@ -1,0 +1,45 @@
+roles:
+    ROLE_ADMIN:
+        description: "Role administrateur système"
+        poids: 10000000
+        children:
+            ROLE_SG:
+                poids: 8000
+                description: "Role secrétaire général"
+                children:
+                    ROLE_CREATE_EVERYWHERE:
+                        poids: 5000
+                        description: "Permet de créer partout"
+                        children:
+                            ROLE_CREATE:
+                                poids: 100
+                                description: "Création dans les groupes"
+                            ROLE_CREATE_ATTRIBUTION:
+                                poids: 150
+                    ROLE_UPDATE_EVERYWHERE:
+                        poids: 5000
+                        description: "Permet de tout modifier"
+                        children:
+                            ROLE_UPDATE:
+                                poids: 100
+                                description: "Modification dans les groupes"
+                    ROLE_READ_EVERYWHERE:
+                        poids: 5000
+                        description: "Permet de tout voir"
+                        children:
+                            ROLE_READ:
+                                poids: 100
+                                description: "Visibilité partout"
+                    ROLE_DELETE_EVERYWHERE:
+                        poids: 5000
+                        description: "Permet de tout supprimer"
+                        children:
+                            ROLE_DELETE:
+                                poids: 100
+                                description: "Suppression dans les groupes"
+
+
+
+    ROLE_USER:
+        description: "Autorisation d'accès à l'application"
+        poids: 1

@@ -1,0 +1,77 @@
+{% extends '@NetBSCore/layout/backend.layout.twig' %}
+
+{% block wrapperClass %}be-aside{% endblock %}
+
+{% set title = title is defined ? title : 'Opération en masse' %}
+
+{% block main %}
+
+    {% set items        = form.children|first %}
+    {% set allowAdd     = items.vars.allow_add %}
+    {% set allowDelete  = items.vars.allow_delete %}
+    {% set _updater_id  = increment() %}
+    {% set tableClass   = '' %}
+    {% set itemsForm    = (form.children|first).vars.prototype %}
+
+    <div class="d-flex flex-row">
+
+        <aside class="page-aside" style="background:#fcf8e3;">
+
+            <div class="content">
+
+                <div class="aside-head">
+                    <h3>Mise à jour rapide</h3>
+                    <p class="alert alert-warning">
+                        Modifier une valeur dans le formulaire ci-dessous changera les valeurs de <b>tous les éléments</b> du formulaire
+                        ci-contre.
+                    </p>
+                </div>
+
+                {{ form(generic) }}
+
+            </div>
+
+        </aside>
+
+        <div class="p-10" style="background:white;">
+
+            {% if allowAdd %}
+                {% include '@NetBSCore/updater/updater_allow_add.script.twig' %}
+            {% endif %}
+
+            <div class="panel panel-table">
+
+                <div style="padding:20px">
+                    <h3>{{ title }}</h3>
+                </div>
+
+                {{ form_start(form) }}
+
+                {% include '@NetBSCore/updater/updater.partial.twig' %}
+
+                <div class="text-right" style="padding:20px;border-top:1px solid #ccc;">
+                    {#
+                    {% if allowAdd %}
+                        <button class="btn btn-secondary btn-space" type="button" data-mass-add-{{ _updater_id }}>Ajouter une ligne</button>
+                    {% endif %}
+                    #}
+                    <button class="btn btn-primary btn-space">Valider</button>
+                </div>
+
+                <div style="display:none;">
+                    {{ form_rest(form) }}
+                </div>
+                {{ form_end(form) }}
+            </div>
+        </div>
+
+        {% include '@NetBSCore/updater/updater_generic_change.script.twig' %}
+
+        {% if allowDelete %}
+            {% include '@NetBSCore/updater/updater_allow_delete.script.twig' %}
+        {% endif %}
+
+
+    </div>
+
+{% endblock %}

@@ -1,0 +1,11 @@
+{% set well = well is defined ? well : false %}
+
+<form class="form-horizontal {% if well %}well{% endif %}">
+    {{ fake_row('Rue', adresse.rue) }}
+    {{ fake_row('NPA', adresse.npa) }}
+    {{ fake_row('Localité', adresse.localite) }}
+    {% if adresse.pays != "CH" %}{{ fake_row('Pays', adresse.paysFull) }}{% endif %}
+    {% if adresse.remarques %}
+        {{ fake_row('Remarques', adresse.remarques) }}
+    {% endif %}
+</form>

@@ -1,0 +1,286 @@
+categories:
+    - 'brigade'
+    - 'équipe de commandement'
+    - 'branche'
+    - 'unité'
+    - 'sous-unité'
+    - 'association'
+    - 'organisation interne'
+
+types:
+    brigade:
+        cat: brigade
+        effectifs: 0
+    'équipe de commandement':
+        cat: équipe de commandement
+        effectifs: 1
+    'équipe interne':
+        cat: organisation interne
+        effectifs: 1
+    'groupe de travail':
+        cat: organisation interne
+        effectifs: 1
+    branche:
+        cat: branche
+        effectifs: 0
+    clan:
+        cat: unité
+        effectifs: 1
+    troupe:
+        cat: unité
+        effectifs: 1
+    équipe:
+        cat: unité
+        effectifs: 1
+    meute:
+        cat: unité
+        effectifs: 1
+    patrouille:
+        cat: sous-unité
+        effectifs: 1
+    sizaine:
+        cat: sous-unité
+        effectifs: 1
+    association:
+        cat: association
+        effectifs: 1
+    migration:
+        cat: association
+        effectifs: 1
+    conseil des anciens:
+        cat: association
+        effectifs: 1
+
+
+unites:
+
+    migration:
+        model: migration
+    APMBS:
+        model: association
+    ADABS:
+        model: association
+    conseil des anciens:
+        model: conseil des anciens
+
+    Brigade de Sauvabelin:
+        model: brigade
+        children:
+            équipe de commandement:
+                model: équipe de commandement
+
+            administration:
+                model: association
+                children:
+                    team formation:
+                        model: équipe interne
+                    team communication:
+                        model: équipe interne
+            branche louveteaux:
+                model: branche
+                children:
+                    mont-d'or:
+                        model: meute
+                        children:
+                            panthères:
+                                model: sizaine
+                            koalas:
+                                model: sizaine
+                            renards:
+                                model: sizaine
+                            kangourous:
+                                model: sizaine
+                    clairière:
+                        model: meute
+                        children:
+                            ours:
+                                model: sizaine
+                            dauphins:
+                                model: sizaine
+                            chevaux:
+                                model: sizaine
+            branche louvettes:
+                model: branche
+                children:
+                    chenaulaz:
+                        model: meute
+                        children:
+                            panthères:
+                                model: sizaine
+                            chouettes:
+                                model: sizaine
+                            ours:
+                                model: sizaine
+                            éléphants:
+                                model: sizaine
+                    cabéru:
+                        model: meute
+                        children:
+                            opossums:
+                                model: sizaine
+                            koalas:
+                                model: sizaine
+                            wombats:
+                                model: sizaine
+                            quokkas:
+                                model: sizaine
+            branche éclaireurs:
+                model: branche
+                children:
+                    équipe garçons:
+                        model: équipe
+                    zanfleuron:
+                        model: troupe
+                        children:
+                            bouquetins:
+                                model: patrouille
+                            castors:
+                                model: patrouille
+                            lynx:
+                                model: patrouille
+                    manloud:
+                        model: troupe
+                        children:
+                            loups:
+                                model: patrouille
+                            hermines:
+                                model: patrouille
+                            taureaux:
+                                model: patrouille
+                    la neuvaz:
+                        model: troupe
+                        children:
+                            hérons:
+                                model: patrouille
+                            loutres:
+                                model: patrouille
+                            cygognes:
+                                model: patrouille
+                    chandelard:
+                        model: troupe
+
+                        children:
+                            rennes:
+                                model: patrouille
+                            marmottes:
+                                model: patrouille
+                            poussins-coqs:
+                                model: patrouille
+                            cygnes:
+                                model: patrouille
+                    berisal:
+                        model: troupe
+                        children:
+                            panthères:
+                                model: patrouille
+                            faucons:
+                                model: patrouille
+                            cerfs:
+                                model: patrouille
+                    montfort:
+                        model: troupe
+                        children:
+                            jean-bart:
+                                model: patrouille
+                            frégate:
+                                model: patrouille
+                            surcouf:
+                                model: patrouille
+
+                    lovégno:
+                        model: troupe
+                        children:
+                            phénix:
+                                model: patrouille
+
+                            cobras:
+                                model: patrouille
+
+                            tigres:
+                                model: patrouille
+
+            branche éclaireuses:
+                model: branche
+                children:
+                    équipe filles:
+                        model: équipe
+                    solalex:
+                        model: troupe
+                        children:
+                            hirondelles:
+                                model: patrouille
+
+                            ratons-laveurs:
+                                model: patrouille
+
+                            goélands:
+                                model: patrouille
+
+                            gazelles:
+                                model: patrouille
+
+                    grammont:
+                        model: troupe
+                        children:
+                            licornes:
+                                model: patrouille
+
+                            kangourous:
+                                model: patrouille
+
+                            chevreuils:
+                                model: patrouille
+
+                    armina:
+                        model: troupe
+                        children:
+                            impalas:
+                                model: patrouille
+
+                            mangoustes:
+                                model: patrouille
+
+                            coyotes:
+                                model: patrouille
+
+                            caméléons:
+                                model: patrouille
+
+                    säntis:
+                        model: troupe
+                        children:
+                            oryx:
+                                model: patrouille
+
+                            condors:
+                                model: patrouille
+
+                            irbis:
+                                model: patrouille
+
+            troisième branche:
+                model: branche
+                children:
+                    rovéréaz:
+                        model: troupe
+                    orzival:
+                        model: troupe
+                    tsalion:
+                        model: troupe
+                    sésal:
+                        model: troupe
+
+            quatrième branche:
+                model: branche
+                children:
+                    le clan:
+                        model: clan
+
+                    gamaïun:
+                        model: clan
+
+            branche SMT:
+                model: branche
+                children:
+                    someo:
+                        model: troupe

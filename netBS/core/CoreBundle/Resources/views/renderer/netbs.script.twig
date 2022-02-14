@@ -1,0 +1,59 @@
+
+{% set disableSortColumns       = [] %}
+{% for column in table.configuration.columns %}
+    {% if not column.params.sortable %}
+        {% set disableSortColumns = disableSortColumns|merge([loop.index]) %}
+    {% endif %}
+{% endfor %}
+
+<script type="text/javascript">
+
+    $(document).ready(function() {
+
+        var {{ tableId }} = $('#{{ tableId }}').DataTable({
+            info: false,
+            columns: [
+                {orderable: false},
+                {% for column in table.configuration.columns %}
+                {orderable: {% if loop.index in disableSortColumn %}true{% endif %} }{% if not loop.last %},{% endif %}
+                {% endfor %}
+            ]
+        });
+
+
+        function {{ updateCountFunction }}() {
+
+            $('.{{ updateCountClass }}').html({{ retrieveSelectedFunction }}().length);
+        }
+
+        function {{ retrieveSelectedFunction }} () {
+
+            var rows        = {{ tableId }}.rows();
+            var selected    = [];
+            var i           = 0;
+
+            rows.nodes().each(function(row) {
+                if($(row).find('input[type="checkbox"]').is(':checked'))
+                    selected[i++] = row;
+            });
+
+
+            return selected;
+        }
+
+        function {{ buildMassParamsFunction }}() {
+
+            var selected    = {{ retrieveSelectedFunction }}();
+            var ids         = [];
+
+            for(var i = 0; i < selected.length; i++)
+                ids[i] = selected[i].getAttribute("data-id");
+
+            return {
+                selectedIds:    JSON.stringify(ids),
+                modelAlias:    '{{ table.modelAlias }}'
+            };
+        }
+    });
+
+</script>

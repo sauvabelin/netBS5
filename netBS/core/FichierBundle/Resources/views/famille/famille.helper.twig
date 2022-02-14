@@ -1,0 +1,31 @@
+{% extends '@NetBSCore/helper/base.helper.twig' %}
+
+{% block helper %}
+
+    <p><b>Membres</b><br/>
+    {% for membre in famille.membres %}
+        {{ membre.prenom }}{% if not loop.last %}, {% endif %}
+    {% endfor %}
+    </p>
+
+    {% set adresse      = famille.sendableAdresse %}
+    {% set telephone    = famille.sendableTelephone %}
+    {% set email        = famille.sendableEmail %}
+
+    {% if telephone %}
+        <p>{{ telephone.telephone }}</p>
+    {% endif %}
+    {% if email %}
+        <p>{{ email.email }}</p>
+    {% endif %}
+
+    {% if adresse %}
+        <b>Adresse</b>
+        <p>{{ adresse.rue }}</p>
+        <p>{{ adresse.npa }} {{ adresse.localite }}</p>
+    {% else %}
+        <p class="alert alert-danger" style="padding:3px 1em;margin:1em 0 0 0;">Aucune adresse trouvée!</p>
+    {% endif %}
+
+
+{% endblock %}

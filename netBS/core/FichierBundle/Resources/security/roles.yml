@@ -1,0 +1,40 @@
+roles:
+    ROLE_COMMANDANT:
+        description: "Commandant de la brigade"
+        poids: 1000
+        children:
+            ROLE_SG:
+                description: "Secrétaire général"
+                poids: 80000
+                children:
+                    ROLE_CREATE_EVERYWHERE:
+                        description: "Permet de créer des entités partout dans le fichier"
+                        poids: 100
+                        children:
+                            ROLE_CREATE:
+                                description: "Permet de créer des entités dans un groupe"
+                                poids: 50
+
+                    ROLE_READ_EVERYWHERE:
+                        description: "Permet de consulter des entités partout dans le fichier"
+                        poids: 100
+                        children:
+                            ROLE_READ:
+                                description: "Permet de voir les entités d'un groupe"
+                                poids: 50
+
+                    ROLE_UPDATE_EVERYWHERE:
+                        description: "Permet de mettre à jour des entités partout dans le fichier"
+                        poids: 100
+                        children:
+                            ROLE_UPDATE:
+                                description: "Permet de mettre à jour les entités d'un groupe"
+                                poids: 50
+
+                    ROLE_DELETE_EVERYWHERE:
+                        description: "Permet de supprimer des entités partout dans le fichier"
+                        poids: 100
+                        children:
+                            ROLE_DELETE:
+                                description: "Permet de supprimer les entités d'un groupe"
+                                poids: 50

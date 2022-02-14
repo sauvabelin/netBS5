@@ -1,0 +1,21 @@
+services:
+
+    _defaults:
+        autowire: true
+        autoconfigure: true
+
+    NetBS\FichierBundle\Helper\MembreHelper:
+        tags:
+            - { name: netbs.helper }
+
+    NetBS\FichierBundle\Helper\FamilleHelper:
+        tags:
+            - { name: netbs.helper }
+
+    NetBS\FichierBundle\Helper\GroupeHelper:
+        tags:
+            - { name: netbs.helper }
+
+    NetBS\FichierBundle\Helper\GeniteurHelper:
+        tags:
+            - { name: netbs.helper }

@@ -1,0 +1,110 @@
+{% extends '@WebProfiler/Profiler/layout.html.twig' %}
+
+{% block toolbar %}
+    {% if collector.data['renderedListModels']|length > 0 %}
+    {% set icon %}
+        <span class="icon"><img style="opacity:0.65" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAABNElEQVRYR+2XT0oDYQzFf28r3kDvoYKXENviRu8geAxBz+BKbYuXKKj30COIy8hXMvBVhpIUZ2xhshvIn5eXl5mJAMzsDHgA9stzD/YNXEmayQE8AZMeCtclppImDYAZcN4zgLmk0QCgjYFxx6OYev72EUhagurKzMx2A4CZjYCGrnHZWV/ZpoMMSW3x60ewDQCOgGtv807SuzPwmGm9JX5HNLBBl6GQ8BaY2TFw41lvJb35CJZiTFodHxvBNojwf9cwSXHYPayBcMakYxiAmR0Cp55/IenDRXiRrFnc6/hBhGEGDoATp/tV0qePoGxH1ur4GIBshah/WITRhFm/MIDhTWhmf/k/cF99zAYRrmcAmGeVnfRvTsCVn9JnoOuD5DfOleO0oCrn+V6ym03dv4BLSS8//kqCMIBBRvoAAAAASUVORK5CYII=" alt=""/></span>
+
+        <span class="sf-toolbar-value"> {{ collector.data['renderedListModels']|length }}</span>
+        <span class="sf-toolbar-label">rendered</span>
+    {% endset %}
+
+    {% set text %}
+        <div class="sf-toolbar-info-piece">
+            <b>Registered list models</b>
+            <span class="sf-toolbar-status sf-toolbar-status">{{ collector.data['registeredListModels']|length }}</span>
+        </div>
+        <div class="sf-toolbar-info-piece">
+            <b>Registered renderers</b>
+            <span class="sf-toolbar-status sf-toolbar-status">{{ collector.data['registeredRenderers']|length }}</span>
+        </div>
+
+        {% set totalTime = 0 %}
+        {% for rendered in collector.data['renderedListModels'] %}
+            {% set totalTime = totalTime + rendered['time'] %}
+        {% endfor %}
+
+        <div class="sf-toolbar-info-piece">
+            <b>Total rendering time</b>
+            <span class="sf-toolbar-status">{{ totalTime }} ms</span>
+        </div>
+    {% endset %}
+
+    {{ include('@WebProfiler/Profiler/toolbar_item.html.twig', { link: true }) }}
+    {% endif %}
+{% endblock %}
+
+
+{% block menu %}
+    <span class="label {% if collector.data['renderedListModels']|length == 0 %}disabled{% endif %}">
+        <span class="icon"><img style="opacity:0.8" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAABNElEQVRYR+2XT0oDYQzFf28r3kDvoYKXENviRu8geAxBz+BKbYuXKKj30COIy8hXMvBVhpIUZ2xhshvIn5eXl5mJAMzsDHgA9stzD/YNXEmayQE8AZMeCtclppImDYAZcN4zgLmk0QCgjYFxx6OYev72EUhagurKzMx2A4CZjYCGrnHZWV/ZpoMMSW3x60ewDQCOgGtv807SuzPwmGm9JX5HNLBBl6GQ8BaY2TFw41lvJb35CJZiTFodHxvBNojwf9cwSXHYPayBcMakYxiAmR0Cp55/IenDRXiRrFnc6/hBhGEGDoATp/tV0qePoGxH1ur4GIBshah/WITRhFm/MIDhTWhmf/k/cF99zAYRrmcAmGeVnfRvTsCVn9JnoOuD5DfOleO0oCrn+V6ym03dv4BLSS8//kqCMIBBRvoAAAAASUVORK5CYII=" alt=""/></span>
+        <strong>List models</strong>
+    </span>
+{% endblock %}
+
+{% block panel %}
+
+    <h2>Rendered lists</h2>
+    <table>
+        <thead>
+            <tr>
+                <th>List</th>
+                <th>List parameters</th>
+                <th>Rendered with</th>
+                <th>Duration</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for rendered in collector.data['renderedListModels'] %}
+                <tr>
+                    <td>{{ rendered['list']['alias'] }} ({{ rendered['list']['class'] }})</td>
+                    <td>{{ rendered['list']['parameters']|json_encode }}</td>
+                    <td>{{ rendered['renderer'] }}</td>
+                    <td>{{ rendered['time'] }} ms</td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <h2>Registered renderers</h2>
+    <table>
+        <thead>
+            <tr>
+                <th>Name</th>
+                <th>Service id</th>
+                <th>Renderer class</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for id, renderer in collector.data['registeredRenderers'] %}
+                <tr>
+                    <td>{{ renderer.name }}</td>
+                    <td>{{ id }}</td>
+                    <td>{{ renderer.class }}</td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <h2>Registered list models</h2>
+    <table>
+        <thead>
+        <tr>
+            <th>Alias</th>
+            <th>Service id</th>
+            <th>managed items class</th>
+            <th>model class</th>
+        </tr>
+        </thead>
+        <tbody>
+        {% for id, model in collector.data['registeredListModels'] %}
+            <tr>
+                <td>{{ model.alias }}</td>
+                <td>{{ id }}</td>
+                <td>{{ model.managedItemsClass }}</td>
+                <td>{{ model.class }}</td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+{% endblock %}

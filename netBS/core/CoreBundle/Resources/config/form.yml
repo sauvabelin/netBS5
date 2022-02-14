@@ -1,0 +1,37 @@
+services:
+
+    _defaults:
+        autowire: true
+        autoconfigure: true
+
+    NetBS\CoreBundle\Form\FormErrorExtension:
+        tags:
+            - { name: form.type_extension, extended_type: Symfony\Component\Form\Extension\Core\Type\FormType }
+
+    NetBS\CoreBundle\Form\Type\DatepickerType:
+        tags:
+            - { name: form.type }
+
+    NetBS\CoreBundle\Form\Type\SwitchType:
+        tags:
+            - { name: form.type }
+
+    NetBS\CoreBundle\Form\Type\DateMaskType:
+        tags:
+            - { name: form.type }
+
+    NetBS\CoreBundle\Form\Type\QuillType:
+        tags:
+            - { name: form.type }
+
+    NetBS\CoreBundle\Form\Type\TrumbowygType:
+        tags:
+            - { name: form.type }
+
+    NetBS\CoreBundle\Form\Type\Select2DocumentType:
+        tags:
+            - { name: form.type }
+
+    NetBS\CoreBundle\Form\Type\AjaxSelect2DocumentType:
+        tags:
+            - { name: form.type }

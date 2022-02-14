@@ -1,0 +1,5 @@
+{% extends '@NetBSCore/layout/modal.layout.twig' %}
+
+{% block content %}
+    <pre>{{ paiement.getTransactionDetails(true)|raw }}</pre>
+{% endblock %}

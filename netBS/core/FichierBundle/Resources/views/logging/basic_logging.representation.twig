@@ -1,0 +1,23 @@
+{% set nameLabel    = nameLabel is defined ? nameLabel : 'Nom' %}
+{% set nameValue    = nameValue is defined ? nameValue : item %}
+{% set basic        = basic is defined ? basic : [] %}
+{% set datic        = datic is defined ? datic : [] %}
+
+<table class="table table-bordered">
+    <tbody>
+
+        <tr class="active">
+            <td colspan="2"><b>{{ nameLabel }}</b></td>
+        </tr>
+        {% if property is null %}
+        <tr>
+            <td>Action</td>
+            <td style="color:white;background:{% if action == 'delete' %}red{% else %}green{% endif %}">{% if action == 'delete' %}Suppression{% else %}Insertion{% endif %}</td>
+        </tr>
+        {% endif %}
+
+        {% include '@NetBSFichier/logging/basic_iterator.partial.twig' with {properties: basic} %}
+        {% include '@NetBSFichier/logging/date_iterator.partial.twig' with {properties: datic} %}
+
+    </tbody>
+</table>

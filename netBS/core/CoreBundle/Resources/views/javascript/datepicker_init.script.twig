@@ -1,0 +1,28 @@
+{% set datepickerInitScript %}
+    <script type="text/javascript">
+
+        var DatepickerTriggerer = {
+
+            triggerDatepicker: function($item) {
+
+                $item.datetimepicker({
+                    autoclose: !0,
+                    position: 'auto',
+                    componentIcon:".mdi.mdi-calendar",
+                    navIcons: {
+                        rightIcon: "mdi mdi-chevron-right",
+                        leftIcon:  "mdi mdi-chevron-left"
+                    }
+                });
+            }
+        };
+
+        $(document).ready(function(){
+            DatepickerTriggerer.triggerDatepicker($('[data-type=datetimepicker]'));
+        });
+
+
+    </script>
+{% endset %}
+
+{{ registerScript(datepickerInitScript) }}

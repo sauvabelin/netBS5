@@ -1,0 +1,33 @@
+services:
+
+    _defaults:
+        autowire: true
+        autoconfigure: true
+
+    NetBS\ListBundle\Service\ListEngine: ~
+
+    NetBS\ListBundle\Twig\ListExtension:
+        tags:
+            - { name: twig.extension }
+
+    NetBS\ListBundle\Column\SimpleColumn:
+        tags:
+            - { name: netbs.list.column }
+
+    NetBS\ListBundle\Column\ClosureColumn:
+        tags:
+            - { name: netbs.list.column }
+
+    NetBS\ListBundle\Column\DateTimeColumn:
+        tags:
+            - { name: netbs.list.column }
+
+    NetBS\ListBundle\Service\ListManager: ~
+
+    NetBS\ListBundle\Service\RendererManager: ~
+
+    NetBS\ListBundle\Service\ColumnManager: ~
+
+    NetBS\ListBundle\Profiler\ListCollector:
+        tags:
+            - { name: data_collector, template: '@NetBSList/Profiler/layout.html.twig', id: 'netbs.list.collector' }

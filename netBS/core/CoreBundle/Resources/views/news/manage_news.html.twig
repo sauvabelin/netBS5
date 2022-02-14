@@ -1,0 +1,55 @@
+{% extends '@NetBSCore/layout/backend.layout.twig' %}
+
+{% set title = "Gestion des news" %}
+
+{% set addChannelAction %}<button class='btn btn-primary' data-modal data-modal-url='{{ path('netbs.core.news.modal_add_channel') }}'>
+    Ajouter une channel</button>{% endset %}
+
+{% set addNewsAction %}<button class='btn btn-success' data-modal data-modal-url='{{ path('netbs.core.news.modal_edit_news') }}'>
+        Nouvelle news</button>{% endset %}
+
+{% block main %}
+
+    {{ registerJs(asset('bundles/netbscore/js/modal.js')) }}
+
+    <div class="container-fluid">
+        {% include '@NetBSCore/includes/header.include.twig' with {
+            header: title,
+            subHeader: "Gérez les différentes news publiées sur l'application",
+            actions: [
+                addChannelAction,
+                addNewsAction
+            ]
+        } %}
+
+        <div class="row">
+            <div class="col-12 col-sm-8">
+                <div class="card card-table">
+                    <div class="card-header">
+                        <h3 class="card-title">News publiées</h3>
+                        <h5 class="card-subtitle">Toutes les news visibles</h5>
+                    </div>
+
+                    <div class="card-body">
+                        {{ render_list("netbs.core.news", "netbs") }}
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-12 col-sm-4">
+                <div class="card card-table">
+                    <div class="card-header">
+                        <h3 class="card-title">Channels</h3>
+                        <h5 class="card-subtitle">Les différentes channels disponibles</h5>
+                    </div>
+
+                    <div class="card-body">
+                        {{ render_list("netbs.core.news_channels", "basic") }}
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+{% endblock %}

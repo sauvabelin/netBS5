@@ -1,0 +1,15 @@
+{% set _add_id      = increment() %}
+{% set _updater_id  = _add_id %}
+{% set allowAdd     = true %}
+{% set allowDelete  = true %}
+{% set itemsForm    = form.vars.prototype %}
+{% set items        = form %}
+{% set tableClass   = 'table-condensed table-bordered' %}
+
+{% include '@NetBSCore/updater/updater.partial.twig' %}
+{% include '@NetBSCore/updater/updater_allow_add.script.twig' %}
+{% include '@NetBSCore/updater/updater_allow_delete.script.twig' %}
+
+<div class="text-right">
+    <button class="btn btn-secondary btn-space" type="button" data-mass-add-{{ _updater_id }}>Ajouter</button>
+</div>

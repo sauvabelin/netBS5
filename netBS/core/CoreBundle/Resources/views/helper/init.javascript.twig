@@ -1,0 +1,41 @@
+{% set __helperJs %}
+<script type="text/javascript">
+    $(function() {
+
+        $(document).on('mouseenter', "[data-helper]", function() {
+            var elem    = $(this),
+                id      = elem.attr("data-helper-id"),
+                bclass  = elem.attr("data-helper-class"),
+                pos     = elem.attr("data-helper-placement");
+
+            $(this).data('_show_helper', true);
+            $.data(this, "_helper_timer", setTimeout($.proxy(function() {
+
+                $.post("{{ path('netbs.core.helper.get_help') }}", {"class": bclass, id: id}).done(function(response) {
+
+                    if ($(elem).data('_show_helper')) {
+                        $(elem).popover({
+                            html: true,
+                            placement: pos === null ? "top" : pos,
+                            container: 'body',
+                        });
+
+                        elem.attr("data-original-title", response.title);
+                        elem.attr("data-content", response.content);
+                        elem.popover("show");
+                    }
+                });
+            }, this), 300));
+
+        });
+
+        $(document).on('mouseleave', '[data-helper]', function() {
+            clearTimeout($.data(this, "_helper_timer"));
+            $(this).data('_show_helper', false);
+            $(this).popover("dispose");
+        });
+    });
+</script>
+{% endset %}
+
+{{ registerScript(__helperJs) }}

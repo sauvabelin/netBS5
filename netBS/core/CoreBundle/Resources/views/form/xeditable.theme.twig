@@ -1,0 +1,332 @@
+
+{% block xtype %}
+
+    {% set TEXTS    = ['text', 'email', 'integer', 'money', 'number', 'password', 'percent', 'search', 'url'] %}
+    {% set TEXTAREA = ['textarea'] %}
+    {% set BOOL     = ['switch'] %}
+    {% set CHOICES  = ['choice', 'entity', 'country', 'language', 'locale', 'timezone', 'currency', 'sexe'] %}
+    {% set DATES    = ['date', 'datetime', 'time', 'birthday', 'datepicker'] %}
+    {% set SELECT2  = ['select2', 'select2_document'] %}
+    {% set AJAX     = ['ajax_select2_document'] %}
+
+    {% set prefixes = form.vars['block_prefixes'] %}
+    {% set type     = prefixes[prefixes|length - 2] %}
+
+    {# definition des types xEditable #}
+    {% set types    = ['text', 'textarea', 'select', 'date', 'checklist'] %}
+
+    {% set dataName = {} %}
+
+    {% if type in TEXTS %}
+
+        class="editable"
+        data-type="text"
+        data-value="{{ value }}"
+
+    {% elseif type in BOOL %}
+        class="editable"
+        data-type="checklist"
+        data-source='{{ {'1': 'Oui'}|json_encode }}'
+        data-value="{{ checked ? '1' : '' }}"
+        data-emptytext="Non"
+
+    {% elseif type in TEXTAREA %}
+
+        class="editable"
+        data-type="textarea"
+        data-value="{{ value }}"
+
+    {% elseif type in CHOICES %}
+        data-type="select"
+        data-source='{{ form.vars['choices']|xEditableChoices|json_encode }}'
+        data-value='{{ value }}'
+        class="editable"
+
+    {% elseif type in DATES %}
+
+        {{ registerJs(asset('bundles/netbscore/js/xeditable_hochet_datepicker.js')) }}
+        {{ registerCss(asset('bundles/netbscore/lib/datetimepicker/bootstrap-datetimepicker.min.css')) }}
+        {{ registerJs(asset('bundles/netbscore/lib/datetimepicker/bootstrap-datetimepicker.min.js')) }}
+
+        data-type="hochetdatepicker"
+        data-format="dd.mm.yyyy"
+        data-value="{{ value }}"
+        class="editable"
+
+    {% elseif type in SELECT2 %}
+
+        {{ registerCss(asset('bundles/netbscore/lib/select2/css/select2.min.css')) }}
+        {{ registerCss(asset('bundles/netbscore/lib/select2/css/select2.bs4.min.css')) }}
+        {{ registerJs(asset('bundles/netbscore/lib/select2/js/select2.full.min.js')) }}
+
+        class="editable"
+        data-type="select2"
+        data-value="{{ value }}"
+        data-source='{{ form.vars['choices']|xEditableSelect2|json_encode }}'
+        {% if form.vars.multiple %}
+            data-select2="{{ {'multiple' : true}|json_encode }}"
+        {% endif %}
+
+    {% elseif type in AJAX %}
+
+        {{ registerCss(asset('bundles/netbscore/lib/select2/css/select2.min.css')) }}
+        {{ registerCss(asset('bundles/netbscore/lib/select2/css/select2.bs4.min.css')) }}
+        {{ registerJs(asset('bundles/netbscore/lib/select2/js/select2.full.min.js')) }}
+
+        {% set ajaxSelect2EditableInit %}
+            <script type="text/javascript">
+                $('.ajax-editable').each(function() {
+
+                    var $elem       = $(this);
+                    var multiple    = $elem.attr("data-multiple") === "1";
+                    var ajaxClass   = $elem.attr("data-ajax-class");
+                    var nullOption  = $elem.attr("data-null-option");
+                    var source      = $elem.attr("data-original-source");
+
+                    $elem.editable({
+
+                        tpl: '<select style="width:300px;">',
+                        type: 'select2',
+                        placement: 'bottom',
+
+                        source: function() {
+                            return JSON.parse(source);
+                        },
+
+                        error: function(response) {
+
+                            if(response.status === 500) {
+                                toastr.error('Erreur interne, veuillez contacter le chef comm');
+
+                            } else {
+
+                                var txt = response.responseText;
+                                if(response.responseJSON.hasOwnProperty('message'))
+                                    txt = response.responseJSON.message;
+                                toastr.warning(txt);
+                            }
+                        },
+
+                        success: function() {
+                            var t = toastr.success('Valeur modifiée avec succès, cliquez ici pour actualiser');
+                            $(t).click(function() {
+                                location.reload();
+                            });
+                        },
+
+                        select2: {
+                            multiple: multiple,
+                            dropdownParent: $(this),
+                            ajax: {
+
+                                dataType: 'json',
+                                url: "{{ path('netbs.core.select2.results') }}",
+                                delay: 350,
+
+                                data: function (params) {
+                                    return {
+                                        ajaxClass:  ajaxClass,
+                                        nullOption: nullOption,
+                                        query:      params.term
+                                    };
+                                }
+                            }
+                        }
+                    });
+                });
+            </script>
+
+            <script type="text/javascript">
+                $('.ajax-editable').on('click', '.select2-container', function(e) {
+                    e.stopPropagation();
+                });
+            </script>
+        {% endset %}
+        {{ registerScript(ajaxSelect2EditableInit) }}
+
+        {% if form.vars.multiple %}
+            {% set dataValue    = [] %}
+            {% set dataSource   = {} %}
+            {% for objecto in form.vars.data %}
+                {% set dataValue    = dataValue|merge([objecto.id])  %}
+                {% set dataSource   = dataSource|merge([{'id' : objecto.id, 'text' : objecto.__toString()}]) %}
+            {% endfor %}
+            data-original-source="{{ dataSource|json_encode }}"
+            data-value="{{ dataValue|json_encode }}"
+        {% else %}
+            data-value="{{ form.vars.data is not null ? form.vars.data.id : null }}"
+            data-original-source="{{ [{'id' : form.vars.data is not null ? form.vars.data.id : 'null', 'text' : form.vars.data is not null ? form.vars.data.__toString() : 'Aucun'}]|json_encode }}"
+        {% endif %}
+        data-ajax-class="{{ form.vars.attr['data-ajax-class'] }}"
+        data-multiple="{{ form.vars.multiple }}"
+        class="ajax-editable"
+    {% endif %}
+
+    {% if form.vars.attr['owner'] is defined and form.vars.attr['itemAccessor'] is defined and form.vars.attr['ownerPk'] is defined %}
+
+        {% set dataName = dataName|merge({
+        'itemAccessor'  : form.vars.attr['itemAccessor'],
+        'owner'         : form.vars.attr['owner'],
+        'ownerPk'       : form.vars.attr['ownerPk']
+        }) %}
+    {% endif %}
+
+    {% set dataName = dataName|merge({
+        'type'      : type,
+        'field'     : form.vars['name'],
+        'multiple'  : form.vars.multiple is defined ? form.vars.multiple : null,
+        'class'     : form.vars.attr['data-ajax-class'] is defined ? form.vars.attr['data-ajax-class'] : null,
+        'itemClass' : get_class(form.parent.vars.data)|toBase64
+    }) %}
+
+    data-title="{{ form.vars.label }}"
+    data-name="{{ dataName|json_encode }}"
+
+{% endblock %}
+
+{%- block xeditable %}
+
+    {% set object       = form.parent.vars.data %}
+
+    data-pk="{{ object.id }}"
+    data-url="{{ path('netbs.core.xeditable.endpoint') }}"
+
+    {# type et éventuelles données supplémentaires requises liées à ce type, comme pour choice, on génère le data-source #}
+    {{ block('xtype') }}
+{% endblock -%}
+
+{%- block form_start -%}
+<form name="{{ name }}" class="form-horizontal" onsubmit="return false;" method="POST">
+    {%- endblock form_start -%}
+
+    {%- block form_end -%}
+    {%- if not render_rest is defined or render_rest -%}
+        {{ form_rest(form) }}
+    {%- endif -%}
+</form>
+{%- endblock form_end -%}
+
+{% block form_widget_simple %}
+
+    {# formulaire non final, gros bug sa mère la tchoin #}
+    {% if form.children|length == 0 %}
+
+        {% set item = form.parent.vars.value %}
+        {% set key = form.vars.name %}
+
+        {% if is_granted('update', form.parent.vars.data) and editProperty(item, key) %}
+
+            {{ block('webAssets') }}
+            <a href="#" {{ block('xeditable') }}></a>
+
+        {% elseif is_granted('read', form.parent.vars.data) %}
+            {{ block('webAssets') }}
+            <a href="#" data-disabled style="color:#686868;border-bottom:none;cursor:default" {{ block('xeditable') }}></a>
+        {% else %}
+            <span style="color:red">You shall not pass!</span>
+        {% endif %}
+
+    {% else %}
+        ATTENTION LE FORMULAIRE A DES ENFANTS
+    {% endif %}
+{% endblock %}
+
+{% block form_row %}
+    <div class="form-group row" style="padding:3px 0;">
+        <label class="col-lg-5 control-label" style="padding-top:6px;text-align:left;">{{- label -}}</label>
+        <div class="col-lg-7">
+            {{ block('form_widget_simple') }}
+        </div>
+    </div>
+{% endblock form_row %}
+
+{% block submit_widget %}
+    {# display nothing #}
+{% endblock %}
+
+{% block textarea_widget %}
+    {{ block('form_widget_simple') }}
+{% endblock %}
+
+{% block choice_widget %}
+    {{ block('form_widget_simple') }}
+{% endblock %}
+
+{% block ajax_select2_document_widget %}
+    {{ block('form_widget_simple') }}
+{% endblock %}
+
+{% block select2_document_widget %}
+    {{ block('form_widget_simple') }}
+{% endblock %}
+
+{% block datepicker_widget %}
+    {{ block('form_widget_simple') }}
+{% endblock %}
+
+{% block checkbox_row %}
+    {{ block('form_row') }}
+{% endblock %}
+
+{% block switch_row %}
+    {{ block('form_row') }}
+{% endblock %}
+
+{% block switch_widget %}
+    {{ block('form_widget_simple') }}
+{% endblock %}
+
+{% block hidden_widget %}
+    {# display nothing #}
+{% endblock %}
+
+{% block webAssets %}
+
+    {# include once xeditable assets and initialization #}
+    {{ registerCss(asset('bundles/netbscore/lib/xeditable/css/bootstrap-editable.css')) }}
+    {{ registerJs(asset('bundles/netbscore/lib/xeditable/js/xeditable.bs4.js')) }}
+
+    {# initialize xeditable #}
+    {% set initialization %}
+        <script type="text/javascript">
+            $.fn.editable.defaults.emptytext      = 'Rien';
+            $.fn.editable.defaults.success        = function(response, newValue) {
+                return {newValue: response.newValue};
+            };
+
+            $.fn.editableform.template = '{% include '@NetBSCore/xeditable/template.xeditable.twig' %}';
+            $.fn.editableform.buttons  = '{% include '@NetBSCore/xeditable/buttons.xeditable.twig' %}';
+
+            $('.editable').editable({
+                select2: {width: 250},
+                error: function(response) {
+
+                    if(response.status === 500) {
+                        toastr['error']('Erreur interne, veuillez contacter le chef comm');
+
+                    } else {
+
+                        var txt = response.responseText;
+                        if(response.responseJSON.hasOwnProperty('message'))
+                            txt = response.responseJSON.message;
+                        toastr["warning"](txt);
+                    }
+                },
+                success: function() {
+                    toastr['success']('Valeur modifiée avec succès');
+                }
+            });
+        </script>
+    {% endset %}
+
+    {{ registerScript(initialization) }}
+
+    {% set unclick %}
+        <script type="text/javascript">
+            $('[data-disabled]').off('click');
+        </script>
+    {% endset %}
+
+    {{ registerScript(unclick, 100) }}
+
+{% endblock %}

@@ -1,0 +1,38 @@
+<script type="text/javascript">
+
+    $.fn.editable.defaults.emptytext      = 'Rien';
+    $.fn.editable.defaults.success        = function(response, newValue) {
+        return {newValue: response.newValue};
+    };
+
+    $.fn.editableform.template = '{% include '@NetBSCore/xeditable/template.xeditable.twig' %}';
+    $.fn.editableform.buttons  = '{% include '@NetBSCore/xeditable/buttons.xeditable.twig' %}';
+
+    $('.ajax-editable').each(function() {
+
+        var $elem       = $(this);
+        var multiple    = $elem.attr("data-multiple") === "1";
+        var ajaxClass   = $elem.attr("data-ajax-class");
+
+        $elem.editable({
+
+            tpl: '<select style="width:300px;">',
+            type: 'select2',
+            success: function(a) {
+                return a.newValue;
+            },
+            select2: {
+                multiple: multiple,
+                ajax: {
+                    cache: false,
+                    dataType: 'json',
+                    delay: 350,
+                    data: {
+                        ajaxClass: ajaxClass
+                    },
+                    url: "{{ path('netbs.core.select2.results') }}"
+                }
+            }
+        });
+    });
+</script>

@@ -1,0 +1,32 @@
+{% extends '@NetBSCore/layout/modal.layout.twig' %}
+
+{% block title %}Ajouter des créances{% endblock %}
+
+{% block content %}
+    <ul class="alert alert-primary">
+        <li>Le titre peut contenir <b>[PRENOM]</b> et <b>[NOM]</b> qui seront remplacés par leurs équivalents.</li>
+        <li>Des créances seront ajoutées à {{ form.vars.value.amount }} débiteurs</li>
+    </ul>
+
+    {% if toFact %}
+        <p class="alert alert-success">
+            Vous ajoutez des créances à partir d'une liste de factures. Pour chaque facture, si elle est ouverte, la créance
+            lui sera directement liée.
+        </p>
+    {% endif %}
+
+
+    {{ form_start(form) }}
+    <div class="row">
+        <div class="col-lg-12">{{ form_row(form.titre) }}</div>
+    </div>
+    <div class="row">
+        <div class="col-md-4">{{ form_row(form.montant) }}</div>
+        <div class="col-md-4">{{ form_row(form.rabais) }}</div>
+        <div class="col-md-4">{{ form_row(form.rabaisIfInFamille) }}</div>
+    </div>
+    <div class="row">
+        <div class="col-lg-12">{{ form_row(form.remarques) }}</div>
+    </div>
+    {{ form_end(form) }}
+{% endblock %}

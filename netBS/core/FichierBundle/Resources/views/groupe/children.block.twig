@@ -1,0 +1,18 @@
+{% if groupe.enfants|length > 0 %}
+    <div class="card card-table">
+        <div class="card-header no-divider">
+            <h5 class="card-title">Sous unités</h5>
+        </div>
+        <div class="card-body">
+            <table class="table">
+                <tbody>
+                {% for child in groupe.enfants %}
+                    <tr>
+                        <td><a {{ helper(child) }} href="{{ path('netbs.fichier.groupe.page_groupe', {id: child.id}) }}">{{ child.nom }}</a></td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+{% endif %}

@@ -1,0 +1,29 @@
+{% extends '@NetBSCore/searcher/searcher.html.twig' %}
+
+{% block searchForm %}
+    <div class="row">
+        <div class="col-md-4">
+            {{ form_row(form.factureId) }}
+            {{ form_row(form.creanceInFacture) }}
+            {{ form_row(form.statut) }}
+            <div class="row">
+                <div class="col-md-6">{{ form_row(form.montant) }}</div>
+                <div class="col-md-6">{{ form_row(form.montantPaye) }}</div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            {{ form_row(form.compteToUse) }}
+            {{ form_row(form.nombreDeCreances) }}
+            {{ form_row(form.nombreDeRappels) }}
+        </div>
+        <div class="col-md-4">
+            {{ form_row(form.date) }}
+            <div class="row">
+                <div class="col-md-6">{{ form_row(form.dateImpression) }}</div>
+                <div class="col-md-6">{{ form_row(form.isPrinted) }}</div>
+            </div>
+            {{ form_row(form.datePaiement) }}
+            {{ form_row(form.remarques) }}
+        </div>
+    </div>
+{% endblock %}

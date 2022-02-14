@@ -1,0 +1,55 @@
+{% extends '@NetBSCore/layout/backend.layout.twig' %}
+
+{% set title = 'Fusion des créances' %}
+
+{% block main %}
+    <div class="container-fluid">
+        {% include '@NetBSCore/includes/header.include.twig' with {
+            header: 'Générateur de factures',
+            subHeader: 'Assemblage des créances sélectionnées en factures autour des adresses d\'envoi',
+        } %}
+
+        <div class="row">
+            {% for facture in pack %}
+                {% set owner = facture.creances[0].debiteur.sendableAdresse.owner %}
+                <div class="col-12 col-md-4">
+                    <div class="card card-table">
+                        <div class="card-header">
+                            <h5 class="card-title">Adressée à <b>{{ owner }}</b></h5>
+                        </div>
+                        <div class="card-body">
+                            <table class="table table-striped">
+                                <thead>
+                                    <tr>
+                                        <th>Pour</th>
+                                        <th>Titre</th>
+                                        <th>Rabais</th>
+                                        <th>Montant</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for creance in facture.creances %}
+                                        <tr>
+                                            <td>{{ creance.debiteur }}</td>
+                                            <td>{{ creance.titre }}</td>
+                                            <td>{{ creance.rabais }}%</td>
+                                            <td>{{ creance.montant }}</td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                                <tfoot>
+                                    <tr>
+                                        <td><b>Total</b></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td><b>{{ facture.montant }}</b></td>
+                                    </tr>
+                                </tfoot>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+{% endblock %}

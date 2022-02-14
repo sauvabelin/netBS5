@@ -1,0 +1,29 @@
+services:
+
+    _defaults:
+        autowire: true
+        autoconfigure: true
+
+    NetBS\FichierBundle\Voter\StructureVoter:
+        tags:
+            - { name: security.voter }
+
+    NetBS\FichierBundle\Voter\AttributionVoter:
+        tags:
+            - { name: security.voter }
+
+    NetBS\FichierBundle\Voter\ContactVoter:
+        tags:
+            - { name: security.voter }
+
+    NetBS\FichierBundle\Voter\GroupeVoter:
+        tags:
+            - { name: security.voter }
+
+    NetBS\FichierBundle\Voter\MembreFamilleVoter:
+        tags:
+            - { name: security.voter }
+
+    NetBS\FichierBundle\Voter\ObtentionDistinctionVoter:
+        tags:
+            - { name: security.voter }

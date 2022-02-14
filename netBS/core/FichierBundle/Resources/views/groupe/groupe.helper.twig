@@ -1,0 +1,19 @@
+{% extends '@NetBSCore/helper/base.helper.twig' %}
+
+{% macro parent(groupe) %}
+    {% import _self as inside %}
+    {% if groupe.parent %}
+        {{ inside.parent(groupe.parent) }}
+    {% endif %}
+    <li>{{ groupe.nom }}</li>
+{% endmacro %}
+
+{% block helper %}
+
+    {% import _self as mact %}
+
+    <p><b>Hierarchie</b></p>
+    <ul>
+        {{ mact.parent(groupe) }}
+    </ul>
+{% endblock %}

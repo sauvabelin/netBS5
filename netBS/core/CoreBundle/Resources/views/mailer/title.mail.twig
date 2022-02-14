@@ -1,0 +1,12 @@
+{% if tag is not defined %}{% set tag = 'h3' %}{% endif %}
+{% if tag == 'h1' %}
+    {% set size = 30 %}
+{% elseif tag == 'h2' %}
+    {% set size = 25 %}
+{% elseif tag == 'h3' %}
+    {% set size = 20 %}
+{% else %}
+    {% set size = 13 %}
+{% endif %}
+
+<{{ tag }} style="font-family: sans-serif; font-size: {{ size }}px; font-weight: normal; margin: 0; Margin-bottom: 15px;">{{ title }}</{{ tag }}>

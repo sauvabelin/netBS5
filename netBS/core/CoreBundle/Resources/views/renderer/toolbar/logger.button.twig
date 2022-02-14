@@ -1,0 +1,48 @@
+
+<div class="btn-group btn-hspace dropup">
+    <button type="button" id="_approve_changes" class="btn btn-primary">Approuver les modifications</button>
+</div>
+
+<div class="modal fade colored-header colored-header-primary netbs-modal" role="dialog" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" data-dismiss="modal" aria-hidden="true" class="close md-close"><span class="mdi mdi-close"></span></button>
+                <h3 class="modal-title">Modification</h3>
+            </div>
+
+            <div class="modal-body" id="_change_modal_body"></div>
+        </div>
+    </div>
+</div>
+
+{% set exportScript %}
+    <script type="text/javascript">
+        $('#_approve_changes' ).click(function() {
+
+            PostLink("{{ path('netbs.core.changelog.approve') }}", {
+                selectedIds: {{ event.tableId }}.getSelectedIds()
+            });
+        });
+
+        $('#{{ event.tableId }}').find('td').click(function(event) {
+
+            if(event.target.tagName === 'LABEL' || event.target.tagName === 'INPUT')
+                return;
+
+            var $tr = $(this).parent('tr');
+            var id  = $tr.attr("data-id");
+
+            $('#{{ event.tableId }}').find('tr').removeClass('active');
+            $tr.addClass('active');
+
+            $.get('{{ path('netbs.core.changelog.preview_change') }}', {logId: id}).done(function(response) {
+               $('#_modif_details').html(response);
+            });
+        });
+    </script>
+{% endset %}
+
+{{ registerScript(exportScript) }}
+
+{{ registerJs(asset('bundles/netbscore/js/post_link.js')) }}

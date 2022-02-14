@@ -1,0 +1,25 @@
+{% set allowDeleteScript %}
+
+    <script type="text/javascript">
+
+        function triggerMassDeleteListener(id) {
+            $('[data-delete-element-' + id +']').click(function() {
+                $(this).parent().parent().remove();
+            });
+        }
+
+    </script>
+
+{% endset %}
+
+{{ registerScript(allowDeleteScript) }}
+
+{% set allowDeleteImmediateScript %}
+    <script type="text/javascript">
+        $(document).ready(function() {
+            triggerMassDeleteListener('{{ _updater_id }}');
+        });
+    </script>
+{% endset %}
+
+{{ registerScript(allowDeleteImmediateScript) }}

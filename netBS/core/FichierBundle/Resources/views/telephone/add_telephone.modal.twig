@@ -1,0 +1,9 @@
+{% extends '@NetBSCore/layout/modal.layout.twig' %}
+
+{% block title %}Nouveau numéro de téléphone{% endblock %}
+
+{% block content %}
+    {{ form_start(form) }}
+    {% include '@NetBSFichier/telephone/telephone_setup.form.twig' %}
+    {{ form_end(form) }}
+{% endblock %}

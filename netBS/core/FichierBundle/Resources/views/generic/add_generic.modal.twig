@@ -1,0 +1,7 @@
+{% extends '@NetBSCore/layout/modal.layout.twig' %}
+
+{% block title %}{% if title is defined %}{{ title }}{% else %}Nouvel élément{% endif %}{% endblock %}
+
+{% block content %}
+    {{ form(form) }}
+{% endblock %}

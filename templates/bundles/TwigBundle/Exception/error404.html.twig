@@ -1,0 +1,18 @@
+{% extends '@NetBSCore/layout/backend.layout.twig' %}
+
+{% block main %}
+    <div class="container">
+        {% include '@NetBSCore/includes/header.include.twig' with {
+            header: "Introuvable!",
+            subHeader: "Ce que vous avez souhaité est introuvable"
+        }%}
+
+        <p>
+            Désolé, la ressource que vous souhaitiez n'existe pas ou a été
+            supprimée. Si vous pensez que c'est une erreur ou que c'est juste
+            que c'est mal foutu, vous pouvez sans autre écrire au responsable
+            pour lui annoncer que vous êtes choqué et déçu sans oublier de bien
+            lui décrire comment vous êtes arrivé ici. Merci beaucoup :)
+        </p>
+    </div>
+{% endblock %}

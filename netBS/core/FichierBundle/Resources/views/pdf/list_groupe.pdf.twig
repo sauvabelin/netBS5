@@ -1,0 +1,54 @@
+{% extends '@NetBSCore/pdf/pdf.layout.twig' %}
+
+{% block body %}
+{% for groupeData in groupesData %}
+
+    <div style="page-break-after: {% if not loop.last %}always{% else %}auto{% endif %}; width:100%;">
+
+        <h3>{{ (groupeData|first).groupe.nom }}</h3>
+
+        {% for subGroupInfo in groupeData %}
+
+            <h4>{% if loop.first and groupeData|length > 1 %}Etat-major{% else %}{{ subGroupInfo.groupe.nom }}{% endif %}</h4>
+            <table class="table">
+                <tr>
+                    <th style="width:16%">Nom</th>
+                    <th style="width:16%">Prénom</th>
+                    <th style="width:10%">Naissance</th>
+                    <th style="width:23%">Rue</th>
+                    <th style="width:6%">Npa</th>
+                    <th style="width:16%">Localité</th>
+                    <th style="width:12%">Téléphone</th>
+                </tr>
+
+                {% for membre in subGroupInfo.membres %}
+
+                    {% set sendingAdresse   = membre.sendableAdresse %}
+                    {% set telephone        = membre.sendableTelephone %}
+                    {% set email            = membre.sendableEmail %}
+                    <tr>
+                        <td>{% if membre.famille %}{{ membre.famille.nom }}{% endif %}</td>
+                        <td>{{ membre.prenom }}</td>
+                        <td>{{ membre.naissance|date("d.m.Y") }}</td>
+                        {% if sendingAdresse %}
+                            <td>{{ sendingAdresse.rue }}</td>
+                            <td>{{ sendingAdresse.npa }}</td>
+                            <td>{{ sendingAdresse.localite }}</td>
+                        {% else %}
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                        {% endif %}
+                        <td>{% if telephone %}{{ telephone.telephone }}{% endif %}</td>
+                    </tr>
+
+                {% endfor %}
+            </table>
+
+        {% endfor %}
+
+    </div>
+
+{% endfor %}
+
+{% endblock %}

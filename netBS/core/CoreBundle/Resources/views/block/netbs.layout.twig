@@ -1,0 +1,36 @@
+{% extends '@NetBSCore/layout/backend.layout.twig' %}
+
+{% import _self as layout %}
+
+{% macro renderRow(row) %}
+
+    {% import _self as rr %}
+
+    <div class="row">
+        {% for column in row.columns %}
+            {{ rr.renderColumn(column) }}
+        {% endfor %}
+    </div>
+{% endmacro %}
+
+{% macro renderColumn(column) %}
+
+    {% import _self as cc %}
+    <div class="col-lg-{{ column.width.lg }} col-md-{{ column.width.md }} col-sm-{{ column.width.sm }} col-xs-{{ column.width.xs }}">
+        {% if column.hasBlock %}
+            {{ column.block|raw }}
+        {% else %}
+            {% for row in column.rows %}
+                {{ cc.renderRow(row) }}
+            {% endfor %}
+        {% endif %}
+    </div>
+{% endmacro %}
+
+{% block main %}
+    <div class="container-fluid">
+        {% for row in config.rows %}
+            {{ layout.renderRow(row) }}
+        {% endfor %}
+    </div>
+{% endblock %}

@@ -1,0 +1,99 @@
+{% set newsStyle %}
+    <style>
+
+        .channel {
+            padding:0.3rem 0.5rem;
+            color:white;
+            border-radius:6px;
+        }
+        .news-container {
+
+            max-height:500px;
+            overflow:auto;
+        }
+
+        .news-item {
+
+            margin-bottom:1rem;
+        }
+
+        .news-item-left {
+
+            width:100px;
+            height:auto;
+            background:red;
+            display:flex;
+            flex-direction:column;
+            justify-content:center;
+            align-items:center;
+            color:white;
+        }
+
+        .news-item-right {
+
+            flex:1;
+            position:relative;
+            background:white;
+        }
+
+        .news-item-right .bg {
+
+            position:absolute;
+            width:100%;
+            height:100%;
+        }
+
+        .news-contenu {
+
+            padding:1rem;
+        }
+
+    </style>
+{% endset %}
+
+{% macro news(item) %}
+    <div class="p-2">
+        <div class="d-flex justify-content-between">
+            <div>
+                <h4>{{ item.titre }}</h4>
+                <h6 class="text-muted">{{ item.user }} - {{ item.createdAt|date(param('format', 'php_date')) }}</h6>
+            </div>
+            <div>
+                <div class="d-flex">
+                    {% if item.isPinned %}
+                        <div class="channel mr-1" style="background:#b6b62d">Important</div>
+                    {% endif %}
+                    <div class="channel" style="background:{{ item.channel.color }}">{{ item.channel.nom }}</div>
+                </div>
+            </div>
+        </div>
+        <div style="font-size:0.9rem">
+            {{ item.contenu|raw }}
+        </div>
+    </div>
+{% endmacro %}
+
+{% import _self as swag %}
+
+{{ registerStyle(newsStyle) }}
+{{ registerJs(asset('bundles/netbscore/js/modal.js')) }}
+
+<div class="news-container">
+    {% for item in news | filter(it => it.isPinned) %}
+        {{ swag.news(item) }}
+        <hr/>
+    {% endfor %}
+
+    {% for item in news | filter(it => not it.isPinned) %}
+        {{ swag.news(item) }}
+        <hr/>
+    {% endfor %}
+</div>
+
+<hr/>
+<div class="d-flex justify-content-end">
+    <a class="btn btn-secondary mr-2" href="{{ path('netbs.core.news.read_news') }}">Lire toutes les news</a>
+    {% if channels|length > 0 %}
+    <button class="btn btn-primary" data-modal data-modal-url="{{ path('netbs.core.news.modal_edit_news') }}">Ajouter une news</button>
+    {% endif %}
+</div>

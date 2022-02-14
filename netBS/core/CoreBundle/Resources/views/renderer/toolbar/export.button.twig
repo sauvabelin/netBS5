@@ -1,0 +1,38 @@
+
+<div class="btn-group dropdown dropup">
+
+    <button type="button" data-toggle="dropdown" class="btn btn-secondary dropdown-toggle">
+        Exporter
+        <span class="icon-dropdown mdi mdi-chevron-down"></span>
+    </button>
+
+    <div role="menu" class="dropdown-menu">
+        {% for extension, exporters in extensions %}
+            {% if not loop.first %}
+                <div class="dropdown-divider"></div>
+            {% endif %}
+            <div class="dropdown-header">{{ extension }}</div>
+            {% for exporter in exporters %}
+                <a class="dropdown-item" style="cursor:pointer;" data-exporter="{{ exporter.alias }}">{{ exporter.name }}</a>
+            {% endfor %}
+        {% endfor %}
+    </div>
+</div>
+
+{% set exportScript %}
+    <script type="text/javascript">
+        $('[data-exporter]').click(function() {
+
+            var data = {
+                itemsClass:     "{{ table.itemClass|toBase64 }}",
+                exporterAlias:  $(this).attr("data-exporter"),
+                selectedIds:    {{ tableId }}.getSelectedIds()
+            };
+            PostLink("{{ path('netbs.core.export.export_selected') }}", data);
+        });
+    </script>
+{% endset %}
+
+{{ registerScript(exportScript) }}
+
+{{ registerJs(asset('bundles/netbscore/js/post_link.js')) }}

@@ -1,0 +1,104 @@
+{% extends '@WebProfiler/Profiler/layout.html.twig' %}
+
+{% block toolbar %}
+
+    {% set icon %}
+        <span>
+            <img style="opacity:0.65" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAABNElEQVRYR+2XT0oDYQzFf28r3kDvoYKXENviRu8geAxBz+BKbYuXKKj30COIy8hXMvBVhpIUZ2xhshvIn5eXl5mJAMzsDHgA9stzD/YNXEmayQE8AZMeCtclppImDYAZcN4zgLmk0QCgjYFxx6OYev72EUhagurKzMx2A4CZjYCGrnHZWV/ZpoMMSW3x60ewDQCOgGtv807SuzPwmGm9JX5HNLBBl6GQ8BaY2TFw41lvJb35CJZiTFodHxvBNojwf9cwSXHYPayBcMakYxiAmR0Cp55/IenDRXiRrFnc6/hBhGEGDoATp/tV0qePoGxH1ur4GIBshah/WITRhFm/MIDhTWhmf/k/cF99zAYRrmcAmGeVnfRvTsCVn9JnoOuD5DfOleO0oCrn+V6ym03dv4BLSS8//kqCMIBBRvoAAAAASUVORK5CYII=" alt=""/>
+        </span>
+        <span class="sf-toolbar-value">NetBS</span>
+    {% endset %}
+
+    {% set text %}
+        <div class="sf-toolbar-info-piece">
+            <b>Bridges</b>
+            <span class="sf-toolbar-status sf-toolbar-status">{{ collector.data['bridges']|length }}</span>
+        </div>
+        <div class="sf-toolbar-info-piece">
+            <b>Exporters</b>
+            <span class="sf-toolbar-status sf-toolbar-status">{{ collector.data['exporters']|length }}</span>
+        </div>
+        <div class="sf-toolbar-info-piece">
+            <b>Previewers</b>
+            <span class="sf-toolbar-status sf-toolbar-status">{{ collector.data['previewers']|length }}</span>
+        </div>
+    {% endset %}
+
+    {{ include('@WebProfiler/Profiler/toolbar_item.html.twig', { link: true, additional_classes: 'sf-toolbar-block-right' }) }}
+{% endblock %}
+
+
+{% block menu %}
+    <span class="label">
+        <span class="icon"><img style="opacity:0.8" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAABNElEQVRYR+2XT0oDYQzFf28r3kDvoYKXENviRu8geAxBz+BKbYuXKKj30COIy8hXMvBVhpIUZ2xhshvIn5eXl5mJAMzsDHgA9stzD/YNXEmayQE8AZMeCtclppImDYAZcN4zgLmk0QCgjYFxx6OYev72EUhagurKzMx2A4CZjYCGrnHZWV/ZpoMMSW3x60ewDQCOgGtv807SuzPwmGm9JX5HNLBBl6GQ8BaY2TFw41lvJb35CJZiTFodHxvBNojwf9cwSXHYPayBcMakYxiAmR0Cp55/IenDRXiRrFnc6/hBhGEGDoATp/tV0qePoGxH1ur4GIBshah/WITRhFm/MIDhTWhmf/k/cF99zAYRrmcAmGeVnfRvTsCVn9JnoOuD5DfOleO0oCrn+V6ym03dv4BLSS8//kqCMIBBRvoAAAAASUVORK5CYII=" alt=""/></span>
+        <strong>NetBS</strong>
+    </span>
+{% endblock %}
+
+{% block panel %}
+
+    <h2>Registered bridges</h2>
+    <table>
+        <thead>
+        <tr>
+            <th>Bridge class</th>
+            <th>From</th>
+            <th>To</th>
+            <th>Cost</th>
+        </tr>
+        </thead>
+        <tbody>
+        {% for bridge in collector.data['bridges'] %}
+            <tr>
+                <td>{{ bridge.class }}</td>
+                <td>{{ bridge.from }}</td>
+                <td>{{ bridge.to }}</td>
+                <td>{{ bridge.cost }}</td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+
+    <h2>Registered exporters</h2>
+    <table>
+        <thead>
+        <tr>
+            <th>Name</th>
+            <th>alias</th>
+            <th>Exported items class</th>
+            <th>Extension</th>
+            <th>Exporter class</th>
+        </tr>
+        </thead>
+        <tbody>
+        {% for exporter in collector.data['exporters'] %}
+            <tr>
+                <td>{{ exporter.name }}</td>
+                <td>{{ exporter.alias }}</td>
+                <td>{{ exporter.itemClass }}</td>
+                <td>{{ exporter.category }}</td>
+                <td>{{ exporter.class }}</td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+
+
+    <h2>Registered previewers</h2>
+    <p>Previewers are used to preview a configurable exportation</p>
+    <table>
+        <thead>
+        <tr>
+            <th>Previewer class</th>
+        </tr>
+        </thead>
+        <tbody>
+        {% for previewer in collector.data['previewers'] %}
+            <tr>
+                <td>{{ previewer }}</td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+
+{% endblock %}

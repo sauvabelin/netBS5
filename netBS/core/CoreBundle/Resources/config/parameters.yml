@@ -1,0 +1,20 @@
+
+app:
+    name:               'netBS'
+    organization:       'Brigade de Sauvabelin'
+
+format:
+    php_date:           'd.m.Y'
+    js_date:            'dd.mm.yyyy'
+    js_moment_date:     'DD.MM.YYYY'
+    php_datetime:       'd.m.Y H\hi'
+
+export:
+    author:             'netBS'
+    description:        'Généré sur le netBS'
+
+developer:
+    name:               'guillaume hochet'
+
+search:
+    max_results:        1000

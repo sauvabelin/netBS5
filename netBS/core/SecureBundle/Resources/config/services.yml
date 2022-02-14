@@ -1,0 +1,67 @@
+
+imports:
+    - { resource: "voter.yml" }
+
+services:
+
+    _defaults:
+        autowire: true
+        autoconfigure: true
+
+    NetBS\SecureBundle\Controller\:
+        resource: '../../Controller'
+        tags: ['controller.service_arguments']
+
+    NetBS\SecureBundle\ApiController\:
+        resource: '../../ApiController'
+        tags: ['controller.service_arguments']
+
+    NetBS\SecureBundle\DataFixtures\:
+        resource: '../../DataFixtures'
+        tags: ['doctrine.fixture.orm']
+
+    NetBS\SecureBundle\Service\UserManager: ~
+
+    NetBS\SecureBundle\Service\SecureConfig:
+        arguments:
+            - "%netbs.secure.config%"
+
+    NetBS\SecureBundle\ListModel\UsersList:
+        tags:
+            - { name: netbs.list.model }
+
+    NetBS\SecureBundle\ListModel\AutorisationsList:
+        tags:
+        - { name: netbs.list.model }
+
+    NetBS\SecureBundle\Listener\MainMenuListener:
+        tags:
+            - { name: kernel.event_listener, event: netbs.menu.extend, method: onMenuConfigure, priority: 60 }
+
+    NetBS\SecureBundle\Listener\RemoveMembreListener:
+        tags:
+            - { name: kernel.event_listener, event: netbs.remove.membre, method: onRemove }
+
+    NetBS\SecureBundle\Select2\RolesProvider:
+        tags:
+            - { name: netbs.select2_provider }
+
+    NetBS\SecureBundle\Select2\UserProvider:
+        tags:
+            - { name: netbs.select2_provider }
+
+    NetBS\SecureBundle\Subscriber\DoctrineMapperSubscriber:
+        tags:
+            - { name: doctrine.event_subscriber }
+
+    NetBS\SecureBundle\Form\UserType:
+        tags:
+            - { name: form.type }
+
+    NetBS\SecureBundle\Form\AutorisationType:
+        tags:
+        - { name: form.type }
+
+    NetBS\SecureBundle\Helper\UserHelper:
+        tags:
+            - { name: netbs.helper }

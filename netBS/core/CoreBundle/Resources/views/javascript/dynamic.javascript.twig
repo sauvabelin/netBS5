@@ -1,0 +1,50 @@
+{% set dynamicJS %}
+
+    {{ registerCss(asset('bundles/netbscore/lib/toastr/toastr.min.css')) }}
+    {{ registerJs(asset('bundles/netbscore/lib/toastr/toastr.min.js')) }}
+
+    <script type="text/javascript">
+    var BSDynamic   = {
+
+        addToList: function(listId, itemsClass, selectedIds) {
+
+            $.post("{{ path('netbs.core.dynamics_list.items_add') }}", {
+                    itemsClass:     itemsClass,
+                    selectedIds:    selectedIds,
+                    listId:         listId
+
+            }).done(function(data) {
+                toastr.success("éléments ajoutés avec succès, la liste en contient désormais " + data.count);
+             }).fail(function() {
+                 toastr.error("Une erreur est survenue, essayez avec une autre liste");
+            });
+        },
+
+        createList: function(classe, addTo) {
+
+            var path    = '{{ path('netbs.core.dynamic_list.modal_add') }}';
+
+            var modal   = new BSModal(path, {itemClass: classe});
+
+            modal.handleSubmit = function(data, stuff, response) {
+
+                var code    = parseInt(response.status);
+
+                if(code === 202) {
+
+                    if(addTo)
+                        addTo(data.listId);
+
+                    modal.remove();
+                }
+                else
+                    alert("Un problème des plus déplaisants est survenu, vous êtes aimablement prié de contacter votre grandiose et dévoué webmaster afin qu'il le règle au plus vite!");
+            };
+
+            modal.launch();
+        }
+    };
+</script>
+{% endset %}
+
+{{ registerScript(dynamicJS) }}

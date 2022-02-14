@@ -1,0 +1,42 @@
+
+services:
+
+    _defaults:
+        autowire: true
+        autoconfigure: true
+
+    NetBS\FichierBundle\LogRepresenter\MembreLogRepresenter:
+        tags:
+            - { name: netbs.log_representer }
+
+    NetBS\FichierBundle\LogRepresenter\AttributionLogRepresenter:
+        tags:
+            - { name: netbs.log_representer }
+
+    NetBS\FichierBundle\LogRepresenter\GroupeLogRepresenter:
+        tags:
+            - { name: netbs.log_representer }
+
+    NetBS\FichierBundle\LogRepresenter\FamilleLogRepresenter:
+        tags:
+            - { name: netbs.log_representer }
+
+    NetBS\FichierBundle\LogRepresenter\GeniteurLogRepresenter:
+        tags:
+            - { name: netbs.log_representer }
+
+    NetBS\FichierBundle\LogRepresenter\ObtentionDistinctionLogRepresenter:
+        tags:
+            - { name: netbs.log_representer }
+
+    NetBS\FichierBundle\LogRepresenter\AdresseLogRepresenter:
+        tags:
+            - { name: netbs.log_representer }
+
+    NetBS\FichierBundle\LogRepresenter\TelephoneLogRepresenter:
+        tags:
+            - { name: netbs.log_representer }
+
+    NetBS\FichierBundle\LogRepresenter\EmailLogRepresenter:
+        tags:
+            - { name: netbs.log_representer }

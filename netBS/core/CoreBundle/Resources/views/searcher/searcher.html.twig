@@ -1,0 +1,46 @@
+{% extends '@NetBSCore/layout/backend.layout.twig' %}
+
+{% block main %}
+
+    {{ registerCss(asset('bundles/netbscore/css/switchery.css')) }}
+    {{ registerJs(asset('bundles/netbscore/js/post_link.js')) }}
+
+    <div class="container-fluid" style="background: white;">
+        <h3>{% if title is defined %}{{ title }}{% else %}Rechercher{% endif %}</h3>
+
+        {{form_start(form)}}
+
+        {% block searchForm %}{% endblock %}
+
+        <div class="d-flex align-items-center">
+            <button class="btn btn-primary">Lancer la recherche</button>
+            <label class="bs-switch mb-0 ml-3 mr-2">
+                <input type="checkbox" id="merge_with_previous" name="merge_with_previous" class="input-sm" {% if merge %}value="1" checked="checked"{% endif %}>
+                <span class="slider round"></span>
+            </label>
+            <input type="hidden" name="previous_results" value="{{ currentIds }}" />
+            <label for="merge_with_previous" class="m-0">Fusionner avec les résultats précédents</label>
+        </div>
+        {{ form_end(form) }}
+    </div>
+
+    <div class="container-fluid">
+
+        {% set maxResults = param('search', 'max_results') + 0 %}
+
+        {% if maxResults > searcher.results|length %}
+        <div class="card card-table">
+            <div class="card-header">
+                <h5 class="card-title">Résultats</h5>
+            </div>
+            <div class="card-body">
+                {{ render_list(searcher, 'netbs') }}
+            </div>
+        </div>
+        {% else %}
+            <p class="alert alert-warning">La requête a retourné {{ searcher.results|length }} résultats, la limite est fixée à {{ maxResults }}. Veuillez affiner votre recherche.</p>
+        {% endif %}
+
+    </div>
+
+{% endblock %}

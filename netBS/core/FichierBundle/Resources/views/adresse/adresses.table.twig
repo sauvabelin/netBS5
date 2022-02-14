@@ -1,0 +1,37 @@
+{% if adresses|length > 0 %}
+    <table class="table table-bordered">
+        <thead>
+            <tr>
+                <td>Rue</td>
+                <td>Npa</td>
+                <td>Localité</td>
+                <td>Pays</td>
+                <td>Prioritaire</td>
+                <td>Remarques</td>
+                <td></td>
+            </tr>
+        </thead>
+        <tbody>
+            {% for adresse in adresses %}
+                <tr>
+                    <td>{{ form_widget(adresse.rue) }}</td>
+                    <td>{{ form_widget(adresse.npa) }}</td>
+                    <td>{{ form_widget(adresse.localite) }}</td>
+                    <td>{{ form_widget(adresse.pays) }}</td>
+                    <td>{{ form_widget(adresse.expediable) }}</td>
+                    <td>{{ form_widget(adresse.remarques) }}</td>
+                    <td>
+                        <a onclick="return confirm('Etes-vous sûr de supprimer cette adresse postale ?');"
+                           class="btn btn-danger btn-xs"
+                           href="{{ path('netbs.fichier.adresse.delete', {ownerId: item.id, ownerType: get_class(item)|toBase64, adresseId: adresse.vars.data.id}) }}"><i class="fas fa-times fa-sm"></i></a>
+                    </td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+{% else %}
+    <p class="text-muted">Aucune adresse postale enregistrée</p>
+{% endif %}
+
+<button class="btn btn-space btn-primary"
+        data-modal data-modal-url="{{ path('netbs.fichier.adresse.modal_creation', {ownerId: item.id, ownerType: get_class(item)|toBase64}) }}">Nouvelle adresse</button>

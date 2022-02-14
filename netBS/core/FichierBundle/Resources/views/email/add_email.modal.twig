@@ -1,0 +1,9 @@
+{% extends '@NetBSCore/layout/modal.layout.twig' %}
+
+{% block title %}Nouvelle adresse E-mail{% endblock %}
+
+{% block content %}
+    {{ form_start(form) }}
+    {% include '@NetBSFichier/email/email_setup.form.twig' %}
+    {{ form_end(form) }}
+{% endblock %}

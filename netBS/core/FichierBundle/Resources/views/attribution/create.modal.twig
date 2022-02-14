@@ -1,0 +1,18 @@
+{% extends '@NetBSCore/layout/modal.layout.twig' %}
+
+{% block title %}Nouvelle attribution{% endblock %}
+
+{% block content %}
+    {{ form_start(form) }}
+    <div class="row">
+        <div class="col-6">{{ form_row(form.membre) }}</div>
+        <div class="col-6">{{ form_row(form.fonction) }}</div>
+    </div>
+
+    <div class="row">
+        <div class="col-6">{{ form_row(form.dateDebut) }}</div>
+        <div class="col-6">{{ form_row(form.dateFin) }}</div>
+    </div>
+    {{ form_end(form) }}
+
+{% endblock %}

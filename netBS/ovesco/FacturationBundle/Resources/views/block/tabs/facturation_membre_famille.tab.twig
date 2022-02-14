@@ -1,0 +1,6 @@
+<h4>Factures</h4>
+{{ render_list('ovesco.facturation.debiteur_factures', 'basic', { debiteurId: debiteurId }) }}
+
+<hr/>
+<h4 class="mt-5">Créances ouvertes</h4>
+{{ render_list('ovesco.facturation.debiteur_creances', 'netbs', { debiteurId: debiteurId }) }}

@@ -1,0 +1,61 @@
+<a href="{{ path('netbs.fichier.geniteur.create', {id: famille.id}) }}" class="btn btn-secondary">Nouveau représentant legal</a>
+
+<div style="margin:1em;"></div>
+
+<div id="geniteurs-accordion" class="accordion">
+    {% for geniteurForm in form.geniteurs %}
+
+        {% set geniteur     = geniteurForm.vars.data %}
+
+        <div class="card">
+            <div class="card-header">
+                <a data-toggle="collapse" href="#geniteur-{{ geniteur.id }}" aria-expanded="false">
+                    <i class="fas fa-chevron-down"></i>
+                    {{ geniteur.prenom }} {{ geniteur.visualNom }}
+                </a>
+            </div>
+            <div id="geniteur-{{ geniteur.id }}" data-parent="#geniteurs-accordion" class="collapse" aria-expanded="false">
+                <div class="card-body">
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h4>Informations</h4>
+                            <div class="form form-horizontal">
+                                {{ form_row(geniteurForm.nom) }}
+                                {{ form_row(geniteurForm.profession) }}
+                                {{ form_row(geniteurForm.statut) }}
+                            </div>
+
+                            <a href="{{ path('netbs.fichier.geniteur.remove', {id: geniteur.id}) }}" class="btn btn-danger" onclick="return confirm('Êtes-vous sûr de vouloir supprimer {{ geniteur }} des représentants légaux de cette famille?');">Supprimer {{ geniteur }}</a>
+                        </div>
+
+                        <div class="col-md-6">
+                            <h4>Adresses</h4>
+                            {% include '@NetBSFichier/adresse/adresses.table.twig' with {adresses: geniteurForm.adresses, item: geniteur} %}
+
+                            {% set adresse = geniteur.sendableAdresse %}
+
+                        </div>
+                    </div>
+
+                    <hr/>
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <H4>Téléphones</H4>
+                            <h5>Numéros associés à {{ geniteur.prenom }} {{ geniteur.visualNom }}</h5>
+                            {% include '@NetBSFichier/telephone/telephones.table.twig' with {form: geniteurForm, item: geniteur} %}
+                        </div>
+
+                        <div class="col-md-6">
+                            <H4>E-Mails</H4>
+                            <h5>E-mails associés à {{ geniteur.prenom }} {{ geniteur.visualNom }}</h5>
+                            {% include '@NetBSFichier/email/emails.table.twig' with {form: geniteurForm, item: geniteur} %}
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    {% endfor %}
+</div>

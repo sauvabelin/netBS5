@@ -1,0 +1,94 @@
+{% set newItemPrototype %}
+    <table id="mass-prototype-{{ _updater_id }}" style="display:none;">
+        <tr>
+            {% for protofield in items.vars.prototype.children %}
+                <td>
+                    {{ form_widget(protofield) }}
+                    {{ form_errors(protofield) }}
+                </td>
+            {% endfor %}
+            {% if allowDelete %}
+                <td>
+                    <button class="btn btn-rounded btn-space btn-secondary" type="button" data-delete-element-{{ _updater_id }}><i class="fas fa-times fa-sm"></i></button>
+                </td>
+            {% endif %}
+        </tr>
+    </table>
+{% endset %}
+
+{{ registerHtml(newItemPrototype) }}
+
+{% set updaterAddScript %}
+    <script type="text/javascript">
+
+        function onAddClick(id, allowDelete) {
+
+            var $tbody  = $('#mass-items-table-' + id).find('tbody');
+            var $row    = $('#mass-prototype-' + id).find('tr').clone();
+            var count   = $tbody.find('tr').length;
+
+            $.each($row.children('td'), function(key, td) {
+
+                var $sub    = $(td).find(':input');
+                var id      = $sub.attr("id"),
+                    name    = $sub.attr("name");
+
+                if(id !== undefined) {
+                    id = id.replace('__name__', count + 1);
+                    $sub.attr("id", id);
+                }
+
+                if(name !== undefined) {
+                    name = name.replace('__name__', count + 1);
+                    $sub.attr("name", name);
+                }
+            });
+
+            $tbody.append($row);
+
+            if(allowDelete)
+                triggerMassDeleteListener(id);
+
+            $.each($row.children(), function(k, td) {
+
+                var elem = $(td).find(':input');
+
+                if($(elem).is('[data-type="select2"]')) {
+                    $(elem).next().remove();
+                    Select2Triggerer.triggerSelect2($(elem));
+                }
+
+                if($(elem).is('[data-type="ajax-select2"]')) {
+
+                    $(elem).next().remove();
+                    Select2Triggerer.triggerAjaxSelect2($(elem));
+                }
+
+                if($(elem).is('[data-type="datetimepicker"]'))
+                    DatepickerTriggerer.triggerDatepicker($(elem));
+
+                if($(elem).is('[data-type="switch"]')) {
+                    $(elem).next().remove();
+                    SwitchTriggerer.triggerSwitch($(elem));
+                }
+            });
+        }
+
+    </script>
+{% endset %}
+
+{{ registerScript(updaterAddScript) }}
+
+{% set allowAddScript %}
+
+    <script type="text/javascript">
+        $(document).ready(function() {
+            $('[data-mass-add-{{ _updater_id }}]').click(function() {
+                onAddClick('{{ _updater_id }}', {{ allowDelete }});
+            });
+        });
+    </script>
+
+{% endset %}
+
+{{ registerScript(allowAddScript) }}

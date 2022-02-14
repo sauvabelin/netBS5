@@ -1,0 +1,52 @@
+{% extends '@NetBSCore/layout/backend.layout.twig' %}
+
+{% set title %}Facturation{% endset %}
+
+{% block main %}
+    <div class="container-fluid">
+        {% include '@NetBSCore/includes/header.include.twig' with {
+            header: 'Facturation',
+            subHeader: 'Administration et vue d\'ensemble'
+        } %}
+
+        <div class="container no-gutters">
+            <div class="row">
+                <div class="col-12 col-md-4">
+                    <a class="card" href="{{ path('ovesco.facturation.facture.attente_paiement') }}">
+                        <div class="card-header"><h3 class="card-title">Factures en attente de paiement</h3></div>
+                        <div class="card-body">
+                            <h3>{{ attentePaiement }} factures ({{ amountPaiement }} Frs)</h3>
+                        </div>
+                    </a>
+                </div>
+                <div class="col-12 col-md-4">
+                    <a class="card" href="{{ path('ovesco.facturation.facture.attente_impression') }}">
+                        <div class="card-header"><h3 class="card-title">Factures en attente d'impression</h3></div>
+                        <div class="card-body">
+                            <h3>{{ attenteImpression }} factures ({{ amountImpression }} Frs)</h3>
+                        </div>
+                    </a>
+                </div>
+                <div class="col-12 col-md-4">
+                    <div class="card bg-primary">
+                        <div class="card-header"><h3 class="card-title">Argent qui doit rentrer</h3></div>
+                        <div class="card-body"><h3 class="text-white">{{ amountPaiement + amountImpression }}.-</h3></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-12">
+                <div class="card card-table">
+                    <div class="card-header">
+                        <h5 class="card-title">Factures ouvertes</h5>
+                    </div>
+                    <div class="card-body">
+                        {{ render_list('ovesco.facturation.factures_ouvertes', 'netbs') }}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}

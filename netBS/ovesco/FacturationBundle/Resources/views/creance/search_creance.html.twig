@@ -1,0 +1,20 @@
+{% extends '@NetBSCore/searcher/searcher.html.twig' %}
+
+{% block searchForm %}
+    <div class="row">
+        <div class="col-md-3">
+            {{ form_row(form.titre) }}
+        </div>
+        <div class="col-md-3">
+            {{ form_row(form.montant) }}
+            {{ form_row(form.rabais) }}
+        </div>
+        <div class="col-md-3">
+            {{ form_row(form.isOuverte) }}
+            {{ form_row(form.remarques) }}
+        </div>
+        <div class="col-md-3">
+            {{ form_row(form.date) }}
+        </div>
+    </div>
+{% endblock %}

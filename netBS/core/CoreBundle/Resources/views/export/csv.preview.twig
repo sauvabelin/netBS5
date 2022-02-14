@@ -1,0 +1,30 @@
+{% extends '@NetBSCore/layout/raw.layout.twig' %}
+
+{% block stylesheets %}
+    <link rel="stylesheet" type="text/css" href="{{ asset('bundles/netbscore/dist/app.css') }}">
+    <link rel="stylesheet" type="text/css" href="{{ asset('bundles/netbscore/lib/handsontable/handsontable.full.min.css') }}">
+    <style>
+
+        #table {
+            width: 100vw;
+        }
+    </style>
+{% endblock %}
+
+{% block body %}
+
+    <div id="table"></div>
+
+    <script type="text/javascript" src="{{ asset('bundles/netbscore/lib/handsontable/handsontable.full.min.js') }}"></script>
+    <script type="text/javascript">
+        var dataObject  = {{ data|json_encode|raw }};
+        var headers     = {{ headers|json_encode|raw }};
+        var container   = document.getElementById('table');
+        var hot         = new Handsontable(container, {
+            data: dataObject,
+            colHeaders: headers,
+            sortIndicator: true,
+            columnSorting: true
+        });
+    </script>
+{% endblock %}

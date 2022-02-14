@@ -1,0 +1,60 @@
+<div class="menu" id="_menu">
+
+    <a href="{{ path('netbs.core.home.dashboard') }}" class="menu-logo">
+        <img src="{{ asset('bundles/netbscore/img/logo.png') }}" />
+        <span>{{ param('app', 'name') }}</span>
+    </a>
+
+    <div class="menu-content">
+
+        <ul>
+            {% for category in menu.categories|filter(c => not c.empty) %}
+
+                <li class="menu-category">{{ category.name }}</li>
+
+                {% for item in category.links %}
+
+                    {% if item.sublinks|length > 0 %}
+
+                        <li>
+                            <a>
+                                <span class="icon"><i class="{{ item.icon }}"></i></span>
+                                {{ item.label }}
+                                <span class="caret caret-up"><i class="fas fa-caret-up"></i></span>
+                                <span class="caret caret-down"><i class="fas fa-caret-down"></i></span>
+                            </a>
+                            <ul>
+                                {% for firstlevel in item.subLinks %}
+                                    <li><a href="{{ path(firstlevel.route, firstlevel.routeParams) }}">{{ firstlevel.label }}</a></li>
+                                {% endfor %}
+
+                                {% for secondLevel in item.secondLevelMenus %}
+                                    <li>
+                                        <a>{{ secondLevel.label }}<span class="caret"><i class="fas fa-caret-down"></i></span></a>
+                                        <ul>
+                                            {% for lastLink in secondLevel.subLinks %}
+                                                <li>
+                                                    <a href="{{ path(lastLink.route, lastLink.routeParams) }}">{{ lastLink.label }}</a>
+                                                </li>
+                                            {% endfor %}
+                                        </ul>
+                                    </li>
+                                {% endfor %}
+                            </ul>
+                        </li>
+
+                    {% elseif item.route %}
+                        <li {% if item.route == route %}class="active"{% endif %}>
+                            <a href="{{ path(item.route, item.routeParams) }}">
+                                <span class="icon"><i class="{{ item.icon }}"></i></span>
+                                {{ item.label }}
+                            </a>
+                        </li>
+                    {% endif %}
+
+                {% endfor %}
+
+            {% endfor %}
+        </ul>
+    </div>
+</div>

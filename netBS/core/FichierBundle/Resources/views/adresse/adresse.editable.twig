@@ -1,0 +1,10 @@
+{% set well = well is defined ? well : false %}
+
+<form class="form-horizontal {% if well %}well{% endif %}">
+    {{ form_row(adresse.rue) }}
+    {{ form_row(adresse.npa) }}
+    {{ form_row(adresse.localite) }}
+    {{ form_row(adresse.pays) }}
+    {{ form_row(adresse.expediable) }}
+    {{ form_row(adresse.remarques) }}
+</form>

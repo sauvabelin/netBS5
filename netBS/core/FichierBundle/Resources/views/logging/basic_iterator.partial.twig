@@ -1,0 +1,17 @@
+{% for key in properties %}
+    {% if property == key %}
+        <tr class="table-warning">
+            <td><b><code>{{ key }}</code> (Avant)</b></td>
+            <td>{% if oldValue %}{{ oldValue }}{% endif %}</td>
+        </tr>
+        <tr class="table-warning">
+            <td><b><code>{{ key }}</code> (Après)</b></td>
+            <td><b>{% if newValue %}{{ newValue }}{% endif %}</b></td>
+        </tr>
+    {% else %}
+        <tr>
+            <td><code>{{ key }}</code></td>
+            <td>{% if attribute(item, key) %}{{ attribute(item, key) }}{% endif %}</td>
+        </tr>
+    {% endif %}
+{% endfor %}

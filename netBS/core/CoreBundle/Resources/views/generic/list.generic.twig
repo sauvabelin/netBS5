@@ -1,0 +1,21 @@
+{% extends '@NetBSCore/layout/backend.layout.twig' %}
+
+{% block main %}
+    <div class="container-fluid">
+        {% if header is defined %}
+            {% include '@NetBSCore/includes/header.include.twig' with {
+                header: header,
+                subHeader: subHeader is defined ? subHeader : null
+            } %}
+        {% endif %}
+
+        <div class="card card-table">
+            <div class="card-header">
+                <h3 class="card-title">{{ header }}</h3>
+            </div>
+            <div class="card-body">
+                {{ render_list(list, renderer is defined ? renderer : 'netbs') }}
+            </div>
+        </div>
+    </div>
+{% endblock %}

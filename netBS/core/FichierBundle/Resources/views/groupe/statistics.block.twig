@@ -1,0 +1,198 @@
+{% form_theme statsForm '@NetBSCore/form/base.theme.twig' %}
+{{ registerJs('https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.8.0/Chart.min.js') }}
+{{ registerCss('https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.8.0/Chart.min.css') }}
+{{ registerJs(asset('bundles/netbscore/lib/datetimepicker/bootstrap-datetimepicker.min.js')) }}
+{{ registerCss(asset('bundles/netbscore/lib/datetimepicker/bootstrap-datetimepicker.min.css')) }}
+
+<div class="d-flex justify-content-between">
+  <div class="d-flex stats-control">
+    <div class="mr-3">{{ form_row(statsForm.begin, { attr: { 'data-val': 'begin' } }) }}</div>
+    <div class="mr-3">{{ form_row(statsForm.steps, { attr: { 'data-val': 'steps' } }) }}</div>
+    <div>{{ form_row(statsForm.end, { attr: { 'data-val': 'end' } }) }}</div>
+  </div>
+  <div class="d-flex series-control">
+    <div class="mr-3">{{ form_row(statsForm.total, { attr: { 'data-val': 'total' } }) }}</div>
+    <div class="mr-3">{{ form_row(statsForm.hommes, { attr: { 'data-val': 'hommes' } }) }}</div>
+    <div>{{ form_row(statsForm.femmes, { attr: { 'data-val': 'femmes' } }) }}</div>
+  </div>
+</div>
+
+<canvas id="groupe-effectifs"></canvas>
+<div id="groupe-effectifs"></div>
+
+{% set chartScript %}
+<script>
+
+  const chart = new Chart($('#groupe-effectifs'), {
+    type: 'line',
+    data: {
+      labels: [],
+      datasets: [
+        {
+          label: 'Tout',
+          data: [],
+          backgroundColor: 'rgba(124,33,193,0.11)',
+          borderWidth: 3,
+          borderColor: '#7c21c1',
+          pointRadius: 1,
+          pointHoverRadius: 4,
+          pointHoverBackgroundColor: '#7c21c1',
+        },
+        {
+          label: 'Hommes',
+          data: [],
+          backgroundColor: 'rgba(0,123,255,0.11)',
+          borderWidth: 3,
+          borderColor: '#007bff',
+          pointRadius: 1,
+          pointHoverRadius: 4,
+          pointHoverBackgroundColor: '#007bff',
+        },
+        {
+          label: 'Femmes',
+          data: [],
+          backgroundColor: 'rgba(255,0,3,0.1)',
+          borderWidth: 3,
+          borderColor: '#ff0003',
+          pointRadius: 1,
+          pointHoverRadius: 4,
+          pointHoverBackgroundColor: '#ff0003',
+        }
+      ],
+    },
+    options: {
+      aspectRatio: 3,
+      legend: {
+        display: false,
+      },
+      scales: {
+        xAxes: [{
+          ticks: {
+            callback: (d) => {
+              const pad0 = (v) => v < 10 ? '0' + v : v;
+              return pad0(d.getDate()) + '.' + pad0(d.getMonth() + 1) + '.' + d.getFullYear();
+            },
+          }
+        }],
+        yAxes: [{
+          ticks: {
+            callback: function(value) {
+              if (Math.floor(value) === value) {
+                return value;
+              }
+            }
+          }
+        }],
+      },
+    }
+  });
+
+  const statsState = {
+    begin: $('.stats-control [data-val="begin"]').val(),
+    steps: $('.stats-control [data-val="steps"]').val(),
+    end: $('.stats-control [data-val="end"]').val(),
+  };
+
+  const serieState = {
+    total: $('.series-control [data-val="total"]').is(':checked'),
+    hommes: $('.series-control [data-val="hommes"]').is(':checked'),
+    femmes: $('.series-control [data-val="femmes"]').is(':checked'),
+  };
+
+  function refresh() {
+     NProgress.start();
+      const pathPart = 'begin=' + statsState.begin + '&end=' + statsState.end + '&steps=' + statsState.steps;
+      fetch('{{ path('netbs.fichier.groupe.statistics_effectifs', { id: groupe.id }) }}?' + pathPart).then(r => r.json()).then((data) => {
+
+        chart.data.labels.splice(0);
+        chart.data.datasets[0].data.splice(0);
+        chart.data.datasets[1].data.splice(0);
+        chart.data.datasets[2].data.splice(0);
+
+        data.forEach((it) => {
+          chart.data.labels.push(new Date(it.pallier.date));
+          chart.data.datasets[0].data.push(it.countAll);
+          chart.data.datasets[1].data.push(it.countHomme);
+          chart.data.datasets[2].data.push(it.countAll - it.countHomme);
+          console.log(it);
+        });
+
+        toggleSeries();
+        NProgress.done();
+      });
+  }
+
+  function toggleSeries() {
+
+    chart.data.datasets[0].hidden = false;
+    chart.data.datasets[1].hidden = false;
+    chart.data.datasets[2].hidden = false;
+
+    let totalMin = Infinity;
+    let totalMax = 0;
+    let minHommes = Infinity;
+    let minFemmes = Infinity;
+    let maxHommes = 0;
+    let maxFemmes = 0;
+
+    if (serieState.total) {
+      chart.data.datasets[0].data.forEach((countAll) => {
+        if (totalMin > countAll) totalMin = countAll;
+        if (totalMax < countAll) totalMax = countAll;
+      });
+    }
+
+    if (serieState.hommes) {
+      chart.data.datasets[1].data.forEach((countHommes) => {
+        if (minHommes > countHommes) minHommes = countHommes;
+        if (maxHommes < countHommes) maxHommes = countHommes;
+      });
+    }
+
+    if (serieState.femmes) {
+      chart.data.datasets[2].data.forEach((countFemmes) => {
+        if (minFemmes > countFemmes) minFemmes = countFemmes;
+        if (maxFemmes < countFemmes) maxFemmes = countFemmes;
+      });
+    }
+
+    const max = Math.max(
+      (serieState.total ? totalMax : 0),
+      (serieState.hommes ? maxHommes : 0),
+      (serieState.femmes ? maxFemmes : 0),
+    );
+
+    const min = Math.min(
+      (serieState.total ? totalMin : Infinity),
+      (serieState.hommes ? minHommes : Infinity),
+      (serieState.femmes ? minFemmes : Infinity),
+    );
+
+    const diff = Math.ceil((max - min) / 20);
+    const minSupp = min - diff;
+    chart.options.scales.yAxes[0].ticks.suggestedMin = minSupp > 0 ? minSupp : 0;
+    chart.options.scales.yAxes[0].ticks.suggestedMax = max + diff;
+    chart.update();
+
+
+    chart.data.datasets[0].hidden = !serieState.total;
+    chart.data.datasets[1].hidden = !serieState.hommes;
+    chart.data.datasets[2].hidden = !serieState.femmes;
+    chart.update();
+  }
+
+  $('.stats-control input').change(function() {
+    statsState[$(this).attr('data-val')] = $(this).val();
+    refresh();
+  });
+
+  $('.series-control input').change(function() {
+    serieState[$(this).attr('data-val')] = $(this).is(':checked');
+    toggleSeries();
+  });
+
+  refresh();
+</script>
+{% endset %}
+
+{{ registerScript(chartScript) }}

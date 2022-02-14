@@ -1,0 +1,192 @@
+services:
+
+    _defaults:
+        autowire: true
+        autoconfigure: true
+
+    Ovesco\FacturationBundle\Controller\:
+        resource: '../../Controller'
+        tags: ['controller.service_arguments']
+
+    Ovesco\FacturationBundle\DataFixtures\:
+        resource: '../../DataFixtures'
+        tags: ['doctrine.fixture.orm']
+
+    Ovesco\FacturationBundle\Form\Type\DebiteurType:
+        tags:
+            - { name: form.type }
+
+    Ovesco\FacturationBundle\Select2\Select2DebiteurProvider:
+        tags:
+            - { name: netbs.select2_provider }
+
+    Ovesco\FacturationBundle\Subscriber\DoctrineDebiteurSubscriber:
+        tags:
+            - { name: doctrine.event_subscriber }
+
+    Ovesco\FacturationBundle\Exporter\PDFFacture:
+        tags:
+            - { name: netbs.exporter }
+
+    Ovesco\FacturationBundle\Exporter\CSVPaiements:
+        tags:
+            - { name: netbs.exporter }
+
+    Ovesco\FacturationBundle\Exporter\PDFQrFacture:
+        tags:
+            - { name: netbs.exporter }
+
+    Ovesco\FacturationBundle\ListModel\DebiteurFacturesList:
+        tags:
+            - { name: netbs.list.model }
+
+    Ovesco\FacturationBundle\ListModel\DebiteurCreancesList:
+        tags:
+            - { name: netbs.list.model }
+
+    Ovesco\FacturationBundle\ListModel\FacturesOuvertesList:
+        tags:
+            - { name: netbs.list.model }
+
+    Ovesco\FacturationBundle\ListModel\FactureModelsList:
+        tags:
+            - { name: netbs.list.model }
+
+    Ovesco\FacturationBundle\ListModel\FactureCreancesList:
+        tags:
+            - { name: netbs.list.model }
+
+    Ovesco\FacturationBundle\ListModel\GivenFacturesList:
+        tags:
+            - { name: netbs.list.model }
+
+    Ovesco\FacturationBundle\ListModel\FactureRappelsList:
+        tags:
+            - { name: netbs.list.model }
+
+    Ovesco\FacturationBundle\ListModel\FacturePaiementsList:
+        tags:
+            - { name: netbs.list.model }
+
+    Ovesco\FacturationBundle\ListModel\FacturesAttentePaiementList:
+        tags:
+            - { name: netbs.list.model }
+
+    Ovesco\FacturationBundle\ListModel\FacturesAttenteImpressionList:
+        tags:
+            - { name: netbs.list.model }
+
+    Ovesco\FacturationBundle\ListModel\ComptesList:
+        tags:
+            - { name: netbs.list.model }
+
+    Ovesco\FacturationBundle\Form\FactureConfigType:
+        tags:
+            - { name: form.type }
+
+    Ovesco\FacturationBundle\Form\QrFactureConfigType:
+        tags:
+            - { name: form.type }
+
+    Ovesco\FacturationBundle\Listener\MembreFamillePageListener:
+        tags:
+            - { name: kernel.event_listener, event: netbs.block.pre_render_layout, method: extendsMembreFamillePage }
+
+    Ovesco\FacturationBundle\Voter\FacturationVoter:
+        tags:
+            - { name: security.voter }
+
+    Ovesco\FacturationBundle\Listener\MainMenuListener:
+        tags:
+            - { name: kernel.event_listener, event: netbs.menu.extend, method: onMenuConfigure, priority: 80 }
+
+    Ovesco\FacturationBundle\MassUpdater\CreanceMassUpdater:
+        tags:
+            - { name: netbs.mass_updater }
+
+    Ovesco\FacturationBundle\Bridge\CreanceToAdressable:
+        tags:
+              - { name: netbs.bridge }
+
+    Ovesco\FacturationBundle\ListModel\DynamicFactureList:
+        tags:
+            - { name: netbs.list.model }
+            - { name: netbs.dynamic_model }
+
+    Ovesco\FacturationBundle\Bridge\FactureToAdressable:
+        tags:
+              - { name: netbs.bridge }
+
+    Ovesco\FacturationBundle\Listener\NetbsToolbarListener:
+        tags:
+            - { name: kernel.event_listener, event: netbs.list_model.renderer.toolbar, method: extend }
+
+    Ovesco\FacturationBundle\Searcher\CreanceSearcher:
+        tags:
+            - { name: netbs.searcher }
+            - { name: netbs.list.model }
+
+    Ovesco\FacturationBundle\Searcher\PaiementSearcher:
+        tags:
+            - { name: netbs.searcher }
+            - { name: netbs.list.model }
+
+    Ovesco\FacturationBundle\Exporter\CSVFacturesPayees:
+        tags:
+            - { name: netbs.exporter }
+
+    Ovesco\FacturationBundle\Searcher\FactureSearcher:
+        tags:
+            - { name: netbs.searcher }
+            - { name: netbs.list.model }
+
+    Ovesco\FacturationBundle\Helper\FactureHelper:
+        tags:
+            - { name: netbs.helper }
+
+    Ovesco\FacturationBundle\Searcher\CountBinder:
+        tags:
+            - { name: netbs.searcher.binder }
+
+    Ovesco\FacturationBundle\Searcher\CompareBinder:
+        tags:
+            - { name: netbs.searcher.binder }
+
+    Ovesco\FacturationBundle\Searcher\LatestDateBinder:
+        tags:
+            - { name: netbs.searcher.binder }
+
+
+    Ovesco\FacturationBundle\Searcher\HasBeenPrintedBinder:
+        tags:
+            - { name: netbs.searcher.binder }
+
+    Ovesco\FacturationBundle\Searcher\FactureIdBinder:
+        tags:
+            - { name: netbs.searcher.binder }
+
+    Ovesco\FacturationBundle\Searcher\CreanceOuverteBinder:
+        tags:
+            - { name: netbs.searcher.binder }
+
+    Ovesco\FacturationBundle\Searcher\CreanceInFactureBinder:
+        tags:
+            - { name: netbs.searcher.binder }
+
+    Ovesco\FacturationBundle\Deleter\CreanceDeleter:
+        tags:
+            - { name: netbs.deleter }
+
+    Ovesco\FacturationBundle\Deleter\FactureDeleter:
+        tags:
+            - { name: netbs.deleter }
+
+
+    Ovesco\FacturationBundle\ListModel\Column\FactureCreancesColumn:
+        tags:
+            - { name: netbs.list.column }
+
+    Ovesco\FacturationBundle\Listener\RemoveMembreListener:
+        tags:
+            - { name: kernel.event_listener, event: netbs.remove.membre, method: onRemove }
+            - { name: kernel.event_listener, event: netbs.remove.famille, method: onRemoveFamille }

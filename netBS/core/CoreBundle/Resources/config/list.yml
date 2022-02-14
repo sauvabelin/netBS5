@@ -1,0 +1,83 @@
+services:
+
+    _defaults:
+        autowire: true
+        autoconfigure: true
+
+
+#actions
+    NetBS\CoreBundle\ListModel\Action\LinkAction:
+        tags:
+            - {name: netbs.list_action }
+
+    NetBS\CoreBundle\ListModel\Action\IconAction:
+        tags:
+            - {name: netbs.list_action }
+
+    NetBS\CoreBundle\ListModel\Action\RemoveAction:
+        tags:
+            - {name: netbs.list_action }
+
+    NetBS\CoreBundle\ListModel\Action\ModalAction:
+        arguments:
+            - "@twig.extension.assets"
+        tags:
+            - {name: netbs.list_action }
+
+#listes
+
+    NetBS\CoreBundle\ListModel\NewsList:
+        tags:
+            - { name: netbs.list.model }
+
+    NetBS\CoreBundle\ListModel\NewsChannelsList:
+        tags:
+            - { name: netbs.list.model }
+
+    NetBS\CoreBundle\ListModel\ParametersList:
+        tags:
+            - { name: netbs.list.model }
+
+    NetBS\CoreBundle\ListModel\BasicRenderer:
+        tags:
+            - { name: netbs.list.renderer }
+
+    NetBS\CoreBundle\ListModel\NetBSRenderer:
+        tags:
+            - { name: netbs.list.renderer }
+
+    NetBS\CoreBundle\ListModel\HugeListRenderer:
+        tags:
+            - { name: netbs.list.renderer }
+
+    NetBS\CoreBundle\ListModel\Column\ActionColumn:
+        tags:
+            - { name: netbs.list.column }
+
+    NetBS\CoreBundle\ListModel\Column\LinkColumn:
+        tags:
+            - { name: netbs.list.column }
+
+    NetBS\CoreBundle\ListModel\Column\RemoveFromDynamicColumn:
+        tags:
+            - { name: netbs.list.column }
+
+    NetBS\CoreBundle\ListModel\Column\PopoverColumn:
+        tags:
+            - { name: netbs.list.column }
+
+    NetBS\CoreBundle\ListModel\Column\ArrayColumn:
+        tags:
+            - { name: netbs.list.column }
+
+    NetBS\CoreBundle\ListModel\Column\HelperColumn:
+        tags:
+            - { name: netbs.list.column }
+
+    NetBS\CoreBundle\ListModel\Column\XEditableColumn:
+        tags:
+            - { name: netbs.list.column }
+
+    NetBS\CoreBundle\ListModel\LoggedChangesList:
+        tags:
+            - { name: netbs.list.model }

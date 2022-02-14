@@ -1,0 +1,25 @@
+{% extends '@NetBSCore/layout/backend.layout.twig' %}
+
+{% block main %}
+    <div class="container-fluid">
+        {% include '@NetBSCore/includes/header.include.twig' with {
+            header: 'Importer un fichier BVR',
+            subHeader: 'Charger un fichier BVR dans le système et mettre à jour les factures concernées',
+        } %}
+        <div class="row">
+            <div class="col-md-4">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="card-title">Choisir un fichier</h5>
+                    </div>
+                    <div class="card-body">
+                        {{ form_start(form) }}
+                        {{ form_row(form.file) }}
+                        <button type="submit" class="btn btn-primary">Charger le fichier</button>
+                        {{ form_end(form) }}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}

@@ -1,0 +1,51 @@
+{{ registerJs(asset('bundles/netbscore/js/modal.js')) }}
+
+{% set tableId  = event.tableId %}
+
+<div class="btn-group dropdown dropup">
+
+    <button type="button" data-toggle="dropdown" class="btn btn-primary dropdown-toggle" aria-expanded="false">
+        Ajouter la sélection à une liste
+        <span class="icon-dropdown mdi mdi-chevron-down"></span>
+    </button>
+
+    <div role="menu" class="dropdown-menu">
+
+        {% for list in lists %}
+            <a class="dropdown-item" href="#" data-upload-list-{{ tableId }} data-list-id="{{ list.id }}">{{ list.name }}</a></li>
+        {% endfor %}
+
+        {% if lists|length > 0 %}
+            <div class="dropdown-divider"></div>
+        {% endif %}
+        <li><a class="dropdown-item" href="#" id="{{ tableId }}_newDL">Nouvelle liste</a></li>
+    </div>
+</div>
+
+{% include '@NetBSCore/javascript/dynamic.javascript.twig' %}
+
+{% set dynamicsScript %}
+
+    <script type="text/javascript">
+        $('[data-upload-list-{{ tableId }}]').on('click', function() {
+
+            BSDynamic.addToList(
+                $(this).attr("data-list-id"),
+                "{{ event.table.itemClass|toBase64 }}",
+                {{ tableId }}.getSelectedIds()
+            );
+        });
+
+        $('#{{ tableId }}_newDL').on('click', function() {
+
+            BSDynamic.createList("{{ event.table.itemClass|toBase64 }}", function(listId) {
+                BSDynamic.addToList(
+                    listId,
+                    "{{ event.table.itemClass|toBase64 }}",
+                    {{ tableId }}.getSelectedIds());
+            });
+        });
+    </script>
+{% endset %}
+
+{{ registerScript(dynamicsScript) }}

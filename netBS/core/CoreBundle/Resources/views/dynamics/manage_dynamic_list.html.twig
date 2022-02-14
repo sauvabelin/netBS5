@@ -1,0 +1,49 @@
+{% extends '@NetBSCore/layout/backend.layout.twig' %}
+
+{% form_theme form '@NetBSCore/form/xeditable.theme.twig' %}
+
+{% block main %}
+
+    <div class="container-fluid">
+
+        <div class="row">
+
+            <div class="col-12 col-md-3">
+
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="card-title">{{ list.name }}</h5>
+                        <h6 class="card-subtitle">{{ list.items|length }} élément(s)</h6>
+                    </div>
+                    <div class="card-body">
+                        <form class="form-horizontal">
+                            {{ form_row(form.name) }}
+                        </form>
+                    </div>
+
+                    <div class="card-footer">
+                        <div role="group" class="btn-group btn-group-justified">
+                            <a onclick="return confirm('Etes-vous sur de vouloir supprimer cette liste ? C\'est IRREVERSIBLE!');" href="{{ path('netbs.core.dynamics_list.remove_list', {id: list.id}) }}" class="btn btn-secondary">Supprimer cette liste</a>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+            <div class="col-12 col-md-9">
+                <div class="card card-table">
+                    <div class="card-header">
+                        <h5 class="card-title">Contenu</h5>
+                    </div>
+
+                    <div class="card-body">
+                        {{ render_list(model, 'netbs', {listId: list.id}) }}
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+    </div>
+
+{% endblock %}

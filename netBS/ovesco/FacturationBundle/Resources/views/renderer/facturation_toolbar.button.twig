@@ -1,0 +1,73 @@
+<div class="btn-group dropup">
+    <button type="button" data-toggle="dropdown" class="btn btn-secondary ml-1 dropdown-toggle">
+        Facturation
+        <span class="icon-dropdown mdi mdi-chevron-down"></span>
+    </button>
+
+    <div role="menu" class="dropdown-menu dropdown-menu-right">
+        {% if addCreances %}<a class="dropdown-item" style="cursor:pointer;" id="add-creances-{{ tableId }}">Ajouter des créances</a>{% endif %}
+        {% if addRappels %}<a class="dropdown-item" style="cursor:pointer;" id="add-rappels-{{ tableId }}">Ajouter des rappels</a>{% endif %}
+        {% if generate %}<a class="dropdown-item" style="cursor:pointer;" id="generate-factures-{{ tableId }}">Fusionner en facture</a>{% endif %}
+        {% if generate %}<a class="dropdown-item" style="cursor:pointer;" id="check-factures-{{ tableId }}">Prévisualiser la fusion</a>{% endif %}
+    </div>
+</div>
+
+{% set facturationScript %}
+
+    <script>
+        (function() {
+
+            $('#add-creances-{{ tableId }}').click(function() {
+
+                var modal = new BSModal("{{ path('ovesco.facturation.creance.modal_add_many') }}", {
+                    selectedIds: {{ tableId }}.getSelectedIds(),
+                    itemsClass:  "{{ table.itemClass|toBase64 }}"
+                });
+                modal.launch();
+            });
+
+            $('#add-rappels-{{ tableId }}').click(function() {
+
+                var modal = new BSModal("{{ path('ovesco.facturation.rappel.add_modal') }}", {
+                        selectedIds: {{ tableId }}.getSelectedIds(),
+                    itemsClass:  "{{ table.itemClass|toBase64 }}"
+                });
+                modal.launch();
+            });
+
+            $('#generate-factures-{{ tableId }}').click(function() {
+                var modal = new BSModal("{{ path('ovesco.facturation.creance.merge') }}", {
+                    creanceIds: {{ tableId }}.getSelectedIds(),
+                });
+                modal.launch();
+            });
+
+            $('#check-factures-{{ tableId }}').click(function() {
+                PostLink("{{ path('ovesco.facturation.creance.check_merge') }}", {
+                    creanceIds: {{ tableId }}.getSelectedIds(),
+                });
+            });
+        })();
+    </script>
+    {#
+    <script>
+        $('#generate-factures-{{ tableId }}').click(function() {
+            PostLink("{{ path() }}", generateData{{ tableId }}())
+        });
+
+        function generateData{{ tableId }}() {
+
+            return {
+                modelAlias: "{{ table.model.alias }}",
+                selectedIds: {{ tableId }}.getSelectedIds()
+            }
+        }
+    </script>
+    #}
+{% endset %}
+
+
+{{ registerScript(facturationScript) }}
+
+{{ registerJs(asset('bundles/netbscore/js/post_link.js')) }}
+{{ registerJs(asset('bundles/netbscore/js/modal.js')) }}

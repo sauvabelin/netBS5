@@ -1,0 +1,44 @@
+{% extends '@NetBSCore/layout/backend.layout.twig' %}
+
+{% macro displayContent(title, membres) %}
+    <div class="card">
+        <div class="card-header">
+            <h5 class="card-title">{{ title }} ({{ membres|length }})</h5>
+        </div>
+        <div class="card-body">
+            <ul style="height:20em;overflow:auto;">
+                {% for m in membres %}
+                    <li>{{ m.__toString() }}</li>
+                {% endfor %}
+            </ul>
+        </div>
+    </div>
+{% endmacro %}
+
+{% block main %}
+    {% import _self as self %}
+
+    <div class="container-fluid">
+        {% include '@NetBSCore/includes/header.include.twig' with {
+            header: 'Cotisations',
+            subHeader: 'Générer les cotisations annuelles pour les membres'
+        } %}
+
+        <div class="row">
+            <div class="col-12 col-md-4">
+                {{ self.displayContent('Louveteaux & Someo', lvtx) }}
+                <a href="#" class="btn btn-primary">Générer la cotisation {{ "now"|date('Y') }} louveteaux & someo</a>
+            </div>
+
+            <div class="col-12 col-md-4">
+                {{ self.displayContent('Cotisations normales', normal) }}
+                <a href="#" class="btn btn-primary">Générer la cotisation {{ "now"|date('Y') }} pour les gens normaux</a>
+            </div>
+
+            <div class="col-12 col-md-4">
+                {{ self.displayContent('ADABS', adabs) }}
+                <a href="#" class="btn btn-primary">Générer la cotisation {{ "now"|date('Y') }} pour l'Adabs</a>
+            </div>
+        </div>
+    </div>
+{% endblock %}

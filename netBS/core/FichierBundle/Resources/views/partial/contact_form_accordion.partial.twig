@@ -1,0 +1,44 @@
+{% set accordionId  = uniqid() %}
+
+<div id="{{ accordionId }}-accordion" class="accordion">
+
+    <div class="card">
+        <div class="card-header">
+            <a data-toggle="collapse" href="#{{ accordionId }}-membre-contact-adresse" aria-expanded="false">
+                <i class="fas fa-chevron-down"></i> Adresses
+            </a>
+        </div>
+
+        <div id="{{ accordionId }}-membre-contact-adresse" class="collapse" data-parent="#{{ accordionId }}-accordion">
+            <div class="card-body">
+                {% include '@NetBSFichier/generic/addable.form.twig' with {form: form.adresses} %}
+            </div>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-header">
+            <a data-toggle="collapse"href="#{{ accordionId }}-membre-contact-telephones" aria-expanded="false">
+                <i class="fas fa-chevron-down"></i> Téléphones
+            </a>
+        </div>
+        <div id="{{ accordionId }}-membre-contact-telephones" class="collapse" data-parent="#{{ accordionId }}-accordion">
+            <div class="card-body">
+                {% include '@NetBSFichier/generic/addable.form.twig' with {form: form.telephones} %}
+            </div>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-header">
+            <a data-toggle="collapse" href="#{{ accordionId }}-membre-contact-emails" aria-expanded="false">
+                <i class="fas fa-chevron-down"></i> Emails
+            </a>
+        </div>
+        <div id="{{ accordionId }}-membre-contact-emails" class="collapse" data-parent="#{{ accordionId }}-accordion">
+            <div class="card-body">
+                {% include '@NetBSFichier/generic/addable.form.twig' with {form: form.emails} %}
+            </div>
+        </div>
+    </div>
+</div>

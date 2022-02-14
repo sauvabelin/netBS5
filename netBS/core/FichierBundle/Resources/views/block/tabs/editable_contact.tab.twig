@@ -1,0 +1,31 @@
+
+{{ registerJs(asset('bundles/netbscore/js/modal.js')) }}
+
+{% form_theme form '@NetBSCore/form/xeditable.theme.twig' %}
+<div class="row">
+    <div class="col-lg-12">
+
+        <p class="alert alert-success">
+            Ces informations de contact sont directement rattachées à {{ item }}.
+        </p>
+        <h4>Adresses postales</h4>
+        <h5>Adresses enregistrées pour {{ item }}</h5>
+
+        {% include '@NetBSFichier/adresse/adresses.table.twig' with {adresses: form.adresses} %}
+    </div>
+</div>
+<hr/>
+
+<div class="row">
+    <div class="col-md-6">
+        <H4>Téléphones</H4>
+        <h5>Numéros enregistrés pour {{ item }}</h5>
+        {% include '@NetBSFichier/telephone/telephones.table.twig' %}
+    </div>
+
+    <div class="col-md-6">
+        <H4>E-Mails</H4>
+        <h5>Adresses e-mails enregistrés pour {{ item }}</h5>
+        {% include '@NetBSFichier/email/emails.table.twig' %}
+    </div>
+</div>

@@ -1,0 +1,61 @@
+{% extends '@NetBSCore/searcher/searcher.html.twig' %}
+
+{% block searchForm %}
+<div class="row">
+
+    <div class="col-12 col-md-6">
+
+        <h4>Informations de base</h4>
+
+        <div class="row">
+            <div class="col-12 col-md-4">
+                {{ form_row(form.nom) }}
+                {{ form_row(form.prenom) }}
+
+                <div class="row">
+                    <div class="col-12 col-md-6">{{ form_row(form.sexe) }}</div>
+                    <div class="col-12 col-md-6">{{ form_row(form.statut) }}</div>
+                </div>
+            </div>
+
+            <div class="col-12 col-md-4">
+                {{ form_row(form.naissance.biggerThan) }}
+                {{ form_row(form.inscription.biggerThan) }}
+                {{ form_row(form.desinscription.biggerThan) }}
+            </div>
+
+            <div class="col-12 col-md-4">
+                {{ form_row(form.naissance.lowerThan) }}
+                {{ form_row(form.inscription.lowerThan) }}
+                {{ form_row(form.desinscription.lowerThan) }}
+            </div>
+        </div>
+    </div>
+
+
+    <div class="col-12 col-md-4">
+        <h4>Attribution</h4>
+
+        <div class="row">
+            <div class="col-12 col-md-6">
+                {{ form_row(form.attributions.fonction) }}
+                {{ form_row(form.attributions.dateDebut) }}
+                {{ form_row(form.attributions.actif) }}
+            </div>
+
+            <div class="col-12 col-md-6">
+                {{ form_row(form.attributions.groupe) }}
+                {{ form_row(form.attributions.dateFin) }}
+            </div>
+        </div>
+    </div>
+
+    <div class="col-12 col-md-2">
+        <h4>Distinction</h4>
+        {{ form_row(form.obtentionsDistinction.distinction) }}
+        {{ form_row(form.obtentionsDistinction.date.biggerThan) }}
+        {{ form_row(form.obtentionsDistinction.date.lowerThan) }}
+    </div>
+</div>
+
+{% endblock %}

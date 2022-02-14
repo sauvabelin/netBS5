@@ -1,0 +1,17 @@
+services:
+
+    _defaults:
+        autowire: true
+        autoconfigure: true
+
+    NetBS\SecureBundle\Voter\UserVoter:
+        tags:
+            - { name: security.voter }
+
+    NetBS\SecureBundle\Voter\AutorisationVoter:
+        tags:
+        - { name: security.voter }
+
+    NetBS\SecureBundle\Voter\BSRoleVoter:
+        tags:
+            - { name: security.voter }

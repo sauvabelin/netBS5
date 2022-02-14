@@ -1,0 +1,85 @@
+{% extends '@NetBSCore/layout/base.layout.twig' %}
+
+{% block bodyClass %}be-splash-screen{% endblock %}
+
+{% block body %}
+
+
+    {% set loginstyle %}
+        <style>
+            body {
+                display:flex;
+                align-items:center;
+                justify-content:center;
+                background: #EEEEEE;
+            }
+
+            .card {
+
+                width:100%;
+                min-width:330px;
+                max-width:400px;
+                padding:0.5rem;
+            }
+
+            .card-title {
+
+                padding:1rem 0 0.5rem 0;
+            }
+        </style>
+    {% endset %}
+
+    {{ registerStyle(loginstyle) }}
+
+    <div>
+        <div class="card">
+            <div class="card-header text-center">
+                <img src="{{ asset('bundles/netbscore/img/logo.png') }}" alt="logo" width="64" height="64" class="logo-img">
+                <h5 class="card-title">{{ param('app', 'name') }} | Connexion</h5>
+            </div>
+
+            <div class="card-body">
+                <form action="{{ path('netbs.secure.login.login') }}" method="POST">
+
+                    <div class="form-group">
+                        <div class="input-group">
+                            <input id="username" name="_username" type="text" placeholder="Nom d'utilisateur" class="form-control">
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <div class="input-group">
+                            <input id="password" name="_password" type="password" placeholder="Mot de passe" class="form-control">
+                        </div>
+                    </div>
+
+                    <div class="form-group row">
+
+                        <div class="col-6">
+
+                            <div class="custom-control custom-checkbox">
+                                <input type="checkbox" class="custom-control-input" id="remember" name="_remember_me">
+                                <label class="custom-control-label" for="remember">Se souvenir</label>
+                            </div>
+
+                        </div>
+                        <div class="col-6">
+                            {#
+                            <a href="#">Mot de passe oublié?</a>
+                            #}
+                        </div>
+                    </div>
+                    <button data-dismiss="modal" class="btn btn-primary btn-block">Connexion</button>
+
+                    {% if error %}
+                        <p class="text-danger text-center">{{ error.messageKey|trans(error.messageData, 'security') }}</p>
+                    {% endif %}
+                </form>
+            </div>
+        </div>
+
+        <p class="text-muted text-center">&copy; {{ "now"|date('Y') }} - {{ param('app', 'organization') }}</p>
+
+    </div>
+
+{% endblock %}

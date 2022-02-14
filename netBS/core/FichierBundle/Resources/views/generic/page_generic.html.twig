@@ -1,0 +1,37 @@
+{% extends '@NetBSCore/layout/backend.layout.twig' %}
+
+{% block main %}
+
+    {{ registerJs(asset('bundles/netbscore/js/modal.js')) }}
+
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-9">
+                <div class="card card-table">
+                    <div class="card-header">
+                        <h5 class="card-title">{% if title %}{{ title }}{% else %}Tous les éléments{% endif %}</h5>
+                        {% if subtitle is defined %}
+                        <h6 class="card-subtitle">{{ subtitle }}</h6>
+                        {% endif %}
+                    </div>
+
+                    <div class="card-body">
+                        {{ render_list(list, 'basic') }}
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-3">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="card-title">Actions</h5>
+                    </div>
+                    <div class="card-body">
+                        <button data-modal data-modal-url="{{ modalPath }}" class="btn btn-primary">Nouveau</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+{% endblock %}

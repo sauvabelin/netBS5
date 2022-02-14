@@ -1,0 +1,27 @@
+{% extends '@NetBSCore/layout/backend.layout.twig' %}
+
+{% block main %}
+
+    <div class="container-fluid">
+
+        {% set addUserBtn %}<a href="{{ path('netbs.secure.user.add_user') }}" class="btn btn-primary">Ajouter un utilisateur</a>{% endset %}
+
+        {% include '@NetBSCore/includes/header.include.twig' with {
+        header: "Utilisateurs",
+        subHeader: "Rechercher un utilisateur enregistré",
+        actions: [addUserBtn]
+        } %}
+
+        <div class="row">
+            <div class="col-12">
+                <div class="card card-table">
+                    <div class="card-body">
+                        {{ render_list('netbs.secure.users', 'netbs', {username: username}) }}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+{% endblock %}

@@ -1,0 +1,25 @@
+{% set switchInitScript %}
+    <script type="text/javascript">
+
+        var SwitchTriggerer = {
+
+            triggerSwitch: function($item) {
+
+                $item.each(function(i, ele) {
+                    new Switchery(ele, {
+                        size: 'small',
+                        color: '#4285f4'
+                    });
+                });
+            }
+        };
+
+        $(document).ready(function(){
+            SwitchTriggerer.triggerSwitch($('[data-type=switch]'));
+        });
+
+
+    </script>
+{% endset %}
+
+{{ registerScript(switchInitScript) }}

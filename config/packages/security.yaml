@@ -1,0 +1,60 @@
+security:
+    encoders:
+        App\Entity\BSUser:
+            algorithm: sha512
+            iterations: 5000
+
+    providers:
+        database:
+            entity:
+                class: App\Entity\BSUser
+                property: username
+
+    firewalls:
+        dev:
+            pattern: ^/(_(profiler|wdt)|css|images|js)/
+            security: false
+
+        gettoken:
+            pattern:   ^/api/v1/netBS/gettoken
+            stateless: true
+            anonymous: true
+            json_login:
+                check_path: /api/v1/netBS/gettoken
+                success_handler: lexik_jwt_authentication.handler.authentication_success
+                failure_handler: lexik_jwt_authentication.handler.authentication_failure
+
+        api:
+            pattern:   ^/api/v1/netBS
+            stateless: true
+            anonymous: false
+            provider: database
+            guard:
+                authenticators:
+                    - lexik_jwt_authentication.jwt_token_authenticator
+
+        netbs:
+            anonymous:  true
+            switch_user: true
+            pattern:    ^/netBS
+            form_login:
+                login_path:   netbs.secure.login.login
+                check_path:   netbs.secure.login.login
+                default_target_path:  netbs.core.home.dashboard
+            remember_me:
+                secret:   '%kernel.secret%'
+                lifetime: 604800
+                path:     /netBS
+            logout:
+                path:   netbs.secure.login.logout
+                target: netbs.secure.login.login
+
+    # Easy way to control access for large sections of your site
+    # Note: Only the *first* access control that matches will be used
+    access_control:
+        - { path: ^/api/v1/netBS/gettoken,          roles: IS_AUTHENTICATED_ANONYMOUSLY }
+        - { path: ^/api/v1/netBS,                   roles: IS_AUTHENTICATED_FULLY }
+        - { path: ^/netBS/secure/login,             roles: [ IS_AUTHENTICATED_ANONYMOUSLY ] }
+        - { path: ^/netBS/secure/user/my-account,   roles: [ ROLE_USER ] }
+        - { path: ^/netBS/secure,                   roles: [ ROLE_ADMIN ] }
+        - { path: ^/netBS,                          roles: [ IS_AUTHENTICATED_FULLY, ROLE_USER ] }

@@ -1,0 +1,66 @@
+<h6>Créances</h6>
+<table class="table table-sm">
+    <thead>
+    <tr>
+        <th>Titre</th>
+        <th>Montant</th>
+        <th>Remarques</th>
+    </tr>
+    </thead>
+    <tbody>
+    {% for creance in facture.creances %}
+        <tr>
+            <td>{{ creance.titre }}</td>
+            <td>{{ creance.montant }}</td>
+            <td>{{ creance.remarques }}</td>
+        </tr>
+    {% endfor %}
+    </tbody>
+</table>
+
+{% if facture.rappels|length > 0 %}
+    <h6>Rappels</h6>
+    <table class="table table-sm">
+        <thead>
+        <tr>
+            <th>Date d'émission</th>
+            <th>Date d'impression</th>
+        </tr>
+        </thead>
+        <tbody>
+        {% for rappel in facture.sortRappelsByImpression %}
+            <tr>
+                <td>{{ rappel.date|date(param('format', 'php_date')) }}</td>
+                <td>{% if rappel.dateImpression %}{{ rappel.dateImpression|date(param('format', 'php_date')) }}{% endif %}</td>
+            </tr>
+        {% else %}
+            <tr>
+                <td>Aucun</td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+{% endif %}
+{% if facture.paiements|length > 0 %}
+<h6>Paiements</h6>
+<table class="table table-sm">
+    <thead>
+    <tr>
+        <th>Date de paiement</th>
+        <th>Montant</th>
+    </tr>
+    </thead>
+    <tbody>
+    {% for paiement in facture.paiements %}
+        <tr>
+            <td>{{ paiement.dateEffectivePaiement|date(param('format', 'php_date')) }}</td>
+            <td>{{ paiement.montant }}</td>
+        </tr>
+    {% else %}
+        <tr>
+            <td>Aucun</td>
+        </tr>
+    {% endfor %}
+    </tbody>
+</table>
+{% endif %}

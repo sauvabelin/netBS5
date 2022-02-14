@@ -1,0 +1,12 @@
+
+.netbs-toolbar {
+
+    border-top:1px solid #ddd;
+    padding:15px 18px;
+}
+
+.netbs-toolbar .col-md-6:last-child {
+
+    display:flex;
+    justify-content:flex-end;
+}

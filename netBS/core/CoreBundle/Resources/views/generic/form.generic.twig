@@ -1,0 +1,24 @@
+{% extends '@NetBSCore/layout/backend.layout.twig' %}
+
+{% block main %}
+
+    <div class="container">
+
+        {% include '@NetBSCore/includes/header.include.twig' %}
+
+        <div class="card">
+
+            <div class="card-body">
+                {{ form_start(form) }}
+                {{ form_errors(form) }}
+                {{ form_rest(form) }}
+
+                <button class="btn btn-primary">Valider</button>
+                {{ form_end(form) }}
+            </div>
+
+        </div>
+
+    </div>
+
+{% endblock %}

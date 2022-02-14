@@ -1,0 +1,34 @@
+{% extends '@NetBSCore/layout/backend.layout.twig' %}
+
+{% set title = "Historique des modifications" %}
+
+{% block main %}
+
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-12 col-md-8">
+                <div class="card card-table">
+                    <div class="card-header">
+                        <h5 class="card-title">Modifications récentes</h5>
+                        <h6 class="card-subtitle">Actions réalisées en attente de révision</h6>
+                    </div>
+
+                    <div class="card-body">
+                        {{ render_list('netbs.core.logged_changes', 'netbs', {status: 'waiting'}) }}
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-12 col-md-4">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="card-title">Détails</h5>
+                        <h6 class="card-subtitle">Etat des données au moment de l'action</h6>
+                    </div>
+                    <div class="card-body" id="_modif_details"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+{% endblock %}

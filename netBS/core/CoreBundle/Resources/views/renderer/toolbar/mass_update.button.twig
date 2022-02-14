@@ -1,0 +1,59 @@
+
+<div class="btn-group dropup">
+
+    <button type="button" data-toggle="dropdown" class="btn btn-secondary dropdown-toggle">
+        Action de masse
+        <span class="icon-dropdown mdi mdi-chevron-down"></span>
+    </button>
+
+    <div role="menu" class="dropdown-menu dropdown-menu-right">
+        {% if updatable %}
+            <a class="dropdown-item" style="cursor:pointer;" id="mass-update-{{ event.tableId }}">{{ updatable.title }}</a>
+        {% endif %}
+        {% if updatable and addable %}
+        <div class="dropdown-divider"></div>
+        {% endif %}
+        {% if addable %}
+            <a style="cursor:pointer;" class="dropdown-item mass-add-{{ event.tableId }}" data-item="attribution">Ajouter des attributions</a>
+            <a style="cursor:pointer;" class="dropdown-item mass-add-{{ event.tableId }}" data-item="distinction">Ajouter des distinctions</a>
+        {% endif %}
+    </div>
+
+</div>
+
+
+{{ registerJs(asset('bundles/netbscore/js/post_link.js')) }}
+
+{% if addable %}
+    {% set addScript %}
+        <script type="text/javascript">
+            $('.mass-add-{{ event.tableId }}').click(function() {
+
+                PostLink('{{ path("netbs.fichier.mass.add") }}', {
+                        ownerIds: {{ event.tableId }}.getSelectedIds(),
+                        ownerClass: '{{ event.table.itemClass|toBase64 }}',
+                        updatedClass: $(this).attr("data-item")
+                });
+            });
+        </script>
+    {% endset %}
+
+    {{ registerScript(addScript) }}
+{% endif %}
+
+
+{% if updatable %}
+    {% set massScript %}
+        <script type="text/javascript">
+            $('#mass-update-{{ event.tableId }}').click(function() {
+
+                PostLink('{{ path("netbs.core.mass_updater.data_update") }}', {
+                        updatedIds: {{ event.tableId }}.getSelectedIds(),
+                        updatedClass: '{{ event.table.itemClass|toBase64 }}'
+                });
+            });
+        </script>
+    {% endset %}
+
+    {{ registerScript(massScript) }}
+{% endif %}

@@ -1,0 +1,43 @@
+{% extends '@NetBSCore/layout/backend.layout.twig' %}
+
+{% set title = "Derniers comptes créés" %}
+
+{% block main %}
+    <div class="container-fluid">
+        {% include '@NetBSCore/includes/header.include.twig' with {
+            header: title,
+            subHeader: "Liste des comptes créés automatiquement avec mot de passe temporaire"
+        } %}
+
+        <div class="row">
+
+            <div class="col-12 col-md-4">
+                <div class="card bg-info">
+                    <div class="card-header">
+                        <h3 class="card-title">Fonctionnement</h3>
+                    </div>
+
+                    <div class="card-body">
+                        <p class="text-white">
+                            Lorsqu'une attribution permet à un chef d'obtenir un accès au fichier, un compte lui est automatiquement
+                            créé avec un mot de passe temporaire. Tant qu'il ne s'est pas connecté pour changer son mot de passe,
+                            il se trouvera dans cette liste.
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-12 col-md-8">
+                <div class="card card-table">
+                    <div class="card-header">
+                        <h3 class="card-title">Liste des comptes nouvellement créés</h3>
+                    </div>
+
+                    <div class="card-body">
+                        {{ render_list('sauvabelin.latest_accounts', 'netbs') }}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}

@@ -1,0 +1,42 @@
+{% extends '@NetBSCore/layout/modal.layout.twig' %}
+
+{% block content %}
+    <div class="alert alert-primary">
+        <p>Le texte du haut, texte du bas et le titre sont basés sur
+            <a href="https://symfony.com/doc/current/components/expression_language.html">l'expression language</a>.
+            Les variables suivantes sont disponibles
+        </p>
+        <ul>
+            <li>debiteur: le débiteur</li>
+            <li>facture: la facture courante</li>
+        </ul>
+    </div>
+
+    {{ form_start(form) }}
+    <div class="row">
+        <div class="col-md-9">{{ form_row(form.name) }}</div>
+        <div class="col-md-3">{{ form_row(form.poids) }}</div>
+    </div>
+    <div class="row">
+        <div class="col-md-12">{{ form_row(form.applicationRule) }}</div>
+    </div>
+    <div class="row">
+        <div class="col-md-6">{{ form_row(form.signataire) }}</div>
+        <div class="col-md-6">{{ form_row(form.groupName) }}</div>
+    </div>
+    <div class="row">
+        <div class="col-md-4">{{ form_row(form.rue) }}</div>
+        <div class="col-md-4">{{ form_row(form.npaVille) }}</div>
+        <div class="col-md-4">{{ form_row(form.cityFrom) }}</div>
+    </div>
+    <div class="row">
+        <div class="col-md-12">{{ form_row(form.titre) }}</div>
+    </div>
+    <div class="row">
+        <div class="col-md-12">{{ form_row(form.topDescription) }}</div>
+    </div>
+    <div class="row">
+        <div class="col-md-12">{{ form_row(form.bottomSalutations) }}</div>
+    </div>
+    {{ form_end(form) }}
+{% endblock %}

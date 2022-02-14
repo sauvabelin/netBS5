@@ -1,0 +1,75 @@
+
+services:
+
+    _defaults:
+        autowire: true
+        autoconfigure: true
+
+    NetBS\FichierBundle\Form\Personne\GeniteurType:
+        tags:
+            - { name: form.type }
+
+    NetBS\FichierBundle\Form\Personne\MembreType:
+        tags:
+            - { name: form.type }
+
+    NetBS\FichierBundle\Form\Search\SearchAttributionType:
+        tags:
+            - { name: form.type }
+
+    NetBS\FichierBundle\Form\Search\SearchBaseMembreInformationType:
+        tags:
+            - { name: form.type }
+
+    NetBS\FichierBundle\Form\Search\SearchObtentionDistinctionType:
+        tags:
+            - { name: form.type }
+
+    NetBS\FichierBundle\Form\MembreUpdaterType:
+        tags:
+            - { name: form.type }
+
+
+    NetBS\FichierBundle\Form\AttributionType:
+        tags:
+            - { name: form.type }
+
+    NetBS\FichierBundle\Form\DistinctionType:
+        tags:
+            - { name: form.type }
+
+    NetBS\FichierBundle\Form\FamilleType:
+        tags:
+            - { name: form.type }
+
+    NetBS\FichierBundle\Form\FonctionType:
+        tags:
+            - { name: form.type }
+
+    NetBS\FichierBundle\Form\GroupeCategorieType:
+        tags:
+            - { name: form.type }
+
+    NetBS\FichierBundle\Form\GroupeType:
+        tags:
+            - { name: form.type }
+
+    NetBS\FichierBundle\Form\GroupeTypeType:
+        tags:
+            - { name: form.type }
+
+    NetBS\FichierBundle\Form\ObtentionDistinctionType:
+        tags:
+            - { name: form.type }
+
+    NetBS\FichierBundle\Form\Contact\AdresseType:
+        tags:
+            - { name: form.type }
+
+    NetBS\FichierBundle\Form\Contact\BSEmailType:
+        tags:
+            - { name: form.type }
+
+    NetBS\FichierBundle\Form\Contact\TelephoneType:
+        tags:
+            - { name: form.type }

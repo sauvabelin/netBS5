@@ -1,0 +1,70 @@
+{% set tableId = uniqid() %}
+{% set togglable = params.togglableRow is defined ? params.togglableRow : null %}
+<table class="table table-striped table-responsive-md basic-renderer" style="border:1px solid #eee">
+    <thead>
+    <tr>
+        {% if togglable %}
+            <th></th>
+        {% endif %}
+        {% for header in table.headers %}
+            <th>{{ header }}</th>
+        {% endfor %}
+    </tr>
+    </thead>
+    <tbody>
+    {% for row in table.data %}
+        <tr class="shown">
+            {% if togglable %}
+                <td><button class="toggleRow btn btn-primary btn-xs" data-row="{{ tableId ~ loop.index0 }}">+</button></td>
+            {% endif %}
+            {% for value in row %}
+                <td>{{ value|raw }}</td>
+            {% endfor %}
+        </tr>
+        {% if togglable %}
+            <tr class="togglable-row" id="togglable-{{ tableId ~ loop.index0 }}">
+                <td colspan="{{ table.configuration.columns|length + 1}}">
+                    {% include togglable.template with togglable.params|merge({ item: table.items[loop.index0] }) %}
+                </td>
+            </tr>
+        {% endif %}
+    {% else %}
+        <tr>
+            <td colspan="{{ table.configuration.columns|length + (togglable ? 1 : 0) }}" class="text-center">
+                Rien à afficher
+            </td>
+        </tr>
+    {% endfor %}
+    </tbody>
+</table>
+
+{% if togglable %}
+    {% set toggleStyle %}
+        <style>
+            .togglable-row {
+                display:none;
+            }
+
+            .togglable-row > td {
+                box-shadow: inset 0 0 2px #007bff;
+            }
+
+            .togglable-row.active {
+                display:table-row;
+            }
+        </style>
+    {% endset %}
+
+    {{ registerStyle(toggleStyle) }}
+
+    {% set toggleJs %}
+        <script type="text/javascript">
+            $('.toggleRow').click(function() {
+                $(this).parent().parent().toggleClass('bg-primary');
+                $('#togglable-' + $(this).attr('data-row')).toggleClass('active');
+            });
+        </script>
+    {% endset %}
+
+    {{ registerScript(toggleJs) }}
+{% endif %}

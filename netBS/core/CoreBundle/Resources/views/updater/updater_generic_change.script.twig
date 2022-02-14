@@ -1,0 +1,50 @@
+{% set massScript %}
+
+    <script type="text/javascript">
+        $(document).ready(function() {
+
+            {# generic form handling #}
+            {% for genericItem in generic.children %}
+
+                {% set prefix   = genericItem.vars.block_prefixes %}
+                {% set name     = genericItem.vars.name %}
+
+
+                $('#{{ genericItem.vars.id }}').change(function() {
+
+                    {# AJAX SELECT2 #}
+                    {% if 'ajax_select2_document' in prefix %}
+
+                    $('[name$="][{{ name }}]"]').empty();
+                    var data = $(this).select2('data');
+
+                    for(var i = 0; i < data.length; i++) {
+
+                        var newState = new Option(data[i].text, data[i].id, true, true);
+                        $('[name$="][{{ name }}]"]').append(newState);
+                    }
+
+                    $('[name$="][{{ name }}]"]').val($(this).val()).trigger('change');
+
+                    {# SELECT2 #}
+                    {% elseif 'select2_document' in prefix %}
+                    $('[name$="][{{ name }}]"]').val($(this).val()).trigger('change');
+
+                    {# DATEPICKER #}
+                    {% elseif 'datepicker' in prefix %}
+                    $('[name$="][{{ name }}]"]').datetimepicker("update", $(this).val());
+
+                    {# OTHER #}
+                    {% else %}
+                    $('[name$="][{{ name }}]"]').val($(this).val());
+                    {% endif %}
+
+                });
+
+            {% endfor %}
+
+        });
+    </script>
+{% endset %}
+
+{{ registerScript(massScript) }}
