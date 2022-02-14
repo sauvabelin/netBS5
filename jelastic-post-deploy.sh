@@ -1,3 +1,5 @@
+#!/bin/sh
+
 # Install dependencies
 cd /var/www/webroot/ROOT && composer install
 
