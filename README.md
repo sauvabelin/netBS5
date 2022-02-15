@@ -9,6 +9,8 @@ en version 5 a été réalisé (au prix de nombreuses heures et soirées), la co
 mises à jour mais le code ne reflête absolument pas les dernières bonnes pratiques apportées par les versions
 successives de Symfony, l'effort s'étant concentré à supporter Symfony 5 par manque de temps.
 
+La version originale est disponible ici: https://github.com/sauvabelin/netBS
+
 ## Ce qui est cool
 
 - Prêt à l'usage directement
