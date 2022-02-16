@@ -10,7 +10,7 @@ nelmio_cors:
         hosts: []
         forced_allow_origin_value: ~
     paths:
-        '^/api/v1/netBS':
+        '^/api/v1':
             allow_origin: ['*']
             allow_headers: ['*']
             allow_methods: ['GET', 'POST']

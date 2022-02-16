@@ -35,7 +35,6 @@ class MediaNormalizer implements NormalizerInterface
     public function normalize($media, string $format = null, array $context = array())
     {
         return [
-
             'filename'  => $media->getName(),
             'size'      => $media->getSize(),
             'timestamp' => $media->getTimestamp(),

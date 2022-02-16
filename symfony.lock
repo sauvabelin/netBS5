@@ -94,6 +94,9 @@
     "endroid/qr-code": {
         "version": "4.4.7"
     },
+    "erusev/parsedown": {
+        "version": "1.7.4"
+    },
     "gedmo/doctrine-extensions": {
         "version": "v3.5.0"
     },

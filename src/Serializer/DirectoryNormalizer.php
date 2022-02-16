@@ -27,13 +27,9 @@ class DirectoryNormalizer implements NormalizerInterface
     public function normalize($directory, string $format = null, array $context = array())
     {
         $thumb  = $directory->getThumbnail();
-        $count = $this->manager->getRepository('OvescoGalerieBundle:DirectoryView')->count([
-            'path' => $directory->getPath()
-        ]);
-
         return [
 
-            'count'     => $count,
+            'count'     => 0,
             'name'      => $directory->getName(),
             'thumbnail' => $thumb ? $this->normalizer->normalize($thumb) : null,
             'path'      => $directory->getRelativePath(),

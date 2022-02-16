@@ -3,6 +3,7 @@
 namespace App\DependencyInjection\Compiler;
 
 use App\Exporter\EtiquettesV2Exporter;
+use App\Imagine\GalerieLoader;
 use App\ListModel\BSUserList;
 use App\LogRepresenter\MembreRepresenter;
 use App\Model\GalerieConfig;
@@ -24,20 +25,20 @@ class OverrideServicePass implements CompilerPassInterface
         $container->getDefinition(UsersList::class)->setClass(BSUserList::class);
         $container->getDefinition(MembreSearcher::class)->setClass(BSMembreSearcher::class);
         $container->getDefinition(\NetBS\SecureBundle\Service\UserManager::class)->setClass(UserManager::class);
-        // $container->getDefinition('liip_imagine.binary.loader.prototype.filesystem')->setClass(GalerieLoader::class);
+        $container->getDefinition('liip_imagine.binary.loader.prototype.filesystem')->setClass(GalerieLoader::class);
 
         $container->getDefinition(PDFEtiquettesV2::class)->setClass(EtiquettesV2Exporter::class);
-
 
         $configDef = new Definition(GalerieConfig::class);
         $configDef->setArguments([
            $container->getParameter('kernel.project_dir'),
-           $container->resolveEnvPlaceholders('GALERIE_PREFIX_DIRECTORY'),
-           $container->resolveEnvPlaceholders('GALERIE_MAPPED_DIRECTORY'),
-           $container->resolveEnvPlaceholders('GALERIE_CACHE_DIRECTORY'),
-           $container->resolveEnvPlaceholders('env(json:GALERIE_IMAGE_EXTENSIONS)'),
-           $container->resolveEnvPlaceholders('env(json:GALERIE_DESCRIPTION_FILENAMES)'),
+           $container->resolveEnvPlaceholders('%env(string:GALERIE_PREFIX_DIRECTORY)%'),
+           $container->resolveEnvPlaceholders('%env(string:GALERIE_MAPPED_DIRECTORY)%'),
+           $container->resolveEnvPlaceholders('%env(string:GALERIE_CACHE_DIRECTORY)%'),
+           $container->resolveEnvPlaceholders('%env(json:GALERIE_IMAGE_EXTENSIONS)%'),
+           $container->resolveEnvPlaceholders('%env(json:GALERIE_DESCRIPTION_FILENAMES)%'),
         ]);
+
         $container->setDefinition(GalerieConfig::class, $configDef);
     }
 }

@@ -2,3 +2,16 @@
 liip_imagine:
     # valid drivers options include "gd" or "gmagick" or "imagick"
     driver: "gd"
+    loaders:
+        ovesco_galerie:
+            filesystem:
+                data_root: "%kernel.project_dir%/public/galerie/originals"
+
+    filter_sets:
+        thumbnail:
+            data_loader: ovesco_galerie
+            cache: ovesco.galerie_cache_resolver
+            quality: 75
+            filters:
+                thumbnail: { size: [200,200], mode: outbound }
+                auto_rotate: ~

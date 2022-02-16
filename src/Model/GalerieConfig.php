@@ -30,7 +30,7 @@ class GalerieConfig
     private $imageExtensions;
 
     /**
-     * @var string
+     * @var string[]
      */
     private $descriptionFilename;
 
@@ -53,7 +53,7 @@ class GalerieConfig
     }
 
     /**
-     * @return string
+     * @return string[]
      */
     public function getDescriptionFilename()
     {

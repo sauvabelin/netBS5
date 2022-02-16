@@ -23,11 +23,11 @@ class Directory
      */
     public function getChildren() {
 
-        $dirnames   = array_filter(glob($this->path . DIRECTORY_SEPARATOR . '*'), 'is_dir');
+        $dirnames   = array_filter(glob($this->path . "/" . '*'), 'is_dir');
         $names = [];
         $numbers = [];
         foreach($dirnames as $dirname) {
-            $data = explode(DIRECTORY_SEPARATOR, $dirname);
+            $data = explode("/", $dirname);
             $last = array_pop($data);
             if (is_numeric($last)) $numbers[$dirname] = $last;
             else $names[$dirname] = $last;
@@ -92,7 +92,7 @@ class Directory
 
     public function getDescription() {
 
-        $filenames = explode('|', $this->config->getDescriptionFilename());
+        $filenames = $this->config->getDescriptionFilename();
         foreach ($filenames as $filename) {
             $descriptionFilePath = $this->path . "/" . $filename;
             if (is_file($descriptionFilePath)) return file_get_contents($descriptionFilePath);

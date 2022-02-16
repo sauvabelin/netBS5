@@ -3,6 +3,11 @@ controllers:
     type: annotation
     prefix: /netBS/bs
 
+api_controllers:
+    resource: ../../src/ApiController/
+    type: annotation
+    prefix: /
+
 kernel:
     resource: ../../src/Kernel.php
     type: annotation

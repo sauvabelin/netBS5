@@ -54,7 +54,8 @@ services:
             $webPath: '%env(GALERIE_WEBPATH)%'
             $extension: "@twig.extension.assets"
 
-    App\Imagine\GalerieCacheResolver:
+    ovesco.galerie_cache_resolver:
+        class: App\Imagine\GalerieCacheResolver
         arguments:
             $webPath: '%env(GALERIE_WEBPATH)%'
         tags:

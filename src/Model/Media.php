@@ -37,7 +37,6 @@ class Media
     }
 
     public function getRelativePath() {
-
         return str_replace($this->config->getFullMappedDirectory(), '', $this->path);
     }
 }
