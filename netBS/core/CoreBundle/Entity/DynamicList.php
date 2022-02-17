@@ -45,6 +45,14 @@ class DynamicList
     protected $owner;
 
     /**
+     * @var BaseUser[]
+     * @ORM\JoinTable(name="netbs_core_dynamic_lists_shares",
+     *  joinColumns={@ORM\JoinColumn(name="dynamic_list_id", referencedColumnName="id")},
+     *  inverseJoinColumns={@ORM\JoinColumn(name="user_id", referencedColumnName="id")})
+     */
+    protected $shares;
+
+    /**
      * @var array
      *
      * @ORM\Column(name="items", type="array")
@@ -55,6 +63,10 @@ class DynamicList
      * @var ArrayCollection
      */
     protected $items;
+
+    public function __construct() {
+        $this->shares = new ArrayCollection();
+    }
 
     /**
      * Get id
@@ -183,6 +195,18 @@ class DynamicList
     public function _getItemIds() {
 
         return $this->itemIds;
+    }
+
+    public function getShares() {
+        return $this->shares->toArray();
+    }
+
+    public function addShare(BaseUser $user) {
+        $this->shares->add($user);
+    }
+
+    public function removeShare(BaseUser $user) {
+        $this->shares->removeElement($user);
     }
 }
 

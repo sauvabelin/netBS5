@@ -48,6 +48,14 @@ class UserProvider implements Select2ProviderInterface
      */
     public function search($needle, $limit = 5)
     {
-        return $this->entityManager->getRepository($this->getManagedClass())->findByUsername($needle);
+        $query = $this->entityManager->getRepository($this->getManagedClass())
+            ->createQueryBuilder('x');
+
+        return $query
+            ->where($query->expr()->like('x.username', ':n'))
+            ->setParameter('n', '%'.$needle.'%')
+            ->setMaxResults($limit)
+            ->getQuery()
+            ->execute();
     }
 }

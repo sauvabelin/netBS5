@@ -15,17 +15,24 @@
                         <h5 class="card-title">{{ list.name }}</h5>
                         <h6 class="card-subtitle">{{ list.items|length }} élément(s)</h6>
                     </div>
-                    <div class="card-body">
-                        <form class="form-horizontal">
-                            {{ form_row(form.name) }}
-                        </form>
-                    </div>
-
-                    <div class="card-footer">
-                        <div role="group" class="btn-group btn-group-justified">
-                            <a onclick="return confirm('Etes-vous sur de vouloir supprimer cette liste ? C\'est IRREVERSIBLE!');" href="{{ path('netbs.core.dynamics_list.remove_list', {id: list.id}) }}" class="btn btn-secondary">Supprimer cette liste</a>
+                    {% if app.token.user in list.shares and app.token.user != list.owner %}
+                        <div class="card-body">
+                            Cette liste est partagée avec vous, ainsi vous ne pouvez pas changer ses paramètres
                         </div>
-                    </div>
+                    {% else %}
+                        <div class="card-body">
+                            <form class="form-horizontal">
+                                {{ form_row(form.name) }}
+                                {{ form_row(form.shares) }}
+                                <p class="mt-3 mb-0 text-black-50">A cause d'un petit bug super chiant à corriger, si vous modifiez les partages ça marquera "rien". C'est normal rafraichissez juste la page</p>
+                            </form>
+                        </div>
+                        <div class="card-footer">
+                            <div role="group" class="btn-group btn-group-justified">
+                                <a onclick="return confirm('Etes-vous sur de vouloir supprimer cette liste ? C\'est IRREVERSIBLE!');" href="{{ path('netbs.core.dynamics_list.remove_list', {id: list.id}) }}" class="btn btn-secondary">Supprimer cette liste</a>
+                            </div>
+                        </div>
+                    {% endif %}
                 </div>
 
             </div>

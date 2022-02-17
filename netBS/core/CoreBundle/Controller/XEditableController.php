@@ -53,8 +53,8 @@ class XEditableController extends AbstractController
             elseif(is_array($value) || $value instanceof Collection) {
 
                 $rv    = [];
-                if(is_object($value[0]))
-                    foreach($value as $item)
+                foreach($value as $item)
+                    if(is_object($item))
                         $rv[] = $item->getId();
 
                 $value = implode(',', $rv);

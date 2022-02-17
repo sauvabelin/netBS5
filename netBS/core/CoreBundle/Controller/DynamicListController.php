@@ -22,9 +22,9 @@ class DynamicListController extends AbstractController
      * @Route("/manage/lists", name="netbs.core.dynamics_list.manage_lists")
      */
     public function manageListsAction(DynamicListManager $dynamics) {
-
         return $this->render('@NetBSCore/dynamics/manage_dynamic_lists.html.twig', array(
-            'lists' => $dynamics->getCurrentUserLists()
+            'lists' => $dynamics->getCurrentUserLists(),
+            'shares' => $dynamics->getCurrentSharedLists(),
         ));
     }
 

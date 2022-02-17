@@ -36,6 +36,11 @@ class DoctrineMapperSubscriber implements EventSubscriber
             case DynamicList::class:
                 $eventArgs->getClassMetadata()->mapManyToOne([
                     'fieldName'     => 'owner',
+                    'targetEntity'  => $this->secureConfig->getUserClass(),
+                    'cascade'       => ['persist', 'remove']
+                ]);
+                $eventArgs->getClassMetadata()->mapManyToMany([
+                    'fieldName'     => 'shares',
                     'targetEntity'  => $this->secureConfig->getUserClass()
                 ]);
                 break;
@@ -46,28 +51,10 @@ class DoctrineMapperSubscriber implements EventSubscriber
                     'targetEntity'  => $this->secureConfig->getUserClass()
                 ]);
                 break;
-            case LoggedChange::class:
-                $eventArgs->getClassMetadata()->mapManyToOne([
-                    'fieldName'     => 'user',
-                    'targetEntity'  => $this->secureConfig->getUserClass(),
-                    'fetch'         => 'EAGER'
-                ]);
-                break;
             case Notification::class:
-                $eventArgs->getClassMetadata()->mapManyToOne([
-                    'fieldName'     => 'user',
-                    'targetEntity'  => $this->secureConfig->getUserClass(),
-                    'fetch'         => 'EAGER'
-                ]);
-                break;
             case UserLog::class:
-                $eventArgs->getClassMetadata()->mapManyToOne([
-                    'fieldName'     => 'user',
-                    'targetEntity'  => $this->secureConfig->getUserClass(),
-                    'fetch'         => 'EAGER'
-                ]);
-                break;
             case News::class:
+            case LoggedChange::class:
                 $eventArgs->getClassMetadata()->mapManyToOne([
                     'fieldName'     => 'user',
                     'targetEntity'  => $this->secureConfig->getUserClass(),

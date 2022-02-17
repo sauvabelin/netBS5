@@ -38,6 +38,30 @@
             </div>
 
         </div>
+
+        {% include '@NetBSCore/includes/header.include.twig' with {
+            header: "Listes partagées",
+            subHeader: "Ces listes sont partagées avec vous par leur propriétaire"
+        } %}
+
+        <div class="row">
+
+            {% for list in shares %}
+                <div class="col-12 col-md-2">
+                    <a class="card bg-primary text-white" href="{{ path('netbs.core.dynamics_list.manage_list', {id: list.id}) }}">
+                        <div class="card-header">
+                            <h5 class="card-title">{{ list.name }}</h5>
+                        </div>
+                        <div class="card-body">
+                            {{ list.items|length }} élément(s)<br/>
+                            Partagée par {{ list.owner }}
+                        </div>
+                    </a>
+                </div>
+            {% endfor %}
+
+        </div>
+
     </div>
 
     {% set scriptum %}

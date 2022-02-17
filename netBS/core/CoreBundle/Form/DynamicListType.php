@@ -3,8 +3,11 @@
 namespace NetBS\CoreBundle\Form;
 
 use NetBS\CoreBundle\Entity\DynamicList;
+use NetBS\CoreBundle\Form\Type\AjaxSelect2DocumentType;
+use NetBS\CoreBundle\Form\Type\Select2DocumentType;
 use NetBS\CoreBundle\Service\DynamicListManager;
 use NetBS\CoreBundle\Service\ListBridgeManager;
+use NetBS\SecureBundle\Service\SecureConfig;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
@@ -19,10 +22,13 @@ class DynamicListType extends AbstractType
 
     protected $bridges;
 
-    public function __construct(DynamicListManager $manager, ListBridgeManager $bridges)
+    protected $secureConfig;
+
+    public function __construct(DynamicListManager $manager, ListBridgeManager $bridges, SecureConfig $config)
     {
         $this->dlm  = $manager;
         $this->bridges = $bridges;
+        $this->secureConfig = $config;
     }
 
     public function configureOptions(OptionsResolver $resolver)
@@ -50,6 +56,11 @@ class DynamicListType extends AbstractType
 
         $builder
             ->add('name', TextType::class, array('label' => 'Nom de la liste'))
+            ->add('shares', AjaxSelect2DocumentType::class, [
+                'label' => 'Partager la liste',
+                'multiple' => true,
+                'class' => $this->secureConfig->getUserClass(),
+            ])
             ->add('itemsClass', ChoiceType::class, array(
                 'label'     => 'Éléments contenus',
                 'choices'   => $choices
