@@ -17,7 +17,8 @@
                     </div>
                     {% if app.token.user in list.shares and app.token.user != list.owner %}
                         <div class="card-body">
-                            Cette liste est partagée avec vous, ainsi vous ne pouvez pas changer ses paramètres
+                            Cette liste est partagée avec vous, ainsi vous ne pouvez pas changer ses paramètres.<br/><br/>
+                            <b>Propriétaire: {{ list.owner }}</b>
                         </div>
                     {% else %}
                         <div class="card-body">
