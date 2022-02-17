@@ -29,8 +29,10 @@ class MainMenuListener
 
             $unitLink = $menu->getCategory('app.home')->addSubMenu('user.groupes', 'Mes unités', 'fas fa-cubes');
 
-            foreach ($user->getMembre()->getActivesAttributions() as $attribution)
-                $unitLink->addSubLink($attribution->getGroupe()->getNom(), 'netbs.fichier.groupe.page_groupe', ['id' => $attribution->getGroupe()->getId()]);
+            $groupes = array_unique(array_map(function($attr) { return $attr->getGroupe(); }, $user->getMembre()->getActivesAttributions()));
+            dump($groupes);
+            foreach ($groupes as $groupe)
+                $unitLink->addSubLink($groupe->getNom(), 'netbs.fichier.groupe.page_groupe', ['id' => $groupe->getId()]);
         }
 
         if($user->hasRole("ROLE_READ_EVERYWHERE"))
