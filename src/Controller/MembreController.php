@@ -26,7 +26,7 @@ class MembreController extends AbstractController
         /** @var BSUser $user */
         $user               = $this->getUser();
         $infos              = new CirculaireMembre();
-        $circuMembre        = $request->request->get('circulaire-membre');
+        $circuMembre        = $request->request->get('circulaire_membre');
         $selectedFamilyId   = $circuMembre ? $circuMembre['familleId'] : null;
         $previousNumber     = $em->createQueryBuilder()
             ->select('m')->from($config->getMembreClass(), 'm')

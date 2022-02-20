@@ -9,14 +9,12 @@ class BirthdayData
     /**
      * @var \DateTime
      * @Assert\NotNull()
-     * @Assert\DateTime()
      */
     private $from;
 
     /**
      * @var \DateTime
      * @Assert\NotNull()
-     * @Assert\DateTime()
      */
     private $to;
 

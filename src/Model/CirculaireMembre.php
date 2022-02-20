@@ -64,7 +64,6 @@ class CirculaireMembre implements GroupSequenceProviderInterface
 
     /**
      * @var \DateTime
-     * @Assert\DateTime(groups={"default"})
      * @Assert\NotBlank(groups={"default"})
      */
     public $naissance;

@@ -17,6 +17,7 @@ use NetBS\FichierBundle\Utils\Traits\FichierConfigTrait;
 use NetBS\ListBundle\Column\SimpleColumn;
 use NetBS\ListBundle\Model\ListColumnsConfiguration;
 use NetBS\SecureBundle\Mapping\BaseUser;
+use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
 use Symfony\Component\Form\FormBuilderInterface;
 
 class CDCAutomatic extends BaseAutomatic implements ConfigurableAutomaticInterface
@@ -71,8 +72,10 @@ class CDCAutomatic extends BaseAutomatic implements ConfigurableAutomaticInterfa
 
         $items = array_unique(array_merge($membres, $adabs));
 
-        if ($data['merge'] === true)
+        if ($data['merge'] === 1)
             $items = PDFEtiquettesV2::merge($items);
+        else if ($data['merge'] === 2)
+            $items = PDFEtiquettesV2::mergeBySameAddress($items);
 
         $adressables = array_filter($items, function(AdressableInterface $adressable) {
             return $adressable->getSendableAdresse() instanceof BaseAdresse;
@@ -103,7 +106,11 @@ class CDCAutomatic extends BaseAutomatic implements ConfigurableAutomaticInterfa
      */
     public function buildForm(FormBuilderInterface $builder)
     {
-        $builder->add('merge', SwitchType::class, ['label' => 'Fusionner les familles', 'data' => true])
+        $builder->add('merge', ChoiceType::class, ['label' => 'Option de fusion', 'data' => 2, 'choices' => [
+            'Aucune fusion' => 0,
+            'Fusion par famille' => 1,
+            'Fusion par adresse' => 2
+        ]])
             ->add('adabs', SwitchType::class, ['label' => 'Inclure l\'Adabs', 'data' => true])
             ->add('actifs', SwitchType::class, ['label' => 'Inclure les actifs', 'data' => true])
             ->add('sansAdresses', SwitchType::class, ['label' => 'Inclure les sans adresses', 'data' => false]);
