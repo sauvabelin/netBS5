@@ -2,6 +2,7 @@
 
 namespace App\Controller;
 
+use Doctrine\ORM\EntityManagerInterface;
 use NetBS\FichierBundle\Mapping\BaseAttribution;
 use NetBS\FichierBundle\Mapping\BaseGroupe;
 use NetBS\FichierBundle\Service\FichierConfig;
@@ -19,9 +20,7 @@ class QuickExportController extends AbstractController
      * @throws \Doctrine\ORM\OptimisticLockException
      * @throws \Doctrine\ORM\TransactionRequiredException
      */
-    public function etiquettesGroupeAction($id, FichierConfig $config) {
-
-        $em     = $this->get('doctrine.orm.default_entity_manager');
+    public function etiquettesGroupeAction($id, FichierConfig $config, EntityManagerInterface $em) {
 
         /** @var BaseGroupe $groupe */
         $groupe = $em->find($config->getGroupeClass(), $id);
@@ -42,10 +41,7 @@ class QuickExportController extends AbstractController
      * @throws \Doctrine\ORM\OptimisticLockException
      * @throws \Doctrine\ORM\TransactionRequiredException
      */
-    public function regaGroupeAction($id, FichierConfig $config) {
-
-        $em     = $this->get('doctrine.orm.default_entity_manager');
-
+    public function regaGroupeAction($id, FichierConfig $config, EntityManagerInterface $em) {
         /** @var BaseGroupe $groupe */
         $groupe = $em->find($config->getGroupeClass(), $id);
         if(!$this->isGranted(CRUD::READ, $groupe))
@@ -65,9 +61,7 @@ class QuickExportController extends AbstractController
      * @param $id
      * @Route("/etiquettes/no-chef-groupe/{id}", name="sauvabelin.etiquettes.no_chef_groupe")
      */
-    public function etiquettesNoChefsGroupeAction($id, FichierConfig $config) {
-
-        $em     = $this->get('doctrine.orm.default_entity_manager');
+    public function etiquettesNoChefsGroupeAction($id, FichierConfig $config, EntityManagerInterface $em) {
 
         /** @var BaseGroupe $groupe */
         $groupe = $em->find($config->getGroupeClass(), $id);

@@ -9,8 +9,8 @@ use App\Model\AdminChangePassword;
 use NetBS\SecureBundle\Service\UserManager;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 use Symfony\Component\Routing\Annotation\Route;
-use Symfony\Component\Security\Core\Encoder\UserPasswordEncoderInterface;
 
 /**
  * Class UserController
@@ -32,7 +32,7 @@ class UserController extends AbstractController
      * @param Request $request
      * @return \Symfony\Component\HttpFoundation\Response
      */
-    public function modalAdminChangePasswordAction(Request $request, $id, UserManager $manager, UserPasswordEncoderInterface $encoder) {
+    public function modalAdminChangePasswordAction(Request $request, $id, UserManager $manager, UserPasswordHasherInterface $encoder) {
         /** @var BSUser $user */
         $user       = $manager->find($id);
         $form       = $this->createForm(AdminChangePasswordType::class, new AdminChangePassword());
@@ -47,7 +47,7 @@ class UserController extends AbstractController
             if($data->isForceChange())
                 $user->setNewPasswordRequired(true);
 
-            $user->setPassword($encoder->encodePassword($user, $data->getPassword()));
+            $user->setPassword($encoder->hashPassword($user, $data->getPassword()));
             $manager->updateUser($user);
 
             $this->addFlash("success", "Mot de passe changé");
