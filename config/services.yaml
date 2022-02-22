@@ -49,6 +49,10 @@ services:
         resource: '../src/Controller/'
         tags: ['controller.service_arguments']
 
+    App\Exporter\:
+        resource: '../src/Exporter/'
+        tags: [ 'netbs.exporter' ]
+
     App\Serializer\MediaNormalizer:
         arguments:
             $webPath: '%env(GALERIE_WEBPATH)%'

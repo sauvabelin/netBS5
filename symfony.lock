@@ -560,6 +560,9 @@
     "symfony/yaml": {
         "version": "v5.4.3"
     },
+    "tecnickcom/tcpdf": {
+        "version": "6.4.4"
+    },
     "twig/extra-bundle": {
         "version": "v3.3.8"
     },

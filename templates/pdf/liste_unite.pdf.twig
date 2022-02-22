@@ -1,0 +1,65 @@
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PDF{% if title is defined %} | {{ title }}{% endif %}</title>
+    <link rel="stylesheet" type="text/css" href="{{ app.request.schemeAndHttpHost ~ asset('bundles/netbscore/css/pdf.css') }}">
+    {% block style %}{% endblock %}
+</head>
+
+<body>
+<h3 style="margin:0">Liste de {{ groupe.nom }}</h3>
+
+{% for section in sections %}
+
+    {% set groupe   = section.groupe %}
+    {% set membres  = section.membres %}
+
+    <div style="page-break-after: auto; width:100%;">
+
+        {% if sections|length > 1 %}
+            <h4 style="margin-top:0;margin-bottom:5px">{% if loop.first %}EM{% else %}{{ groupe.nom }}{% endif %}</h4>
+        {% endif %}
+
+        <table class="table" style="width:100%;">
+            <tr>
+                <th style="text-align:left;font-size:9px;font-weight:bold;width:16%">Nom</th>
+                <th style="text-align:left;font-size:9px;font-weight:bold;width:16%">Prénom</th>
+                <th style="text-align:left;font-size:9px;font-weight:bold;width:10%">Naissance</th>
+                <th style="text-align:left;font-size:9px;font-weight:bold;width:23%">Rue</th>
+                <th style="text-align:left;font-size:9px;font-weight:bold;width:6%">Npa</th>
+                <th style="text-align:left;font-size:9px;font-weight:bold;width:16%">Localité</th>
+                <th style="text-align:left;font-size:9px;font-weight:bold;width:12%">Téléphone</th>
+            </tr>
+
+            {% for membre in membres %}
+
+                {% set sendingAdresse   = membre.sendableAdresse %}
+                {% set telephone        = membre.sendableTelephone %}
+                {% set email            = membre.sendableEmail %}
+                <tr>
+                    <td style="font-size:8px;">{{ membre.famille.nom }}</td>
+                    <td style="font-size:8px;">{{ membre.prenom }}</td>
+                    <td style="font-size:8px;">{{ membre.naissance|date("d.m.Y") }}</td>
+                    {% if sendingAdresse %}
+                        <td style="font-size:8px;">{{ sendingAdresse.rue }}</td>
+                        <td style="font-size:8px;">{{ sendingAdresse.npa }}</td>
+                        <td style="font-size:8px;">{{ sendingAdresse.localite }}</td>
+                    {% else %}
+                        <td style="font-size:8px;"></td>
+                        <td style="font-size:8px;"></td>
+                        <td style="font-size:8px;"></td>
+                    {% endif %}
+                    <td style="font-size:8px;">{% if telephone %}{{ telephone.telephone }}{% endif %}</td>
+                </tr>
+
+            {% endfor %}
+        </table>
+    </div>
+
+{% endfor %}
+
+<h6>Total: {{ total }} membres</h6>
+</body>
+</html>

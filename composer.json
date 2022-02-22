@@ -45,6 +45,7 @@
         "symfony/validator": "5.4.*",
         "symfony/web-link": "5.4.*",
         "symfony/yaml": "5.4.*",
+        "tecnickcom/tcpdf": "^6.4",
         "twig/extra-bundle": "^3.3",
         "twig/twig": "^3.3"
     },
