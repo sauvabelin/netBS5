@@ -7,7 +7,7 @@ use NetBS\CoreBundle\Entity\LoggedChange;
 use NetBS\FichierBundle\Mapping\BaseMembre;
 use NetBS\SecureBundle\Mapping\BaseUser;
 use NetBS\SecureBundle\Exceptions\UserCreationException;
-use Symfony\Component\Security\Core\Encoder\UserPasswordEncoderInterface;
+use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 
 class UserManager
 {
@@ -26,7 +26,7 @@ class UserManager
      */
     protected $em;
 
-    public function __construct(UserPasswordEncoderInterface $encoder, SecureConfig $config, EntityManagerInterface $manager)
+    public function __construct(UserPasswordHasherInterface $encoder, SecureConfig $config, EntityManagerInterface $manager)
     {
         $this->encoder      = $encoder;
         $this->config       = $config;
@@ -48,7 +48,7 @@ class UserManager
 
     public function encodePassword(BaseUser $user, $password) {
 
-        return $this->encoder->encodePassword($user, $password);
+        return $this->encoder->hashPassword($user, $password);
     }
 
     public function find($id) {
@@ -69,6 +69,7 @@ class UserManager
         $this->checkUsernameAndEmail($user);
 
         $this->em->persist($user);
+        dump('persisted', $user);
         $this->em->flush();
     }
 

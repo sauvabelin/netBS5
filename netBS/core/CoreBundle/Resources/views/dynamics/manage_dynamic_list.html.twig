@@ -4,6 +4,8 @@
 
 {% block main %}
 
+    {{ registerJs(asset('bundles/netbscore/js/modal.js')) }}
+
     <div class="container-fluid">
 
         <div class="row">
@@ -24,8 +26,6 @@
                         <div class="card-body">
                             <form class="form-horizontal">
                                 {{ form_row(form.name) }}
-                                {{ form_row(form.shares) }}
-                                <p class="mt-3 mb-0 text-black-50">A cause d'un petit bug super chiant à corriger, si vous modifiez les partages ça marquera "rien". C'est normal rafraichissez juste la page</p>
                             </form>
                         </div>
                         <div class="card-footer">
@@ -36,6 +36,39 @@
                     {% endif %}
                 </div>
 
+                {% if app.token.user not in list.shares and app.token.user == list.owner %}
+                    <div class="card card-table">
+                        <div class="card-header">
+                            <h5 class="card-title">Partages</h5>
+                            <h6 class="card-subtitle">Partagée avec {{ list.shares|length }} utilisateurs</h6>
+                        </div>
+                        <div class="card-body">
+                            <table class="table table-bordered">
+                                <thead>
+                                <tr>
+                                    <th>Utilisateur</th>
+                                    <th></th>
+                                </tr>
+                                </thead>
+                                <tbody>
+                                {% for user in list.shares %}
+                                    <tr>
+                                        <td>{{ user }}</td>
+                                        <td>
+                                            <a href="{{ path('netbs.core.dynamics_list.remove_share', { id: list.id }) }}?userid={{ user.id }}" class="btn btn-xs btn-danger" data-toggle="tooltip" title="Retirer le partage"><i class="fas fa-sm fa-times" aria-hidden="true"></i></a>
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                        <div class="card-footer">
+                            <div role="group" class="btn-group btn-group-justified">
+                                <button class="btn btn-secondary" data-modal data-modal-url="{{ path('netbs.core.dynamic_list.modal_add_share', {id: list.id}) }}">Partager avec quelqu'un</button>
+                            </div>
+                        </div>
+                    </div>
+                {% endif %}
             </div>
 
             <div class="col-12 col-md-9">

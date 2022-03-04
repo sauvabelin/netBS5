@@ -4,9 +4,11 @@ namespace NetBS\CoreBundle\Controller;
 
 use Doctrine\ORM\EntityManagerInterface;
 use NetBS\CoreBundle\Entity\DynamicList;
+use NetBS\CoreBundle\Form\DynamicListShareType;
 use NetBS\CoreBundle\Form\DynamicListType;
 use NetBS\CoreBundle\Service\DynamicListManager;
 use NetBS\CoreBundle\Utils\Modal;
+use NetBS\SecureBundle\Service\SecureConfig;
 use NetBS\SecureBundle\Voter\CRUD;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
@@ -53,6 +55,64 @@ class DynamicListController extends AbstractController
 
         $this->addFlash("info", count($ids) . " éléments retirés de la liste");
         return $this->redirectToRoute('netbs.core.dynamics_list.manage_list', array('id' => $list->getId()));
+    }
+
+    /**
+     * @Route("/remove-share/{id}", name="netbs.core.dynamics_list.remove_share")
+     * @param Request $request
+     * @param DynamicList $list
+     * @return \Symfony\Component\HttpFoundation\RedirectResponse
+     * @throws \Doctrine\ORM\ORMException
+     * @throws \Doctrine\ORM\OptimisticLockException
+     */
+    public function removeShareFromListAction(Request $request, DynamicList $list, EntityManagerInterface $em) {
+        $id = $request->get('userid');
+        if (!$id) {
+            throw $this->createAccessDeniedException('No identifier provided');
+        }
+
+
+        if(!$this->isGranted(CRUD::UPDATE, $list))
+            throw $this->createAccessDeniedException();
+
+        // On trouve l'utilisateur
+        $users = array_filter($list->getShares(), function ($u) use ($id) {
+            return $u->getId() === intval($id);
+        });
+
+        if (count($users) === 1) {
+            $user = array_shift($users);
+            $list->removeShare($user);
+            $this->addFlash("info", "L'accès de " . $user->__toString() . " a été retiré");
+        }
+
+        $em->persist($list);
+        $em->flush();
+
+        return $this->redirectToRoute('netbs.core.dynamics_list.manage_list', array('id' => $list->getId()));
+    }
+
+    /**
+     * @param Request $request
+     * @Route("/modal/add-share-to-list/{id}", name="netbs.core.dynamic_list.modal_add_share")
+     * @return \Symfony\Component\HttpFoundation\Response
+     */
+    public function addShareModalAction(Request $request, DynamicList $list, EntityManagerInterface $em) {
+
+        $form = $this->createForm(DynamicListShareType::class, $list);
+        $form->handleRequest($request);
+
+        if($form->isSubmitted() && $form->isValid()) {
+            $em->persist($form->getData());
+            $em->flush();
+
+            $this->addFlash('info', 'Partages ajoutés');
+            return Modal::refresh();
+        }
+
+        return $this->render('@NetBSCore/dynamics/create.modal.twig', [
+            'form'  => $form->createView()
+        ], Modal::renderModal($form));
     }
 
     /**
@@ -138,6 +198,8 @@ class DynamicListController extends AbstractController
         return $list;
 
     }
+
+
 
     /**
      * @param Request $request

@@ -32,7 +32,7 @@ class UserController extends AbstractController
      * @param Request $request
      * @return \Symfony\Component\HttpFoundation\Response
      */
-    public function modalAdminChangePasswordAction(Request $request, $id, UserManager $manager, UserPasswordHasherInterface $encoder) {
+    public function modalAdminChangePasswordAction(Request $request, $id, UserManager $manager) {
         /** @var BSUser $user */
         $user       = $manager->find($id);
         $form       = $this->createForm(AdminChangePasswordType::class, new AdminChangePassword());
@@ -47,11 +47,10 @@ class UserController extends AbstractController
             if($data->isForceChange())
                 $user->setNewPasswordRequired(true);
 
-            $user->setPassword($encoder->hashPassword($user, $data->getPassword()));
+            $user->setPassword($manager->encodePassword($user, $data->getPassword()));
             $manager->updateUser($user);
 
-            $this->addFlash("success", "Mot de passe changé");
-            return Modal::refresh();
+            return Modal::ack("Mot de passe modifié");
         }
 
         return $this->render('user/change_password.modal.twig', [

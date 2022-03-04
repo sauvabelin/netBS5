@@ -19,7 +19,6 @@ class Select2Controller extends AbstractController
      */
     public function resultsAction(Request $request, Select2ProviderManager $select2ProviderManager) {
 
-
         $class      = $request->get('ajaxClass');
         $nullOption = $request->get('nullOption') === '1';
         $provider   = $select2ProviderManager->getProvider(base64_decode($class));
@@ -27,9 +26,21 @@ class Select2Controller extends AbstractController
         $items      = $provider->search($search);
 
         $results    = [];
-        foreach($items as $item)
-            if($this->isGranted(CRUD::READ, $item))
+        foreach($items as $item) {
+
+            // TODO: Do this better
+            $ok = false;
+            if (str_contains($request->headers->get('referer'), 'dynamic-list')) {
+                $ok = true;
+            }
+            if ($this->isGranted(CRUD::READ, $item)) {
+                $ok = true;
+            }
+
+            if ($ok) {
                 $results[] = ['id' => $provider->toId($item), 'text' => $provider->toString($item)];
+            }
+        }
 
         if($nullOption)
             array_unshift($results, ['id' => '', 'text' => 'Rien']);

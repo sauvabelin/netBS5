@@ -90,6 +90,10 @@ services:
         tags:
             - { name: form.type }
 
+    NetBS\CoreBundle\Form\DynamicListShareType:
+        tags:
+            - { name: form.type }
+
     NetBS\CoreBundle\Twig\Extension\AssetsExtension:
         tags:
             - { name: twig.extension }
