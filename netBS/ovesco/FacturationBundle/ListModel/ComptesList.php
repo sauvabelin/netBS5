@@ -55,6 +55,10 @@ class ComptesList extends BaseListModel
                 XEditableColumn::PROPERTY   => 'ccp',
                 XEditableColumn::TYPE_CLASS => TextType::class
             ])
+            ->addColumn('IBAN', null, XEditableColumn::class, [
+                XEditableColumn::PROPERTY   => 'iban',
+                XEditableColumn::TYPE_CLASS => TextType::class
+            ])
             ->addColumn('QR-IBAN', null, XEditableColumn::class, [
                 XEditableColumn::PROPERTY   => 'qrIban',
                 XEditableColumn::TYPE_CLASS => TextType::class
