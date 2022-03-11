@@ -127,6 +127,7 @@ class DynamicListController extends AbstractController
         if(!$this->isGranted(CRUD::DELETE, $list))
             throw $this->createAccessDeniedException();
 
+        $list->clearShares();
         $em->remove($list);
         $em->flush();
 

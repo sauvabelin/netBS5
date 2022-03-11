@@ -208,5 +208,9 @@ class DynamicList
     public function removeShare(BaseUser $user) {
         $this->shares->removeElement($user);
     }
+
+    public function clearShares() {
+        $this->shares->clear();
+    }
 }
 

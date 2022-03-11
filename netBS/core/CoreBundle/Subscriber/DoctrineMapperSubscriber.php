@@ -37,7 +37,6 @@ class DoctrineMapperSubscriber implements EventSubscriber
                 $eventArgs->getClassMetadata()->mapManyToOne([
                     'fieldName'     => 'owner',
                     'targetEntity'  => $this->secureConfig->getUserClass(),
-                    'cascade'       => ['persist', 'remove']
                 ]);
                 $eventArgs->getClassMetadata()->mapManyToMany([
                     'fieldName'     => 'shares',
