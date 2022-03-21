@@ -4,24 +4,28 @@ namespace App\Service;
 
 use App\Entity\APMBSReservation;
 use Google_Client;
-use Symfony\Component\Mailer\MailerInterface;
 
-class ReservationManager {
+class GoogleCalendarManager {
 
-    private $calendar;
-    private $mailer;
+    /**
+     * @var \Google\Service\Calendar
+     */
+    private $service;
 
-    public function __construct(GoogleCalendarManager $calendar, MailerInterface $mailer)
+    public function __construct(Google_Client $client)
     {
-        $this->calendar = $calendar;
-        $this->mailer = $mailer;
+        $client->setApplicationName('netBS');
+        $client->setScopes(\Google\Service\Calendar::CALENDAR_EVENTS);
+        $this->service = new \Google\Service\Calendar($client);
     }
 
     public function removeReservation(APMBSReservation $reservation) {
-        $this->calendar->removeReservation($reservation);
-
-        // Notify by email
-
+        if ($reservation->getGCEventId()) {
+            $this->service->events->delete(
+                $reservation->getCabane()->getCalendarId(),
+                $reservation->getGCEventId()
+            );
+        }
     }
 
     public function updateReservation(APMBSReservation $reservation) {

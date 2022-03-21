@@ -41,6 +41,21 @@ class Cabane {
      */
     protected $reservations;
 
+    /**
+     * @var string
+     * 
+     * @Assert\NotBlank()
+     * @ORM\Column(name="location", type="string", length=255)
+     */
+    protected $location;
+
+    /**
+     * @var string[]
+     * 
+     * @ORM\Column(name="intendance", type="simple_array")
+     */
+    protected $intendance;
+
     public function __construct() {
         $this->reservations = new ArrayCollection();
     }
@@ -91,5 +106,37 @@ class Cabane {
     public function getReservations(): iterable
     {
         return $this->reservations;
+    }
+
+    /**
+     * @return string
+     */
+    public function getLocation(): string
+    {
+        return $this->location;
+    }
+
+    /**
+     * @param string $location
+     */
+    public function setLocation(string $location): void
+    {
+        $this->location = $location;
+    }
+
+    /**
+     * @return string
+     */
+    public function getIntendance(): array
+    {
+        return $this->intendance;
+    }
+
+    /**
+     * @param string $location
+     */
+    public function setIntendance(array $intendance): void
+    {
+        $this->intendance = $intendance;
     }
 }

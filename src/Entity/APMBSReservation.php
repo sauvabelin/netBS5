@@ -8,6 +8,10 @@ namespace App\Entity;
  */
 class APMBSReservation {
 
+    const PENDING = 'pending';
+    const ACCEPTED = 'accepted';
+    const REFUSED = 'refused';
+
     /**
      * @var int
      *
