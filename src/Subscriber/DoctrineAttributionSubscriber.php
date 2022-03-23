@@ -4,20 +4,15 @@ namespace App\Subscriber;
 
 use App\Message\NextcloudGroupNotification;
 use Doctrine\Common\EventSubscriber;
-use Doctrine\Common\Util\ClassUtils;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\Event\LifecycleEventArgs;
 use Doctrine\ORM\Event\PreUpdateEventArgs;
 use Doctrine\ORM\Events;
-use Doctrine\Persistence\ObjectManager;
-use NetBS\CoreBundle\Entity\LoggedChange;
-use NetBS\CoreBundle\Service\LoggerManager;
 use NetBS\FichierBundle\Mapping\BaseAttribution;
 use NetBS\SecureBundle\Mapping\BaseUser;
 use Symfony\Component\Messenger\MessageBusInterface;
-use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInterface;
 
-class DoctrineLoggerSubscriber implements EventSubscriber
+class DoctrineAttributionSubscriber implements EventSubscriber
 {
     private $bus;
 
@@ -58,83 +53,137 @@ class DoctrineLoggerSubscriber implements EventSubscriber
         $user = $this->getUser($attribution, $args->getEntityManager());
 
         if ($user) {
-            $this->bus->dispatch(new NextcloudGroupNotification($user, $attribution->getGroupe(), 'join'));
+            $this->bus->dispatch(new NextcloudGroupNotification(
+                $user->getId(),
+                $attribution->getGroupeId(),
+                $attribution->getFonctionId(),
+                'join'));
         }
     }
 
 
     public function preUpdate(PreUpdateEventArgs $args) {
 
-        if(!$args->getEntity() instanceof BaseAttribution)
+        /** @var BaseAttribution $attr */
+        $attr = $args->getEntity();
+        if(!$attr instanceof BaseAttribution)
             return;
-        
-        foreach($args->getEntityChangeSet() as $property => $values) {
+        if (!$this->getUser($attr, $args->getEntityManager()))
+            return;
 
-            if($property === 'updatedAt')
-                continue;
+        $changes = [];
+        foreach($args->getEntityChangeSet() as $property => $values) {
 
             $oldValue   = $values[0];
             $newValue   = $values[1];
 
-            $this->markedForUpdate[] = [
+            $changes = [
                 'property' => $property,
                 'oldValue' => $oldValue,
                 'newValue' => $newValue,
+                'active'   => $attr->isActive(),
             ];
         }
+
+        $this->markedForUpdate[] = [
+            'attribution' => $attr,
+            'changes' => $changes,
+        ];
     }
 
     public function postUpdate(LifecycleEventArgs $args) {
 
-        foreach($this->markedForUpdate as $change) {
-            $oldValue = $change['oldValue'];
-            $newValue = $change['newValue'];
-            $property = $change['property'];
+        /** @var BaseAttribution $attr */
+        $attr = $args->getEntity();
+
+        // PostUpdate for a single attribution, find its previous values
+        foreach ($this->markedForUpdate as $vals) {
+            if ($vals['attribution']->getId() === $attr->getId()) {
+                foreach($this->markedForUpdate as $change) {
+                    $oldValue = $change['oldValue'];
+                    $newValue = $change['newValue'];
+                    $property = $change['property'];
+                    $previouslyActive = $change['active'];
+
+                    if ($previouslyActive) {
+                        // We might have to remove some groups
+                        if ($property === 'groupe' && $oldValue !== $newValue) {
+                            if ($oldValue->isNcMapped()) {
+                                $this->bus->dispatch(new NextcloudGroupNotification(
+                                    $this->getUser($attr, $args->getEntityManager())->getId(),
+                                    $oldValue->getId(),
+                                    null,
+                                    'leave'
+                                ));
+                            }
+                        }
+
+                        // --- Fonction
+                        if ($property === 'fonction' && $oldValue !== $newValue) {
+                            $this->bus->dispatch(new NextcloudGroupNotification(
+                                $this->getUser($attr, $args->getEntityManager())->getId(),
+                                null,
+                                $oldValue->getId(),
+                                'leave'
+                            ));
+                        }
+                    }
+
+                    // If active now
+                    if ($attr->isActive()) {
+                        // --- Groupe
+                        if ($property === 'groupe' && $oldValue !== $newValue) {
+                            if ($newValue->isNcMapped()) {
+                                $this->bus->dispatch(new NextcloudGroupNotification(
+                                    $this->getUser($attr, $args->getEntityManager())->getId(),
+                                    $newValue->getId(),
+                                    null,
+                                    'join'
+                                ));
+                            }
+                        }
+
+                        // --- Fonction
+                        if ($property === 'fonction' && $oldValue !== $newValue) {
+                            $this->bus->dispatch(new NextcloudGroupNotification(
+                                $this->getUser($attr, $args->getEntityManager())->getId(),
+                                null,
+                                $newValue->getId(),
+                                'join'
+                            ));
+                        }
+                    }
+                }
+
+            }
         }
     }
 
     public function preRemove(LifecycleEventArgs $args) {
 
-        if(!$this->shouldLog($args->getEntity()))
+        /** @var BaseAttribution $attr */
+        $attr = $args->getEntity();
+        if(!$attr instanceof BaseAttribution)
+            return;
+        if (!$this->getUser($attr, $args->getEntityManager()))
             return;
 
-        $object     = $args->getEntity();
-        $change     = $this->createLoggedChangeFor(self::DELETE, $object);
-        $rpzer      = $this->manager->getLogRepresenter(ClassUtils::getClass($object));
-
-        $change->setRepresentation($rpzer->representDetails($object, self::DELETE, null, null, null));
-        $this->markedForRemoval[] = $change;
+        $this->markedForRemoval[] = $attr;
     }
 
     public function postRemove(LifecycleEventArgs $args) {
 
-        foreach($this->markedForRemoval as $item) {
-
-            $args->getEntityManager()->persist($item);
-            $args->getEntityManager()->flush();
+        foreach($this->markedForRemoval as $attr) {
+            $this->bus->dispatch(new NextcloudGroupNotification(
+                $this->getUser($attr, $args->getEntityManager())->getId(),
+                $attr->getGroupeId(),
+                $attr->getFonctionId(),
+                'leave'
+            ));
         }
     }
 
-    /**
-     * @param object $object
-     * @return LoggedChange
-     */
-    protected function createLoggedChangeFor($action, $object) {
-
-        $change     = new LoggedChange();
-        $user       = $this->storage->getToken()->getUser();
-        $id         = $object->getId();
-        $class      = ClassUtils::getClass($object);
-        $rpzer      = $this->manager->getLogRepresenter(ClassUtils::getClass($object));
-
-        if($user) $change->setUser($user);
-        $change->setObjectId($id)->setObjectClass($class)->setAction($action);
-        $change->setDisplayName($rpzer->representBasic($object));
-
-        return $change;
-    }
-
-    private function getUser(BaseAttribution $attribution, EntityManagerInterface $manager) {
+    private function getUser(BaseAttribution $attribution, EntityManagerInterface $manager): BaseUser {
         $membre = $attribution->getMembre();
         return $manager->getRepository('App:BSUser')->findOneBy(array('membre' => $membre));
     }

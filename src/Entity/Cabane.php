@@ -36,7 +36,7 @@ class Cabane {
     protected $calendarId;
 
     /**
-     * @var Reservation[]
+     * @var APMBSReservation[]
      * @ORM\OneToMany(targetEntity="App\Entity\APMBSReservation", mappedBy="cabane")
      */
     protected $reservations;
@@ -101,7 +101,7 @@ class Cabane {
     }
 
     /**
-     * @return Reservation[]
+     * @return APMBSReservation[]
      */
     public function getReservations(): iterable
     {

@@ -163,7 +163,11 @@ class DoctrineUserAccountSubscriber implements EventSubscriber
 
         // Notify nextcloud of new groups memberships
         foreach ($membre->getActivesAttributions() as $attr) {
-            $this->bus->dispatch(new NextcloudGroupNotification($user, $attr->getGroupe(), 'join'));
+            $this->bus->dispatch(new NextcloudGroupNotification(
+                $user->getId(),
+                $attr->getGroupeId(),
+                $attr->getFonctionId(),
+                'join'));
         }
     }
 }

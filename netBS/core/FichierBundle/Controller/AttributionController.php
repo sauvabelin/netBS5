@@ -32,7 +32,7 @@ class AttributionController extends AbstractController
      * @param Request $request
      * @return Response
      */
-    public function modalAddAction(Request $request, $membreId, EntityManagerInterface $em, EventDispatcherInterface $dispatcher) {
+    public function modalAddAction(Request $request, $membreId, EntityManagerInterface $em) {
 
         $attrClass      = $this->config->getAttributionClass();
 
@@ -61,7 +61,6 @@ class AttributionController extends AbstractController
             $em->persist($form->getData());
             $em->flush();
 
-            $dispatcher->dispatch(new AttributionCreated($form->getData()));
             $this->addFlash("success", "Attribution ajoutée avec succès");
             return Modal::refresh();
         }
