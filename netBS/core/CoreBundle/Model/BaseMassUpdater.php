@@ -37,6 +37,12 @@ abstract class BaseMassUpdater
     }
 
     /**
+     * Called once the update is done
+     */
+    public function onDone(Iterable $items) {
+    }
+
+    /**
      * Returns this updater name
      * @return string
      */

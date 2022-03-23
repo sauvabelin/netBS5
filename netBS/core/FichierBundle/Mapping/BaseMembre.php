@@ -268,7 +268,7 @@ abstract class BaseMembre extends Personne implements EqualInterface
 
     /**
      * Retournes les attributions actives
-     * @return BaseAttribution[]|BaseAttribution
+     * @return BaseAttribution[]
      */
     public function getActivesAttributions() {
 

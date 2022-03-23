@@ -57,7 +57,7 @@ class MassUpdaterController extends AbstractController
         }
 
         $updater        = $mass->getUpdaterForClass(base64_decode($class));
-        $items          = $this->getMassItems(base64_decode($class), $ids);
+        $items          = $this->getMassItems(base64_decode($class), $ids, $em);
 
         $data           = [
             'items'         => $items,
@@ -116,8 +116,8 @@ class MassUpdaterController extends AbstractController
      * @param array $ids
      * @return array
      */
-    public function getMassItems($class, array $ids) {
-        $items      = $this->getDoctrine()->getManager()->createQueryBuilder()
+    public function getMassItems($class, array $ids, EntityManagerInterface $em) {
+        $items      = $em->createQueryBuilder()
             ->select('x')
             ->from($class, 'x')
             ->where('x.id IN (:ids)')

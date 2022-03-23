@@ -1,0 +1,37 @@
+{% extends '@NetBSCore/layout/backend.layout.twig' %}
+
+{% block main %}
+
+    {{ registerJs(asset('bundles/netbscore/js/modal.js')) }}
+
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-9">
+                <div class="card card-table">
+                    <div class="card-header">
+                        <h5 class="card-title">Bots</h5>
+                        <h6 class="card-subtitle">
+                            Liste des bots enregistrés
+                        </h6>
+                    </div>
+
+                    <div class="card-body">
+                        {{ render_list('app.news_channel_bots', 'basic') }}
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-3">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="card-title">Actions</h5>
+                    </div>
+                    <div class="card-body">
+                        <button data-modal data-modal-url="{{ path('sauvabelin.news_channel_bot.add_modal') }}" class="btn btn-primary">Ajouter un bot</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+{% endblock %}

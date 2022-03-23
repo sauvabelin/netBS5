@@ -37,7 +37,7 @@ class Cabane {
 
     /**
      * @var Reservation[]
-     * @ORM\OneToMany(targetEntity="App\Entity\Reservation", mappedBy="cabane")
+     * @ORM\OneToMany(targetEntity="App\Entity\APMBSReservation", mappedBy="cabane")
      */
     protected $reservations;
 

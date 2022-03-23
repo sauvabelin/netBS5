@@ -12,14 +12,15 @@ class MainMenuListener
 
     public function __construct(TokenStorageInterface $storage)
     {
-        $this->storage      = $storage;
+        $this->storage = $storage;
     }
 
     public function onMenuConfigure(ExtendMainMenuEvent $event)
     {
-        /** @var BSUser $user */
         $menu   = $event->getMenu();
         $links  = $menu->getCategory('app')->getLinks();
+
+        /** @var BSUser $user */
         $user   = $this->storage->getToken()->getUser();
 
         foreach($links as $link)
@@ -36,6 +37,10 @@ class MainMenuListener
         if($user->hasRole('ROLE_TRESORIER')) {
             $menu->getCategory('ovesco.facturation')->getLink('facturation.autre')
                 ->addSubLink('Cotisations', 'netbs.core.automatic_list.view_list', ['alias' => 'sauvabelin.cotisations']);
+        }
+
+        if ($user->hasRole('ROLE_IT')) {
+            $menu->getCategory('secure.admin')->addLink('admin.news.bot', 'News Bots', 'fas fa-history', 'sauvabelin.news_channel_bot.manage');
         }
     }
 }

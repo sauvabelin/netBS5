@@ -4,11 +4,13 @@ namespace NetBS\FichierBundle\Controller;
 
 use Doctrine\ORM\EntityManagerInterface;
 use NetBS\CoreBundle\Utils\Modal;
+use NetBS\FichierBundle\Event\AttributionCreated;
 use NetBS\FichierBundle\Form\AttributionType;
 use NetBS\FichierBundle\Mapping\BaseAttribution;
 use NetBS\FichierBundle\Service\FichierConfig;
 use NetBS\SecureBundle\Voter\CRUD;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
@@ -30,7 +32,7 @@ class AttributionController extends AbstractController
      * @param Request $request
      * @return Response
      */
-    public function modalAddAction(Request $request, $membreId, EntityManagerInterface $em) {
+    public function modalAddAction(Request $request, $membreId, EntityManagerInterface $em, EventDispatcherInterface $dispatcher) {
 
         $attrClass      = $this->config->getAttributionClass();
 
@@ -39,7 +41,7 @@ class AttributionController extends AbstractController
 
         if($membreId !== null) {
 
-            $membre     = $em->find($this->config->getMembreClass(), $membreId);
+            $membre = $em->find($this->config->getMembreClass(), $membreId);
 
             if(!$membre)
                 throw $this->createNotFoundException();
@@ -59,6 +61,7 @@ class AttributionController extends AbstractController
             $em->persist($form->getData());
             $em->flush();
 
+            $dispatcher->dispatch(new AttributionCreated($form->getData()));
             $this->addFlash("success", "Attribution ajoutée avec succès");
             return Modal::refresh();
         }

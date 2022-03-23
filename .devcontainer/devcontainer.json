@@ -14,7 +14,8 @@
 	"extensions": [
 		"felixfbecker.php-debug",
 		"felixfbecker.php-intellisense",
-		"mrmlnc.vscode-apache"
+		"mrmlnc.vscode-apache",
+		"thenouillet.symfony-vscode"
 	],
 
 	// For use with PHP or Apache (e.g.php -S localhost:8080 or apache2ctl start)

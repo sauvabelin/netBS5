@@ -20,14 +20,19 @@ class LoadParametersData extends AbstractFixture implements OrderedFixtureInterf
 
     public function load(ObjectManager $manager)
     {
-        $bundles    = $this->kernel->getBundles();
+        $bundles = $this->kernel->getBundles();
+        $paths = [];
+        foreach ($bundles as $bundle) {
+            $paths[] = $bundle->getPath() . "/Resources/config/parameters.yml";
+        }
+        $paths[] = __DIR__ . "/../../../../src/Resources/config/parameters.yaml";
 
-        foreach($bundles as $bundle) {
+        foreach($paths as $path) {
 
-            $path = $bundle->getPath() . "/Resources/config/parameters.yml";
-
-            if (!file_exists($path))
+            if (!file_exists($path)) {
+                echo "No file at path " . $path;
                 continue;
+            }
 
             $params = Yaml::parse(file_get_contents($path));
 

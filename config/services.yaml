@@ -53,6 +53,10 @@ services:
         resource: '../src/Exporter/'
         tags: [ 'netbs.exporter' ]
 
+    App\Voter\:
+        resource: '../src/Voter/'
+        tags: [ 'security.voter' ]
+
     App\Serializer\MediaNormalizer:
         arguments:
             $webPath: '%env(GALERIE_WEBPATH)%'

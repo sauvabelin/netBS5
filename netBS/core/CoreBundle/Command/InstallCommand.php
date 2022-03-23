@@ -67,7 +67,7 @@ class InstallCommand extends Command
 
         $this->getApplication()->find('doctrine:fixtures:load')->run(new ArrayInput([
             '--append' => true,
-            '--group' => $dummy ? 'fill' : 'main',
+            '--group' => $dummy ? ['fill'] : ['main'],
         ]), $output);
 
         $scripts    = $this->postInstallScriptManager->getScripts();

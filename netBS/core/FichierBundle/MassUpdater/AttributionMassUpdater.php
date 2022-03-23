@@ -5,14 +5,18 @@ namespace NetBS\FichierBundle\MassUpdater;
 use NetBS\CoreBundle\Model\BaseMassUpdater;
 use NetBS\FichierBundle\Form\AttributionType;
 use NetBS\FichierBundle\Service\FichierConfig;
+use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 
 class AttributionMassUpdater extends BaseMassUpdater
 {
     protected $config;
 
-    public function __construct(FichierConfig $config)
+    protected $dispatcher;
+
+    public function __construct(FichierConfig $config, EventDispatcherInterface $dispatcher)
     {
         $this->config   = $config;
+        $this->dispatcher = $dispatcher;
     }
 
     public function getTitle() {

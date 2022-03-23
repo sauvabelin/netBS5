@@ -57,6 +57,11 @@ class NewsChannel
      */
     protected $news;
 
+    public function __toString()
+    {
+        return $this->nom;
+    }
+
     /**
      * Get id.
      *

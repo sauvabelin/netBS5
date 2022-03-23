@@ -155,3 +155,7 @@ services:
     NetBS\CoreBundle\Profiler\NetBSCollector:
         tags:
             - { name: data_collector, template: '@NetBSCore/Profiler/layout.html.twig', id: 'netbs.core.netbs_collector' }
+
+    NetBS\CoreBundle\Select2\NewsChannelProvider:
+        tags:
+            - { name: netbs.select2_provider }

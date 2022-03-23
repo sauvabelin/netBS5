@@ -31,7 +31,7 @@ class LoadUserData extends AbstractFixture implements OrderedFixtureInterface, F
         $password   = $encoder->encodePassword($user, 'password');
         $user->setPassword($password);
 
-        $user->addRole($manager->getRepository('NetBSSecureBundle:Role')->findOneBy(array('role' => 'ROLE_ADMIN')));
+        $user->addRole($this->getReference('ROLE_ADMIN'));
 
         $manager->persist($user);
         $manager->flush();

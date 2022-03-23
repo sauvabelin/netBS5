@@ -38,3 +38,6 @@ roles:
                             ROLE_DELETE:
                                 description: "Permet de supprimer les entités d'un groupe"
                                 poids: 50
+            ROLE_IT:
+                description: "Responsable IT"
+                poids: 80000

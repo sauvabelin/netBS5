@@ -2,6 +2,10 @@
 
 namespace App\Entity;
 
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Validator\Constraints as Assert;
+
 /**
  * @ORM\Table(name="sauvabelin_apmbs_reservations")
  * @ORM\Entity()
@@ -30,8 +34,7 @@ class APMBSReservation {
     /**
      * @var Cabane
      *
-     * @ORM\ManyToOne(targetEntity="App\Entity\Cabane")
-     * @ORM\JoinColumn(name="cabane_id", referencedColumnName="id")
+     * @ORM\ManyToOne(targetEntity="App\Entity\Cabane", inversedBy="reservations")
      */
     protected $cabane;
 
