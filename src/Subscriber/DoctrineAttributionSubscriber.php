@@ -71,17 +71,17 @@ class DoctrineAttributionSubscriber implements EventSubscriber
         if (!$this->getUser($attr, $args->getEntityManager()))
             return;
 
+        dump($attr);
+
         $changes = [];
         foreach($args->getEntityChangeSet() as $property => $values) {
 
             $oldValue   = $values[0];
             $newValue   = $values[1];
 
-            $changes = [
-                'property' => $property,
+            $changes[$property] = [
                 'oldValue' => $oldValue,
                 'newValue' => $newValue,
-                'active'   => $attr->isActive(),
             ];
         }
 
@@ -98,28 +98,68 @@ class DoctrineAttributionSubscriber implements EventSubscriber
 
         // PostUpdate for a single attribution, find its previous values
         foreach ($this->markedForUpdate as $vals) {
+
             if ($vals['attribution']->getId() === $attr->getId()) {
-                foreach($this->markedForUpdate as $change) {
+
+                $changes = $vals['changes'];
+                $previousStart = $this->changeSetOldValue($changes, 'dateDebut', $attr->getDateDebut());
+                $previousEnd = $this->changeSetOldValue($changes, 'dateFin', $attr->getDateFin());
+                $previousFonction = $this->changeSetOldValue($changes, 'fonction', $attr->getFonction());
+                $previousGroupe = $this->changeSetOldValue($changes, 'groupe', $attr->getGroupe());
+                $previouslyActive = BaseAttribution::active($previousStart, $previousEnd);
+                dump($vals, $attr);
+
+                // Check if dates changed
+                if (isset($changes['dateDebut']) || isset($changes['dateFin'])) {
+
+                    dump('Date change');
+
+                    // Previously active but no more, leave groups related to before
+                    if ($previouslyActive && !$attr->isActive()) {
+                        $this->bus->dispatch(new NextcloudGroupNotification(
+                            $this->getUser($attr, $args->getEntityManager())->getId(),
+                            $previousGroupe->getId(),
+                            $previousFonction->getId(),
+                            'leave'
+                        ));
+                        break;
+                    }
+
+                    // Previously not active but now yes, join groups related to now
+                    if (!$previouslyActive && $attr->isActive()) {
+                        $this->bus->dispatch(new NextcloudGroupNotification(
+                            $this->getUser($attr, $args->getEntityManager())->getId(),
+                            $attr->getGroupeId(),
+                            $attr->getFonctionId(),
+                            'join'
+                        ));
+                        break;
+                    }
+
+                    // Previously not active, now not active: Do nothing
+                    // Previously active, now active: do changes regarding fonctions and groups
+                }
+
+                dump('Independant: Change function or groupe');
+
+                foreach($changes as $property => $change) {
+
                     $oldValue = $change['oldValue'];
                     $newValue = $change['newValue'];
-                    $property = $change['property'];
-                    $previouslyActive = $change['active'];
 
                     if ($previouslyActive) {
                         // We might have to remove some groups
-                        if ($property === 'groupe' && $oldValue !== $newValue) {
-                            if ($oldValue->isNcMapped()) {
-                                $this->bus->dispatch(new NextcloudGroupNotification(
-                                    $this->getUser($attr, $args->getEntityManager())->getId(),
-                                    $oldValue->getId(),
-                                    null,
-                                    'leave'
-                                ));
-                            }
+                        if ($property === 'groupe' && $oldValue->getId() !== $newValue->getId()) {
+                            $this->bus->dispatch(new NextcloudGroupNotification(
+                                $this->getUser($attr, $args->getEntityManager())->getId(),
+                                $oldValue->getId(),
+                                null,
+                                'leave'
+                            ));
                         }
 
                         // --- Fonction
-                        if ($property === 'fonction' && $oldValue !== $newValue) {
+                        if ($property === 'fonction' && $oldValue->getId() !== $newValue->getId()) {
                             $this->bus->dispatch(new NextcloudGroupNotification(
                                 $this->getUser($attr, $args->getEntityManager())->getId(),
                                 null,
@@ -132,19 +172,17 @@ class DoctrineAttributionSubscriber implements EventSubscriber
                     // If active now
                     if ($attr->isActive()) {
                         // --- Groupe
-                        if ($property === 'groupe' && $oldValue !== $newValue) {
-                            if ($newValue->isNcMapped()) {
-                                $this->bus->dispatch(new NextcloudGroupNotification(
-                                    $this->getUser($attr, $args->getEntityManager())->getId(),
-                                    $newValue->getId(),
-                                    null,
-                                    'join'
-                                ));
-                            }
+                        if ($property === 'groupe' && $oldValue->getId() !== $newValue->getId()) {
+                            $this->bus->dispatch(new NextcloudGroupNotification(
+                                $this->getUser($attr, $args->getEntityManager())->getId(),
+                                $newValue->getId(),
+                                null,
+                                'join'
+                            ));
                         }
 
                         // --- Fonction
-                        if ($property === 'fonction' && $oldValue !== $newValue) {
+                        if ($property === 'fonction' && $oldValue->getId() !== $newValue->getId()) {
                             $this->bus->dispatch(new NextcloudGroupNotification(
                                 $this->getUser($attr, $args->getEntityManager())->getId(),
                                 null,
@@ -183,7 +221,11 @@ class DoctrineAttributionSubscriber implements EventSubscriber
         }
     }
 
-    private function getUser(BaseAttribution $attribution, EntityManagerInterface $manager): BaseUser {
+    private function changeSetOldValue($set, $prop, $default) {
+        return isset($set[$prop]) ? $set[$prop]['oldValue'] : $default;
+    }
+
+    private function getUser(BaseAttribution $attribution, EntityManagerInterface $manager): BaseUser | null {
         $membre = $attribution->getMembre();
         return $manager->getRepository('App:BSUser')->findOneBy(array('membre' => $membre));
     }

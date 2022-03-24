@@ -54,7 +54,7 @@ class MassAdderController extends MassUpdaterController
             $ownerClass = base64_decode($data['ownerClass']);
             $ownerIds   = $data['ownerIds'];
 
-            $owners     = $this->getMassItems($ownerClass, $ownerIds);
+            $owners     = $this->getMassItems($ownerClass, $ownerIds, $em);
             $membres    = $bridges->convertItems($owners, $this->config->getMembreClass());
 
             foreach($membres as $membre) {
@@ -74,6 +74,6 @@ class MassAdderController extends MassUpdaterController
             'updatedClass'  => base64_encode($updatedClass)
         ];
 
-        return $this->handleUpdater($request, $formData, $mass->getUpdaterForClass($updatedClass), $em, $history);
+        return $this->handleUpdater($request, $formData, $mass->getUpdaterForClass($updatedClass), $em, $history, 'Ajouts rapides');
     }
 }

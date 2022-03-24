@@ -33,11 +33,7 @@ class NextcloudGroupNotification
         return $this->operation;
     }
 
-    /**
-     * @return int
-     */
-    public function getFonctionId(): int
-    {
+    public function getFonctionId() {
         return $this->fonctionId;
     }
 }

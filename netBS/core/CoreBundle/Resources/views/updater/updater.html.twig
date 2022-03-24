@@ -2,8 +2,6 @@
 
 {% block wrapperClass %}be-aside{% endblock %}
 
-{% set title = title is defined ? title : 'Opération en masse' %}
-
 {% block main %}
 
     {% set items        = form.children|first %}
@@ -20,7 +18,7 @@
             <div class="content">
 
                 <div class="aside-head">
-                    <h3>Mise à jour rapide</h3>
+                    <h3>Opération en masse</h3>
                     <p class="alert alert-warning">
                         Modifier une valeur dans le formulaire ci-dessous changera les valeurs de <b>tous les éléments</b> du formulaire
                         ci-contre.

@@ -218,9 +218,12 @@ abstract class BaseAttribution
      * @return bool
      */
     public function isActive() {
+        return self::active($this->dateDebut, $this->dateFin);
+    }
 
-        $now    = new \DateTime();
-        return $this->dateDebut < $now && ($this->dateFin === null || $this->dateFin > $now);
+    public static function active($start, $end) {
+        $now = new \DateTime();
+        return $start < $now && ($end === null || $end > $now);
     }
 
     public static function getSortFunction() {

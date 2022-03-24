@@ -75,7 +75,7 @@ class MassUpdaterController extends AbstractController
      * @return \Symfony\Component\HttpFoundation\RedirectResponse|\Symfony\Component\HttpFoundation\Response
      * @Security("is_granted('ROLE_UPDATE_EVERYWHERE')")
      */
-    protected function handleUpdater(Request $request, array $data, BaseMassUpdater $updater, EntityManagerInterface $em, History $history) {
+    protected function handleUpdater(Request $request, array $data, BaseMassUpdater $updater, EntityManagerInterface $em, History $history, string $title = 'Mise à jour rapide') {
 
         $genericForm    = $this->createForm($updater->getItemForm());
 
@@ -105,6 +105,7 @@ class MassUpdaterController extends AbstractController
         }
 
         return $this->render('@NetBSCore/updater/updater.html.twig', array(
+            'title'         => $title,
             'form'          => $massForm->createView(),
             'showToString'  => $updater->showToString(),
             'generic'       => $genericForm->createView()

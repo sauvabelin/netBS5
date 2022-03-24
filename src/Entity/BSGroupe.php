@@ -38,10 +38,15 @@ class BSGroupe extends BaseGroupe
 
     public function updateNCGroupName()
     {
-        $this->ncGroupName = "[" . $this->id . "] " . $this->nom;
+        $this->ncGroupName = self::toNCGroupId($this);
+    }
 
-        if($this->getGroupeType())
-            $this->ncGroupName .= " (" . $this->getGroupeType()->getNom() . ")";
+    public static function toNCGroupId(BaseGroupe $groupe) {
+        $name = "[" . $groupe->getId() . "] " . $groupe->getNom();
+
+        if($groupe->getGroupeType())
+            $name .= " (" . $groupe->getGroupeType()->getNom() . ")";
+        return $name;
     }
 
     /**
