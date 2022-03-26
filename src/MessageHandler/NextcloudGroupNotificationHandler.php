@@ -6,6 +6,7 @@ use App\Entity\BSGroupe;
 use App\Entity\BSUser;
 use App\Entity\TalkGroupMapping;
 use App\Message\NextcloudGroupNotification;
+use App\Service\NextcloudApiCall;
 use Doctrine\ORM\EntityManagerInterface;
 use NetBS\FichierBundle\Mapping\BaseFonction;
 use NetBS\FichierBundle\Mapping\BaseGroupe;
@@ -23,11 +24,18 @@ class NextcloudGroupNotificationHandler
 
     private $secureConfig;
 
-    public function __construct(EntityManagerInterface $em, FichierConfig $fc, SecureConfig $sc)
+    private $nc;
+
+    public function __construct(
+        NextcloudApiCall $nc,
+        EntityManagerInterface $em,
+        FichierConfig $fc,
+        SecureConfig $sc)
     {
         $this->em = $em;
         $this->fichierConfig = $fc;
         $this->secureConfig = $sc;
+        $this->nc = $nc;
     }
 
     public function __invoke(NextcloudGroupNotification $message)
@@ -97,10 +105,12 @@ class NextcloudGroupNotificationHandler
                 $this->em->remove($entry);
             }
             $this->em->flush();
+
+            $this->nextcloudApiCall($user->getUsername(), $groupName, 'leave');
         }
     }
 
-    private function joinGroup(BaseUser $user, $groupName) {
+    private function joinGroup(BaseUser $user, string $groupName) {
         $mappings = $this->em->getRepository('App:TalkGroupMapping')->findBy([
             'username' => $user->getUsername(),
             'groupName' => $groupName,
@@ -112,6 +122,8 @@ class NextcloudGroupNotificationHandler
             $entry->setGroupName($groupName);
             $this->em->persist($entry);
             $this->em->flush();
+
+            $this->nextcloudApiCall($user->getUsername(), $groupName, 'join');
         }
     }
 
@@ -122,5 +134,15 @@ class NextcloudGroupNotificationHandler
 
     private static function fonctionToNCID(BaseFonction $fonction) {
         return "[" . $fonction->getId() . "] " . $fonction->getNom() . " (fonction)";
+    }
+
+    private function nextcloudApiCall(string $username, string $grounpname, string $operation) {
+        $this->nc->getClient()->request('POST', "/ocs/v2.php/apps/user_sql/api/sync", [
+            'json' => [
+                'username' => $username,
+                'groupname' => $grounpname,
+                'operation' => $operation,
+            ],
+        ]);
     }
 }

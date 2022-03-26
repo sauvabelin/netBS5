@@ -119,6 +119,13 @@ services:
             - { name: doctrine.event_subscriber, connection: default }
         calls:
             - [ setAnnotationReader, [ "@annotation_reader" ] ]
+    
+    App\Service\NextcloudApiCall:
+        arguments:
+            $ncUrl: '%env(NEXTCLOUD_BASE_URI)%'
+            $ncUser: '%env(NEXTCLOUD_USER)%'
+            $ncPass: '%env(NEXTCLOUD_PASS)%'
+
 
 imports:
     - { resource: "@NetBSCoreBundle/Resources/config/services.yml" }
