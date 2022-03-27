@@ -9,7 +9,6 @@ use App\Message\NextcloudGroupNotification;
 use App\Service\NextcloudApiCall;
 use Doctrine\ORM\EntityManagerInterface;
 use NetBS\FichierBundle\Mapping\BaseFonction;
-use NetBS\FichierBundle\Mapping\BaseGroupe;
 use NetBS\FichierBundle\Service\FichierConfig;
 use NetBS\SecureBundle\Mapping\BaseUser;
 use NetBS\SecureBundle\Service\SecureConfig;
@@ -128,19 +127,24 @@ class NextcloudGroupNotificationHandler
     }
 
 
-    private static function groupeToNCID(BaseGroupe $groupe) {
-        return BSGroupe::toNCGroupId($groupe);
+    private static function groupeToNCID(BSGroupe $groupe) {
+        return $groupe->getNcGroupName();
     }
 
     private static function fonctionToNCID(BaseFonction $fonction) {
         return "[" . $fonction->getId() . "] " . $fonction->getNom() . " (fonction)";
     }
 
-    private function nextcloudApiCall(string $username, string $grounpname, string $operation) {
+    private function nextcloudApiCall(string $username, string $groupname, string $operation) {
+
+        if ($operation === 'leave') sleep(5);
+
+        $usend = base64_encode($username);
+        $gsend = base64_encode($groupname);
         $this->nc->getClient()->request('POST', "/ocs/v2.php/apps/user_sql/api/sync", [
             'json' => [
-                'username' => $username,
-                'groupname' => $grounpname,
+                'username' => $usend,
+                'groupname' => $gsend,
                 'operation' => $operation,
             ],
         ]);
