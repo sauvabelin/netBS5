@@ -225,7 +225,6 @@ class DoctrineAttributionSubscriber implements EventSubscriber
         // We do it here so that changes on the DB are actually done, as nextcloud will check the db
         // before doing anything
         foreach ($this->messagesToSend as $message) {
-            dump($message);
             $this->bus->dispatch($message);
         }
     }
