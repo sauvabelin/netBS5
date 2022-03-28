@@ -9,6 +9,7 @@ use Ovesco\FacturationBundle\Form\FactureModelType;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Annotation\Route;
+use Symfony\Component\Routing\RouterInterface;
 
 /**
  * Class CreanceController
@@ -21,12 +22,12 @@ class FactureModelController extends AbstractController
      * @Route("/list", name="ovesco.facturation.facture_model.list")
      */
 
-    public function listAction() {
+    public function listAction(RouterInterface $router) {
         return $this->render('@NetBSFichier/generic/page_generic.html.twig', [
             'title' => 'Modèles de facture',
             'subtitle' => "Tous les modèles de facture enregistrés et utilisables",
             'list' => 'ovesco.facturation.facture_models',
-            'modalPath' => $this->get('router')->generate('ovesco.facturation.facture_model.add_modal')
+            'modalPath' => $router->generate('ovesco.facturation.facture_model.add_modal')
         ]);
     }
 
@@ -37,7 +38,7 @@ class FactureModelController extends AbstractController
      * @throws \Doctrine\ORM\OptimisticLockException
      * @Route("/add-modal", name="ovesco.facturation.facture_model.add_modal")
      */
-    public function addModalAction(Request $request) {
+    public function addModalAction(Request $request, EntityManagerInterface $em) {
 
         $model = new FactureModel();
         $form = $this->createForm(FactureModelType::class, $model);
@@ -45,7 +46,6 @@ class FactureModelController extends AbstractController
 
         if($form->isSubmitted() && $form->isValid()) {
 
-            $em = $this->get('doctrine.orm.entity_manager');
             $em->persist($model);
             $em->flush();
             $this->addFlash('success', "Modèle de facture ajouté!");
