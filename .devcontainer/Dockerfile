@@ -17,6 +17,3 @@ COPY --from=composer:latest /usr/bin/composer /usr/local/bin/composer
 RUN echo 'deb [trusted=yes] https://repo.symfony.com/apt/ /' | sudo tee /etc/apt/sources.list.d/symfony-cli.list
 RUN sudo apt update
 RUN sudo apt install symfony-cli
-
-# Install netbs
-RUN php bin/console netbs:install --purge=true --dummy=true
