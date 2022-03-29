@@ -3,7 +3,7 @@ ARG VARIANT=8-bullseye
 FROM mcr.microsoft.com/vscode/devcontainers/php:0-${VARIANT}
 
 # Install php-mysql driver
-RUN docker-php-ext-install pdo curl exif gd mbstring zlib
+RUN docker-php-ext-install pdo gd zlib
 
 # Install composer and dependencies
 COPY --from=composer:latest /usr/bin/composer /usr/local/bin/composer
