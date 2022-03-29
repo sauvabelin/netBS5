@@ -137,11 +137,9 @@ class NextcloudGroupNotificationHandler
 
     private function nextcloudApiCall(string $username, string $groupname, string $operation) {
 
-        if ($operation === 'leave') sleep(5);
-
         $usend = base64_encode($username);
         $gsend = base64_encode($groupname);
-        $this->nc->getClient()->request('POST', "/ocs/v2.php/apps/user_sql/api/sync", [
+        $this->nc->query('POST', "/ocs/v2.php/apps/user_sql/api/sync", [
             'json' => [
                 'username' => $usend,
                 'groupname' => $gsend,
