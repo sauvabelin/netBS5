@@ -12,7 +12,6 @@ RUN docker-php-ext-install pdo
 
 # Install composer and dependencies
 COPY --from=composer:latest /usr/bin/composer /usr/local/bin/composer
-RUN cd /workspace/netBS5 && composer install
 
 # Install symfony binary
 RUN echo 'deb [trusted=yes] https://repo.symfony.com/apt/ /' | sudo tee /etc/apt/sources.list.d/symfony-cli.list
