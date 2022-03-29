@@ -2,14 +2,17 @@
 ARG VARIANT=8-bullseye
 FROM mcr.microsoft.com/vscode/devcontainers/php:0-${VARIANT}
     
+RUN apt-get update && \
+    apt-get install -y libfreetype6-dev libjpeg62-turbo-dev libpng-dev && \
+    docker-php-ext-configure gd --with-freetype=/usr/include/ --with-jpeg=/usr/include/ && \
+    docker-php-ext-install gd
+
 # Install php-mysql driver
 RUN docker-php-ext-install pdo
 
 # Install composer and dependencies
 COPY --from=composer:latest /usr/bin/composer /usr/local/bin/composer
-RUN pwd
-RUN ls
-RUN composer install
+RUN cd /workspace/netBS5 && composer install
 
 # Install symfony binary
 RUN echo 'deb [trusted=yes] https://repo.symfony.com/apt/ /' | sudo tee /etc/apt/sources.list.d/symfony-cli.list
