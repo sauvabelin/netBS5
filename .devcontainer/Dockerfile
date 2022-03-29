@@ -7,6 +7,8 @@ RUN docker-php-ext-install pdo
 
 # Install composer and dependencies
 COPY --from=composer:latest /usr/bin/composer /usr/local/bin/composer
+RUN pwd
+RUN ls
 RUN composer install
 
 # Install symfony binary
