@@ -1,10 +1,5 @@
 
-{{ registerCss(asset('bundles/netbscore/lib/datatables/datatables.min.css')) }}
-{{ registerCss(asset('bundles/netbscore/css/netbs.datatables.css')) }}
-
-{{ registerJs(asset('bundles/netbscore/lib/moment/moment.min.js')) }}
-{{ registerJs(asset('bundles/netbscore/lib/datatables/datatables.min.js')) }}
-{{ registerJs(asset('bundles/netbscore/lib/datatables/datatables-moment.js')) }}
+{{ registerJs('https://cdn.jsdelivr.net/npm/vue@2.5.17/dist/vue.js') }}
 {{ registerJs(asset('bundles/netbscore/js/ajaxTable.js')) }}
 
 {% set mainCheckboxId           = tableId ~ '_main_cb' %}
@@ -13,11 +8,10 @@
 {% set retrieveSelectedFunction = tableId ~ 'retrieve_selected_function' %}
 {% set buildMassParamsFunction  = tableId ~ 'build_mass_params_function' %}
 {% set updateCountClass         = tableId ~ '_count_class' %}
-{% set allIds                   = table.model.retrieveAllIds %}
 {% set itemClass                = table.model.managedItemsClass %}
 
 <div class="netbs-renderer" style="border:1px solid #eee">
-    <table id="{{ tableId }}" class="table table-hover dataTable table-responsive-md table-striped table-fw-widget" style="margin:0 !important;">
+    <table id="{{ tableId }}" class="table table-hover table-responsive-md table-striped table-fw-widget" style="margin:0 !important;">
         <thead>
         <tr>
             <th data-orderDataType="checkbox" style="width:30px;">
@@ -32,8 +26,17 @@
             {% endfor %}
         </tr>
         </thead>
-
-        <tbody></tbody>
+        <tbody>
+            <tr v-for="item in items">
+                <td>
+                    <div class="custom-control custom-checkbox">
+                        <input :id="'{{ tableId }}' + item.id" class="{{ checkboxClass }} custom-control-input" type="checkbox">
+                        <label class="custom-control-label" :for="'{{ tableId }}' + item.id"></label>
+                    </div>
+                </td>
+                <td v-for="(val, kv) in item.values" v-html="val" :key="kv"></td>
+            </tr>
+        </tbody>
     </table>
 
     {% if toolbar.items|length > 0 %}
@@ -45,9 +48,6 @@
                 {% for item in toolbar.items('left') %}
                     {{ item.render()|raw }}
                 {% endfor %}
-                {#
-                Nature des éléments : <b>{{ table.model.containedItemsName }}</b>
-                #}
             </div>
 
             <div class="col-md-6">
@@ -62,7 +62,7 @@
 
 </div>
 
-{% set disableSortColumns       = [] %}
+{% set disableSortColumns = [] %}
 {% for column in table.configuration.columns %}
     {% if not column.params.sortable %}
         {% set disableSortColumns = disableSortColumns|merge([loop.index]) %}
@@ -73,28 +73,26 @@
 
     <script type="text/javascript">
 
-        $.fn.dataTable.moment( '{{ param('format', 'js_moment_date') }}' );
-
         var {{ tableId }};
 
         $(document).ready(function() {
 
-            var dtbl_{{ tableId }} = $('#' + '{{ tableId }}').DataTable({
-                columns: [
-                    {orderable: false},
-                    {% for column in table.configuration.columns %}
-                    {orderable: {% if loop.index in disableSortColumns %}false{% else %}true{% endif %} }{% if not loop.last %},{% endif %}
-                    {% endfor %}
-                ]
-            });
+            new Vue({
+                el: '#{{ tableId }}',
+                mounted() {
 
-            {{ tableId }} = new ajaxTable(
-                {{ }}
-                '{{ tableId }}',
-                dtbl_{{ tableId }},
-                '{{ mainCheckboxId }}',
-                '{{ table.model.alias }}',
-                '{{ updateCountClass }}');
+                },
+                data: function() {
+                    return {
+                        items: [],
+                    }
+                },
+                methods: {
+                    loadItems() {
+                        
+                    }
+                }
+            });
         });
     </script>
 {% endset %}

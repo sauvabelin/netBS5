@@ -6,9 +6,9 @@ use NetBS\ListBundle\Model\BaseListModel;
 
 abstract class AjaxModel extends BaseListModel
 {
-    protected int $page;
-    protected int $amount;
-    protected string | null $search;
+    protected ?int $page = null;
+    protected ?int $amount = null;
+    protected ?string $search = null;
 
     public function _setAjaxParams(int $page, int $amount, string | null $search) {
         $this->page = $page;
@@ -24,7 +24,7 @@ abstract class AjaxModel extends BaseListModel
         return [];
     }
 
-    abstract protected function retrieveItems(int $page, int $amount, string | null $search);
+    abstract public function retrieveItems(int $page, int $amount, string | null $search);
 
-    abstract protected function retrieveAllIds();
+    abstract public function retrieveAllIds();
 }

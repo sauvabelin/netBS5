@@ -125,7 +125,7 @@ services:
             $ncUrl: '%env(NEXTCLOUD_BASE_URI)%'
             $ncUser: '%env(NEXTCLOUD_USER)%'
             $ncPass: '%env(NEXTCLOUD_PASS)%'
-            %env: '%env(APP_ENV)%'
+            $env: '%env(APP_ENV)%'
 
 
 imports:

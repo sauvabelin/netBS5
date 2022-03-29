@@ -38,6 +38,10 @@ class AjaxRenderer implements RendererInterface
      */
     public function render(SnapshotTable $table, $params = [])
     {
+        if (!$table->getModel() instanceof AjaxModel) {
+            throw new \Exception("Table {$table->getModel()->getAlias()} must extend AjaxModel");
+        }
+
         $toolbar    = new Toolbar();
         $tableId    = uniqid("__dt_");
 

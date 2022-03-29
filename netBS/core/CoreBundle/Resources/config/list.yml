@@ -50,6 +50,10 @@ services:
         tags:
             - { name: netbs.list.renderer }
 
+    NetBS\CoreBundle\ListModel\AjaxRenderer:
+        tags:
+            - { name: netbs.list.renderer }
+
     NetBS\CoreBundle\ListModel\Column\ActionColumn:
         tags:
             - { name: netbs.list.column }

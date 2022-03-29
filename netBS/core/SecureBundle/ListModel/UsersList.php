@@ -6,45 +6,42 @@ use NetBS\CoreBundle\Form\Type\SwitchType;
 use NetBS\CoreBundle\ListModel\Action\IconAction;
 use NetBS\CoreBundle\ListModel\Action\LinkAction;
 use NetBS\CoreBundle\ListModel\ActionItem;
+use NetBS\CoreBundle\ListModel\AjaxModel;
 use NetBS\CoreBundle\ListModel\Column\ActionColumn;
 use NetBS\CoreBundle\ListModel\Column\XEditableColumn;
 use NetBS\FichierBundle\Utils\Traits\FichierConfigTrait;
 use NetBS\FichierBundle\Utils\Traits\SecureConfigTrait;
 use NetBS\ListBundle\Column\DateTimeColumn;
 use NetBS\ListBundle\Column\SimpleColumn;
-use NetBS\ListBundle\Model\BaseListModel;
 use NetBS\ListBundle\Model\ListColumnsConfiguration;
 use NetBS\CoreBundle\Utils\Traits\EntityManagerTrait;
 use NetBS\CoreBundle\Utils\Traits\RouterTrait;
 use NetBS\SecureBundle\Mapping\BaseUser;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 
-class UsersList extends BaseListModel
+class UsersList extends AjaxModel
 {
     use EntityManagerTrait, RouterTrait, SecureConfigTrait, FichierConfigTrait;
 
-    /**
-     * Retrieves all elements managed by this list
-     * @return array
-     */
-    protected function buildItemsList()
-    {
-        $username   = $this->getParameter('username');
-        $query      = $this->entityManager->getRepository($this->getManagedItemsClass())->createQueryBuilder('u');
+    public function retrieveItems(int $page, int $amount, string | null $search) {
 
-       /*
-        if(empty($username)) return [];
+        $query = $this->entityManager->getRepository($this->getManagedItemsClass())->createQueryBuilder('u');
 
-        if(strpos($username, "%") !== false)
-            $query->andWhere($query->expr()->like('u.username', ':username'));
-        else
-            $query->andWhere($query->expr()->eq('u.username', ':username'));
-        */
+        if ($search) {
+            $query->where('u.username LIKE :u')
+                ->setParameter('u', '%' . $search . '%');
+        }
 
         return $query
-            //->setParameter('username', $username)
+            ->setMaxResults($amount)
+            ->setFirstResult($page * $amount)
             ->getQuery()
             ->getResult();
+    }
+
+    public function retrieveAllIds() {
+        $users = $this->entityManager->getRepository($this->getManagedItemsClass())->findAll();
+        return array_map(fn (BaseUser $user) => $user->getId(), $users);
     }
 
     public function configureOptions(OptionsResolver $resolver)
