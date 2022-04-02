@@ -36,49 +36,9 @@ services:
         tags:
             - { name: netbs.exporter }
 
-    Ovesco\FacturationBundle\ListModel\DebiteurFacturesList:
-        tags:
-            - { name: netbs.list.model }
-
-    Ovesco\FacturationBundle\ListModel\DebiteurCreancesList:
-        tags:
-            - { name: netbs.list.model }
-
-    Ovesco\FacturationBundle\ListModel\FacturesOuvertesList:
-        tags:
-            - { name: netbs.list.model }
-
-    Ovesco\FacturationBundle\ListModel\FactureModelsList:
-        tags:
-            - { name: netbs.list.model }
-
-    Ovesco\FacturationBundle\ListModel\FactureCreancesList:
-        tags:
-            - { name: netbs.list.model }
-
-    Ovesco\FacturationBundle\ListModel\GivenFacturesList:
-        tags:
-            - { name: netbs.list.model }
-
-    Ovesco\FacturationBundle\ListModel\FactureRappelsList:
-        tags:
-            - { name: netbs.list.model }
-
-    Ovesco\FacturationBundle\ListModel\FacturePaiementsList:
-        tags:
-            - { name: netbs.list.model }
-
-    Ovesco\FacturationBundle\ListModel\FacturesAttentePaiementList:
-        tags:
-            - { name: netbs.list.model }
-
-    Ovesco\FacturationBundle\ListModel\FacturesAttenteImpressionList:
-        tags:
-            - { name: netbs.list.model }
-
-    Ovesco\FacturationBundle\ListModel\ComptesList:
-        tags:
-            - { name: netbs.list.model }
+    Ovesco\FacturationBundle\ListModel\:
+        resource: '../../ListModel'
+        tags: ['netbs.list.model']
 
     Ovesco\FacturationBundle\Form\FactureConfigType:
         tags:

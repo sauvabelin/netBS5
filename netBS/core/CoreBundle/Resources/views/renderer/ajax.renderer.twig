@@ -1,5 +1,6 @@
 
 {{ registerJs('https://cdn.jsdelivr.net/npm/vue@2.5.17/dist/vue.js') }}
+{{ registerJs('https://cdn.jsdelivr.net/npm/vue@2.5.17/dist/vue.js') }}
 {{ registerCss(asset('bundles/netbscore/lib/datetimepicker/bootstrap-datetimepicker.min.css')) }}
 {{ registerJs(asset('bundles/netbscore/lib/datetimepicker/bootstrap-datetimepicker.min.js')) }}
 {{ registerCss(asset('bundles/netbscore/lib/select2/css/select2.min.css')) }}
@@ -19,6 +20,10 @@
 {% set allIds                   = table.model.retrieveAllIds %}
 {% set itemClass                = table.model.managedItemsClass %}
 
+<script type="text/javascript">
+    var {{ tableId }};
+</script>
+
 <div id="{{ vueInstanceId }}" class="netbs-renderer position-relative" style="border:1px solid #eee">
     <div class="position-absolute" style="width:100%;height:100%;background:white;z-index:1000;opacity:0.5;display:flex " v-if="loading"></div>
     <div class="row px-3 pt-3">
@@ -36,11 +41,13 @@
             </div>
         </div>
         <div class="col-sm-12 col-md-6 d-flex justify-content-end">
-            <div class="dataTables_filter">
-                <label class="d-flex align-items-center">Search:
-                    <input type="search" class="ml-1 form-control form-control-sm" placeholder="" v-model="search">
-                </label>
-            </div>
+            {% if table.model.searchTerms|length > 0 %}
+                <div class="dataTables_filter">
+                    <label class="d-flex align-items-center">Search:
+                        <input type="search" class="ml-1 form-control form-control-sm" placeholder="" v-model="search">
+                    </label>
+                </div>
+            {% endif %}
         </div>
     </div>
     <table id="{{ tableId }}" class="table table-hover table-responsive-md table-striped table-fw-widget" style="margin:0 !important;">
@@ -93,15 +100,14 @@
 
     {% if toolbar.items|length > 0 %}
     <div class="netbs-toolbar dropup">
-
-        <div class="row">
+        <div class="row pb-3 px-3">
             <div class="col-md-6">
                 {% for item in toolbar.items('left') %}
                     {{ item.render()|raw }}
                 {% endfor %}
             </div>
 
-            <div class="col-md-6">
+            <div class="col-md-6 d-flex justify-content-end">
                 {% for item in toolbar.items('right') %}
                     {{ item.render()|raw }}
                 {% endfor %}
@@ -123,7 +129,11 @@
 
     <script type="text/javascript">
 
-        var {{ tableId }};
+        $("#mass-update-{{ tableId }}").click(function() {
+            alert("swag");
+        });
+
+        console.log($("#mass-update-{{ tableId }}"));
 
         function refreshEditable() {
 
@@ -209,8 +219,6 @@
                 }
             });
         }
-
-        var {{ tableId }};
 
         $(document).ready(function() {
 
@@ -357,7 +365,10 @@
 
             // cheap simulation of a netbsTable
             {{ tableId }} = {
-                getSelectedIds: () => {{ tableId }}_vueInstance.getSelectedIds(),
+                getSelectedIds: () => {
+                    alert("CLICK");
+                    return {{ tableId }}_vueInstance.getSelectedIds();
+                },
             };
         });
 

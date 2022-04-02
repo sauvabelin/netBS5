@@ -2,6 +2,7 @@
 
 namespace NetBS\SecureBundle\ListModel;
 
+use Doctrine\ORM\QueryBuilder;
 use NetBS\CoreBundle\Form\Type\SwitchType;
 use NetBS\CoreBundle\ListModel\Action\IconAction;
 use NetBS\CoreBundle\ListModel\Action\LinkAction;
@@ -17,15 +18,19 @@ use NetBS\ListBundle\Model\ListColumnsConfiguration;
 use NetBS\CoreBundle\Utils\Traits\EntityManagerTrait;
 use NetBS\CoreBundle\Utils\Traits\RouterTrait;
 use NetBS\SecureBundle\Mapping\BaseUser;
-use Symfony\Component\OptionsResolver\OptionsResolver;
 
 class UsersList extends AjaxModel
 {
     use EntityManagerTrait, RouterTrait, SecureConfigTrait, FichierConfigTrait;
 
-    public function ajaxQueryBuilder(string $alias) {
+    public function ajaxQueryBuilder(string $alias): QueryBuilder {
 
-        return $this->entityManager->getRepository($this->getManagedItemsClass())->createQueryBuilder($alias);
+        $qb = $this->entityManager->getRepository($this->getManagedItemsClass())->createQueryBuilder($alias);
+        return $qb;
+    }
+
+    public function searchTerms(): array {
+        return ['username'];
     }
 
     public function retrieveAllIds() {

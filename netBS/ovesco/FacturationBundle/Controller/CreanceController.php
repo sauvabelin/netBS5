@@ -12,6 +12,7 @@ use Ovesco\FacturationBundle\Model\MassCreances;
 use NetBS\CoreBundle\Utils\Modal;
 use NetBS\FichierBundle\Mapping\BaseMembre;
 use NetBS\FichierBundle\Model\AdressableInterface;
+use NetBS\ListBundle\Service\ListManager;
 use Ovesco\FacturationBundle\Entity\Facture;
 use Ovesco\FacturationBundle\Model\MergeCreancesToFacture;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -157,18 +158,8 @@ class CreanceController extends AbstractController
      * @param SearcherManager $searcher
      * @return \Symfony\Component\HttpFoundation\Response
      */
-    public function creancesOuvertesAction(SearcherManager $searcher) {
-
-        $instance = $searcher->bind(Creance::class);
-        $params   = [];
-
-        if (!$instance->getForm()->isSubmitted()) {
-            $params['title'] = "Créances Ouvertes";
-            $instance->getForm()->get('isOuverte')->submit('yes');
-            $instance->getSearcher()->setForm($instance->getForm());
-        }
-
-        return $searcher->render($instance, $params);
+    public function creancesOuvertesAction() {
+        return $this->render("@OvescoFacturation/creance/creances_ouvertes.html.twig");
     }
 
     private function extractCreances($ids, EntityManagerInterface $em) {

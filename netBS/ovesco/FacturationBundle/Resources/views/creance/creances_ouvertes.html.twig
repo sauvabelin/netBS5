@@ -1,0 +1,21 @@
+{% extends '@NetBSCore/layout/backend.layout.twig' %}
+
+{% set title = 'Fusion des créances' %}
+
+{% block main %}
+    <div class="container-fluid">
+        {% include '@NetBSCore/includes/header.include.twig' with {
+            header: 'Créances Ouvertes',
+            subHeader: 'Listes des créances ouvertes en attente de fusion en facture',
+        } %}
+
+      <div class="card card-table">
+        <div class="card-header">
+            <h5 class="card-title">Créances</h5>
+        </div>
+        <div class="card-body">
+          {{ render_list("ovesco.facturation.creances_ouvertes", "ajax") }}
+        </div>
+      </div>
+    </div>
+{% endblock %}

@@ -2,6 +2,7 @@
 
 namespace Ovesco\FacturationBundle\ListModel;
 
+use Doctrine\ORM\QueryBuilder;
 use NetBS\CoreBundle\ListModel\Action\RemoveAction;
 use NetBS\CoreBundle\ListModel\AjaxModel;
 use NetBS\CoreBundle\ListModel\Column\ActionColumn;
@@ -61,17 +62,17 @@ class CreancesOuvertesList extends AjaxModel
         ;
     }
 
-    public function retrieveItems(int $page, int $amount, ?string $search)
-    {
-        $query = $this->entityManager->getRepository('OvescoFacturationBundle:Creance')
-            ->createQueryBuilder('c');
-        $query->where($query->expr()->isNull("c.facture"));
-
-        if ($search)
+    public function ajaxQueryBuilder(string $alias): QueryBuilder {
+        return $this->entityManager->getRepository("OvescoFacturationBundle:Creance")->createQueryBuilder($alias);
     }
 
-    public function retrieveAllIds()
-    {
-        // TODO: Implement retrieveAllIds() method.
+    public function searchTerms(): array {
+        return ['titre'];
     }
+
+    public function retrieveAllIds() {
+        $items = $this->entityManager->getRepository("OvescoFacturationBundle:Creance")->findAll();
+        return array_map(fn ($item) => $item->getId(), $items);
+    }
+
 }
