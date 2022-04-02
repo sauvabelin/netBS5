@@ -1,22 +1,54 @@
 
 {{ registerJs('https://cdn.jsdelivr.net/npm/vue@2.5.17/dist/vue.js') }}
-{{ registerJs(asset('bundles/netbscore/js/ajaxTable.js')) }}
+{{ registerCss(asset('bundles/netbscore/lib/datetimepicker/bootstrap-datetimepicker.min.css')) }}
+{{ registerJs(asset('bundles/netbscore/lib/datetimepicker/bootstrap-datetimepicker.min.js')) }}
+{{ registerCss(asset('bundles/netbscore/lib/select2/css/select2.min.css')) }}
+{{ registerCss(asset('bundles/netbscore/lib/select2/css/select2.bs4.min.css')) }}
+{{ registerJs(asset('bundles/netbscore/lib/select2/js/select2.full.min.js')) }}
+{{ registerCss(asset('bundles/netbscore/lib/xeditable/css/bootstrap-editable.css')) }}
+{{ registerJs(asset('bundles/netbscore/lib/xeditable/js/xeditable.bs4.js')) }}
+{{ registerJs(asset('bundles/netbscore/js/xeditable_hochet_datepicker.js')) }}
 
+{% set vueInstanceId            = 'vue-instance-' ~ random(10000) %}
 {% set mainCheckboxId           = tableId ~ '_main_cb' %}
 {% set checkboxClass            = tableId ~ '_cb' %}
 {% set updateCountFunction      = tableId ~ '_update_function' %}
 {% set retrieveSelectedFunction = tableId ~ 'retrieve_selected_function' %}
 {% set buildMassParamsFunction  = tableId ~ 'build_mass_params_function' %}
 {% set updateCountClass         = tableId ~ '_count_class' %}
+{% set allIds                   = table.model.retrieveAllIds %}
 {% set itemClass                = table.model.managedItemsClass %}
 
-<div class="netbs-renderer" style="border:1px solid #eee">
+<div id="{{ vueInstanceId }}" class="netbs-renderer position-relative" style="border:1px solid #eee">
+    <div class="position-absolute" style="width:100%;height:100%;background:white;z-index:1000;opacity:0.5;display:flex " v-if="loading"></div>
+    <div class="row px-3 pt-3">
+        <div class="col-sm-12 col-md-6">
+            <div class="dataTables_length">
+                <label class="d-flex align-items-center">
+                    Show
+                    <select class="form-control form-control-sm mx-1" style="width:75px" v-model="amount">
+                        <option value="10">10</option>
+                        <option value="25">25</option>
+                        <option value="50">50</option>
+                        <option value="100">100</option>
+                    </select> entries
+                </label>
+            </div>
+        </div>
+        <div class="col-sm-12 col-md-6 d-flex justify-content-end">
+            <div class="dataTables_filter">
+                <label class="d-flex align-items-center">Search:
+                    <input type="search" class="ml-1 form-control form-control-sm" placeholder="" v-model="search">
+                </label>
+            </div>
+        </div>
+    </div>
     <table id="{{ tableId }}" class="table table-hover table-responsive-md table-striped table-fw-widget" style="margin:0 !important;">
         <thead>
         <tr>
             <th data-orderDataType="checkbox" style="width:30px;">
-                <div class="custom-control custom-checkbox">
-                    <input id="{{ mainCheckboxId }}" class="custom-control-input" type="checkbox">
+                <div class="custom-control custom-checkbox" style="position:relative;bottom:14px;">
+                    <input id="{{ mainCheckboxId }}" class="custom-control-input" type="checkbox" @click="toggleAll">
                     <label class="custom-control-label" for="{{ mainCheckboxId }}"></label>
                 </div>
             </th>
@@ -27,23 +59,42 @@
         </tr>
         </thead>
         <tbody>
-            <tr v-for="item in items">
+            <tr v-for="item in items" :key="item[0]">
                 <td>
-                    <div class="custom-control custom-checkbox">
-                        <input :id="'{{ tableId }}' + item.id" class="{{ checkboxClass }} custom-control-input" type="checkbox">
+                    <div class="custom-control custom-checkbox" style="position:relative;bottom:14px;">
+                        <input :id="'{{ tableId }}' + item.id" class="{{ checkboxClass }} custom-control-input" :checked="selectedIds.includes(item.id)" type="checkbox" @click="toggleSelected(item.id)">
                         <label class="custom-control-label" :for="'{{ tableId }}' + item.id"></label>
                     </div>
                 </td>
-                <td v-for="(val, kv) in item.values" v-html="val" :key="kv"></td>
+                <td v-for="(val, kv) in item.row" v-html="val" :key="kv"></td>
             </tr>
         </tbody>
     </table>
+
+    <div class="row px-3 pt-3">
+        <div class="col-sm-12 col-md-5">
+            <div class="dataTables_info">Showing <span v-text="firstItem"></span> to <span v-text="lastItem"></span> of <span v-text="allIds.length"></span> entries</div>
+        </div>
+        <div class="col-sm-12 col-md-7 d-flex justify-content-end">
+            <div class="dataTables_paginate paging_simple_numbers"><ul class="pagination">
+                    <li :class="{ 'paginate_button page-item previous': true, 'disabled': page === 0 }" @click="setPage(page - 1)">
+                        <a href="#" class="page-link">Previous</a>
+                    </li>
+                    <li v-for="btn in pageButtons" :class="{'paginate_button page-item': true, active: btn.active && btn.id === page, disabled: !btn.active }">
+                        <a href="#" class="page-link" @click.prevent="setPage(btn.id)" v-text="btn.text"></a>
+                    </li>
+                    <li :class="{ 'paginate_button page-item next': true, 'disabled': page === pages }" @click="setPage(page + 1)">
+                        <a href="#" class="page-link">Next</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
 
     {% if toolbar.items|length > 0 %}
     <div class="netbs-toolbar dropup">
 
         <div class="row">
-
             <div class="col-md-6">
                 {% for item in toolbar.items('left') %}
                     {{ item.render()|raw }}
@@ -55,7 +106,6 @@
                     {{ item.render()|raw }}
                 {% endfor %}
             </div>
-
         </div>
     </div>
     {% endif %}
@@ -75,25 +125,249 @@
 
         var {{ tableId }};
 
+        function refreshEditable() {
+
+            $('[data-disabled]').off('click');
+
+            $('.ajax-editable').each(function() {
+
+                var $elem       = $(this);
+                var multiple    = $elem.attr("data-multiple") === "1";
+                var ajaxClass   = $elem.attr("data-ajax-class");
+                var nullOption  = $elem.attr("data-null-option");
+                var source      = $elem.attr("data-original-source");
+
+                $elem.editable({
+
+                    tpl: '<select style="width:300px;">',
+                    type: 'select2',
+                    placement: 'bottom',
+
+                    source: function() {
+                        return JSON.parse(source);
+                    },
+
+                    error: function(response) {
+
+                        if(response.status === 500) {
+                            toastr.error('Erreur interne, veuillez contacter le chef comm');
+
+                        } else {
+
+                            var txt = response.responseText;
+                            if(response.responseJSON.hasOwnProperty('message'))
+                                txt = response.responseJSON.message;
+                            toastr.warning(txt);
+                        }
+                    },
+
+                    success: function() {
+                        var t = toastr.success('Valeur modifiée avec succès, cliquez ici pour actualiser');
+                        $(t).click(function() {
+                            location.reload();
+                        });
+                    },
+
+                    select2: {
+                        multiple: multiple,
+                        dropdownParent: $(this),
+                        ajax: {
+
+                            dataType: 'json',
+                            url: "{{ path('netbs.core.select2.results') }}",
+                            delay: 350,
+
+                            data: function (params) {
+                                return {
+                                    ajaxClass:  ajaxClass,
+                                    nullOption: nullOption,
+                                    query:      params.term
+                                };
+                            }
+                        }
+                    }
+                });
+            });
+
+            $('.editable').editable({
+                select2: {width: 250},
+                error: function(response) {
+
+                    if(response.status === 500) {
+                        toastr['error']('Erreur interne, veuillez contacter le chef comm');
+
+                    } else {
+
+                        var txt = response.responseText;
+                        if(response.responseJSON.hasOwnProperty('message'))
+                            txt = response.responseJSON.message;
+                        toastr["warning"](txt);
+                    }
+                },
+                success: function() {
+                    toastr['success']('Valeur modifiée avec succès');
+                }
+            });
+        }
+
+        var {{ tableId }};
+
         $(document).ready(function() {
 
-            new Vue({
-                el: '#{{ tableId }}',
+            const {{ tableId }}_vueInstance = new Vue({
+                el: '#{{ vueInstanceId }}',
                 mounted() {
-
+                    this.loadItems();
                 },
                 data: function() {
                     return {
+                        page: 0,
+                        amount: 10,
+                        loading: false,
+                        searchTimer: null,
+                        search: '',
                         items: [],
+                        allIds: {{ allIds|json_encode }},
+                        selectedIds: [],
+                    }
+                },
+                watch: {
+                    page() {
+                        this.loadItems();
+                    },
+                    amount() {
+                        this.loadItems();
+                    },
+                    search() {
+                        if (this.searchTimer !== null) {
+                            clearTimeout(this.searchTimer);
+                        }
+
+                        this.searchTimer = setTimeout(() => {
+                            this.loadItems();
+                            this.searchTimer = null;
+                        }, 500);
                     }
                 },
                 methods: {
                     loadItems() {
-                        
+                        const path = "{{ path('netbs.core.ajax_list_query', { listId: table.model.alias }) }}";
+                        const params = new URLSearchParams();
+                        params.append('page', this.page);
+                        params.append('amount', this.amount);
+                        params.append('search', this.search.trim());
+                        this.loading = true;
+                        fetch(path + "?" + params.toString(), {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                            },
+                            body: JSON.stringify(
+                                 {{ table.model.parameters|json_encode|raw }},
+                            ),
+                        }).then((res) => res.json()).then((res) => {
+                            this.items.splice(0, this.items.length);
+                            for (const it of res) {
+                                this.items.push(it);
+                            }
+                            // Perform x-editable mapping
+                            this.$nextTick(() => {
+                                refreshEditable();
+                                this.loading = false;
+                            });
+                        });
+                    },
+                    toggleSelected(id) {
+                        if (!this.selectedIds.includes(id)) {
+                            this.selectedIds.push(id);
+                        } else {
+                            this.selectedIds.splice(this.selectedIds.indexOf(id), 1);
+                        }
+                    },
+                    toggleAll() {
+                        if (this.selectedIds.length === this.allIds.length) {
+                            this.selectedIds.splice(0, this.selectedIds.length);
+                        } else {
+                            this.selectedIds.splice(0, this.selectedIds.length);
+                            for (let i = 0; i < this.allIds.length; i++) {
+                                this.selectedIds.push(this.allIds[i]);
+                            }
+                            console.log(this.allIds);
+                        }
+                    },
+                    setPage(nextPage) {
+                        if (nextPage < 0 || nextPage > this.pages) {
+                            return;
+                        }
+
+                        this.page = nextPage;
+                    },
+                    getSelectedIds() {
+                        return this.selectedIds;
+                    },
+                },
+                computed: {
+                    pages() {
+                        return Math.floor((this.allIds.length - 1) / parseInt(this.amount));
+                    },
+                    firstItem() {
+                        return this.page * this.amount + 1;
+                    },
+                    lastItem() {
+                        const currLast = parseInt(this.page) * parseInt(this.amount) + parseInt(this.amount);
+                        return currLast > this.allIds.length ? this.allIds.length : currLast;
+                    },
+                    pageButtons() {
+                        if (this.pages < 5) {
+                            const res = [];
+                            for (let i = 0; i < this.pages; i++) {
+                                res.push({ id: i, text: i+1, active: true});
+                            }
+                            return res;
+                        }
+
+                        if (this.page === 0 || this.page === 1) {
+                            return [
+                                { id: 0, text: 1, active: true},
+                                { id: 1, text: 2, active: true},
+                                { id: 2, text: 3, active: true},
+                                { id: this.pages, text: this.pages + 1, active: true},
+                            ]
+                        }
+
+                        if (this.page === this.pages || this.page === this.pages - 1) {
+                            return [
+                                { id: this.pages - 3, text: this.pages - 2, active: true},
+                                { id: this.pages - 2, text: this.pages - 1, active: true},
+                                { id: this.pages - 1, text: this.pages, active: true},
+                                { id: this.pages, text: this.pages + 1, active: true},
+                            ]
+                        }
+
+                        return [
+                            { id: 0, text: 1, active: true},
+                            { id: this.page - 1, text: this.page, active: true},
+                            { id: this.page, text: this.page + 1, active: true},
+                            { id: this.page + 1, text: this.page + 2, active: true},
+                            { id: this.pages, text: this.pages + 1, active: true},
+                        ];
                     }
-                }
+                },
             });
+
+            // cheap simulation of a netbsTable
+            {{ tableId }} = {
+                getSelectedIds: () => {{ tableId }}_vueInstance.getSelectedIds(),
+            };
         });
+
+        $.fn.editable.defaults.emptytext      = 'Rien';
+        $.fn.editable.defaults.success        = function(response, newValue) {
+            return {newValue: response.newValue};
+        };
+
+        $.fn.editableform.template = '{% include '@NetBSCore/xeditable/template.xeditable.twig' %}';
+        $.fn.editableform.buttons  = '{% include '@NetBSCore/xeditable/buttons.xeditable.twig' %}';
     </script>
 {% endset %}
 

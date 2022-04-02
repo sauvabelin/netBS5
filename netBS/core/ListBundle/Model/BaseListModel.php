@@ -89,4 +89,9 @@ abstract class BaseListModel implements ListModelInterface
 
         return $this->parameters[$key];
     }
+
+    public function getParameters()
+    {
+        return $this->parameters;
+    }
 }

@@ -2,6 +2,7 @@
 
 namespace NetBS\CoreBundle\ListModel;
 
+use Doctrine\ORM\QueryBuilder;
 use NetBS\ListBundle\Model\BaseListModel;
 
 abstract class AjaxModel extends BaseListModel
@@ -17,14 +18,30 @@ abstract class AjaxModel extends BaseListModel
     }
 
     public function buildItemsList() {
-        if ($this->page && $this->amount) {
-            return $this->retrieveItems($this->page, $this->amount, $this->search);
+        if ($this->page !== null && $this->amount !== null) {
+            $queryBuilder = $this->ajaxQueryBuilder("x");
+            if ($this->search) {
+                $orTerms = [];
+                foreach ($this->searchTerms() as $term) {
+                    $orTerms[] = $queryBuilder->expr()->like("x." . $term, ":s");
+                }
+                $queryBuilder->andWhere(...$orTerms)
+                    ->setParameter('s', '%' . $this->search . '%');
+            }
+
+            return $queryBuilder
+                ->setMaxResults($this->amount)
+                ->setFirstResult($this->page * $this->amount)
+                ->getQuery()
+                ->getResult();
         }
 
         return [];
     }
 
-    abstract public function retrieveItems(int $page, int $amount, string | null $search);
+    abstract public function ajaxQueryBuilder(string $alias): QueryBuilder;
+
+    abstract public function searchTerms(): array;
 
     abstract public function retrieveAllIds();
 }

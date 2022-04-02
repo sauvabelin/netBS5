@@ -23,30 +23,14 @@ class UsersList extends AjaxModel
 {
     use EntityManagerTrait, RouterTrait, SecureConfigTrait, FichierConfigTrait;
 
-    public function retrieveItems(int $page, int $amount, string | null $search) {
+    public function ajaxQueryBuilder(string $alias) {
 
-        $query = $this->entityManager->getRepository($this->getManagedItemsClass())->createQueryBuilder('u');
-
-        if ($search) {
-            $query->where('u.username LIKE :u')
-                ->setParameter('u', '%' . $search . '%');
-        }
-
-        return $query
-            ->setMaxResults($amount)
-            ->setFirstResult($page * $amount)
-            ->getQuery()
-            ->getResult();
+        return $this->entityManager->getRepository($this->getManagedItemsClass())->createQueryBuilder($alias);
     }
 
     public function retrieveAllIds() {
         $users = $this->entityManager->getRepository($this->getManagedItemsClass())->findAll();
         return array_map(fn (BaseUser $user) => $user->getId(), $users);
-    }
-
-    public function configureOptions(OptionsResolver $resolver)
-    {
-        $resolver->setRequired('username');
     }
 
     /**
