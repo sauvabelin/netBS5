@@ -30,7 +30,7 @@ class NextcloudApiCall {
 
         if ($this->env === 'dev') {
             dump("Nextcloud Query", $verb, $path, $data);
-            return;    
+            return null;
         }
 
         return $this->http->request($verb, $path, [
