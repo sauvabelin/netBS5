@@ -41,6 +41,11 @@ class NextcloudApiCall {
                 'OCS-APIRequest' => 'true',
             ],
             'json' => $data,
+            'extra' => [
+                'curl' => [
+                    CURLOPT_SSL_VERIFYPEER => 0,
+                ],
+            ],
         ]);
     }
 }
