@@ -63,16 +63,13 @@ class CreancesOuvertesList extends AjaxModel
     }
 
     public function ajaxQueryBuilder(string $alias): QueryBuilder {
-        return $this->entityManager->getRepository("OvescoFacturationBundle:Creance")->createQueryBuilder($alias);
+        $query = $this->entityManager->getRepository("OvescoFacturationBundle:Creance")
+            ->createQueryBuilder($alias);
+        $query->where($query->expr()->isNull("$alias.facture"));
+        return $query;
     }
 
     public function searchTerms(): array {
         return ['titre'];
     }
-
-    public function retrieveAllIds() {
-        $items = $this->entityManager->getRepository("OvescoFacturationBundle:Creance")->findAll();
-        return array_map(fn ($item) => $item->getId(), $items);
-    }
-
 }

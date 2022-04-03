@@ -1,0 +1,21 @@
+{% extends '@NetBSCore/layout/backend.layout.twig' %}
+
+{% set title = 'Fusion des créances' %}
+
+{% block main %}
+    <div class="container-fluid">
+        {% include '@NetBSCore/includes/header.include.twig' with {
+            header: 'Factures en attente d\'impression',
+            subHeader: 'Toutes les factures qui doivent être imprimées',
+        } %}
+
+        <div class="card card-table">
+            <div class="card-header">
+                <h5 class="card-title">Liste des factures</h5>
+            </div>
+            <div class="card-body">
+                {{ render_list("ovesco.facturation.factures_attente_impression", "ajax") }}
+            </div>
+        </div>
+    </div>
+{% endblock %}

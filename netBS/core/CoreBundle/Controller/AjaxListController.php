@@ -31,7 +31,6 @@ class AjaxListController extends AbstractController
         $search = empty($search) ? null : $search;
 
 
-        dump($params);
         foreach ($params as $key => $value) {
             $model->setParameter($key, $value);
         }

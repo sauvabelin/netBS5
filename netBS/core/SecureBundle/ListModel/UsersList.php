@@ -33,11 +33,6 @@ class UsersList extends AjaxModel
         return ['username'];
     }
 
-    public function retrieveAllIds() {
-        $users = $this->entityManager->getRepository($this->getManagedItemsClass())->findAll();
-        return array_map(fn (BaseUser $user) => $user->getId(), $users);
-    }
-
     /**
      * Returns the class of items managed by this list
      * @return string

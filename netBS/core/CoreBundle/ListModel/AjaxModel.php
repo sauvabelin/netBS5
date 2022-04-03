@@ -39,9 +39,14 @@ abstract class AjaxModel extends BaseListModel
         return [];
     }
 
+    public function retrieveAllIds() {
+        $data = $this->ajaxQueryBuilder("x")
+            ->getQuery()
+            ->getResult();
+        return array_map(fn ($item) => $item->getId(), $data);
+    }
+
     abstract public function ajaxQueryBuilder(string $alias): QueryBuilder;
 
     abstract public function searchTerms(): array;
-
-    abstract public function retrieveAllIds();
 }

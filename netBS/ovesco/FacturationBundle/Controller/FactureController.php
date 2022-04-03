@@ -31,7 +31,8 @@ class FactureController extends AbstractController
      * @throws \Exception
      */
     public function factureAttentePaiementAction() {
-        return $this->search('Factures en attente de paiement', 'no');
+        return $this->render("@OvescoFacturation/facture/attente_paiement.html.twig");
+        // return $this->search('Factures en attente de paiement', 'no');
     }
 
     /**
@@ -39,7 +40,8 @@ class FactureController extends AbstractController
      * @return \Symfony\Component\HttpFoundation\Response
      */
     public function factureAttenteImpressionAction() {
-        return $this->search('Factures en attente d\'impression', 'yes');
+        return $this->render("@OvescoFacturation/facture/attente_impression.html.twig");
+        // return $this->search('Factures en attente d\'impression', 'yes');
     }
 
     private function search($title, $printed) {

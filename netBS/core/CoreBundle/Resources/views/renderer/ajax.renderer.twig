@@ -24,76 +24,79 @@
     var {{ tableId }};
 </script>
 
-<div id="{{ vueInstanceId }}" class="netbs-renderer position-relative" style="border:1px solid #eee">
-    <div class="position-absolute" style="width:100%;height:100%;background:white;z-index:1000;opacity:0.5;display:flex " v-if="loading"></div>
-    <div class="row px-3 pt-3">
-        <div class="col-sm-12 col-md-6">
-            <div class="dataTables_length">
-                <label class="d-flex align-items-center">
-                    Show
-                    <select class="form-control form-control-sm mx-1" style="width:75px" v-model="amount">
-                        <option value="10">10</option>
-                        <option value="25">25</option>
-                        <option value="50">50</option>
-                        <option value="100">100</option>
-                    </select> entries
-                </label>
-            </div>
-        </div>
-        <div class="col-sm-12 col-md-6 d-flex justify-content-end">
-            {% if table.model.searchTerms|length > 0 %}
-                <div class="dataTables_filter">
-                    <label class="d-flex align-items-center">Search:
-                        <input type="search" class="ml-1 form-control form-control-sm" placeholder="" v-model="search">
+
+<div class="netbs-renderer position-relative" style="border:1px solid #eee">
+    <div id="{{ vueInstanceId }}">
+        <div class="position-absolute" style="width:100%;height:100%;background:white;z-index:1000;opacity:0.5;display:flex " v-if="loading"></div>
+        <div class="row px-3 pt-3">
+            <div class="col-sm-12 col-md-6">
+                <div class="dataTables_length">
+                    <label class="d-flex align-items-center">
+                        Show
+                        <select class="form-control form-control-sm mx-1" style="width:75px" v-model="amount">
+                            <option value="10">10</option>
+                            <option value="25">25</option>
+                            <option value="50">50</option>
+                            <option value="100">100</option>
+                        </select> entries
                     </label>
                 </div>
-            {% endif %}
-        </div>
-    </div>
-    <table id="{{ tableId }}" class="table table-hover table-responsive-md table-striped table-fw-widget" style="margin:0 !important;">
-        <thead>
-        <tr>
-            <th data-orderDataType="checkbox" style="width:30px;">
-                <div class="custom-control custom-checkbox" style="position:relative;bottom:14px;">
-                    <input id="{{ mainCheckboxId }}" class="custom-control-input" type="checkbox" @click="toggleAll">
-                    <label class="custom-control-label" for="{{ mainCheckboxId }}"></label>
-                </div>
-            </th>
-
-            {% for header in table.headers %}
-                <th>{{ header }}</th>
-            {% endfor %}
-        </tr>
-        </thead>
-        <tbody>
-            <tr v-for="item in items" :key="item[0]">
-                <td>
-                    <div class="custom-control custom-checkbox" style="position:relative;bottom:14px;">
-                        <input :id="'{{ tableId }}' + item.id" class="{{ checkboxClass }} custom-control-input" :checked="selectedIds.includes(item.id)" type="checkbox" @click="toggleSelected(item.id)">
-                        <label class="custom-control-label" :for="'{{ tableId }}' + item.id"></label>
+            </div>
+            <div class="col-sm-12 col-md-6 d-flex justify-content-end">
+                {% if table.model.searchTerms|length > 0 %}
+                    <div class="dataTables_filter">
+                        <label class="d-flex align-items-center">Search:
+                            <input type="search" class="ml-1 form-control form-control-sm" placeholder="" v-model="search">
+                        </label>
                     </div>
-                </td>
-                <td v-for="(val, kv) in item.row" v-html="val" :key="kv"></td>
-            </tr>
-        </tbody>
-    </table>
-
-    <div class="row px-3 pt-3">
-        <div class="col-sm-12 col-md-5">
-            <div class="dataTables_info">Showing <span v-text="firstItem"></span> to <span v-text="lastItem"></span> of <span v-text="allIds.length"></span> entries</div>
+                {% endif %}
+            </div>
         </div>
-        <div class="col-sm-12 col-md-7 d-flex justify-content-end">
-            <div class="dataTables_paginate paging_simple_numbers"><ul class="pagination">
-                    <li :class="{ 'paginate_button page-item previous': true, 'disabled': page === 0 }" @click="setPage(page - 1)">
-                        <a href="#" class="page-link">Previous</a>
-                    </li>
-                    <li v-for="btn in pageButtons" :class="{'paginate_button page-item': true, active: btn.active && btn.id === page, disabled: !btn.active }">
-                        <a href="#" class="page-link" @click.prevent="setPage(btn.id)" v-text="btn.text"></a>
-                    </li>
-                    <li :class="{ 'paginate_button page-item next': true, 'disabled': page === pages }" @click="setPage(page + 1)">
-                        <a href="#" class="page-link">Next</a>
-                    </li>
-                </ul>
+        <table id="{{ tableId }}" class="table table-hover table-responsive-md table-striped table-fw-widget" style="margin:0 !important;">
+            <thead>
+            <tr>
+                <th data-orderDataType="checkbox" style="width:30px;">
+                    <div class="custom-control custom-checkbox" style="position:relative;bottom:14px;">
+                        <input id="{{ mainCheckboxId }}" class="custom-control-input" type="checkbox" @click="toggleAll">
+                        <label class="custom-control-label" for="{{ mainCheckboxId }}"></label>
+                    </div>
+                </th>
+
+                {% for header in table.headers %}
+                    <th>{{ header }}</th>
+                {% endfor %}
+            </tr>
+            </thead>
+            <tbody>
+                <tr v-for="item in items" :key="item[0]">
+                    <td>
+                        <div class="custom-control custom-checkbox" style="position:relative;bottom:14px;">
+                            <input :id="'{{ tableId }}' + item.id" class="{{ checkboxClass }} custom-control-input" :checked="selectedIds.includes(item.id)" type="checkbox" @click="toggleSelected(item.id)">
+                            <label class="custom-control-label" :for="'{{ tableId }}' + item.id"></label>
+                        </div>
+                    </td>
+                    <td v-for="(val, kv) in item.row" v-html="val" :key="kv"></td>
+                </tr>
+            </tbody>
+        </table>
+
+        <div class="row px-3 pt-3">
+            <div class="col-sm-12 col-md-5">
+                <div class="dataTables_info">Showing <span v-text="firstItem"></span> to <span v-text="lastItem"></span> of <span v-text="allIds.length"></span> entries</div>
+            </div>
+            <div class="col-sm-12 col-md-7 d-flex justify-content-end">
+                <div class="dataTables_paginate paging_simple_numbers"><ul class="pagination">
+                        <li :class="{ 'paginate_button page-item previous': true, 'disabled': page === 0 }" @click="setPage(page - 1)">
+                            <a href="#" class="page-link">Previous</a>
+                        </li>
+                        <li v-for="btn in pageButtons" :class="{'paginate_button page-item': true, active: btn.active && btn.id === page, disabled: !btn.active }">
+                            <a href="#" class="page-link" @click.prevent="setPage(btn.id)" v-text="btn.text"></a>
+                        </li>
+                        <li :class="{ 'paginate_button page-item next': true, 'disabled': page === pages }" @click="setPage(page + 1)">
+                            <a href="#" class="page-link">Next</a>
+                        </li>
+                    </ul>
+                </div>
             </div>
         </div>
     </div>
@@ -128,10 +131,6 @@
 {% set tableJs %}
 
     <script type="text/javascript">
-
-        $("#mass-update-{{ tableId }}").click(function() {
-            alert("swag");
-        });
 
         console.log($("#mass-update-{{ tableId }}"));
 
@@ -283,6 +282,8 @@
                                 refreshEditable();
                                 this.loading = false;
                             });
+                        }).catch(() => {
+                            toastr["error"]("Une erreur est survenue, veuillez actualiser la page");
                         });
                     },
                     toggleSelected(id) {
@@ -311,6 +312,7 @@
                         this.page = nextPage;
                     },
                     getSelectedIds() {
+                        if (this.selectedIds.length === 0) return this.allIds;
                         return this.selectedIds;
                     },
                 },
@@ -366,7 +368,6 @@
             // cheap simulation of a netbsTable
             {{ tableId }} = {
                 getSelectedIds: () => {
-                    alert("CLICK");
                     return {{ tableId }}_vueInstance.getSelectedIds();
                 },
             };
