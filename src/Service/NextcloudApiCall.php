@@ -35,17 +35,13 @@ class NextcloudApiCall {
 
         return $this->http->request($verb, $path, [
             'base_uri' => $this->ncUrl,
+            'verify_peer' => false,
             'auth_basic' => [$this->ncUser, $this->ncPass],
             'headers' => [
                 'Content-Type' => 'application/json',
                 'OCS-APIRequest' => 'true',
             ],
             'json' => $data,
-            'extra' => [
-                'curl' => [
-                    CURLOPT_SSL_VERIFYPEER => 0,
-                ],
-            ],
         ]);
     }
 }
