@@ -85,6 +85,10 @@ services:
         tags:
             - { name: kernel.event_subscriber }
 
+    App\Subscriber\WorkerIdleSubscriber:
+        tags:
+            - { name: kernel.event_subscriber }
+
     App\Form\MembreTypeExtension:
         tags:
             - { name: form.type_extension, extended_type: NetBS\FichierBundle\Form\Personne\MembreType }
