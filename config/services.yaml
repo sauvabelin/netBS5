@@ -81,6 +81,10 @@ services:
         tags:
             - { name: doctrine.event_subscriber, connection: default }
 
+    App\Subscriber\NewsPublishedSubscriber:
+        tags:
+            - { name: doctrine.event_subscriber, connection: default }
+
     App\Subscriber\EventUserAccountSubscriber:
         tags:
             - { name: kernel.event_subscriber }
