@@ -1,6 +1,6 @@
 
 {{ registerJs('https://cdn.jsdelivr.net/npm/vue@2.5.17/dist/vue.js') }}
-{{ registerJs('https://cdn.jsdelivr.net/npm/vue@2.5.17/dist/vue.js') }}
+{{ registerJs(asset('bundles/netbscore/js/modal.js')) }}
 {{ registerCss(asset('bundles/netbscore/lib/datetimepicker/bootstrap-datetimepicker.min.css')) }}
 {{ registerJs(asset('bundles/netbscore/lib/datetimepicker/bootstrap-datetimepicker.min.js')) }}
 {{ registerCss(asset('bundles/netbscore/lib/select2/css/select2.min.css')) }}
@@ -135,6 +135,13 @@
         console.log($("#mass-update-{{ tableId }}"));
 
         function refreshEditable() {
+
+
+            $('[data-modal]').click(function() {
+                let path    = $(this).attr('data-modal-url');
+                let modal   = new BSModal(path, {});
+                modal.launch();
+            });
 
             $('[data-disabled]').off('click');
 
