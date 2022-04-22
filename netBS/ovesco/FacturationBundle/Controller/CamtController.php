@@ -97,7 +97,7 @@ class CamtController extends AbstractController
 
                             $p = $facture->getLatestPaiement();
 
-                            $refPaiement = $transactionDetail ? $transactionDetail->getReference()->getInstructionId() : null;
+                            $refPaiement = $transactionDetail?->getReference()?->getInstructionId();
                             $refExisting = $p->getTransactionDetails() ? $p->getTransactionDetails()->getReference()->getInstructionId() : null;
 
                             // mêmes refs de paiement
