@@ -1,0 +1,63 @@
+{% extends '@NetBSCore/layout/backend.layout.twig' %}
+
+{% block main %}
+
+    {% set title = 'Réservations' %}
+
+    {{ registerCss('https://cdn.jsdelivr.net/npm/fullcalendar@5.11.0/main.min.css') }}
+    {{ registerJs('https://cdn.jsdelivr.net/npm/vue@2.5.17/dist/vue.js') }}
+    {{ registerJs('https://cdn.jsdelivr.net/npm/fullcalendar@5.11.0/main.min.js') }}
+    {{ registerJs(asset('bundles/netbscore/js/modal.js')) }}
+
+    <div class="container-fluid">
+
+        {% include '@NetBSCore/includes/header.include.twig' with {
+            header: 'Réservations',
+            subHeader: "Gestion de l'ensemble des réservations",
+        } %}
+
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title">Calendrier des réservations</h5>
+            </div>
+            <div class="card-body">
+                <div id="calendar"></div>
+            </div>
+        </div>
+
+    </div>
+
+    {% set calendarScript %}
+        <script type="text/javascript">
+
+            document.addEventListener('DOMContentLoaded', () => {
+               const calendar = new FullCalendar.Calendar(document.getElementById('calendar'), {
+                   initialView: 'dayGridMonth',
+                   googleCalendarApiKey: 'AIzaSyCzAwHsbXlCDc0x4JpABuamQOtQ24oat8g',
+                   eventSources: [
+                       { googleCalendarId: '9426kqtpb8mr7b1aonjub21rgg@group.calendar.google.com' },
+                       {% for cabane in cabanes %}
+                       {
+                           url: '{{ path('sauvabelin.apmbs_reservations.get_pending_and_refused', {id: cabane.id}) }}',
+                           color: 'yellow',
+                           textColor: 'black',
+                           failure: function() {
+                               alert('there was an error while fetching events!');
+                           },
+                       },
+                       {% endfor %}
+                   ],
+                   eventClick: (info) => {
+                       console.log(info.event.display);
+                       info.jsEvent.preventDefault();
+                   },
+               });
+
+               calendar.render();
+            });
+        </script>
+    {% endset %}
+
+    {{ registerScript(calendarScript) }}
+
+{% endblock %}

@@ -17,7 +17,7 @@ class NewsChannelBotController extends AbstractController
     /**
      * @param Request $request
      * @Route("/news-channel-bot/manage", name="sauvabelin.news_channel_bot.manage")
-     * @Security("is_granted('ROLE_IT')")
+     * @Security("is_granted('ROLE_RESPONSABLE_COMM')")
      * @return Response
      */
     public function manageBotsAction() {
@@ -27,7 +27,7 @@ class NewsChannelBotController extends AbstractController
 
     /**
      * @route("/modal/news-channel-bot/add", name="sauvabelin.news_channel_bot.add_modal")
-     * @Security("is_granted('ROLE_IT')")
+     * @Security("is_granted('ROLE_RESPONSABLE_COMM')")
      */
     public function addNewsChannelModalAction(Request $request, EntityManagerInterface $em) {
 
@@ -49,7 +49,6 @@ class NewsChannelBotController extends AbstractController
             'form'  => $form->createView()
         ], Modal::renderModal($form));
     }
-
 }
 
 

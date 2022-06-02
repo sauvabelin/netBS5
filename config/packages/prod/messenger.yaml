@@ -3,13 +3,13 @@ framework:
         failure_transport: failed
 
         transports:
-            async:
-                dsn: '%env(MESSENGER_TRANSPORT_DSN)%'
-                options:
-                    # Set by supervisor directly
-                    consumer: '%env(MESSENGER_CONSUMER_NAME)%'
+            groupsync:
+                dsn: 'doctrine://default?queue_name=groupsync'
+            talkbot:
+                dsn: 'doctrine://default?queue_name=talkbot'
             failed:
                 dsn: 'doctrine://default?queue_name=failed'
 
         routing:
-            'App\Message\NextcloudGroupNotification': async
+            'App\Message\NextcloudGroupNotification': groupsync
+            'App\Message\NewsNotification': talkbot

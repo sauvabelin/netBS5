@@ -22,6 +22,7 @@
         "setasign/fpdf": "^1.8",
         "sprain/swiss-qr-bill": "^4.0",
         "stof/doctrine-extensions-bundle": "^1.7",
+        "symfony/apache-pack": "^1.0",
         "symfony/asset": "5.4.*",
         "symfony/console": "5.4.*",
         "symfony/doctrine-messenger": "5.4.*",
@@ -50,6 +51,7 @@
         "symfony/web-link": "5.4.*",
         "symfony/yaml": "5.4.*",
         "tecnickcom/tcpdf": "^6.4",
+        "twig/cssinliner-extra": "^3.3",
         "twig/extra-bundle": "^3.3",
         "twig/twig": "^3.3"
     },

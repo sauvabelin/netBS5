@@ -2,6 +2,7 @@
 
 namespace App\Service;
 
+use App\Model\NextcloudDiscussion;
 use Symfony\Contracts\HttpClient\HttpClientInterface;
 
 class NextcloudApiCall {
@@ -26,7 +27,7 @@ class NextcloudApiCall {
         $this->env = $env;
     }
 
-    public function query(string $verb, string $path, array $data) {
+    public function query(string $verb, string $path, array $data = []) {
 
         if ($this->env === 'dev') {
             dump("Nextcloud Query", $verb, $path, $data);
@@ -39,8 +40,20 @@ class NextcloudApiCall {
             'auth_basic' => [$this->ncUser, $this->ncPass],
             'headers' => [
                 'OCS-APIRequest' => 'true',
+                'Accept' => 'application/json',
             ],
             'json' => $data,
         ]);
+    }
+
+    public function runQuery(string $verb, string $path, array $data = []) {
+        $res = $this->query($verb, $path, $data);
+        $resData = json_decode($res->getContent(true), true);
+
+        if (!$resData['ocs']['meta']['status'] > 299) {
+            throw new \Exception("Error in nextcloud response: " . $res->getContent());
+        }
+
+        return $resData['ocs']['data'];
     }
 }

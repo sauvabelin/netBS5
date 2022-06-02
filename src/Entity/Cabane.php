@@ -50,11 +50,53 @@ class Cabane {
     protected $location;
 
     /**
-     * @var string[]
+     * @var string
      * 
-     * @ORM\Column(name="intendance", type="simple_array")
+     * @ORM\Column(name="intendance", type="text", nullable=true)
      */
     protected $intendance;
+
+    /**
+     * @var string
+     *
+     * @ORM\Column(name="demande_recue_text", type="text", nullable=true)
+     */
+    protected $demandeRecueText;
+
+    /**
+     * @var string
+     *
+     * @ORM\Column(name="demande_refusee_text", type="text", nullable=true)
+     */
+    protected $demandeRefuseeText;
+
+    /**
+     * @var string
+     *
+     * @ORM\Column(name="demande_annulee_text", type="text", nullable=true)
+     */
+    protected $demandeAnnuleeText;
+
+    /**
+     * @var string
+     *
+     * @ORM\Column(name="demande_acceptee_text", type="text", nullable=true)
+     */
+    protected $demandeAccepteeText;
+
+    /**
+     * @var string
+     *
+     * @ORM\Column(name="demande_modifiee_text", type="text", nullable=true)
+     */
+    protected $demandeModifieeText;
+
+    /**
+     * @var bool
+     *
+     * @ORM\Column(name="enabled", type="boolean")
+     */
+    protected $enabled = true;
 
     public function __construct() {
         $this->reservations = new ArrayCollection();
@@ -63,7 +105,7 @@ class Cabane {
     /**
      * @return int
      */
-    public function getId(): int
+    public function getId()
     {
         return $this->id;
     }
@@ -71,7 +113,7 @@ class Cabane {
     /**
      * @return string
      */
-    public function getNom(): string
+    public function getNom()
     {
         return $this->nom;
     }
@@ -79,7 +121,7 @@ class Cabane {
     /**
      * @param string $nom
      */
-    public function setNom(string $nom): void
+    public function setNom(string $nom)
     {
         $this->nom = $nom;
     }
@@ -87,7 +129,7 @@ class Cabane {
     /**
      * @return string
      */
-    public function getCalendarId(): string
+    public function getCalendarId()
     {
         return $this->calendarId;
     }
@@ -95,7 +137,7 @@ class Cabane {
     /**
      * @param string $calendarId
      */
-    public function setCalendarId(string $calendarId): void
+    public function setCalendarId(string $calendarId)
     {
         $this->calendarId = $calendarId;
     }
@@ -103,7 +145,7 @@ class Cabane {
     /**
      * @return APMBSReservation[]
      */
-    public function getReservations(): iterable
+    public function getReservations()
     {
         return $this->reservations;
     }
@@ -111,7 +153,7 @@ class Cabane {
     /**
      * @return string
      */
-    public function getLocation(): string
+    public function getLocation()
     {
         return $this->location;
     }
@@ -119,7 +161,7 @@ class Cabane {
     /**
      * @param string $location
      */
-    public function setLocation(string $location): void
+    public function setLocation(string $location)
     {
         $this->location = $location;
     }
@@ -127,7 +169,7 @@ class Cabane {
     /**
      * @return string
      */
-    public function getIntendance(): array
+    public function getIntendance()
     {
         return $this->intendance;
     }
@@ -135,8 +177,104 @@ class Cabane {
     /**
      * @param string $location
      */
-    public function setIntendance(array $intendance): void
+    public function setIntendance(string $intendance)
     {
         $this->intendance = $intendance;
+    }
+
+    /**
+     * @return string
+     */
+    public function getDemandeRecueText()
+    {
+        return $this->demandeRecueText;
+    }
+
+    /**
+     * @param string $demandeRecueText
+     */
+    public function setDemandeRecueText(string $demandeRecueText)
+    {
+        $this->demandeRecueText = $demandeRecueText;
+    }
+
+    /**
+     * @return string
+     */
+    public function getDemandeRefuseeText()
+    {
+        return $this->demandeRefuseeText;
+    }
+
+    /**
+     * @param string $demandeRefuseeText
+     */
+    public function setDemandeRefuseeText(string $demandeRefuseeText)
+    {
+        $this->demandeRefuseeText = $demandeRefuseeText;
+    }
+
+    /**
+     * @return string
+     */
+    public function getDemandeAnnuleeText()
+    {
+        return $this->demandeAnnuleeText;
+    }
+
+    /**
+     * @param string $demandeAnnuleeText
+     */
+    public function setDemandeAnnuleeText(string $demandeAnnuleeText)
+    {
+        $this->demandeAnnuleeText = $demandeAnnuleeText;
+    }
+
+    /**
+     * @return string
+     */
+    public function getDemandeAccepteeText()
+    {
+        return $this->demandeAccepteeText;
+    }
+
+    /**
+     * @param string $demandeAccepteeText
+     */
+    public function setDemandeAccepteeText(string $demandeAccepteeText)
+    {
+        $this->demandeAccepteeText = $demandeAccepteeText;
+    }
+
+    /**
+     * @return string
+     */
+    public function getDemandeModifieeText()
+    {
+        return $this->demandeModifieeText;
+    }
+
+    /**
+     * @param string $demandeModifieeText
+     */
+    public function setDemandeModifieeText(string $demandeModifieeText)
+    {
+        $this->demandeModifieeText = $demandeModifieeText;
+    }
+
+    /**
+     * @return bool
+     */
+    public function isEnabled(): bool
+    {
+        return $this->enabled;
+    }
+
+    /**
+     * @param bool $enabled
+     */
+    public function setEnabled(bool $enabled): void
+    {
+        $this->enabled = $enabled;
     }
 }

@@ -320,9 +320,8 @@ class BaseUser implements
      * @return bool
      */
     public function hasRole($rolestr) {
-
         foreach($this->getAllRoles() as $role)
-            if($role->getRole() === $rolestr)
+            if($role->getRole() === $rolestr || $role->getRole() === 'ROLE_ADMIN')
                 return true;
 
         return false;

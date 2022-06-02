@@ -1,0 +1,69 @@
+{% extends '@NetBSCore/layout/backend.layout.twig' %}
+
+{% block main %}
+
+    {{ registerJs('https://cdn.jsdelivr.net/npm/vue@2.5.17/dist/vue.js') }}
+    {{ registerJs(asset('bundles/netbscore/js/modal.js')) }}
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-12 col-md-6">
+                {% include '@NetBSCore/includes/header.include.twig' with {
+                    header: cabane.id ? cabane.nom : 'Nouvelle Cabane',
+                } %}
+                {{ form_start(form) }}
+                <div class="card">
+                    <div class="card-header">
+                        <ul class="nav nav-tabs card-header-tabs">
+                            <li class="nav-item"><a class="nav-link active" href="#info" data-toggle="tab">Informations</a></li>
+                            <li class="nav-item"><a class="nav-link" href="#recue" data-toggle="tab">Réservation Reçue</a></li>
+                            <li class="nav-item"><a class="nav-link" href="#refusee" data-toggle="tab">Réservation Refusée</a></li>
+                            <li class="nav-item"><a class="nav-link" href="#annulee" data-toggle="tab">Réservation Annulée</a></li>
+                            <li class="nav-item"><a class="nav-link" href="#modifiee" data-toggle="tab">Réservation Modifiée</a></li>
+                            <li class="nav-item"><a class="nav-link" href="#acceptee" data-toggle="tab">Réservation Acceptée</a></li>
+                        </ul>
+                    </div>
+                    <div class="card-body tab-content">
+                        <div id="info" class="tab-pane fade show active">
+                            {{ form_row(form.nom) }}
+                            {{ form_row(form.calendarId) }}
+                            {{ form_row(form.location) }}
+                            {{ form_row(form.intendance) }}
+                        </div>
+                        <div id="recue" class="tab-pane fade">{{ form_row(form.demandeRecueText) }}</div>
+                        <div id="refusee" class="tab-pane fade">{{ form_row(form.demandeRefuseeText) }}</div>
+                        <div id="annulee" class="tab-pane fade">{{ form_row(form.demandeAnnuleeText) }}</div>
+                        <div id="modifiee" class="tab-pane fade">{{ form_row(form.demandeModifieeText) }}</div>
+                        <div id="acceptee" class="tab-pane fade">{{ form_row(form.demandeAccepteeText) }}</div>
+                    </div>
+                </div>
+                {{ form_rest(form) }}
+                <button type="submit" class="btn btn-primary">Enregistrer</button>
+                {{ form_end(form) }}
+            </div>
+            <div class="col-12 col-md-6">
+                <iframe id="viewer" src="" class="w-100" style="border:1px solid #aaa;height:80vh"></iframe>
+            </div>
+        </div>
+    </div>
+
+    {% set checkJs %}
+        <script type="text/javascript">
+            function refreshFrame(type) {
+                document.getElementById('viewer').src = "{{ path('sauvabelin.cabanes.email_check') }}?type=" + type + '&id={{ cabane.id }}';
+            }
+
+            $('.nav-link').click(function() {
+                const href = $(this).attr("href").substring(1);
+                if (href === "info") return;
+                refreshFrame(href);
+            });
+
+            $(document).ready(function() {
+                refreshFrame('recue');
+            });
+        </script>
+    {% endset %}
+
+    {{ registerScript(checkJs) }}
+
+{% endblock %}

@@ -38,16 +38,6 @@ class NewsChannelBot
      */
     protected $description;
 
-    /**
-     * @ORM\Column(name="nc_username", type="string", length=255)
-     */
-    protected $ncUsername;
-
-    /**
-     * @ORM\Column(name="nc_password", type="string", length=255)
-     */
-    protected $ncPassword;
-
     public function __construct()
     {
         $this->channels = new ArrayCollection();

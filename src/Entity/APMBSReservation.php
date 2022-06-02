@@ -2,7 +2,6 @@
 
 namespace App\Entity;
 
-use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Validator\Constraints as Assert;
 
@@ -103,6 +102,12 @@ class APMBSReservation {
      * @ORM\Column(name="description", type="text")
      */
     protected $description;
+
+    /**
+     * @var string
+     * @ORM\Column(name="refused_motif", type="text", nullable=true)
+     */
+    protected $refusedMotif;
 
     /**
      * @return int
@@ -302,5 +307,21 @@ class APMBSReservation {
         }
 
         return $conflicts;
+    }
+
+    /**
+     * @return string
+     */
+    public function getRefusedMotif(): string
+    {
+        return $this->refusedMotif;
+    }
+
+    /**
+     * @param string $refusedMotif
+     */
+    public function setRefusedMotif(string $refusedMotif): void
+    {
+        $this->refusedMotif = $refusedMotif;
     }
 }

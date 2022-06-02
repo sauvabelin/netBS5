@@ -1,0 +1,33 @@
+{% extends '@NetBSCore/layout/backend.layout.twig' %}
+
+{% block main %}
+
+    {% set title = 'Cabanes' %}
+
+    {{ registerJs('https://cdn.jsdelivr.net/npm/vue@2.5.17/dist/vue.js') }}
+    {{ registerJs(asset('bundles/netbscore/js/modal.js')) }}
+    {% set newCabaneBtn %}<a href="{{ path("sauvabelin.cabanes.edit") }}" class="btn btn-primary">Enregistrer une cabane</a>{% endset %}
+
+    <div class="container-fluid">
+
+        {% include '@NetBSCore/includes/header.include.twig' with {
+            header: 'Cabanes',
+            subHeader: 'Les cabanes enregistrées dans le système',
+            actions: [
+                newCabaneBtn
+            ]
+        } %}
+
+        <div class="card card-table">
+            <div class="card-header">
+                <h5 class="card-title">Liste des Cabanes</h5>
+            </div>
+
+            <div class="card-body">
+                {{ render_list('sauvabelin.apmbs.cabanes', 'basic') }}
+            </div>
+        </div>
+
+    </div>
+
+{% endblock %}

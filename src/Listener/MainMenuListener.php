@@ -39,8 +39,14 @@ class MainMenuListener
                 ->addSubLink('Cotisations', 'netbs.core.automatic_list.view_list', ['alias' => 'sauvabelin.cotisations']);
         }
 
-        if ($user->hasRole('ROLE_IT')) {
-            $menu->getCategory('secure.admin')->addLink('admin.news.bot', 'News Bots', 'fas fa-history', 'sauvabelin.news_channel_bot.manage');
+        if ($user->hasRole('ROLE_RESPONSABLE_COMM')) {
+            $menu->getCategory('secure.admin')->addLink('admin.news.bot', 'News Bots', 'fas fa-robot', 'sauvabelin.news_channel_bot.manage');
+        }
+
+        if ($user->hasRole('ROLE_APMBS_RESERVATIONS')) {
+            $apmbs = $menu->registerCategory('apmbs', 'APMBS');
+            $apmbs->addLink('apmbs.reservations', 'Réservations', 'fas fa-book', 'sauvabelin.apmbs_reservations.dashboard');
+            $apmbs->addLink('apmbs.cabanes', 'Cabanes', 'fas fa-home', 'sauvabelin.cabanes.dashboard');
         }
     }
 }
