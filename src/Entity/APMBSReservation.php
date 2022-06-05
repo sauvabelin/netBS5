@@ -42,7 +42,7 @@ class APMBSReservation {
      *
      * @ORM\Column(name="status", type="string", length=255)
      */
-    protected $status;
+    protected $status = self::PENDING;
 
     /**
      * @var \DateTime
@@ -120,7 +120,7 @@ class APMBSReservation {
     /**
      * @return string
      */
-    public function getGCEventId(): string
+    public function getGCEventId()
     {
         return $this->gcEventId;
     }
@@ -136,7 +136,7 @@ class APMBSReservation {
     /**
      * @return string
      */
-    public function getStatus(): string
+    public function getStatus()
     {
         return $this->status;
     }

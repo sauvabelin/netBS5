@@ -94,7 +94,7 @@ class Cabane {
     /**
      * @var bool
      *
-     * @ORM\Column(name="enabled", type="boolean")
+     * @ORM\Column(name="enabled", type="boolean", nullable=false)
      */
     protected $enabled = true;
 

@@ -1,0 +1,16 @@
+{% extends '@NetBSCore/layout/modal.layout.twig' %}
+
+{% block title %}Réservation {{ reservation.id }}{% endblock %}
+
+{% block content %}  
+  {% include 'reservation/reservation_description_part.html.twig' %}
+{% endblock %}
+
+{% block footer %}
+  {% if reservation.status == 'pending' %}
+    <a href="{{ path('sauvabelin.apmbs_reservations.accept', { id: reservation.id }) }}" class="btn btn-success">Approuver</a>
+  {% endif %}
+  <a href="{{ path('sauvabelin.apmbs_reservations.operation', { id: reservation.id, operation: 'modify' }) }}" class="btn btn-warning">Modifier</a>
+  <a href="{{ path('sauvabelin.apmbs_reservations.operation', { id: reservation.id, operation: 'reject' }) }}" class="btn btn-danger">Rejeter</a>
+
+{% endblock %}

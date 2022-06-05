@@ -52,19 +52,17 @@ class GoogleCalendarManager {
 
         $event = new \Google\Service\Calendar\Event();
 
-        $organiser = new \Google\Service\Calendar\EventOrganizer();
-        $organiser->setEmail($reservation->getEmail());
-        $organiser->setDisplayName($reservation->getPrenom() . " " . $reservation->getNom());
-        $event->setOrganizer($organiser);
-
-        $event->setDescription("Téléphone: " . $reservation->getPhone());
+        $event->setSummary($reservation->getUnite() . " (" . $reservation->getPrenom() . " " . $reservation->getNom() . ")");
+        $event->setDescription($reservation->getDescription());
 
         $start = new \Google\Service\Calendar\EventDateTime();
-        $start->setDateTime($reservation->getStart());
+        $start->setDateTime($reservation->getStart()->format(\DateTime::ISO8601));
+        $start->setTimeZone($reservation->getStart()->getTimezone()->getName());
         $event->setStart($start);
 
         $end = new \Google\Service\Calendar\EventDateTime();
-        $end->setDateTime($reservation->getEnd());
+        $end->setDateTime($reservation->getEnd()->format(\DateTime::ISO8601));
+        $end->setTimeZone($reservation->getEnd()->getTimezone()->getName());
         $event->setEnd($end);
 
         $event->setLocation($reservation->getCabane()->getLocation());

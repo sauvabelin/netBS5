@@ -1,0 +1,42 @@
+{% if reservation.status == 'pending' %}<div class="alert alert-warning">Réservation en attente</div>{% endif %}
+{% if reservation.status == 'accepted' %}<div class="alert alert-success">Réservation validée</div>{% endif %}
+{% if reservation.status == 'refused' %}<div class="alert alert-danger">Réservation refusée</div>{% endif %}
+
+<div class="row">
+  <div class="col-6">
+    <p class="m-0"><strong>Nom</strong>
+    <p>{{ reservation.nom }}</p>
+  </div>
+  <div class="col-6">
+    <p class="m-0"><strong>Prénom</strong>
+    <p>{{ reservation.prenom }}</p>
+  </div>
+</div>
+<div class="row">
+  <div class="col-6">
+    <p class="m-0"><strong>Téléphone</strong>
+    <p>{{ reservation.phone }}</p>
+  </div>
+  <div class="col-6">
+    <p class="m-0"><strong>E-mail</strong>
+    <p>{{ reservation.email }}</p>
+  </div>
+</div>
+<div>
+  <p class="m-0"><strong>Groupe</strong>
+  <p>{{ reservation.unite }}</p>
+</div>
+<div>
+  <p class="m-0"><strong>Description</strong>
+  <p>{{ reservation.description }}</p>
+</div>
+<div class="row">
+  <div class="col-6">
+    <p class="m-0"><strong>Début</strong>
+    <p>{{ reservation.start|date('d.m.Y H:i') }}</p>
+  </div>
+  <div class="col-6">
+    <p class="m-0"><strong>Fin</strong>
+    <p>{{ reservation.end|date('d.m.Y H:i') }}</p>
+  </div>
+</div>

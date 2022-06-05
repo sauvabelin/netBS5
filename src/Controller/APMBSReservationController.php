@@ -4,8 +4,11 @@ namespace App\Controller;
 
 use App\Entity\APMBSReservation;
 use App\Entity\Cabane;
+use App\Service\GoogleCalendarManager;
 use Doctrine\ORM\EntityManagerInterface;
+use NetBS\CoreBundle\Utils\Modal;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\Form\Extension\Core\Type\TextareaType;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -20,8 +23,26 @@ class APMBSReservationController extends AbstractController
      * @return Response
      */
     public function apmbsReservations(Request $request, EntityManagerInterface $em) {
+
+        /*
+        $r = new APMBSReservation();
+        $r->setCabane($em->getRepository('App:Cabane')->find(1));
+        $r->setDescription("Camp de troupe");
+        $r->setEmail("guillaume.hochet@gmail.com");
+        $r->setNom("Hochet");
+        $r->setPrenom("Guillaume");
+        $r->setStart(\DateTime::createFromFormat("d-m-Y", "01-06-2022"));
+        $r->setEnd(\DateTime::createFromFormat("d-m-Y", "02-06-2022"));
+        $r->setUnite("Montfort");
+        $r->setPhone("0774117718");
+
+        $em->persist($r);
+        $em->flush();
+        */
+
         return $this->render('reservation/dashboad.html.twig', [
             'cabanes' => $em->getRepository('App:Cabane')->findAll(),
+            'googleCalendarApiKey' => $_ENV['GOOGLE_CALENDAR_API_KEY'],
         ]);
     }
 
@@ -62,7 +83,78 @@ class APMBSReservationController extends AbstractController
         return new JsonResponse($response);
     }
 
-    public function editReservationModal(Request $request, APMBSReservation $reservation) {
+    /**
+     * @param Request $request
+     * @Route("/apmbs/reservations/modal", name="sauvabelin.apmbs_reservations.modal")
+     * @return Response
+     */
+    public function editReservationModal(Request $request, EntityManagerInterface $em) {
+        
+        $id = $request->get('id');
+        if (!$id) {
+            throw $this->createNotFoundException("Pas d'identifiant donné");
+        }
+
+        // We first try to retrieve the reservation with the given id
+        $reservation = $em->getRepository('App:APMBSReservation')->find($id);
+
+        // If not found, try to get it from googleEventId
+        if (!$reservation) {
+            $reservation = $em->getRepository('App:APMBSReservation')->findOneBy(['gcEventId' => $id]);
+            if (!$reservation) {
+                // Unable to find it, notify user, sad story
+                throw $this->createNotFoundException("La réservation est introuvable, elle est probablement présente sur le calendrier Google mais pas dans le système");
+            }
+        }
+
+        return $this->render('reservation/view_reservation_modal.html.twig', [
+            'reservation' => $reservation,
+        ]);
+    }
+
+    /**
+     * @param Request $request
+     * @Route("/apmbs/reservations/accept/{id}", name="sauvabelin.apmbs_reservations.accept")
+     * @return Response
+     */
+    public function acceptAction(Request $request, GoogleCalendarManager $gcm, EntityManagerInterface $em, APMBSReservation $reservation) {
+
+        $form = $this->createFormBuilder(['message' => ''])
+            ->add('message', TextareaType::class, ['label' => 'Message additionnel'])
+            ->getForm();
+
+
+        $form->handleRequest($request);
+
+        if ($form->isSubmitted() && $form->isValid()) {
+            $message = $form->getData()['message'];
+            // Send email and add to google calendar
+            $eventId = $gcm->updateReservation($reservation);
+            $reservation->setGCEventId($eventId);
+            $reservation->setStatus(APMBSReservation::ACCEPTED);
+            $em->persist($reservation);
+            $em->flush();
+
+            $this->addFlash('success', 'Réservation approuvée');
+            return $this->redirectToRoute('sauvabelin.apmbs_reservations.dashboard');
+        }
+        
+        return $this->render('reservation/accept_reservation.html.twig', [
+            'reservation' => $reservation,
+            'form' => $form->createView(),
+        ]);
+    }
+
+    /**
+     * @param Request $request
+     * @Route("/apmbs/reservations/action/{id}/{operation}", name="sauvabelin.apmbs_reservations.operation")
+     * @return Response
+     */
+    public function reservationAction(Request $request, EntityManagerInterface $em, APMBSReservation $reservation, $operation) {
+        if (!in_array($operation, ['accept', 'modify', 'reject'])) {
+            throw $this->createAccessDeniedException("Opération inconnue");
+        }
+
 
     }
 }

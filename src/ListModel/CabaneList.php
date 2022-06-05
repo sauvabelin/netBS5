@@ -4,9 +4,14 @@ namespace App\ListModel;
 
 use App\Entity\Cabane;
 use NetBS\CoreBundle\Form\Type\SwitchType;
+use NetBS\CoreBundle\ListModel\Action\IconAction;
+use NetBS\CoreBundle\ListModel\Action\LinkAction;
+use NetBS\CoreBundle\ListModel\ActionItem;
+use NetBS\CoreBundle\ListModel\Column\ActionColumn;
 use NetBS\CoreBundle\ListModel\Column\XEditableColumn;
 use NetBS\CoreBundle\Utils\Traits\EntityManagerTrait;
 use NetBS\CoreBundle\Utils\Traits\RouterTrait;
+use NetBS\ListBundle\Column\SimpleColumn;
 use NetBS\ListBundle\Model\BaseListModel;
 use NetBS\ListBundle\Model\ListColumnsConfiguration;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
@@ -49,21 +54,18 @@ class CabaneList extends BaseListModel
     public function configureColumns(ListColumnsConfiguration $configuration)
     {
         $configuration
-            ->addColumn("Nom", null, XEditableColumn::class, [
-                XEditableColumn::PROPERTY   => "nom",
-                XEditableColumn::TYPE_CLASS => TextType::class
-            ])
-            ->addColumn("ID Calendrier Google", null, XEditableColumn::class, [
-                XEditableColumn::PROPERTY   => "calendarId",
-                XEditableColumn::TYPE_CLASS => TextType::class
-            ])
-            ->addColumn("Localisation", null, XEditableColumn::class, [
-                XEditableColumn::PROPERTY   => "location",
-                XEditableColumn::TYPE_CLASS => TextType::class
-            ])
-            ->addColumn("Disponible à la location", null, XEditableColumn::class, [
-                XEditableColumn::TYPE_CLASS => SwitchType::class,
-                XEditableColumn::PROPERTY   => 'enabled',
+            ->addColumn("Nom", 'nom', SimpleColumn::class)
+            ->addColumn("ID Calendrier Google", 'calendarId', SimpleColumn::class)
+            ->addColumn("Localisation", 'location', SimpleColumn::class)
+            ->addColumn("Disponible à la location", 'enabled', SimpleColumn::class)
+            ->addColumn('Actions', null, ActionColumn::class, [
+                ActionColumn::ACTIONS_KEY => [
+                    new ActionItem(IconAction::class,  [
+                        IconAction::ICON    => "fas fa-edit",
+                        LinkAction::TITLE   => "Editer",
+                        LinkAction::ROUTE   => fn(Cabane $cabane) => $this->router->generate('sauvabelin.cabanes.edit', array('id' => $cabane->getId())),
+                    ]),
+                ]
             ])
         ;
     }
