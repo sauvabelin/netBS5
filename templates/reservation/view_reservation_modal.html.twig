@@ -10,7 +10,7 @@
   {% if reservation.status == 'pending' %}
     <a href="{{ path('sauvabelin.apmbs_reservations.accept', { id: reservation.id }) }}" class="btn btn-success">Approuver</a>
   {% endif %}
-  <a href="{{ path('sauvabelin.apmbs_reservations.operation', { id: reservation.id, operation: 'modify' }) }}" class="btn btn-warning">Modifier</a>
-  <a href="{{ path('sauvabelin.apmbs_reservations.operation', { id: reservation.id, operation: 'reject' }) }}" class="btn btn-danger">Rejeter</a>
+  <a href="{{ path('sauvabelin.apmbs_reservations.update', { id: reservation.id }) }}" class="btn btn-warning">Modifier</a>
+  <a href="{{ path('sauvabelin.apmbs_reservations.reject', { id: reservation.id }) }}" class="btn btn-danger">Rejeter</a>
 
 {% endblock %}

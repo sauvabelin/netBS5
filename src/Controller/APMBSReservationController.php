@@ -6,8 +6,10 @@ use App\Entity\APMBSReservation;
 use App\Entity\Cabane;
 use App\Service\GoogleCalendarManager;
 use Doctrine\ORM\EntityManagerInterface;
+use NetBS\CoreBundle\Form\Type\DatepickerType;
 use NetBS\CoreBundle\Utils\Modal;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\Form\Extension\Core\Type\DateTimeType;
 use Symfony\Component\Form\Extension\Core\Type\TextareaType;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
@@ -120,7 +122,7 @@ class APMBSReservationController extends AbstractController
     public function acceptAction(Request $request, GoogleCalendarManager $gcm, EntityManagerInterface $em, APMBSReservation $reservation) {
 
         $form = $this->createFormBuilder(['message' => ''])
-            ->add('message', TextareaType::class, ['label' => 'Message additionnel'])
+            ->add('message', TextareaType::class, ['label' => 'Message additionnel', 'required' => false])
             ->getForm();
 
 
@@ -147,15 +149,77 @@ class APMBSReservationController extends AbstractController
 
     /**
      * @param Request $request
-     * @Route("/apmbs/reservations/action/{id}/{operation}", name="sauvabelin.apmbs_reservations.operation")
+     * @Route("/apmbs/reservations/reject/{id}", name="sauvabelin.apmbs_reservations.reject")
      * @return Response
      */
-    public function reservationAction(Request $request, EntityManagerInterface $em, APMBSReservation $reservation, $operation) {
-        if (!in_array($operation, ['accept', 'modify', 'reject'])) {
-            throw $this->createAccessDeniedException("Opération inconnue");
+    public function rejectAction(Request $request, GoogleCalendarManager $gcm, EntityManagerInterface $em, APMBSReservation $reservation) {
+
+        $form = $this->createFormBuilder(['message' => ''])
+            ->add('message', TextareaType::class, ['label' => 'Message additionnel', 'required' => false])
+            ->getForm();
+
+
+        $form->handleRequest($request);
+
+        if ($form->isSubmitted() && $form->isValid()) {
+            $message = $form->getData()['message'];
+            $gcm->removeReservation($reservation);
+            $reservation->setRefusedMotif($message);
+            $reservation->setGCEventId(null);
+            $reservation->setStatus(APMBSReservation::REFUSED);
+            $em->persist($reservation);
+            $em->flush();
+
+            $this->addFlash('info', 'Réservation refusée');
+            return $this->redirectToRoute('sauvabelin.apmbs_reservations.dashboard');
         }
+        
+        return $this->render('reservation/reject_reservation.html.twig', [
+            'reservation' => $reservation,
+            'form' => $form->createView(),
+        ]);
+    }
+
+    /**
+     * @param Request $request
+     * @Route("/apmbs/reservations/update/{id}", name="sauvabelin.apmbs_reservations.update")
+     * @return Response
+     */
+    public function updateAction(Request $request, GoogleCalendarManager $gcm, EntityManagerInterface $em, APMBSReservation $reservation) {
+
+        $form = $this->createFormBuilder([
+                'message' => '',
+                'start' => $reservation->getStart(),
+                'end' => $reservation->getEnd(),
+            ])
+            ->add('message', TextareaType::class, ['label' => 'Message additionnel', 'required' => false])
+            ->add('start', DateTimeType::class, ['label' => 'Début'])
+            ->add('end', DateTimeType::class, ['label' => 'fin'])
+            ->getForm();
 
 
+        $form->handleRequest($request);
+
+        if ($form->isSubmitted() && $form->isValid()) {
+            $data = $form->getData();
+            $reservation->setStart($data['start']);
+            $reservation->setEnd($data['end']);
+            
+            // Send email and add to google calendar
+            $eventId = $gcm->updateReservation($reservation);
+            $reservation->setGCEventId($eventId);
+            $reservation->setStatus(APMBSReservation::ACCEPTED);
+            $em->persist($reservation);
+            $em->flush();
+
+            $this->addFlash('success', 'Réservation approuvée');
+            return $this->redirectToRoute('sauvabelin.apmbs_reservations.dashboard');
+        }
+        
+        return $this->render('reservation/modify_reservation.html.twig', [
+            'reservation' => $reservation,
+            'form' => $form->createView(),
+        ]);
     }
 }
 

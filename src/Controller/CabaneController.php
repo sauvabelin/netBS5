@@ -75,6 +75,7 @@ class CabaneController extends AbstractController
         $fake->setCabane($cabane);
         $fake->setDescription("Cours de vol avec le vif d'or");
         $fake->setEmail("lucius@malfoy.yo");
+        $fake->setStart(new \DateTime());
         $fake->setEnd(new \DateTime());
         $fake->setNom("Malfoy");
         $fake->setPrenom("Lucius");

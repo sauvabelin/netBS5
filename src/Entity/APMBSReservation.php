@@ -128,7 +128,7 @@ class APMBSReservation {
     /**
      * @param string $gcEventId
      */
-    public function setGCEventId(string $gcEventId): void
+    public function setGCEventId($gcEventId): void
     {
         $this->gcEventId = $gcEventId;
     }
@@ -312,7 +312,7 @@ class APMBSReservation {
     /**
      * @return string
      */
-    public function getRefusedMotif(): string
+    public function getRefusedMotif()
     {
         return $this->refusedMotif;
     }
@@ -320,7 +320,7 @@ class APMBSReservation {
     /**
      * @param string $refusedMotif
      */
-    public function setRefusedMotif(string $refusedMotif): void
+    public function setRefusedMotif($refusedMotif): void
     {
         $this->refusedMotif = $refusedMotif;
     }
