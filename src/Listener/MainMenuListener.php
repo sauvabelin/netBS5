@@ -2,6 +2,7 @@
 
 namespace App\Listener;
 
+use Doctrine\ORM\EntityManagerInterface;
 use NetBS\CoreBundle\Event\ExtendMainMenuEvent;
 use App\Entity\BSUser;
 use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInterface;
@@ -9,10 +10,12 @@ use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInt
 class MainMenuListener
 {
     private $storage;
+    private $em;
 
-    public function __construct(TokenStorageInterface $storage)
+    public function __construct(TokenStorageInterface $storage, EntityManagerInterface $em)
     {
         $this->storage = $storage;
+        $this->em = $em;
     }
 
     public function onMenuConfigure(ExtendMainMenuEvent $event)
@@ -45,8 +48,15 @@ class MainMenuListener
 
         if ($user->hasRole('ROLE_APMBS_RESERVATIONS')) {
             $apmbs = $menu->registerCategory('apmbs', 'APMBS');
-            $apmbs->addLink('apmbs.reservations', 'Réservations', 'fas fa-book', 'sauvabelin.apmbs_reservations.dashboard');
-            $apmbs->addLink('apmbs.cabanes', 'Cabanes', 'fas fa-home', 'sauvabelin.cabanes.dashboard');
+            $cabanes = $apmbs->addSubMenu('cabanes', 'Cabanes', 'fas fa-home');
+            $cabanes->addSubLink('Gestion', 'sauvabelin.cabanes.dashboard');
+            foreach ($this->em->getRepository('App:Cabane')->findAll() as $cabane) {
+                $cabanes->addSubLink($cabane->getNom(), 'sauvabelin.cabanes.dashboard');
+            }
+
+            $reservations = $apmbs->addSubMenu('reservations', 'Réservations', 'fas fa-book');
+            $reservations->addSubLink('Calendrier', 'sauvabelin.apmbs_reservations.dashboard');
+            $reservations->addSubLink('Rechercher', 'sauvabelin.apmbs_reservations.search');
         }
     }
 }

@@ -3,6 +3,7 @@
 namespace App\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
+use Gedmo\Timestampable\Traits\TimestampableEntity;
 use Symfony\Component\Validator\Constraints as Assert;
 
 /**
@@ -14,6 +15,8 @@ class APMBSReservation {
     const PENDING = 'pending';
     const ACCEPTED = 'accepted';
     const REFUSED = 'refused';
+
+    use TimestampableEntity;
 
     /**
      * @var int
@@ -109,6 +112,10 @@ class APMBSReservation {
      */
     protected $refusedMotif;
 
+    public function __construct() {
+        $this->createdAt = new \DateTime();
+    }
+
     /**
      * @return int
      */
@@ -152,7 +159,7 @@ class APMBSReservation {
     /**
      * @return \DateTime
      */
-    public function getStart(): \DateTime
+    public function getStart()
     {
         return $this->start;
     }
@@ -168,7 +175,7 @@ class APMBSReservation {
     /**
      * @return \DateTime
      */
-    public function getEnd(): \DateTime
+    public function getEnd()
     {
         return $this->end;
     }
@@ -184,7 +191,7 @@ class APMBSReservation {
     /**
      * @return string
      */
-    public function getPrenom(): string
+    public function getPrenom()
     {
         return $this->prenom;
     }
@@ -200,7 +207,7 @@ class APMBSReservation {
     /**
      * @return string
      */
-    public function getNom(): string
+    public function getNom()
     {
         return $this->nom;
     }
@@ -216,7 +223,7 @@ class APMBSReservation {
     /**
      * @return string
      */
-    public function getEmail(): string
+    public function getEmail()
     {
         return $this->email;
     }
@@ -232,7 +239,7 @@ class APMBSReservation {
     /**
      * @return string
      */
-    public function getPhone(): string
+    public function getPhone()
     {
         return $this->phone;
     }
@@ -248,7 +255,7 @@ class APMBSReservation {
     /**
      * @return string
      */
-    public function getUnite(): string
+    public function getUnite()
     {
         return $this->unite;
     }
@@ -264,7 +271,7 @@ class APMBSReservation {
     /**
      * @return string
      */
-    public function getDescription(): string
+    public function getDescription()
     {
         return $this->description;
     }
@@ -280,7 +287,7 @@ class APMBSReservation {
     /**
      * @return Cabane
      */
-    public function getCabane(): Cabane
+    public function getCabane()
     {
         return $this->cabane;
     }
@@ -323,5 +330,13 @@ class APMBSReservation {
     public function setRefusedMotif($refusedMotif): void
     {
         $this->refusedMotif = $refusedMotif;
+    }
+
+    /**
+     * @return \DateTime
+     */
+    public function getCreatedAt()
+    {
+        return $this->createdAt;
     }
 }

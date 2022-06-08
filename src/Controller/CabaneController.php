@@ -4,9 +4,8 @@ namespace App\Controller;
 
 use App\Entity\APMBSReservation;
 use App\Entity\Cabane;
+use App\Form\CabaneType;
 use Doctrine\ORM\EntityManagerInterface;
-use NetBS\CoreBundle\Utils\Modal;
-use NetBS\FichierBundle\Form\CabaneType;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;

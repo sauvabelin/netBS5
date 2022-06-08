@@ -84,16 +84,22 @@
                                             <tr>
                                                 <td style="width:100%;text-align:center;">
                                                     {% set title = 'Demande de réservation' %}
+                                                    {% set infoBlock = '' %}
                                                     {% if type == 'recue' %}
                                                         {% set title = 'Demande de réservation reçue' %}
+                                                        {% set infoBlock = reservation.cabane.demandeRecueText %}
                                                     {% elseif type == 'refusee' %}
                                                         {% set title = 'Demande de réservation refusée' %}
+                                                        {% set infoBlock = reservation.cabane.demandeRefuseeText %}
                                                     {% elseif type == 'annulee' %}
                                                         {% set title = 'Réservation annulée' %}
+                                                        {% set infoBlock = reservation.cabane.demandeAnnuleeText %}
                                                     {% elseif type == 'modifiee' %}
                                                         {% set title = 'Réservation acceptée et modifiée' %}
+                                                        {% set infoBlock = reservation.cabane.demandeModifieeText %}
                                                     {% elseif type == 'acceptee' %}
                                                         {% set title = 'Demande de réservation acceptée' %}
+                                                        {% set infoBlock = reservation.cabane.demandeAccepteeText %}
                                                     {% endif %}
                                                     <h1 style="margin: 0; color: #555555; font-size: 23px; font-family: Arial, Helvetica Neue, Helvetica, sans-serif; line-height: 120%; text-align: center; direction: ltr; font-weight: 700; letter-spacing: normal; margin-top: 0; margin-bottom: 0;"><span class="tinyMce-placeholder">{{ title }}</span></h1>
                                                 </td>
@@ -113,41 +119,15 @@
                                             </tr>
                                         </table>
                                         <table border="0" cellpadding="10" cellspacing="0" class="paragraph_block" role="presentation" style="mso-table-lspace: 0pt; mso-table-rspace: 0pt; word-break: break-word;" width="100%">
-                                            {% set infoBlock %}
-
-                                            {% endset %}
                                             <tr>
                                                 <td>
                                                     <div style="color:#000000;font-size:14px;font-family:Arial, Helvetica Neue, Helvetica, sans-serif;font-weight:400;line-height:120%;text-align:left;direction:ltr;letter-spacing:0px;">
+                                                        {% if type == 'recue' %}
+                                                            <p style="margin: 0; margin-bottom: 16px; background: #fffeae; border: 1px solid #e1e185; padding: 8px; border-radius: 5px; text-align: center">Cet e-mail n'est pas une confirmation.</p>
+                                                        {% endif %}
                                                         <p style="margin: 0; margin-bottom: 16px;">Bonjour,</p>
                                                         <p style="margin: 0; margin-bottom: 16px;">
-                                                            {% if type == 'recue' %}
-                                                                <p style="margin: 0; margin-bottom: 16px;">Cet e-mail n'est pas une confirmation.</p>
-                                                                Nous avons bien reçu votre demande de réservation, voici le détail des informations.
-                                                                Si votre réservation est acceptée, vous allez prochainement recevoir un e-mail de confirmation.
-                                                                <p style="margin: 0; margin-bottom: 16px;">{{ infoBlock }}</p>
-                                                                {{ reservation.cabane.demandeRecueText }}
-                                                            {% elseif type == 'refusee' %}
-                                                                Votre demande de réservation a été refusée pour le motif suivant:<br/>
-                                                                {{ reservation.refusedMotif }}
-                                                                <p style="margin: 0; margin-bottom: 16px;">{{ infoBlock }}</p>
-                                                                {{ reservation.cabane.demandeRefuseeText }}
-                                                            {% elseif type == 'annulee' %}
-                                                                <p class="margin: 0; margin-bottom: 16px">
-                                                                    Votre réservation a été annulée et n'est donc plus valable. S'il s'agit d'une erreur n'hésitez pas à nous écrire directement.
-                                                                </p>
-                                                                {% set title = 'Réservation annulée' %}
-                                                            {% elseif type == 'modifiee' %}
-                                                                {% set title = 'Réservation acceptée et modifiée' %}
-                                                                <p class="margin: 0; margin-bottom: 16px">
-                                                                    Votre réservation a été acceptée mais modifiée, veuillez prendre note des changements en conséquence. Si cela ne vous convient pas n'hésitez pas à nous écrire.
-                                                                </p>
-                                                            {% elseif type == 'acceptee' %}
-                                                                {% set title = 'Demande de réservation acceptée' %}
-                                                                <p class="margin: 0; margin-bottom: 16px">
-                                                                    Votre demande de réservation a été acceptée.
-                                                                </p>
-                                                            {% endif %}
+                                                            {{ infoBlock }}
                                                         </p>
                                                         <p style="margin: 0; margin-bottom: 8px;"><strong>Cabane</strong> {{ reservation.cabane.nom }}</p>
                                                         <p style="margin: 0; margin-bottom: 8px;"><strong>Début</strong> {{ reservation.start|date('d.m.Y H:i') }}</p>

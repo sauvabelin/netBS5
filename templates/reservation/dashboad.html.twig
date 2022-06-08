@@ -9,8 +9,8 @@
     {{ registerJs('https://cdn.jsdelivr.net/npm/fullcalendar@5.11.0/main.min.js') }}
     {{ registerJs(asset('bundles/netbscore/js/modal.js')) }}
 
-    <div class="container-fluid">
-
+    {#
+    <div class="container mx-auto">
         {% include '@NetBSCore/includes/header.include.twig' with {
             header: 'Réservations',
             subHeader: "Gestion de l'ensemble des réservations",
@@ -21,20 +21,23 @@
                 <h5 class="card-title">Calendrier des réservations</h5>
             </div>
             <div class="card-body">
-                <div id="calendar"></div>
             </div>
         </div>
 
     </div>
-
+    #}
+    <div id="calendar" class="p-5 bg-white"></div>
     {% set calendarScript %}
         <script type="text/javascript">
 
             document.addEventListener('DOMContentLoaded', () => {
-               const calendar = new FullCalendar.Calendar(document.getElementById('calendar'), {
-                   initialView: 'dayGridMonth',
-                   googleCalendarApiKey: '{{ googleCalendarApiKey }}',
-                   eventSources: [
+                const header = document.getElementsByClassName('main-header').item(0);
+                const calendarHeight = document.body.clientHeight - header.clientHeight - 1;
+                const calendar = new FullCalendar.Calendar(document.getElementById('calendar'), {
+                    height: calendarHeight,
+                    initialView: 'dayGridMonth',
+                    googleCalendarApiKey: '{{ googleCalendarApiKey }}',
+                    eventSources: [
                        { googleCalendarId: '9426kqtpb8mr7b1aonjub21rgg@group.calendar.google.com' },
                        {% for cabane in cabanes %}
                        {
@@ -46,13 +49,13 @@
                            },
                        },
                        {% endfor %}
-                   ],
-                   eventClick: (info) => {
+                    ],
+                    eventClick: (info) => {
                         info.jsEvent.preventDefault();
                         const modal = new BSModal("{{ path('sauvabelin.apmbs_reservations.modal') }}?id=" + info.event.id);
                         modal.launch();
-                   },
-               });
+                    },
+                });
 
                calendar.render();
             });

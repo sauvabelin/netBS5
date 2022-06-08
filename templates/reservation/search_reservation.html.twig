@@ -1,0 +1,29 @@
+{% extends '@NetBSCore/searcher/searcher.html.twig' %}
+
+{% block searchForm %}
+
+    <h4>Informations de base</h4>
+
+    <div class="row">
+        <div class="col-12 col-md-4">
+            {{ form_row(form.nom) }}
+            {{ form_row(form.prenom) }}
+            {{ form_row(form.email) }}
+            {{ form_row(form.phone) }}
+        </div>
+
+        <div class="col-12 col-md-4">
+            {{ form_row(form.unite) }}
+            {{ form_row(form.status) }}
+            {{ form_row(form.cabane) }}
+        </div>
+
+        <div class="col-12 col-md-4">
+            {{ form_row(form.start.biggerThan) }}
+            {{ form_row(form.start.lowerThan) }}
+            {{ form_row(form.end.biggerThan) }}
+            {{ form_row(form.end.lowerThan) }}
+        </div>
+    </div>
+
+{% endblock %}

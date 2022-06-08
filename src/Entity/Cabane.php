@@ -61,35 +61,35 @@ class Cabane {
      *
      * @ORM\Column(name="demande_recue_text", type="text", nullable=true)
      */
-    protected $demandeRecueText;
+    protected $demandeRecueText = "Nous avons bien reçu votre demande de réservation, voici le détail des informations. Si votre réservation est acceptée, vous allez prochainement recevoir un e-mail de confirmation.";
 
     /**
      * @var string
      *
      * @ORM\Column(name="demande_refusee_text", type="text", nullable=true)
      */
-    protected $demandeRefuseeText;
+    protected $demandeRefuseeText = "Votre demande de réservation a été refusée pour le motif suivant.";
 
     /**
      * @var string
      *
      * @ORM\Column(name="demande_annulee_text", type="text", nullable=true)
      */
-    protected $demandeAnnuleeText;
+    protected $demandeAnnuleeText = "Votre réservation a été annulée et n'est donc plus valable. S'il s'agit d'une erreur n'hésitez pas à nous écrire directement.";
 
     /**
      * @var string
      *
      * @ORM\Column(name="demande_acceptee_text", type="text", nullable=true)
      */
-    protected $demandeAccepteeText;
+    protected $demandeAccepteeText = "Votre demande de réservation a été acceptée.";
 
     /**
      * @var string
      *
      * @ORM\Column(name="demande_modifiee_text", type="text", nullable=true)
      */
-    protected $demandeModifieeText;
+    protected $demandeModifieeText = "Votre réservation a été acceptée mais modifiée, veuillez prendre note des changements en conséquence. Si cela ne vous convient pas n'hésitez pas à nous écrire.";
 
     /**
      * @var bool

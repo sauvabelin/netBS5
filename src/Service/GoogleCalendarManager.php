@@ -3,6 +3,7 @@
 namespace App\Service;
 
 use App\Entity\APMBSReservation;
+use App\Entity\Cabane;
 use Google_Client;
 
 class GoogleCalendarManager {
@@ -46,6 +47,18 @@ class GoogleCalendarManager {
                 $event);
             return $result->getId();
         }
+    }
+
+    public function getEventsBetween(Cabane $cabane, \DateTime $start, \DateTime $end) {
+        $events = $this->service->events->listEvents($cabane->getCalendarId(), [
+            'maxResults' => 2500,
+            'singleEvents' => true,
+            'timeMax' => $end->format(\DateTime::ISO8601),
+            'timeMin' => $start->format(\DateTime::ISO8601),
+            'timeZone' => $start->getTimezone()->getName(),
+        ]);
+
+        return $events->getItems();
     }
 
     private function reservationToGoogleEvent(APMBSReservation $reservation) {

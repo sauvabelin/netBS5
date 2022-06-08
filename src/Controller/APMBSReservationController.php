@@ -7,6 +7,7 @@ use App\Entity\Cabane;
 use App\Service\GoogleCalendarManager;
 use Doctrine\ORM\EntityManagerInterface;
 use NetBS\CoreBundle\Form\Type\DatepickerType;
+use NetBS\CoreBundle\Searcher\SearcherManager;
 use NetBS\CoreBundle\Utils\Modal;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\Form\Extension\Core\Type\DateTimeType;
@@ -220,6 +221,15 @@ class APMBSReservationController extends AbstractController
             'reservation' => $reservation,
             'form' => $form->createView(),
         ]);
+    }
+
+    /**
+     * @Route("/apmbs/reservations/search", name="sauvabelin.apmbs_reservations.search")
+     * @return Response
+     */
+    public function searchReservationAction(SearcherManager $searcher) {
+        $instance = $searcher->bind(APMBSReservation::class);
+        return $searcher->render($instance);
     }
 }
 
