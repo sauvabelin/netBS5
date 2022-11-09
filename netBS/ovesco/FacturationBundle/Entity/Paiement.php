@@ -194,7 +194,7 @@ class Paiement
      */
     public function getDateEffectivePaiement() {
 
-        return $this->getTransactionDetails()
+        return $this->getTransactionDetails() && $this->getTransactionDetails()->getRelatedDates()
             ? $this->getTransactionDetails()->getRelatedDates()->getAcceptanceDateTime()
             : $this->date;
     }
