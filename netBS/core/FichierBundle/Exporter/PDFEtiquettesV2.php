@@ -69,8 +69,7 @@ class PDFEtiquettesV2 implements ExporterInterface, ConfigurableExporterInterfac
             return $adressable->getSendableAdresse() === null;
         });
         $members = array_diff($items, $noAdress);
-
-        $set = $members;
+        $set = is_array($members) ? $members : [$members];
         if ($config->mergeOption === 1) $set = self::merge($members);
         else if ($config->mergeOption === 2) $set = self::mergeBySameAddress($members);
         $fpdf = new \FPDF();
