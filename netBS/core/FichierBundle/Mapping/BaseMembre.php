@@ -444,7 +444,6 @@ abstract class BaseMembre extends Personne implements EqualInterface
         return null;
     }
 
-
     /**
      * @param string $numeroAvs
      * @return BaseMembre
