@@ -85,9 +85,6 @@ class CSVRega extends CSVExporter
             ->addColumn('NO_PERS_BDNJS', function(BaseMembre $membre) {
                 return null;
             })
-            ->addColumn('SEXE', function (BaseMembre $membre) {
-                return $membre->getSexe() === Personne::FEMME ? '2' : '1';
-            })
             ->addColumn('NOM', function(BaseMembre $membre) {
                 return StrUtil::removeAccents($membre->getFamille()->getNom());
             })
@@ -97,10 +94,27 @@ class CSVRega extends CSVExporter
             ->addColumn('DAT_NAISSANCE', function(BaseMembre $membre) {
                 return $membre->getNaissance()->format('d.m.Y');
             })
-            ->addColumn('N_AVS', 'numeroAvs')
+            ->addColumn('SEXE', function (BaseMembre $membre) {
+                return $membre->getSexe() === Personne::FEMME ? '2' : '1';
+            })
+            ->addColumn('N_AVS', function(BaseMembre $membre) {
+                return $membre->getNumeroAvsRega();
+            })
+            ->addColumn('PEID', function(BaseMembre $membre) {
+                return null;
+            })
+            ->addColumn('NATIONALITE', function(BaseMembre $membre) {
+                return 'CH';
+            })
+            ->addColumn('1ERE_LANGUE', function (BaseMembre $membre) {
+                return 'F';
+            })
             ->addColumn('RUE', function(BaseMembre $membre) {
                 if($adresse = $membre->getSendableAdresse())
                     return StrUtil::removeAccents($adresse->getRue());
+            })
+            ->addColumn('NUMERO', function(BaseMembre $membre) {
+                return null;
             })
             ->addColumn('NPA', function(BaseMembre $membre) {
                 if($adresse = $membre->getSendableAdresse())
@@ -114,16 +128,6 @@ class CSVRega extends CSVExporter
                 if($adresse = $membre->getSendableAdresse())
                     return $adresse->getPays() === "CH" ? "CH" : "DIV";
                 return "CH";
-            })
-            ->addColumn('NATIONALITE', function(BaseMembre $membre) {
-                return 'CH';
-            })
-            ->addColumn('1ERE_LANGUE', function (BaseMembre $membre) {
-                return 'F';
-            })
-            ->addColumn('CLASSE/GROUPE', function(BaseMembre $membre) {
-                if($attr = $membre->getActiveAttribution())
-                    return StrUtil::removeAccents($attr->getGroupe()->getNom());
             })
         ;
     }
