@@ -74,6 +74,7 @@ abstract class CSVExporter implements ExporterInterface
         }
 
         $response = new StreamedResponse(function() use ($data) {
+            echo chr(239) . chr(187) . chr(191); //add utf-8 BOM: 0xEF 0xBB 0xBF
             foreach($data as $fields)
                 echo implode(';', $fields) . "\n";
         });

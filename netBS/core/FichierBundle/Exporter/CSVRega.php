@@ -82,11 +82,8 @@ class CSVRega extends CSVExporter
     public function configureColumns(CSVColumns $columns)
     {
         $columns
-            ->addColumn('NO_PERS_BDNJS', function(BaseMembre $membre) {
+            ->addColumn('N° PERSONNEL', function(BaseMembre $membre) {
                 return null;
-            })
-            ->addColumn('SEXE', function (BaseMembre $membre) {
-                return $membre->getSexe() === Personne::FEMME ? '2' : '1';
             })
             ->addColumn('NOM', function(BaseMembre $membre) {
                 return StrUtil::removeAccents($membre->getFamille()->getNom());
@@ -94,13 +91,30 @@ class CSVRega extends CSVExporter
             ->addColumn('PRENOM', function (BaseMembre $membre) {
                 return StrUtil::removeAccents($membre->getPrenom());
             })
-            ->addColumn('DAT_NAISSANCE', function(BaseMembre $membre) {
+            ->addColumn('DATE DE NAISSANCE', function(BaseMembre $membre) {
                 return $membre->getNaissance()->format('d.m.Y');
             })
-            ->addColumn('N_AVS', 'numeroAvs')
+            ->addColumn('SEXE', function (BaseMembre $membre) {
+                return $membre->getSexe() === Personne::FEMME ? 'f' : 'h';
+            })
+            ->addColumn('N_AVS', function(BaseMembre $membre) {
+                return $membre->getNumeroAvs();
+            })
+            ->addColumn('PEID', function(BaseMembre $membre) {
+                return null;
+            })
+            ->addColumn('NATIONALITE', function(BaseMembre $membre) {
+                return 'CH';
+            })
+            ->addColumn('LANGUE MATERNELLE', function (BaseMembre $membre) {
+                return 'FR';
+            })
             ->addColumn('RUE', function(BaseMembre $membre) {
                 if($adresse = $membre->getSendableAdresse())
                     return StrUtil::removeAccents($adresse->getRue());
+            })
+            ->addColumn('NUMERO', function(BaseMembre $membre) {
+                return null;
             })
             ->addColumn('NPA', function(BaseMembre $membre) {
                 if($adresse = $membre->getSendableAdresse())
@@ -112,18 +126,8 @@ class CSVRega extends CSVExporter
             })
             ->addColumn('PAYS', function(BaseMembre $membre) {
                 if($adresse = $membre->getSendableAdresse())
-                    return $adresse->getPays() === "CH" ? "CH" : "DIV";
+                    return $adresse->getPays();
                 return "CH";
-            })
-            ->addColumn('NATIONALITE', function(BaseMembre $membre) {
-                return 'CH';
-            })
-            ->addColumn('1ERE_LANGUE', function (BaseMembre $membre) {
-                return 'F';
-            })
-            ->addColumn('CLASSE/GROUPE', function(BaseMembre $membre) {
-                if($attr = $membre->getActiveAttribution())
-                    return StrUtil::removeAccents($attr->getGroupe()->getNom());
             })
         ;
     }
