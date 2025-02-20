@@ -1,0 +1,17 @@
+{% extends '@NetBSCore/layout/base.layout.twig' %}
+
+
+{% block body %}
+<div style="display:flex;flex-direction:column;width:100vw;height:100vh;justify-content:center;align-items:center;background:#eeeeee">
+    <img src="{{ asset('bundles/netbscore/img/logo.png') }}" alt="logo" width="64" height="64" class="logo-img" />
+    <p style="margin-top:30px; margin-bottom:0; text-align: center; font-size: 16px; font-weight: 700; color: #334155;">
+        {{ reservation.cabane.nom }}
+    </p>
+    <div style="margin-top:30px;background:white;box-shadow:0 10px 20px #dddddd; border-radius:5px;padding:20px;">
+        <p style="margin: 0 0 20px; border-radius: 4px; background-color: #10b981; padding-top: 12px; padding-bottom: 12px; text-align: center; font-size: 20px; font-weight: 700; color: #fffffe; box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05)">
+            Réservation Confirmée
+        </p>
+        <p class="text-center mb-0">Merci, vous avez bien confirmé votre réservation,<br/>vous allez bientôt recevoir un e-mail récapitulatif.</p>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,89 @@
+{% extends '@NetBSCore/layout/backend.layout.twig' %}
+
+{% set title %}{{ cabane.nom }}{% endset %}
+
+{% block main %}
+    <div class="container-fluid">
+        {% include '@NetBSCore/includes/header.include.twig' with {
+            header: cabane.nom,
+            subHeader: 'Modification'
+        } %}
+
+        <div class="no-gutters">
+        {{ form_start(cabaneForm)}}
+            <div class="row">
+                <div class="col-12 col-md-5">
+                    <div class="card">
+                        <div class="card-header">
+                            <h3 class="card-title">Informations</h3>
+                        </div>
+                        <div class="card-body">
+                            <form class="form-horizontal">
+                                {{ form_row(cabaneForm.nom) }}
+                                {{ form_row(cabaneForm.fromEmail) }}
+                                {{ form_row(cabaneForm.googleFormUrl)}}
+                                {{ form_row(cabaneForm.calendarId) }}
+                                {{ form_row(cabaneForm.longitude) }}
+                                {{ form_row(cabaneForm.latitude) }}
+                                {{ form_row(cabaneForm.intendants) }}
+                            </form>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-12 col-md-7">
+                    <div class="card">
+                        <div class="card-header">
+                            <ul class="nav nav-tabs card-header-tabs">
+                                <li class="nav-item">
+                                    <a class="nav-link active" href="#time-settings" data-toggle="tab">Paramètres de réservations</a>
+                                </li>
+                                <li class="nav-item">
+                                    <a class="nav-link" href="#received-email" data-toggle="tab">Reservation Reçue</a>
+                                </li>
+                                <li class="nav-item">
+                                    <a class="nav-link" href="#rejected-email" data-toggle="tab">Reservation Rejetée</a>
+                                </li>
+                                <li class="nav-item">
+                                    <a class="nav-link" href="#correction-email" data-toggle="tab">Reservation Avec Correction</a>
+                                </li>
+                                <li class="nav-item">
+                                    <a class="nav-link" href="#confirmed-email" data-toggle="tab">Reservation Confirmée</a>
+                                </li>
+                                <li class="nav-item">
+                                    <a class="nav-link" href="#cancelled-email" data-toggle="tab">Reservation Annulée</a>
+                                </li>
+                            </ul>
+                        </div>
+
+                        <div class="card-body tab-content">
+                            <div id="time-settings" class="tab-pane fade show active">
+                                {{ form_row(cabaneForm.disabledDates) }}
+                                {{ form_row(cabaneForm.availabilityRule) }}
+                                {{ form_row(cabaneForm.timePeriods) }}
+                                {{ form_row(cabaneForm.prices) }}
+                            </div>
+                            <div id="received-email" class="tab-pane fade">
+                                {{ form_row(cabaneForm.receivedEmail) }}
+                            </div>
+                            <div id="rejected-email" class="tab-pane fade">
+                                {{ form_row(cabaneForm.rejectedEmail) }}
+                            </div>
+                            <div id="correction-email" class="tab-pane fade">
+                                {{ form_row(cabaneForm.correctionEmail) }}
+                            </div>
+                            <div id="confirmed-email" class="tab-pane fade">
+                                {{ form_row(cabaneForm.confirmedEmail) }}
+                            </div>
+                            <div id="cancelled-email" class="tab-pane fade">
+                                {{ form_row(cabaneForm.cancelledEmail) }}
+                            </div>
+                        </div>
+                    </div>
+                    {{ form_rest(cabaneForm) }}
+                    <input type="submit" class='btn btn-primary' value="Enregistrer" />
+                </div>
+            </div>
+        {{ form_end(cabaneForm)}}
+        </div>
+    </div>
+{% endblock %}

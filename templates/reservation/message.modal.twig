@@ -1,0 +1,10 @@
+{% extends '@NetBSCore/layout/modal.layout.twig' %}
+
+{% block title %}{{ title }}{% endblock %}
+
+{% block content %}
+    <div class="alert alert-{{ type }}">
+        <p>{{ alert }}</p>
+    </div>
+    {{ form(form) }}
+{% endblock %}

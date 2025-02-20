@@ -1,0 +1,55 @@
+{% extends 'emails/apmbs_layout.html.twig' %}
+
+{% block content %}
+<tr>
+    <td style="width: 600px; max-width: 100%;">
+    <p style="margin: 0 0 20px; border-radius: 4px; background-color: #cccccc; padding-top: 12px; padding-bottom: 12px; text-align: center; font-size: 20px; font-weight: 700; color: #fffffe; box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05)">
+        Nous avons bien reçu votre demande de réservation
+    </p>
+    </td>
+</tr>
+<tr>
+    <td style="width: 600px; max-width: 100%;">
+    <p style="margin: 0 0 20px; font-size: 16px; color: #334155">
+        {{ reservation.cabane.receivedEmail }}
+    </p>
+    </td>
+</tr>
+<tr>
+    <td style="width: 600px; max-width: 100%;">
+    <p style="margin: 0 0 12px; font-size: 18px; font-weight: 600; color: #0f172a">Informations de réservation</p>
+    <table style="border-radius: 4px; color: #334155; box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);" cellpadding="0" cellspacing="0" role="none">
+        <tbody>
+        <tr>
+            <td style="width: 100px; border: solid #e2e8f0; border-width: 0px 0px 1px; background-color: #f1f5f9; padding-top: 8px; padding-bottom: 8px; padding-left: 8px; font-weight: 700">Début</td>
+            <td style="width: 500px; border: solid #e2e8f0; border-width: 0px 0px 1px; background-color: #f1f5f9; padding-top: 8px; padding-bottom: 8px">{{ reservation.start|date(param('format', 'php_datetime')) }}</td>
+        </tr>
+        <tr>
+            <td style="width: 100px; border: solid #e2e8f0; border-width: 0px 0px 1px; background-color: #f1f5f9; padding-top: 8px; padding-bottom: 8px; padding-left: 8px; font-weight: 700">Fin</td>
+            <td style="width: 500px; border: solid #e2e8f0; border-width: 0px 0px 1px; background-color: #f1f5f9; padding-top: 8px; padding-bottom: 8px">{{ reservation.end|date(param('format', 'php_datetime')) }}</td>
+        </tr>
+        <tr>
+            <td style="width: 100px; border: solid #e2e8f0; border-width: 0px 0px 1px; background-color: #f1f5f9; padding-top: 8px; padding-bottom: 8px; padding-left: 8px; font-weight: 700">Prénom</td>
+            <td style="width: 500px; border: solid #e2e8f0; border-width: 0px 0px 1px; background-color: #f1f5f9; padding-top: 8px; padding-bottom: 8px">{{ reservation.prenom }}</td>
+        </tr>
+        <tr>
+            <td style="width: 100px; border: solid #e2e8f0; border-width: 0px 0px 1px; background-color: #f1f5f9; padding-top: 8px; padding-bottom: 8px; padding-left: 8px; font-weight: 700">Nom</td>
+            <td style="width: 500px; border: solid #e2e8f0; border-width: 0px 0px 1px; background-color: #f1f5f9; padding-top: 8px; padding-bottom: 8px">{{ reservation.nom }}</td>
+        </tr>
+        <tr>
+            <td style="width: 100px; border: solid #e2e8f0; border-width: 0px 0px 1px; background-color: #f1f5f9; padding-top: 8px; padding-bottom: 8px; padding-left: 8px; font-weight: 700">Téléphone</td>
+            <td style="width: 500px; border: solid #e2e8f0; border-width: 0px 0px 1px; background-color: #f1f5f9; padding-top: 8px; padding-bottom: 8px">{{ reservation.phone }}</td>
+        </tr>
+        <tr>
+            <td style="width: 100px; border: solid #e2e8f0; border-width: 0px 0px 1px; background-color: #f1f5f9; padding-top: 8px; padding-bottom: 8px; padding-left: 8px; font-weight: 700">Groupe</td>
+            <td style="width: 500px; border: solid #e2e8f0; border-width: 0px 0px 1px; background-color: #f1f5f9; padding-top: 8px; padding-bottom: 8px">{{ reservation.unite }}</td>
+        </tr>
+        <tr>
+            <td style="width: 100px; border-bottom-left-radius: 4px; background-color: #f1f5f9; padding-top: 8px; padding-bottom: 8px; padding-left: 8px; font-weight: 700">Commentaire</td>
+            <td style="width: 500px; border-bottom-right-radius: 4px; background-color: #f1f5f9; padding-top: 8px; padding-bottom: 8px">{{ reservation.description }}</td>
+        </tr>
+        </tbody>
+    </table>
+    </td>
+</tr>
+{% endblock %}
