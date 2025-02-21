@@ -24,7 +24,7 @@ class NewsChannelsList extends BaseListModel
      */
     protected function buildItemsList()
     {
-        return $this->entityManager->getRepository('NetBSCoreBundle:NewsChannel')->findAll();
+        return $this->entityManager->getRepository(NewsChannel::class)->findAll();
     }
 
     /**

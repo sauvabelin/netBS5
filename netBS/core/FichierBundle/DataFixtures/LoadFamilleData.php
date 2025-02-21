@@ -25,7 +25,7 @@ class LoadFamilleData extends AbstractFixture implements OrderedFixtureInterface
      *
      * @param ObjectManager $manager
      */
-    public function load(ObjectManager $manager)
+    public function load(ObjectManager $manager): void
     {
         $config     = $this->fichierConfig;
         $f1         = $this->loadF1($manager, $config);
@@ -89,7 +89,7 @@ class LoadFamilleData extends AbstractFixture implements OrderedFixtureInterface
      *
      * @return integer
      */
-    public function getOrder()
+    public function getOrder(): int
     {
         return 1000;
     }

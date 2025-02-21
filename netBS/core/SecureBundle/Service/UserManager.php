@@ -3,7 +3,12 @@
 namespace NetBS\SecureBundle\Service;
 
 use Doctrine\ORM\EntityManagerInterface;
+use NetBS\CoreBundle\Entity\DynamicList;
+use NetBS\CoreBundle\Entity\ExportConfiguration;
 use NetBS\CoreBundle\Entity\LoggedChange;
+use NetBS\CoreBundle\Entity\News;
+use NetBS\CoreBundle\Entity\Notification;
+use NetBS\CoreBundle\Entity\UserLog;
 use NetBS\FichierBundle\Mapping\BaseMembre;
 use NetBS\SecureBundle\Mapping\BaseUser;
 use NetBS\SecureBundle\Exceptions\UserCreationException;
@@ -78,7 +83,7 @@ class UserManager
         $em             = $this->em;
 
         // Check user logged changes
-        $changes = $em->getRepository('NetBSCoreBundle:LoggedChange')->findBy(['user' => $user]);
+        $changes = $em->getRepository(LoggedChange::class)->findBy(['user' => $user]);
         $waitingChanges = array_filter($changes, function(LoggedChange $change) {
             return $change->getStatus() === LoggedChange::WAITING;
         });
@@ -90,23 +95,23 @@ class UserManager
         foreach($changes as $change) $em->remove($change);
 
         // Remove dynamics
-        $dynamics = $em->getRepository('NetBSCoreBundle:DynamicList')->findBy(['owner' => $user]);
+        $dynamics = $em->getRepository(DynamicList::class)->findBy(['owner' => $user]);
         foreach($dynamics as $dynamic) $em->remove($dynamic);
 
         // Remove published news
-        $news = $em->getRepository('NetBSCoreBundle:News')->findBy(['user' => $user]);
+        $news = $em->getRepository(News::class)->findBy(['user' => $user]);
         foreach($news as $n) $em->remove($n);
 
         // Remove user export configurations
-        $exportConfigs = $em->getRepository('NetBSCoreBundle:ExportConfiguration')->findBy(['user' => $user]);
+        $exportConfigs = $em->getRepository(ExportConfiguration::class)->findBy(['user' => $user]);
         foreach($exportConfigs as $e) $em->remove($e);
 
         // Remove notifications
-        $notifications = $em->getRepository('NetBSCoreBundle:Notification')->findBy(['user' => $user]);
+        $notifications = $em->getRepository(Notification::class)->findBy(['user' => $user]);
         foreach($notifications as $n) $em->remove($n);
 
         // Remove user logs
-        $logs = $em->getRepository('NetBSCoreBundle:UserLog')->findBy(['user' => $user]);
+        $logs = $em->getRepository(UserLog::class)->findBy(['user' => $user]);
         foreach($logs as $log) $em->remove($log);
 
         $em->flush();

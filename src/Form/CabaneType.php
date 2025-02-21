@@ -18,20 +18,20 @@ class CabaneType extends AbstractType
         $builder
             ->add('nom', TextType::class, ['label' => 'Nom'])
             ->add('calendarId', TextType::class, ['label' => 'ID du calendrier google'])
-            ->add('googleFormUrl', TextType::class, ['label' => 'URL du formulaire google'])
+            ->add('googleFormUrl', TextType::class, ['label' => 'URL du formulaire google', 'required' => false])
             ->add('fromEmail', TextType::class, ['label' => 'Email d\'envoi'])
-            ->add('latitude', NumberType::class, ['label' => 'Latitude'])
-            ->add('longitude', NumberType::class, ['label' => 'Longitude'])
             ->add('availabilityRule', TextareaType::class, ['label' => 'Règle de disponibilité'])
             ->add('intendants', AjaxSelect2DocumentType::class, [
                 'label'     => 'Intendants',
                 'class'     => 'App\Entity\Intendant',
-                'multiple'  => true
+                'multiple'  => true,
+                'required' => false
             ])
             ->add('timePeriods', AjaxSelect2DocumentType::class, [
                 'label'     => 'Périodes de journée',
                 'class'     => 'App\Entity\CabaneTimePeriod',
-                'multiple'  => true
+                'multiple'  => true, 
+                'required' => false
             ])
 
             ->add('receivedEmail', TextareaType::class, ['label' => 'Emails de réception', 'required' => false])
@@ -40,6 +40,7 @@ class CabaneType extends AbstractType
             ->add('confirmedEmail', TextareaType::class, ['label' => 'Emails de confirmation', 'required' => false])
             ->add('cancelledEmail', TextareaType::class, ['label' => 'Emails d\'annulation', 'required' => false])
             ->add('prices', TextareaType::class, ['label' => 'Prix', 'required' => false])
+            ->add('conditions', TextareaType::class, ['label' => "Conditions d'utilisation", 'required' => false])
             ->add('disabledDates', TextareaType::class, ['label' => 'Dates désactivées', 'required' => false])
         ;
     }

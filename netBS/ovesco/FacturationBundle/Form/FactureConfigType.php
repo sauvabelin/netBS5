@@ -23,7 +23,7 @@ class FactureConfigType extends FPDFType
     public function buildForm(FormBuilderInterface $builder, array $options)
     {
         $choices = ['null' => 'laisser faire'];
-        $models = $this->manager->getRepository('OvescoFacturationBundle:FactureModel')->findAll();
+        $models = $this->manager->getRepository(FactureModel::class)->findAll();
         foreach ($models as $model) $choices[$model->getId()] = $model->getName();
         parent::buildForm($builder, $options);
         $builder

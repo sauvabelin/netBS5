@@ -17,7 +17,7 @@ class FacturesOuvertesList extends BaseListModel
      */
     protected function buildItemsList()
     {
-        return $this->entityManager->getRepository('OvescoFacturationBundle:Facture')->findBy(['statut' => Facture::OUVERTE]);
+        return $this->entityManager->getRepository(Facture::class)->findBy(['statut' => Facture::OUVERTE]);
     }
 
     /**

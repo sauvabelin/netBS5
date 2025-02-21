@@ -3,6 +3,7 @@
 namespace NetBS\CoreBundle\Listener;
 
 use Doctrine\ORM\EntityManagerInterface;
+use NetBS\CoreBundle\Entity\DynamicList;
 use NetBS\CoreBundle\Event\ExtendMainMenuEvent;
 use NetBS\SecureBundle\Mapping\BaseUser;
 use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInterface;
@@ -36,7 +37,7 @@ class MainMenuListener
             ->addLink('app.home.dashboard', 'Dashboard', 'fas fa-home', 'netbs.core.home.dashboard')
             ->addLink('netbs.core.news.read_news', 'Lire les news', 'fas fa-newspaper', 'netbs.core.news.read_news');
 
-        $repo       = $this->manager->getRepository('NetBSCoreBundle:DynamicList');
+        $repo       = $this->manager->getRepository(DynamicList::class);
         $lists      = $repo->findForUser($user);
 
         $menu->registerCategory('other', 'Autre');

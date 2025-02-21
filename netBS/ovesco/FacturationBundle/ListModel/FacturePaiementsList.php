@@ -28,7 +28,7 @@ class FacturePaiementsList extends BaseListModel
         $facture = $this->getParameter('facture');
         return $facture instanceof Facture
             ? $facture->getPaiements()
-            : $this->entityManager->getRepository('OvescoFacturationBundle:Paiement')
+            : $this->entityManager->getRepository(Paiement::class)
                 ->findBy(['facture' => $facture]);
     }
 

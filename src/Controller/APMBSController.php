@@ -224,10 +224,13 @@ class APMBSController extends AbstractController
      */
     public function viewReservationAction(APMBSReservation $reservation, GoogleCalendarManager $gcm) {
         $form = $this->createForm(APMBSReservationType::class, $reservation);
-        $eventualConflicts = $gcm->listReservations($reservation->getCabane(), $reservation->getStart(), $reservation->getEnd());
+        $reservations = $gcm->listReservations($reservation->getCabane(), $reservation->getStart(), $reservation->getEnd());
+        $conflicts = array_filter($reservations, function($r) use ($reservation) {
+            return $r->getId() !== $reservation->getGCEventId();
+        });
         return $this->render('reservation/view.html.twig', [
             'reservation' => $reservation,
-            'conflicts' => $eventualConflicts,
+            'conflicts' => $conflicts,
             'reservationForm' => $form->createView(),
         ]);
     }

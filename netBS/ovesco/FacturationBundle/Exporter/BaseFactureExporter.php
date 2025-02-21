@@ -111,10 +111,10 @@ abstract class BaseFactureExporter implements ExporterInterface, ConfigurableExp
     private function getModel(Facture $facture) {
 
         $modelId = $this->getConfiguration()->model;
-        if (is_int($modelId)) return $this->manager->getRepository('OvescoFacturationBundle:FactureModel')
+        if (is_int($modelId)) return $this->manager->getRepository(FactureModel::class)
             ->find($modelId);
         else {
-            $models = $this->manager->getRepository('OvescoFacturationBundle:FactureModel')
+            $models = $this->manager->getRepository(FactureModel::class)
                 ->createQueryBuilder('m')->orderBy('m.poids', 'DESC')->getQuery()->getResult();
 
             /** @var FactureModel $item */

@@ -14,6 +14,7 @@ use NetBS\FichierBundle\Mapping\BaseMembre;
 use NetBS\FichierBundle\Mapping\BaseTelephone;
 use NetBS\FichierBundle\Mapping\Personne;
 use App\Entity\BSMembre;
+use NetBS\CoreBundle\Entity\Parameter;
 
 /**
  * Class UserAccountSubscriber
@@ -81,7 +82,7 @@ class OldFichierMapperSubscriber implements EventSubscriber
     private function mapMembre(BSMembre $membre, EntityManager $manager) {
 
         if($this->adabsId === null)
-            $this->adabsId = $manager->getRepository('NetBSCoreBundle:Parameter')->findOneBy(array(
+            $this->adabsId = $manager->getRepository(Parameter::class)->findOneBy(array(
                 'namespace' => 'bs',
                 'paramKey'  => 'groupe.adabs_id'
             ))->getValue();

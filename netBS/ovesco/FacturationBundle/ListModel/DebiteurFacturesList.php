@@ -29,7 +29,7 @@ class DebiteurFacturesList extends BaseListModel
      */
     protected function buildItemsList()
     {
-        return $this->entityManager->getRepository('OvescoFacturationBundle:Facture')
+        return $this->entityManager->getRepository(Facture::class)
             ->findBy(['debiteurId' => $this->getParameter('debiteurId')]);
     }
 

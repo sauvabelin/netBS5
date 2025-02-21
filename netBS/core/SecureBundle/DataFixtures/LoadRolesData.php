@@ -6,6 +6,7 @@ use Doctrine\Bundle\FixturesBundle\FixtureGroupInterface;
 use Doctrine\Common\DataFixtures\AbstractFixture;
 use Doctrine\Common\DataFixtures\OrderedFixtureInterface;
 use Doctrine\Persistence\ObjectManager;
+use NetBS\SecureBundle\Entity\Role;
 use NetBS\SecureBundle\Service\SecureConfig;
 use Symfony\Component\Yaml\Yaml;
 
@@ -17,7 +18,7 @@ class LoadRolesData extends AbstractFixture implements OrderedFixtureInterface, 
         $this->secureConfig = $config;
     }
 
-    public function load(ObjectManager $manager)
+    public function load(ObjectManager $manager): void
     {
         $config = Yaml::parse(file_get_contents(__DIR__ . "/../Resources/security/system_roles.yml"));
         $roles  = $this->loadRole($config['roles'], $manager);
@@ -27,7 +28,7 @@ class LoadRolesData extends AbstractFixture implements OrderedFixtureInterface, 
 
         $manager->flush();
 
-        $this->addReference('ROLE_ADMIN', $manager->getRepository('NetBSSecureBundle:Role')->findOneBy(array('role' => 'ROLE_ADMIN')));
+        $this->addReference('ROLE_ADMIN', $manager->getRepository(Role::class)->findOneBy(array('role' => 'ROLE_ADMIN')));
     }
 
     public function loadRole(array $data, ObjectManager $manager) {
@@ -60,7 +61,7 @@ class LoadRolesData extends AbstractFixture implements OrderedFixtureInterface, 
         return ['fill', 'main'];
     }
 
-    public function getOrder()
+    public function getOrder(): int
     {
         return 1;
     }

@@ -25,11 +25,18 @@ class ApiAPMBSController extends AbstractController
      * @Route("/cabane-metadata/{id}", name="apmbs.api.cabane_metadata")
      */
     public function cabaneMetadataAction(Request $request, Cabane $cabane) {
+
+        $conditions = $cabane->getConditions();
+        $resConds = [];
+        if ($conditions) {
+            $resConds = explode("\n", $conditions);
+        }
         return $this->json([
             'nom'                => $cabane->getNom(),
             'availabilityRules'  => $cabane->getAvailabilityRule(),
             'prices'             => $cabane->getPrices(),
             'disabledDates'      => $cabane->getDisabledDates(),
+            'conditions'         => $resConds,
             'timePeriods'        => array_map(function(CabaneTimePeriod $timePeriod) {
                 return [
                     'name'       => $timePeriod->getNom(),

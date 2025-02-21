@@ -7,6 +7,7 @@ use App\Entity\NewsChannelBot;
 use App\Message\NewsNotification;
 use Doctrine\ORM\EntityManagerInterface;
 use NetBS\CoreBundle\Entity\News;
+use NetBS\CoreBundle\Entity\NewsChannel;
 use NetBS\SecureBundle\Service\SecureConfig;
 use Psr\Log\LoggerInterface;
 use Sensio\Bundle\FrameworkExtraBundle\Security\ExpressionLanguage;
@@ -43,7 +44,7 @@ class NewsNotificationHandler
         }
 
         $users = $this->em->getRepository($this->config->getUserClass());
-        $bots = $this->em->getRepository('App:NewsChannelBot')->findAll();
+        $bots = $this->em->getRepository(NewsChannelBot::class)->findAll();
         foreach ($bots as $bot) {
             if (in_array($news->getChannel(), $bot->getChannels())) {
                 $this->dispatch($news, $bot, $users);

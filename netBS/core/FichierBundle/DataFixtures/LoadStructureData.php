@@ -22,7 +22,7 @@ class LoadStructureData extends AbstractFixture implements OrderedFixtureInterfa
      *
      * @param ObjectManager $manager
      */
-    public function load(ObjectManager $manager)
+    public function load(ObjectManager $manager): void
     {
         $config         = $this->fichierConfig;
 
@@ -66,7 +66,7 @@ class LoadStructureData extends AbstractFixture implements OrderedFixtureInterfa
      *
      * @return integer
      */
-    public function getOrder()
+    public function getOrder(): int
     {
         return 1000;
     }

@@ -6,6 +6,7 @@ use Doctrine\ORM\EntityManagerInterface;
 use Genkgo\Camt\Config;
 use Genkgo\Camt\DTO\Entry;
 use Genkgo\Camt\DTO\EntryTransactionDetail;
+use Ovesco\FacturationBundle\Entity\Compte;
 use Ovesco\FacturationBundle\Entity\Facture;
 use Ovesco\FacturationBundle\Entity\Paiement;
 use Ovesco\FacturationBundle\Model\ParsedBVR;
@@ -60,14 +61,14 @@ class CamtController extends AbstractController
         $reader = new \Genkgo\Camt\Reader(Config::getDefault());
         $data = $reader->readFile($file);
         $statements = $data->getRecords();
-        $factureRepo = $em->getRepository('OvescoFacturationBundle:Facture');
+        $factureRepo = $em->getRepository(Facture::class);
 
         foreach($statements as $statement) {
             foreach($statement->getEntries() as $entry) {
 
                 foreach ($entry->getTransactionDetails() as $transactionDetail) {
 
-                    $query = $em->getRepository('OvescoFacturationBundle:Compte')->createQueryBuilder('c');
+                    $query = $em->getRepository(Compte::class)->createQueryBuilder('c');
                     $givenAccount = $entry->getReference();
                     if ($givenAccount === null) $givenAccount = $statement->getAccount()->getIdentification();
                     $compte = $query->where("REPLACE(c.qrIban, ' ', '') = REPLACE(:acc, ' ', '')")

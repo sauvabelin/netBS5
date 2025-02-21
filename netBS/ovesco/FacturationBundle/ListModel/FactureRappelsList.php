@@ -26,7 +26,7 @@ class FactureRappelsList extends BaseListModel
         $facture = $this->getParameter('facture');
         return $facture instanceof Facture
             ? $facture->getRappels()
-            : $this->entityManager->getRepository('OvescoFacturationBundle:Rappel')
+            : $this->entityManager->getRepository(Rappel::class)
                 ->findBy(['facture' => $facture]);
     }
 

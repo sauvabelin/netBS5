@@ -26,7 +26,7 @@ class QrFactureConfigType extends FPDFType
         parent::buildForm($builder, $options);
 
         $choices = ['null' => 'laisser faire'];
-        $models = $this->manager->getRepository('OvescoFacturationBundle:FactureModel')->findAll();
+        $models = $this->manager->getRepository(FactureModel::class)->findAll();
         foreach ($models as $model) $choices[$model->getId()] = $model->getName();
         $builder
             ->add('model', ChoiceType::class, [

@@ -21,7 +21,7 @@ class IntendantList extends BaseListModel
      */
     protected function buildItemsList()
     {
-        return $this->entityManager->getRepository('App:Intendant')->findAll();
+        return $this->entityManager->getRepository(Intendant::class)->findAll();
     }
 
     /**

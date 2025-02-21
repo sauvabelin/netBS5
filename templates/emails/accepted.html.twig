@@ -32,6 +32,18 @@
     </table>
     </td>
 </tr>
+{% if reservation.cabane.conditionsList %}
+<tr>
+    <td style="width: 600px; max-width: 100%;">
+    <p style="margin: 20px 0 6px; font-size: 18px; font-weight: 600; color: #0f172a">Conditions de la cabane</p>
+    <p style="margin-bottom:12px;">Veuillez bien prendre connaissance des conditions de la cabane avant votre arrivée :</p>
+    <ul style="list-style-type: disc; list-style-position: inside; margin: 0 0 16px; padding: 0; color: #334155">
+        {% for condition in reservation.cabane.conditionsList %}
+            <li style="width: 580px; background-color: #f1f5f9; padding: 4px 10px">{{ condition }}</li>
+        {% endfor %}
+    </ul>
+</tr>
+{% endif %}
 {% if message %}
 <tr>
     <td style="width: 600px; max-width: 100%;">

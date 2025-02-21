@@ -9,6 +9,7 @@ use NetBS\FichierBundle\Mapping\BaseAttribution;
 use NetBS\FichierBundle\Utils\ListModel\MembreListHelper;
 use NetBS\FichierBundle\Utils\Traits\FichierConfigTrait;
 use App\Model\GarsQuiBougentData;
+use NetBS\FichierBundle\Entity\Attribution;
 
 class TestDentreeAutomatic extends BaseAutomatic
 {
@@ -47,7 +48,7 @@ class TestDentreeAutomatic extends BaseAutomatic
         ];
 
         $fnIds  = array_map(function($i) {return intval($i);}, $fnIds);
-        $query  = $this->entityManager->getRepository('NetBSFichierBundle:Attribution')
+        $query  = $this->entityManager->getRepository(Attribution::class)
             ->createQueryBuilder('attr');
 
         $result = $query

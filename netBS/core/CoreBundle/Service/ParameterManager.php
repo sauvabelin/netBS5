@@ -25,7 +25,7 @@ class ParameterManager
 
     public function getParameter($namespace, $key) {
 
-        return $this->manager->getRepository('NetBSCoreBundle:Parameter')->findOneBy(array(
+        return $this->manager->getRepository(Parameter::class)->findOneBy(array(
             'namespace' => $namespace,
             'paramKey'  => $key
         ));
@@ -33,7 +33,7 @@ class ParameterManager
 
     public function getParameters($namespace) {
 
-        return $this->manager->getRepository('NetBSCoreBundle:Parameter')
+        return $this->manager->getRepository(Parameter::class)
             ->findBy(array('namespace' => $namespace));
     }
 
@@ -63,7 +63,7 @@ class ParameterManager
 
     public function refresh() {
 
-        $parameters = $this->manager->getRepository('NetBSCoreBundle:Parameter')->findAll();
+        $parameters = $this->manager->getRepository(Parameter::class)->findAll();
 
         foreach ($parameters as $parameter)
             $this->cacheParameter($parameter);

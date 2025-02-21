@@ -4,6 +4,7 @@ namespace App\Listener;
 
 use NetBS\CoreBundle\Event\ExtendMainMenuEvent;
 use App\Entity\BSUser;
+use App\Entity\Cabane;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInterface;
 
@@ -52,7 +53,7 @@ class MainMenuListener
             $apmbs->addLink("apmbs.reservations", "Réservations", "fas fa-calendar-alt", "sauvabelin.apmbs.reservations");
             $apmbs->addLink("apmbs.intendants", "Intendants", "fas fa-user", "sauvabelin.apmbs.intendants");
             $apmbs->addLink("apmbs.time-period", "Périodes de réservation", "fas fa-time", "sauvabelin.apmbs.time_periods");
-            $cabanes = $this->em->getRepository('App\Entity\Cabane')->findAll();
+            $cabanes = $this->em->getRepository(Cabane::class)->findAll();
             $cabanesCat = $apmbs->addSubMenu('apmbs.cabanes', 'Cabanes', 'fas fa-home');
             foreach ($cabanes as $cabane) {
                 $cabanesCat->addSubLink($cabane->getNom(), "sauvabelin.apmbs.cabane", ['id' => $cabane->getId()]);

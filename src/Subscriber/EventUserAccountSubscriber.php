@@ -5,6 +5,7 @@ namespace App\Subscriber;
 use Doctrine\ORM\EntityManagerInterface;
 use NetBS\SecureBundle\Event\UserPasswordChangeEvent;
 use App\Entity\BSUser;
+use App\Entity\LatestCreatedAccount;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 
 class EventUserAccountSubscriber implements EventSubscriberInterface
@@ -35,7 +36,7 @@ class EventUserAccountSubscriber implements EventSubscriberInterface
         $user   = $event->getUser();
         $user->setNewPasswordRequired(false);
 
-        $lastCreatedAccount = $this->manager->getRepository('App:LatestCreatedAccount')
+        $lastCreatedAccount = $this->manager->getRepository(LatestCreatedAccount::class)
             ->findBy(array('user' => $user));
 
         if(is_array($lastCreatedAccount) && count($lastCreatedAccount) > 0)

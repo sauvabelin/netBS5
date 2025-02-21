@@ -23,7 +23,7 @@ class CabaneTimePeriodsList extends BaseListModel
      */
     protected function buildItemsList()
     {
-        return $this->entityManager->getRepository('App:CabaneTimePeriod')->findAll();
+        return $this->entityManager->getRepository(CabaneTimePeriod::class)->findAll();
     }
 
     /**

@@ -63,7 +63,7 @@ class CreancesOuvertesList extends AjaxModel
     }
 
     public function ajaxQueryBuilder(string $alias): QueryBuilder {
-        $query = $this->entityManager->getRepository("OvescoFacturationBundle:Creance")
+        $query = $this->entityManager->getRepository(Creance::class)
             ->createQueryBuilder($alias);
         $query->where($query->expr()->isNull("$alias.facture"));
         return $query;

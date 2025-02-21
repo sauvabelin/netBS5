@@ -92,7 +92,34 @@
                             <h3 class="card-title">Intendants assignés</h3>
                         </div>
                         <div class="card-body">
-                            {{ render_list('app.apmbs.reservation.intendants', 'basic', { reservation: reservation.id }) }}
+                            
+                            <table class="table table-striped table-responsive-md basic-renderer" style="border:1px solid #eee">
+                                <thead>
+                                <tr>
+                                    <th></th>
+                                    <th>Nom</th>
+                                    <th>Email</th>
+                                    <th>Téléphone</th>
+                                </tr>
+                                </thead>
+                                <tbody>
+                                {% if reservation.intendantDebut %}
+                                    <tr class="shown">
+                                        <th><b>Ouverture</b></th>
+                                        <td>{{ reservation.intendantDebut.nom }}</td>
+                                        <td>{{ reservation.intendantDebut.email }}</td>
+                                        <td>{{ reservation.intendantDebut.phone }}</td>
+                                    </tr>
+                                {% endif %}
+                                {% if reservation.intendantFin %}
+                                        <th><b>Fermeture</b></th>
+                                        <td>{{ reservation.intendantFin.nom }}</td>
+                                        <td>{{ reservation.intendantFin.email }}</td>
+                                        <td>{{ reservation.intendantFin.phone }}</td>
+                                    </tr>
+                                </tbody>
+                                {% endif %}
+                            </table>
                         </div>
                     </div>
                     {% endif %}
@@ -156,7 +183,7 @@
                 },
                 eventSources: [
                     {
-                        url: '/netBS/bs/apmbs/cabane/{{ reservation.cabane.id }}/full-calendar-reservations',
+                        url: '/public/index.php/netBS/bs/apmbs/cabane/{{ reservation.cabane.id }}/full-calendar-reservations',
                         extraParams: {
                             reservationId: {{ reservation.id }}
                         }

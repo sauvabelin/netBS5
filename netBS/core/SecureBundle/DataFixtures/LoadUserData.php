@@ -20,7 +20,7 @@ class LoadUserData extends AbstractFixture implements OrderedFixtureInterface, F
         $this->encoder = $encoder;
     }
 
-    public function load(ObjectManager $manager)
+    public function load(ObjectManager $manager): void
     {
         $userClass  = $this->secureConfig->getUserClass();
 
@@ -44,7 +44,7 @@ class LoadUserData extends AbstractFixture implements OrderedFixtureInterface, F
         return ['fill', 'main'];
     }
 
-    public function getOrder()
+    public function getOrder(): int
     {
         return 100;
     }

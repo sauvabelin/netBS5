@@ -4,6 +4,7 @@ namespace Ovesco\FacturationBundle\Command;
 
 use Genkgo\Camt\Config;
 use Ovesco\FacturationBundle\Entity\Facture;
+use Ovesco\FacturationBundle\Entity\Paiement;
 use Symfony\Bundle\FrameworkBundle\Command\ContainerAwareCommand;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
@@ -40,7 +41,7 @@ class UnloadBVRCommand extends ContainerAwareCommand
 
                 foreach ($entry->getTransactionDetails() as $transactionDetail) {
 
-                    $paiements = $em->getRepository('OvescoFacturationBundle:Paiement')->findBy(['transactionDetails' => serialize($transactionDetail)]);
+                    $paiements = $em->getRepository(Paiement::class)->findBy(['transactionDetails' => serialize($transactionDetail)]);
                     foreach ($paiements as $paiement) {
                         /** @var Facture $facture */
                         $facture = $paiement->getFacture();

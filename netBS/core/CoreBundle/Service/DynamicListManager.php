@@ -72,13 +72,13 @@ class DynamicListManager
     public function getCurrentUserLists() {
 
         return $this->manager
-            ->getRepository('NetBSCoreBundle:DynamicList')
+            ->getRepository(DynamicList::class)
             ->findForUser($this->token->getUser());
     }
 
     public function getCurrentSharedLists() {
         return $this->manager
-            ->getRepository('NetBSCoreBundle:DynamicList')
+            ->getRepository(DynamicList::class)
             ->createQueryBuilder('d')
             ->innerJoin('d.shares', 's', 'WITH', 's.id = :id')
             ->setParameter('id', $this->token->getUser())

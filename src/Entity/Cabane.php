@@ -49,22 +49,6 @@ class Cabane {
     protected $reservations;
 
     /**
-     * @var string
-     * 
-     * @Assert\NotBlank()
-     * @ORM\Column(name="latitude", type="float")
-     */
-    protected $latitude;
-
-    /**
-     * @var string
-     * 
-     * @Assert\NotBlank()
-     * @ORM\Column(name="longitude", type="float")
-     */
-    protected $longitude;
-
-    /**
      * @var ArrayCollection
      * @ORM\ManyToMany(targetEntity="App\Entity\Intendant", inversedBy="cabanes")
      * @ORM\JoinTable(name="apmbs_cabanes_intendants")
@@ -86,19 +70,19 @@ class Cabane {
 
     /**
      * @var string
-     * @ORM\Column(name="disabled_dates", type="text")
+     * @ORM\Column(name="disabled_dates", type="text", nullable=true)
      */
     protected $disabledDates;
 
     /**
      * @var string
-     * @ORM\Column(name="prices", type="text")
+     * @ORM\Column(name="prices", type="text", nullable=true)
      */
     protected $prices;
 
     /**
      * @var string
-     * @ORM\Column(name="google_form_url", type="string", length=255)
+     * @ORM\Column(name="google_form_url", type="string", length=255, nullable=true)
      */
     protected $googleFormUrl;
 
@@ -139,6 +123,12 @@ class Cabane {
      * @ORM\Column(name="price_method", type="text", nullable=true)
      */
     protected $priceMethod;
+
+    /**
+     * @var string
+     * @ORM\Column(name="conditions", type="text", nullable=true)
+     */
+    protected $conditions;
 
     public function __construct() {
         $this->reservations = new ArrayCollection();
@@ -192,22 +182,6 @@ class Cabane {
     public function getReservations(): iterable
     {
         return $this->reservations;
-    }
-
-    public function getLatitude() {
-        return $this->latitude;
-    }
-
-    public function getLongitude() {
-        return $this->longitude;
-    }
-
-    public function setLatitude($latitude) {
-        $this->latitude = $latitude;
-    }
-
-    public function setLongitude($longitude) {
-        $this->longitude = $longitude;
     }
 
     /**
@@ -341,5 +315,21 @@ class Cabane {
 
     public function setPriceMethod($priceMethod) {
         $this->priceMethod = $priceMethod;
+    }
+
+    public function getConditions() {
+        return $this->conditions;
+    }
+
+    public function setConditions($conditions) {
+        $this->conditions = $conditions;
+    }
+
+    public function getConditionsList() {
+        if (!$this->conditions) {
+            return [];
+        }
+        
+        return explode("\n", $this->conditions);
     }
 }

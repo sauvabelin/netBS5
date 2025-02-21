@@ -3,6 +3,7 @@
 namespace NetBS\SecureBundle\Service;
 
 use Doctrine\ORM\EntityManagerInterface;
+use NetBS\SecureBundle\Entity\Role;
 use NetBS\SecureBundle\Mapping\BaseRole;
 use Symfony\Component\Security\Core\Role\RoleHierarchyInterface;
 
@@ -12,7 +13,7 @@ class NetBSRoleHierarchy implements RoleHierarchyInterface
 
     public function __construct(EntityManagerInterface $entityManager)
     {
-        $this->roles = $entityManager->getRepository('NetBSSecureBundle:Role')->findAll();
+        $this->roles = $entityManager->getRepository(Role::class)->findAll();
     }
 
     /**

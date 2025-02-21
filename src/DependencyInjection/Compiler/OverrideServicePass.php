@@ -16,6 +16,7 @@ use NetBS\SecureBundle\ListModel\UsersList;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\Compiler\CompilerPassInterface;
 use Symfony\Component\DependencyInjection\Definition;
+use Symfony\Component\DependencyInjection\Reference;
 
 class OverrideServicePass implements CompilerPassInterface
 {
@@ -25,7 +26,12 @@ class OverrideServicePass implements CompilerPassInterface
         $container->getDefinition(UsersList::class)->setClass(BSUserList::class);
         $container->getDefinition(MembreSearcher::class)->setClass(BSMembreSearcher::class);
         $container->getDefinition(\NetBS\SecureBundle\Service\UserManager::class)->setClass(UserManager::class);
-        $container->getDefinition('liip_imagine.binary.loader.prototype.filesystem')->setClass(GalerieLoader::class);
+
+        $imagineFs = $container->getDefinition('liip_imagine.binary.loader.prototype.filesystem');
+        $imagineFs->setClass(GalerieLoader::class);
+        $imagineFs->setArgument(0, new Reference('liip_imagine.mime_type_guesser'));
+        $imagineFs->setArgument(0, new Reference('liip_imagine.extension_guesser'));
+        $container->setDefinition('liip_imagine.binary.loader.prototype.filesystem', $imagineFs);
 
         $container->getDefinition(PDFEtiquettesV2::class)->setClass(EtiquettesV2Exporter::class);
 

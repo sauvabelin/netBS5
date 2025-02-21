@@ -15,7 +15,7 @@
         "genkgo/camt": "^2.3",
         "google/apiclient": "^2.12.1",
         "lexik/jwt-authentication-bundle": "^2.14",
-        "liip/imagine-bundle": "^2.7",
+        "liip/imagine-bundle": "2.7.6",
         "nelmio/cors-bundle": "^2.2",
         "predis/predis": "^1.1",
         "sensio/framework-extra-bundle": "^6.2",

@@ -20,7 +20,7 @@ class LatestAccountsCreatedList extends BaseListModel
      */
     protected function buildItemsList()
     {
-        return $this->entityManager->getRepository('App:LatestCreatedAccount')
+        return $this->entityManager->getRepository(LatestCreatedAccount::class)
             ->findAll();
     }
 

@@ -18,7 +18,7 @@ class LoadParametersData extends AbstractFixture implements OrderedFixtureInterf
         $this->kernel = $kernel;
     }
 
-    public function load(ObjectManager $manager)
+    public function load(ObjectManager $manager): void
     {
         $bundles = $this->kernel->getBundles();
         $paths = [];
@@ -40,7 +40,7 @@ class LoadParametersData extends AbstractFixture implements OrderedFixtureInterf
 
                 foreach ($parameters as $key => $value) {
 
-                    $param = $manager->getRepository('NetBSCoreBundle:Parameter')->findOneBy(array(
+                    $param = $manager->getRepository(Parameter::class)->findOneBy(array(
                         'namespace' => $namespace,
                         'paramKey'  => $key
                     ));
@@ -63,7 +63,7 @@ class LoadParametersData extends AbstractFixture implements OrderedFixtureInterf
      *
      * @return integer
      */
-    public function getOrder()
+    public function getOrder(): int
     {
         return 10;
     }

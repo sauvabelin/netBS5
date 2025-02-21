@@ -2,6 +2,7 @@
 
 namespace NetBS\CoreBundle\ListModel;
 
+use NetBS\CoreBundle\Entity\DynamicList;
 use NetBS\ListBundle\Model\BaseListModel;
 use NetBS\CoreBundle\Utils\Traits\EntityManagerTrait;
 use Symfony\Component\OptionsResolver\OptionsResolver;
@@ -25,7 +26,7 @@ abstract class AbstractDynamicListModel extends BaseListModel
      */
     protected function buildItemsList()
     {
-        return $this->entityManager->getRepository('NetBSCoreBundle:DynamicList')
+        return $this->entityManager->getRepository(DynamicList::class)
             ->find($this->getParameter(self::LIST_ID))->getItems();
     }
 }

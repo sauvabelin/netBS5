@@ -24,7 +24,7 @@ class FactureModelsList extends BaseListModel
      */
     protected function buildItemsList()
     {
-        return $this->entityManager->getRepository('OvescoFacturationBundle:FactureModel')->findAll();
+        return $this->entityManager->getRepository(FactureModel::class)->findAll();
     }
 
     /**
