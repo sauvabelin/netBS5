@@ -19,7 +19,7 @@ class ComptesList extends BaseListModel
      */
     protected function buildItemsList()
     {
-        return $this->entityManager->getRepository('OvescoFacturationBundle:Compte')->findAll();
+        return $this->entityManager->getRepository(Compte::class)->findAll();
     }
 
     /**

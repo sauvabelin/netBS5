@@ -22,7 +22,7 @@ class NewsChannelsBotList extends BaseListModel
      */
     protected function buildItemsList()
     {
-        return $this->entityManager->getRepository('App:NewsChannelBot')->findAll();
+        return $this->entityManager->getRepository(NewsChannelBot::class)->findAll();
     }
 
     /**

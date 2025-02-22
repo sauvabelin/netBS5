@@ -5,6 +5,8 @@ namespace Ovesco\FacturationBundle\Listener;
 use Doctrine\ORM\EntityManagerInterface;
 use NetBS\CoreBundle\Event\RemoveFamilleEvent;
 use NetBS\CoreBundle\Event\RemoveMembreEvent;
+use Ovesco\FacturationBundle\Entity\Creance;
+use Ovesco\FacturationBundle\Entity\Facture;
 use Ovesco\FacturationBundle\Subscriber\DoctrineDebiteurSubscriber;
 
 class RemoveMembreListener
@@ -27,10 +29,10 @@ class RemoveMembreListener
 
     private function remove($debiteur, EntityManagerInterface $manager) {
 
-        $factures = $manager->getRepository('OvescoFacturationBundle:Facture')
+        $factures = $manager->getRepository(Facture::class)
             ->findBy(['debiteurId' => DoctrineDebiteurSubscriber::createId($debiteur)]);
 
-        $creances = $manager->getRepository('OvescoFacturationBundle:Creance')
+        $creances = $manager->getRepository(Creance::class)
             ->findBy(['debiteurId' => DoctrineDebiteurSubscriber::createId($debiteur)]);
 
         foreach($factures as $facture)

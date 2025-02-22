@@ -14,6 +14,8 @@ use App\Entity\BSMembre;
 use App\Entity\BSUser;
 use App\Entity\LatestCreatedAccount;
 use App\Message\NextcloudGroupNotification;
+use NetBS\CoreBundle\Entity\Parameter;
+use NetBS\SecureBundle\Entity\Role;
 use Symfony\Component\Mailer\MailerInterface;
 use Symfony\Component\Messenger\MessageBusInterface;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
@@ -99,11 +101,11 @@ class DoctrineUserAccountSubscriber implements EventSubscriber
         $fonction   = $attribution->getFonction();
 
         if($this->adabsId === null)
-            $this->adabsId = intval($manager->getRepository('NetBSCoreBundle:Parameter')
+            $this->adabsId = intval($manager->getRepository(Parameter::class)
                 ->findOneBy(array('namespace' => 'bs', 'paramKey'  => 'groupe.adabs_id'))->getValue());
 
         if($this->fnWeight === null)
-            $this->fnWeight = $manager->getRepository('NetBSCoreBundle:Parameter')
+            $this->fnWeight = $manager->getRepository(Parameter::class)
                 ->findOneBy(array('namespace' => 'bs', 'paramKey' => 'fonction.weight.user_account'))->getValue();
 
         //Fonction pas assez balèze pour créer un compte
@@ -114,7 +116,7 @@ class DoctrineUserAccountSubscriber implements EventSubscriber
             if(intval($attribution->getGroupe()->getId()) === $this->adabsId)
                 return;
 
-        $user = $manager->getRepository('App:BSUser')->findOneBy(array('membre' => $membre));
+        $user = $manager->getRepository(BSUser::class)->findOneBy(array('membre' => $membre));
 
         //Deja un compte
         if($user instanceof BaseUser)
@@ -126,7 +128,7 @@ class DoctrineUserAccountSubscriber implements EventSubscriber
     private function createUser(BaseMembre $membre, ObjectManager $manager) {
 
         if($this->roleUser === null)
-            $this->roleUser = $manager->getRepository('NetBSSecureBundle:Role')->findOneBy(array('role' => 'ROLE_USER'));
+            $this->roleUser = $manager->getRepository(Role::class)->findOneBy(array('role' => 'ROLE_USER'));
 
         $username   = StrUtil::slugify($membre->getPrenom()) . "." . StrUtil::slugify($membre->getFamille()->getNom());
         //$password   = StrUtil::randomString();

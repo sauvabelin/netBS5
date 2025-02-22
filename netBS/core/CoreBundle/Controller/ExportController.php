@@ -77,7 +77,7 @@ class ExportController extends AbstractController
         }
 
         else
-            $config = $em->getRepository('NetBSCoreBundle:ExportConfiguration')->findOneBy([
+            $config = $em->getRepository(ExportConfiguration::class)->findOneBy([
                 'user'  => $this->getUser(),
                 'id'    => $configId
             ]);
@@ -101,7 +101,7 @@ class ExportController extends AbstractController
         /** @var ExportBlob $blob */
         $blob   = unserialize($this->get('session')->get($blobKey));
         $export = $manager->getExporterByAlias($blob->getExporterAlias());
-        $config = $em->getRepository('NetBSCoreBundle:ExportConfiguration')->findOneBy([
+        $config = $em->getRepository(ExportConfiguration::class)->findOneBy([
             'user'  => $this->getUser(),
             'id'    => $configId
         ]);
@@ -134,7 +134,7 @@ class ExportController extends AbstractController
         $blob               = unserialize($this->get('session')->get($blobKey));
         $exporter           = $manager->getExporterByAlias($blob->getExporterAlias());
         $configs            = $this->getUserConfigurations($exporter, $em);
-        $configContainer    = $em->find('NetBSCoreBundle:ExportConfiguration', $blob->getConfigId());
+        $configContainer    = $em->find(ExportConfiguration::class, $blob->getConfigId());
         $form               = $this->createForm($exporter->getConfigFormClass(), $configContainer->getConfiguration());
 
         $form->handleRequest($request);
@@ -248,7 +248,7 @@ class ExportController extends AbstractController
     protected function getUserConfigurations(ConfigurableExporterInterface $exporter, EntityManagerInterface $em) {
 
         $user   = $this->getUser();
-        $repo   = $em->getRepository('NetBSCoreBundle:ExportConfiguration');
+        $repo   = $em->getRepository(ExportConfiguration::class);
 
         $configs= $repo->findBy(array(
             'user'          => $user,

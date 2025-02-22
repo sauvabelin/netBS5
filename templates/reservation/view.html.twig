@@ -1,0 +1,200 @@
+{% extends '@NetBSCore/layout/backend.layout.twig' %}
+
+{% form_theme reservationForm '@NetBSCore/form/xeditable.theme.twig' %}
+
+{% set title %}Réservation N° {{ reservation.id }}{% endset %}
+
+{% block main %}
+
+    {{ registerJs(asset('bundles/netbscore/js/modal.js')) }}
+    {{ registerJs('https://cdn.jsdelivr.net/npm/fullcalendar@6.1.15/index.global.min.js') }}
+
+    <div class="container-fluid">
+        {% include '@NetBSCore/includes/header.include.twig' with {
+            header: "Réservation N° " ~ reservation.id,
+            subHeader: '',
+        } %}
+
+        <div class="no-gutters">
+            <div class="row">
+                <div class="col-12 col-md-4">
+                    {% if reservation.status == 'pending' %}
+                        <div class="alert alert-warning">Cette réservation est en attente</div>
+                    {% elseif reservation.status == 'refused' %}
+                        <div class="alert alert-danger">Cette réservation a été refusée</div>
+                    {% elseif reservation.status == 'modification_pending' %}
+                        <div class="alert alert-warning">Cette réservation a été modifiée et est en attente de validation du demandeur</div>
+                    {% elseif reservation.status == 'modification_accepted' %}
+                        <div class="alert alert-warning">Cette réservation a été modifiée et acceptée par le demandeur, veuillez la valider</div>
+                    {% elseif reservation.status == 'accepted' %}
+                        <div class="alert alert-success">Cette réservation a été acceptée</div>
+                    {% else %}
+                        <div class="alert alert-secondary">Cette réservation a été annulée</div>
+                    {% endif %}
+                    <div class="row mt-2">
+                        <div class="col-3">
+                            <button class='btn btn-warning btn-block' data-modal data-modal-url='{{ path('sauvabelin.apmbs.reservation.modify', {id: reservation.id}) }}'>Modifier</button>
+                        </div>
+                        <div class="col-3">
+                            <button class='btn btn-success btn-block' data-modal data-modal-url='{{ path('sauvabelin.apmbs.reservation.accept', {id: reservation.id}) }}'>Valider</button>
+                        </div>
+                        <div class="col-3">
+                            <button class='btn btn-danger btn-block' data-modal data-modal-url='{{ path('sauvabelin.apmbs.reservation.refuse', {id: reservation.id}) }}'>Refuser</button>
+                        </div>
+                        <div class="col-3">
+                            <button class='btn btn-secondary btn-block' data-modal data-modal-url='{{ path('sauvabelin.apmbs.reservation.cancel', {id: reservation.id}) }}'>Annuler</button>
+                        </div>
+                    </div>
+                    <div class="card mt-3">
+                        <div class="card-header">
+                            <h3 class="card-title">Informations</h3>
+                        </div>
+                        <div class="card-body">
+                            <div class="form-horizontal">
+                                <div class="form-group row" style="padding: 3px 0">
+                                    <label class="col-lg-4 control-label" style="padding-top:6px;text-align:left;">Créé le</label>
+                                    <div class="col-lg-8">{{ reservation.createdAt|date(param('format', 'php_datetime')) }}</div>
+                                </div>
+                                <div class="form-group row" style="padding: 3px 0">
+                                    <label class="col-lg-4 control-label" style="padding-top:6px;text-align:left;">Début</label>
+                                    <div class="col-lg-8">{{ reservation.start|date(param('format', 'php_datetime')) }}</div>
+                                </div>
+                                <div class="form-group row" style="padding: 3px 0">
+                                    <label class="col-lg-4 control-label" style="padding-top:6px;text-align:left;">Fin</label>
+                                    <div class="col-lg-8">{{ reservation.end|date(param('format', 'php_datetime')) }}</div>
+                                </div>
+                                <div class="form-group row" style="padding: 3px 0">
+                                    <label class="col-lg-4 control-label" style="padding-top:6px;text-align:left;">Nom</label>
+                                    <div class="col-lg-8">{{ reservation.prenom ~ " " ~ reservation.nom }}</div>
+                                </div>
+                                <div class="form-group row" style="padding: 3px 0">
+                                    <label class="col-lg-4 control-label" style="padding-top:6px;text-align:left;">E-mail</label>
+                                    <div class="col-lg-8">{{ reservation.email }}</div>
+                                </div>
+                                <div class="form-group row" style="padding: 3px 0">
+                                    <label class="col-lg-4 control-label" style="padding-top:6px;text-align:left;">Téléphone</label>
+                                    <div class="col-lg-8">{{ reservation.phone }}</div>
+                                </div>
+                                <div class="form-group row" style="padding: 3px 0">
+                                    <label class="col-lg-4 control-label" style="padding-top:6px;text-align:left;">Unité</label>
+                                    <div class="col-lg-8">{{ reservation.unite }}</div>
+                                </div>
+                                <div class="form-group row" style="padding: 3px 0">
+                                    <label class="col-lg-4 control-label" style="padding-top:6px;text-align:left;">Message</label>
+                                    <div class="col-lg-8">{{ reservation.description }}</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% if reservation.status == 'accepted' %}
+                    <div class="card card-table mt-3">
+                        <div class="card-header">
+                            <h3 class="card-title">Intendants assignés</h3>
+                        </div>
+                        <div class="card-body">
+                            
+                            <table class="table table-striped table-responsive-md basic-renderer" style="border:1px solid #eee">
+                                <thead>
+                                <tr>
+                                    <th></th>
+                                    <th>Nom</th>
+                                    <th>Email</th>
+                                    <th>Téléphone</th>
+                                </tr>
+                                </thead>
+                                <tbody>
+                                {% if reservation.intendantDebut %}
+                                    <tr class="shown">
+                                        <th><b>Ouverture</b></th>
+                                        <td>{{ reservation.intendantDebut.nom }}</td>
+                                        <td>{{ reservation.intendantDebut.email }}</td>
+                                        <td>{{ reservation.intendantDebut.phone }}</td>
+                                    </tr>
+                                {% endif %}
+                                {% if reservation.intendantFin %}
+                                        <th><b>Fermeture</b></th>
+                                        <td>{{ reservation.intendantFin.nom }}</td>
+                                        <td>{{ reservation.intendantFin.email }}</td>
+                                        <td>{{ reservation.intendantFin.phone }}</td>
+                                    </tr>
+                                </tbody>
+                                {% endif %}
+                            </table>
+                        </div>
+                    </div>
+                    {% endif %}
+                    <div class="card mt-3">
+                        <div class="card-header">
+                            <h3 class="card-title">Remarques Admin</h3>
+                        </div>
+                        <div class="card-body">
+                            {{ form_widget(reservationForm.comment) }}
+                        </div>
+                    </div>
+                    {% if conflicts %}
+                    <div class="card">
+                        <div class="card-header">
+                            <h3 class="card-title">Conflits</h3>
+                        </div>
+                        <div class="card-body">
+                            <div class="alert alert-danger">Cette réservation est en conflit avec d'autres éléments du calendrier Google</div>
+                            <ul>
+                                {% for conflict in conflicts %}
+                                    <li>{{ conflict.summary }}</li>
+                                {% endfor %}
+                            </ul>
+                        </div>
+                    </div>
+                    {% else %}
+                        <div class="alert alert-success">Aucun conflit</div>
+                    {% endif %}
+                </div>
+                <div class="col-12 col-md-8">
+                    <div class="card">
+                        <div class="card-body">
+                            <div id="calendar"></div>
+                        </div>
+                    </div>
+                    <div class="card card-table">
+                        <div class="card-header">
+                            <h3 class="card-title">Logs</h3>
+                        </div>
+                        <div class="card-body">
+                            {{ render_list('app.apmbs.reservation_logs', 'netbs', { reservation: reservation.id }) }}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {% set calendarScript %}
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const calendarEl = document.querySelector('#calendar');
+            const calendar = new FullCalendar.Calendar(calendarEl, {
+                locale: 'fr',
+                initialView: 'timeGridWeek',
+                initialDate: '{{ reservation.start|date('c') }}',
+                headerToolbar: {
+                    left: 'prev,next',
+                    center: 'title',
+                    right: 'dayGridMonth,timeGridWeek,timeGridDay'
+                },
+                eventSources: [
+                    {
+                        url: '/public/index.php/netBS/bs/apmbs/cabane/{{ reservation.cabane.id }}/full-calendar-reservations',
+                        extraParams: {
+                            reservationId: {{ reservation.id }}
+                        }
+                    }
+                ],
+            });
+
+            calendar.render();
+        });
+    </script>
+    {% endset %}
+
+    {{ registerScript(calendarScript) }}
+{% endblock %}

@@ -164,7 +164,7 @@ class CreanceController extends AbstractController
 
     private function extractCreances($ids, EntityManagerInterface $em) {
 
-        $query = $em->getRepository('OvescoFacturationBundle:Creance')->createQueryBuilder('c');
+        $query = $em->getRepository(Creance::class)->createQueryBuilder('c');
         return $query->where($query->expr()->in('c.id', $ids))->getQuery()->getResult();
     }
 

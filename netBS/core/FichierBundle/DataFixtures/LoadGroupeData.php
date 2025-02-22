@@ -23,7 +23,7 @@ class LoadGroupeData extends AbstractFixture implements OrderedFixtureInterface,
      *
      * @param ObjectManager $manager
      */
-    public function load(ObjectManager $manager)
+    public function load(ObjectManager $manager): void
     {
         $config     = $this->fichierConfig;
 
@@ -72,7 +72,7 @@ class LoadGroupeData extends AbstractFixture implements OrderedFixtureInterface,
      *
      * @return integer
      */
-    public function getOrder()
+    public function getOrder(): int
     {
         return 990;
     }

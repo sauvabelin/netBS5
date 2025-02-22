@@ -38,7 +38,7 @@ class NewsController extends AbstractController
     public function readNewsAction(EntityManagerInterface $em, TokenStorageInterface $tokenStorage) {
 
         $user = $tokenStorage->getToken()->getUser();
-        $channels = $em->getRepository('NetBSCoreBundle:NewsChannel')->findReadableChannels($user);
+        $channels = $em->getRepository(NewsChannel::class)->findReadableChannels($user);
         return $this->render('@NetBSCore/news/read_news.html.twig', [
             'channels' => $channels
         ]);

@@ -4,6 +4,8 @@ namespace NetBS\CoreBundle\Listener;
 
 use Doctrine\ORM\EntityManagerInterface;
 use NetBS\CoreBundle\Block\CardBlock;
+use NetBS\CoreBundle\Entity\News;
+use NetBS\CoreBundle\Entity\NewsChannel;
 use NetBS\CoreBundle\Event\PreRenderLayoutEvent;
 use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInterface;
@@ -30,8 +32,8 @@ class DashboardListener
 
         $row        = $event->getConfigurator()->getRow(0);
         $user       = $this->storage->getToken()->getUser();
-        $news       = $this->manager->getRepository('NetBSCoreBundle:News')->findForUser($user);
-        $channels   = $this->manager->getRepository('NetBSCoreBundle:NewsChannel')->findWritableChannels($user);
+        $news       = $this->manager->getRepository(News::class)->findForUser($user);
+        $channels   = $this->manager->getRepository(NewsChannel::class)->findWritableChannels($user);
 
         $row->addColumn(0, 4, 5, 12)->addRow()
             ->addColumn(0, 12)->setBlock(CardBlock::class, array(

@@ -2,6 +2,7 @@
 
 namespace App\Subscriber;
 
+use App\Entity\BSUser;
 use App\Message\NextcloudGroupNotification;
 use Doctrine\Common\EventSubscriber;
 use Doctrine\ORM\EntityManagerInterface;
@@ -235,6 +236,6 @@ class DoctrineAttributionSubscriber implements EventSubscriber
 
     private function getUser(BaseAttribution $attribution, EntityManagerInterface $manager): BaseUser | null {
         $membre = $attribution->getMembre();
-        return $manager->getRepository('App:BSUser')->findOneBy(array('membre' => $membre));
+        return $manager->getRepository(BSUser::class)->findOneBy(array('membre' => $membre));
     }
 }

@@ -47,7 +47,7 @@ class NewsChannelProvider implements Select2ProviderInterface
      */
     public function search($needle, $limit = 5)
     {
-        $query = $this->entityManager->getRepository('NetBSCoreBundle:NewsChannel')
+        $query = $this->entityManager->getRepository(NewsChannel::class)
             ->createQueryBuilder('x');
 
         return $query

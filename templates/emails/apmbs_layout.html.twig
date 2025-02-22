@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="fr" xmlns:v="urn:schemas-microsoft-com:vml">
+<head>
+  <meta charset="utf-8">
+  <meta name="x-apple-disable-message-reformatting">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="format-detection" content="telephone=no, date=no, address=no, email=no, url=no">
+  <meta name="color-scheme" content="light">
+  <meta name="supported-color-schemes" content="light">
+  <!--[if mso]>
+  <noscript>
+    <xml>
+      <o:OfficeDocumentSettings xmlns:o="urn:schemas-microsoft-com:office:office">
+        <o:PixelsPerInch>96</o:PixelsPerInch>
+      </o:OfficeDocumentSettings>
+    </xml>
+  </noscript>
+  <style>
+    td,th,div,p,a,h1,h2,h3,h4,h5,h6 {font-family: "Segoe UI", sans-serif; mso-line-height-rule: exactly;}
+  </style>
+  <![endif]-->
+  <style>
+    @media (max-width: 600px) {
+      .sm-px-4 {
+        padding-left: 16px !important;
+        padding-right: 16px !important
+      }
+      .sm-px-6 {
+        padding-left: 24px !important;
+        padding-right: 24px !important
+      }
+      .sm-py-8 {
+        padding-top: 32px !important;
+        padding-bottom: 32px !important
+      }
+    }
+  </style>
+</head>
+<body style="margin: 0; width: 100%; background-color: #f8fafc; padding: 0; -webkit-font-smoothing: antialiased; word-break: break-word">
+  <div role="article" aria-roledescription="email" aria-label lang="en">
+    <div class="sm-px-4" style="background-color: #f8fafc; font-family: ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif">
+      <table align="center" cellpadding="0" cellspacing="0" role="none">
+        <tr>
+          <td style="width: 600px; max-width: 100%">
+            <table style="width: 100%;" cellpadding="0" cellspacing="0" role="none">
+              <tr>
+                <td class="sm-py-8 sm-px-6" style="padding: 48px; text-align: center">
+                  <a href="https://apmbs.sauvabelin.ch">
+                    <img src="https://netbs.sauvabelin.ch/bundles/netbscore/img/logo.png" width="70" alt="logo" style="max-width: 100%; vertical-align: middle">
+                  </a>
+                  <p style="margin: 20px 0; text-align: center; font-size: 16px; font-weight: 700; color: #334155;">
+                      {{ reservation.cabane.nom }}
+                  </p>
+                </td>
+              </tr>
+              <tr>
+                <div class="sm-px-4" style="background-color: #f8fafc; font-family: ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif">
+                  <table align="center" cellpadding="0" cellspacing="0" role="none">
+                    {% block content %}{% endblock %}
+                    <tr>
+                      <td style="width: 600px; max-width: 100%;">
+                        <p style="margin: 20px 0 0; text-align: center; font-size: 16px; color: #334155;">
+                          Meilleures salutations, l'APMBS.
+                        </p>
+                      </td>
+                    </tr>
+                  </table>
+                </div>
+              </tr>
+              <tr>
+                <td style="padding-top: 16px; padding-bottom: 16px; text-align: center">
+                  <p style="margin: 0; font-size: 12px; color: #64748b">
+                    Vous avez reçu cet e-mail car vous avez fait une demande de réservation pour une cabane de <a href="https://apmbs.sauvabelin.ch" style="color: #64748b;">l'APMBS</a>.
+                  </p>
+                </td>
+              </tr>
+            </table>
+          </td>
+        </tr>
+      </table>
+    </div>
+  </div>
+</body>
+</html>

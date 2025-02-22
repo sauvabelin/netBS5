@@ -1,0 +1,71 @@
+{% extends '@NetBSCore/layout/backend.layout.twig' %}
+
+{% form_theme cabaneForm '@NetBSCore/form/xeditable.theme.twig' %}
+
+{% set title %}{{ cabane.nom }}{% endset %}
+
+{% set editAction %}<a class='btn btn-primary' href='{{ path('sauvabelin.apmbs.cabane_edit', { id: cabane.id }) }}'>
+        Modifier</a>{% endset %}
+
+{% block main %}
+    <div class="container-fluid">
+        {% include '@NetBSCore/includes/header.include.twig' with {
+            header: cabane.nom,
+            subHeader: 'Administration et vue d\'ensemble',
+            actions: [
+                editAction
+            ]
+        } %}
+
+        {{ registerJs('https://cdn.jsdelivr.net/npm/fullcalendar@6.1.15/index.global.min.js') }}
+
+        <div class="no-gutters">
+            <div class="row">
+                <div class="col-12 col-md-4">
+                    <div class="card">
+                        <div class="card-header">
+                            <h3 class="card-title">Informations</h3>
+                        </div>
+                        <div class="card-body">
+                            <form class="form-horizontal">
+                                {{ form_row(cabaneForm.nom) }}
+                                {{ form_row(cabaneForm.fromEmail) }}
+                                {{ form_row(cabaneForm.googleFormUrl)}}
+                                {{ form_row(cabaneForm.calendarId) }}
+                            </form>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-12 col-md-8">
+                    <div class="card">
+                        <div class="card-body">
+                            <div id="calendar"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {% set calendarScript %}
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const calendarEl = document.querySelector('#calendar');
+            const calendar = new FullCalendar.Calendar(calendarEl, {
+                locale: 'fr',
+                initialView: 'dayGridMonth',
+                events: '/netBS/bs/apmbs/cabane/{{ cabane.id }}/full-calendar-reservations',
+                headerToolbar: {
+                    left: 'prev,next',
+                    center: 'title',
+                    right: 'dayGridMonth,timeGridWeek,timeGridDay'
+                },
+            });
+
+            calendar.render();
+        });
+    </script>
+    {% endset %}
+
+    {{ registerScript(calendarScript) }}
+{% endblock %}

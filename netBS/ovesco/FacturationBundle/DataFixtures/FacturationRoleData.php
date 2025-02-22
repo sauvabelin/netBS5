@@ -16,7 +16,7 @@ class FacturationRoleData extends AbstractFixture implements OrderedFixtureInter
         $this->config = $config;
     }
 
-    public function load(ObjectManager $manager)
+    public function load(ObjectManager $manager): void
     {
         $role = $this->config->createRole();
         $role->setRole('ROLE_TRESORIER');
@@ -31,7 +31,7 @@ class FacturationRoleData extends AbstractFixture implements OrderedFixtureInter
      *
      * @return integer
      */
-    public function getOrder()
+    public function getOrder(): int
     {
         return 10;
     }

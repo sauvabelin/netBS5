@@ -170,7 +170,7 @@ class DynamicListController extends AbstractController
     }
 
     protected function performListAddage($listId, $listItems, $itemsClass, $em, $dynamics) {
-        $list       = $em->getRepository('NetBSCoreBundle:DynamicList')
+        $list       = $em->getRepository(DynamicList::class)
             ->findOneBy(array(
                 'owner' => $this->getUser(),
                 'id'    => $listId

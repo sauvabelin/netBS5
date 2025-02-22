@@ -1,0 +1,10 @@
+{% extends '@NetBSCore/layout/modal.layout.twig' %}
+
+{% block title %}Modifier la réservation{% endblock %}
+
+{% block content %}
+    <div class="alert alert-info">
+        <p>Ce formulaire vous permet d'envoyer une modification à la personne ayant fait la réservation. Elle est ensuite libre de l'accepter ou de la refuser.</p>
+    </div>
+    {{ form(form) }}
+{% endblock %}

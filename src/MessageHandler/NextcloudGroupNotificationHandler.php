@@ -94,7 +94,7 @@ class NextcloudGroupNotificationHandler
     }
 
     private function leaveGroup(BaseUser $user, $groupName) {
-        $mappings = $this->em->getRepository('App:TalkGroupMapping')->findBy([
+        $mappings = $this->em->getRepository(TalkGroupMapping::class)->findBy([
             'username' => $user->getUsername(),
             'groupName' => $groupName,
         ]);
@@ -110,7 +110,7 @@ class NextcloudGroupNotificationHandler
     }
 
     private function joinGroup(BaseUser $user, string $groupName) {
-        $mappings = $this->em->getRepository('App:TalkGroupMapping')->findBy([
+        $mappings = $this->em->getRepository(TalkGroupMapping::class)->findBy([
             'username' => $user->getUsername(),
             'groupName' => $groupName,
         ]);

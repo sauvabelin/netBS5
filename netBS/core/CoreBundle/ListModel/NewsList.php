@@ -29,7 +29,7 @@ class NewsList extends BaseListModel
      */
     protected function buildItemsList()
     {
-        return $this->entityManager->getRepository('NetBSCoreBundle:News')->createQueryBuilder('n')
+        return $this->entityManager->getRepository(News::class)->createQueryBuilder('n')
             ->orderBy('n.createdAt', 'DESC')
             ->getQuery()
             ->getResult();

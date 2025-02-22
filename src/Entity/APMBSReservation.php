@@ -5,6 +5,8 @@ namespace App\Entity;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Validator\Constraints as Assert;
+use Symfony\Component\ExpressionLanguage\ExpressionLanguage;
+
 
 /**
  * @ORM\Table(name="sauvabelin_apmbs_reservations")
@@ -13,8 +15,11 @@ use Symfony\Component\Validator\Constraints as Assert;
 class APMBSReservation {
 
     const PENDING = 'pending';
+    const MODIFICATION_PENDING = 'modification_pending';
+    const MODIFICATION_ACCEPTED = 'modification_accepted';
     const ACCEPTED = 'accepted';
     const REFUSED = 'refused';
+    const CANCELLED = 'cancelled';
 
     /**
      * @var int
@@ -32,11 +37,23 @@ class APMBSReservation {
     protected $gcEventId;
 
     /**
+     * @var \DateTime
+     * @ORM\Column(name="created_at", type="datetime", options={"default": "CURRENT_TIMESTAMP"})
+     */
+    protected $createdAt;
+
+    /**
      * @var Cabane
      *
      * @ORM\ManyToOne(targetEntity="App\Entity\Cabane", inversedBy="reservations")
      */
     protected $cabane;
+
+    /**
+     * @var ReservationLog[]
+     * @ORM\OneToMany(targetEntity="App\Entity\ReservationLog", mappedBy="reservation")
+     */
+    protected $logs;
 
     /**
      * @var string
@@ -99,10 +116,32 @@ class APMBSReservation {
 
     /**
      * @var string
-     * @Assert\NotBlank()
-     * @ORM\Column(name="description", type="text")
+     * @ORM\Column(name="description", type="text", nullable=true)
      */
     protected $description;
+
+    /**
+     * @var string
+     * @ORM\Column(name="comment", type="text", nullable=true)
+     */
+    protected $comment;
+
+    /**
+     * @var ArrayCollection
+     * @ORM\ManyToOne(targetEntity="App\Entity\Intendant")
+     */
+    protected $intendantDebut;
+
+    /**
+     * @var ArrayCollection
+     * @ORM\ManyToOne(targetEntity="App\Entity\Intendant")
+     */
+    protected $intendantFin;
+
+    public function __construct() {
+        $this->createdAt = new \DateTime();
+        $this->status = self::PENDING;
+    }
 
     /**
      * @return int
@@ -112,10 +151,15 @@ class APMBSReservation {
         return $this->id;
     }
 
+    public function getCreatedAt(): \DateTime
+    {
+        return $this->createdAt;
+    }
+
     /**
      * @return string
      */
-    public function getGCEventId(): string
+    public function getGCEventId()
     {
         return $this->gcEventId;
     }
@@ -123,7 +167,7 @@ class APMBSReservation {
     /**
      * @param string $gcEventId
      */
-    public function setGCEventId(string $gcEventId): void
+    public function setGCEventId($gcEventId): void
     {
         $this->gcEventId = $gcEventId;
     }
@@ -288,6 +332,22 @@ class APMBSReservation {
         $this->cabane = $cabane;
     }
 
+    public function getComment() {
+        return $this->comment;
+    }
+
+    public function setComment($comment) {
+        $this->comment = $comment;
+    }
+
+    public function addLog(ReservationLog $log) {
+        $this->logs[] = $log;
+    }
+
+    public function getLogs() {
+        return $this->logs;
+    }
+
     /**
      * @return Reservation[]
      */
@@ -302,5 +362,54 @@ class APMBSReservation {
         }
 
         return $conflicts;
+    }
+
+    public function getTitle() {
+        $summary = "";
+        $summary .= "[" . $this->getStatus() . "] - ";
+        $summary .= $this->getUnite();
+
+        return $summary;
+    }
+
+    public function toJSON() {
+        return [
+            'start' => $this->getStart()->format('Y-m-d H:i:s'),
+            'end'   => $this->getEnd()->format('Y-m-d H:i:s'),
+            'status'=> $this->getStatus()
+        ];
+    }
+
+    public function getIntendantDebut() {
+        return $this->intendantDebut;
+    }
+
+    public function setIntendantDebut($intendantDebut) {
+        $this->intendantDebut = $intendantDebut;
+    }
+
+    public function getIntendantFin() {
+        return $this->intendantFin;
+    }
+
+    public function setIntendantFin($intendantFin) {
+        $this->intendantFin = $intendantFin;
+    }
+
+    public function getExpectedPrice() {
+        $engine = new ExpressionLanguage();
+        $context = [
+            'start' => $this->start,
+            'end'   => $this->end,
+        ];
+
+        if (!$this->getCabane()->getPriceMethod())
+            return false;
+
+        try {
+            return $engine->evaluate($this->getCabane()->getPriceMethod(), $context);
+        } catch (\Exception $e) {
+            return false;
+        }
     }
 }

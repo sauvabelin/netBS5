@@ -17,7 +17,7 @@ class LoadRolesData extends AbstractFixture implements OrderedFixtureInterface, 
         $this->secureConfig = $config;
     }
 
-    public function load(ObjectManager $manager)
+    public function load(ObjectManager $manager): void
     {
         $config = Yaml::parse(file_get_contents(__DIR__ . "/../Resources/security/roles.yml"));
         $roles  = $this->loadRole($config['roles'], $manager);
@@ -60,7 +60,7 @@ class LoadRolesData extends AbstractFixture implements OrderedFixtureInterface, 
         return ['main', 'fill'];
     }
 
-    public function getOrder()
+    public function getOrder(): int
     {
         return 300;
     }

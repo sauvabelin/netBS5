@@ -4,15 +4,20 @@ namespace App\Listener;
 
 use NetBS\CoreBundle\Event\ExtendMainMenuEvent;
 use App\Entity\BSUser;
+use App\Entity\Cabane;
+use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInterface;
 
 class MainMenuListener
 {
     private $storage;
 
-    public function __construct(TokenStorageInterface $storage)
+    private $em;
+
+    public function __construct(TokenStorageInterface $storage, EntityManagerInterface $em)
     {
         $this->storage = $storage;
+        $this->em      = $em;
     }
 
     public function onMenuConfigure(ExtendMainMenuEvent $event)
@@ -41,6 +46,20 @@ class MainMenuListener
 
         if ($user->hasRole('ROLE_IT')) {
             $menu->getCategory('secure.admin')->addLink('admin.news.bot', 'News Bots', 'fas fa-history', 'sauvabelin.news_channel_bot.manage');
+        }
+
+        if ($user->hasRole("ROLE_APMBS")) {
+            $apmbs = $menu->registerCategory("APMBS", "APMBS", 0);
+            $apmbs->addLink("apmbs.reservations", "Réservations", "fas fa-calendar-alt", "sauvabelin.apmbs.reservations");
+            $apmbs->addLink("apmbs.intendants", "Intendants", "fas fa-user", "sauvabelin.apmbs.intendants");
+            $apmbs->addLink("apmbs.time-period", "Périodes de réservation", "fas fa-time", "sauvabelin.apmbs.time_periods");
+            $cabanes = $this->em->getRepository(Cabane::class)->findAll();
+            $cabanesCat = $apmbs->addSubMenu('apmbs.cabanes', 'Cabanes', 'fas fa-home');
+            foreach ($cabanes as $cabane) {
+                $cabanesCat->addSubLink($cabane->getNom(), "sauvabelin.apmbs.cabane", ['id' => $cabane->getId()]);
+            }
+
+            $cabanesCat->addSubLink('Ajouter une cabane', 'sauvabelin.apmbs.add_cabane');
         }
     }
 }

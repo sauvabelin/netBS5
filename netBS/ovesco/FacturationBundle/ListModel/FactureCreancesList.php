@@ -26,7 +26,7 @@ class FactureCreancesList extends BaseListModel
         $facture = $this->getParameter('facture');
         return $facture instanceof Facture
             ? $facture->getCreances()
-            : $this->entityManager->getRepository('OvescoFacturationBundle:Creance')
+            : $this->entityManager->getRepository(Creance::class)
             ->findBy(['facture' => $facture]);
     }
 

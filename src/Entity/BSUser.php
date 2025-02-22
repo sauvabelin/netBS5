@@ -61,6 +61,10 @@ class BSUser extends BaseUser
      */
     protected $emailBS = null;
 
+    public function getUserIdentifier() {
+        return $this->username;
+    }
+
     /**
      * @return string
      */
