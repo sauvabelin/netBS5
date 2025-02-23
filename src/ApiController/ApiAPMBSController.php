@@ -94,7 +94,7 @@ class ApiAPMBSController extends AbstractController
      */
     public function monthlyEventsAction(Request $request, Cabane $cabane, EntityManagerInterface $em, GoogleCalendarManager $gcm) {
         $start = new \DateTimeImmutable($request->get('start'));
-        $end = $start->modify('+2 months');
+        $end = new \DateTimeImmutable($request->get('end'));
 
         $pendingReservations = $em->createQueryBuilder()->select('r')
             ->from('App:APMBSReservation', 'r')
@@ -107,8 +107,10 @@ class ApiAPMBSController extends AbstractController
             ->getQuery()
             ->execute();
 
+        $gcmReservations = $gcm->listReservations($cabane, $start, $end);
+
         return $this->json(array_merge(
-            $gcm->googleEventToJSON($gcm->listReservations($cabane, $start, $start->modify('+1 month'))),
+            $gcm->googleEventToJSON($gcmReservations),
             array_map(function(APMBSReservation $reservation) {
                 return $reservation->toJSON();
             }, $pendingReservations)
