@@ -54,7 +54,7 @@
             const calendar = new FullCalendar.Calendar(calendarEl, {
                 locale: 'fr',
                 initialView: 'dayGridMonth',
-                events: '/netBS/bs/apmbs/cabane/{{ cabane.id }}/full-calendar-reservations',
+                events: "{{ path('sauvabelin.apmbs.full_calendar_cabane_reservations', { id: cabane.id }) }}",
                 headerToolbar: {
                     left: 'prev,next',
                     center: 'title',

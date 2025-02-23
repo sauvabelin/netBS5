@@ -183,7 +183,7 @@
                 },
                 eventSources: [
                     {
-                        url: '/public/index.php/netBS/bs/apmbs/cabane/{{ reservation.cabane.id }}/full-calendar-reservations',
+                        url: "{{ path('sauvabelin.apmbs.full_calendar_cabane_reservations', { id: reservation.cabane.id }) }}",
                         extraParams: {
                             reservationId: {{ reservation.id }}
                         }

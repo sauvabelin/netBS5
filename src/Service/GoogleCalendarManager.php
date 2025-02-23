@@ -179,8 +179,6 @@ class GoogleCalendarManager {
             $event->setColorId("1");
         }
 
-        dump($event);
-
         // $event->setLocation($reservation->getCabane()->getLocation());
         return $event;
     }
