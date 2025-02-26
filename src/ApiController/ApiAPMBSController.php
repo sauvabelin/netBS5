@@ -70,10 +70,10 @@ class ApiAPMBSController extends AbstractController
         $reservation->setUnite($parameters['unit']);
         $reservation->setDescription($parameters['description']);
         $errors = $validator->validate($reservation);
-
+        
         if (count($errors) > 0) {
             $errorsString = (string) $errors;
-            return new Response($errorsString);
+            throw $this->createAccessDeniedException($errorsString);
         }
 
         $em->persist($reservation);
