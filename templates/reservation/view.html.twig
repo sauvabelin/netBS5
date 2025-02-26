@@ -131,6 +131,16 @@
                             {{ form_widget(reservationForm.comment) }}
                         </div>
                     </div>
+                    <div class="card mt-3">
+                        <div class="card-header">
+                            <h3 class="card-title">Bloquer les jours de réservation</h3>
+                        </div>
+                        <div class="card-body">
+                            <p>Les jours inclus entre le début et la fin sont bloqués sur le module de réservation. Vous pouvez ici choisir si les jours du début et de fin sont également bloqués ou non, pour pouvoir enchaîner deux réservations.</p>
+                            {{ form_row(reservationForm.blockStartDay) }}
+                            {{ form_row(reservationForm.blockEndDay) }}
+                        </div>
+                    </div>
                     {% if conflicts %}
                     <div class="card">
                         <div class="card-header">

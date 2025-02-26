@@ -3,6 +3,7 @@
 namespace App\Form;
 
 use App\Entity\APMBSReservation;
+use NetBS\CoreBundle\Form\Type\SwitchType;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Extension\Core\Type\TextareaType;
 use Symfony\Component\Form\FormBuilderInterface;
@@ -14,6 +15,8 @@ class APMBSReservationType extends AbstractType
     {
         $builder
             ->add('comment', TextareaType::class, ['label' => 'Remarques'])
+            ->add('blockStartDay', SwitchType::class, ['label' => 'Bloquer le jour de début'])
+            ->add('blockEndDay', SwitchType::class, ['label' => 'Bloquer le jour de fin'])
         ;
     }
 

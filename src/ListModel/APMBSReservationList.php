@@ -78,7 +78,7 @@ class APMBSReservationList extends BaseListModel
             ])
             ->addColumn("Fin", null, ClosureColumn:: class, [
                 ClosureColumn::CLOSURE => function(APMBSReservation $reservation) {
-                    return $reservation->getStart()->format('d/m/Y H:i');
+                    return $reservation->getEnd()->format('d/m/Y H:i');
                 }
             ])
             ->addColumn("Prénom", "prenom", SimpleColumn::class)

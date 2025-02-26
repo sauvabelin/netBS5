@@ -86,6 +86,16 @@ class GoogleCalendarManager {
     }
 
     public function googleEventToJSON($events) {
+
+        // Try to find corresponding database reservations if any
+        $dbReservations = $this->em->getRepository(APMBSReservation::class)->createQueryBuilder('r')
+            ->where('r.gcEventId IN (:ids)')
+            ->setParameter('ids', array_map(function($event) {
+                return $event->getId();
+            }, $events))
+            ->getQuery()
+            ->execute();
+
         $res = [];
         /** @var Event $event */
         foreach ($events as $event) {
@@ -98,11 +108,23 @@ class GoogleCalendarManager {
                 $end = $event->getEnd()->getDate();
             }
 
+            $blockStart = true;
+            $blockEnd = true;
+            foreach ($dbReservations as $i) {
+                if ($i->getGCEventId() === $event->getId()) {
+                    $blockStart = $i->getBlockStartDay();
+                    $blockEnd = $i->getBlockEndDay();
+                    break;
+                }
+            }
+
             $res[] = [
                 'id' => $event->getId(),
                 'start' => $start,
                 'end' => $end,
                 'status' => APMBSReservation::ACCEPTED,
+                'blockStartDay' => $blockStart,
+                'blockEndDay' => $blockEnd,
             ];
         }
 

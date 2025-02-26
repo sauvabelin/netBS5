@@ -138,6 +138,18 @@ class APMBSReservation {
      */
     protected $intendantFin;
 
+    /**
+     * @var bool
+     * @ORM\Column(name="block_start_day", type="boolean")
+     */
+    protected $blockStartDay = true;
+
+    /**
+     * @var bool
+     * @ORM\Column(name="block_end_day", type="boolean")
+     */
+    protected $blockEndDay = true;
+
     public function __construct() {
         $this->createdAt = new \DateTime();
         $this->status = self::PENDING;
@@ -366,7 +378,7 @@ class APMBSReservation {
 
     public function getTitle() {
         $summary = "";
-        $summary .= "[" . $this->getStatus() . "] - ";
+        $summary .= $this->getPrenom() . " " . $this->getNom() . " - ";
         $summary .= $this->getUnite();
 
         return $summary;
@@ -376,7 +388,9 @@ class APMBSReservation {
         return [
             'start' => $this->getStart()->format('Y-m-d H:i:s'),
             'end'   => $this->getEnd()->format('Y-m-d H:i:s'),
-            'status'=> $this->getStatus()
+            'status'=> $this->getStatus(),
+            'blockStartDay' => $this->getBlockStartDay(),
+            'blockEndDay' => $this->getBlockEndDay(),
         ];
     }
 
@@ -411,5 +425,21 @@ class APMBSReservation {
         } catch (\Exception $e) {
             return false;
         }
+    }
+
+    public function getBlockStartDay() {
+        return $this->blockStartDay;
+    }
+
+    public function setBlockStartDay($blockStartDay) {
+        $this->blockStartDay = $blockStartDay;
+    }
+
+    public function getBlockEndDay() {
+        return $this->blockEndDay;
+    }
+
+    public function setBlockEndDay($blockEndDay) {
+        $this->blockEndDay = $blockEndDay;
     }
 }
