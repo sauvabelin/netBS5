@@ -208,7 +208,7 @@ class ExportController extends AbstractController
      */
     protected function configureExporter(ExporterInterface $exporter, ExportBlob $blob, EntityManagerInterface $em) {
         if($exporter instanceof ConfigurableExporterInterface) {
-            $config    = $em->find('NetBSCoreBundle:ExportConfiguration', $blob->getConfigId());
+            $config    = $em->find(ExportConfiguration::class, $blob->getConfigId());
             $exporter->setConfig($config->getConfiguration());
         }
     }
