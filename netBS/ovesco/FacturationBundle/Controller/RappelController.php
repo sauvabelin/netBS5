@@ -4,6 +4,7 @@ namespace Ovesco\FacturationBundle\Controller;
 
 use Doctrine\ORM\EntityManagerInterface;
 use NetBS\CoreBundle\Utils\Modal;
+use Ovesco\FacturationBundle\Entity\Facture;
 use Ovesco\FacturationBundle\Entity\Rappel;
 use Ovesco\FacturationBundle\Form\MassRappelType;
 use Ovesco\FacturationBundle\Model\MassRappel;
@@ -37,7 +38,7 @@ class RappelController extends AbstractController
 
             foreach($selectedIds as $selectedId) {
 
-                $facture = $em->find('OvescoFacturationBundle:Facture', $selectedId);
+                $facture = $em->find(Facture::class, $selectedId);
                 if (!$facture) throw new \Exception("Facture $selectedId introuvable!");
                 $rappel = new Rappel();
                 $rappel->setDate($mass->getDate());

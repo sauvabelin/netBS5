@@ -14,7 +14,7 @@ class FactureDeleter extends BaseDeleter
 
     public function remove($id)
     {
-        $facture = $this->manager->find('OvescoFacturationBundle:Facture', $id);
+        $facture = $this->manager->find(Facture::class, $id);
         if (!$facture) throw new \Exception("Facture introuvable!");
 
         foreach($facture->getCreances() as $creance)

@@ -35,7 +35,7 @@ class ChangelogController extends AbstractController
         $data       = json_decode($request->request->get('data'), true);
 
         $changes    = $em->createQueryBuilder()->select('c')
-            ->from('NetBSCoreBundle:LoggedChange', 'c')
+            ->from(LoggedChange::class, 'c')
             ->where('c.id IN(:ids)')
             ->setParameter('ids', $data['selectedIds'])
             ->getQuery()

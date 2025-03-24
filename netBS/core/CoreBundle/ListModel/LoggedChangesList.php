@@ -32,7 +32,7 @@ class LoggedChangesList extends BaseListModel
     {
         return $this->entityManager->createQueryBuilder()
             ->select('c')
-            ->from('NetBSCoreBundle:LoggedChange', 'c')
+            ->from(LoggedChange::class, 'c')
             ->where('c.status = :status')
             ->setParameter('status', $this->getParameter('status'))
             ->orderBy('c.createdAt', 'DESC')

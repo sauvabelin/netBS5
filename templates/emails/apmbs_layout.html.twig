@@ -36,6 +36,11 @@
     }
   </style>
 </head>
+
+{% if intendantMode is not defined %}
+    {% set intendantMode = false %}
+{% endif %}
+
 <body style="margin: 0; width: 100%; background-color: #f8fafc; padding: 0; -webkit-font-smoothing: antialiased; word-break: break-word">
   <div role="article" aria-roledescription="email" aria-label lang="en">
     <div class="sm-px-4" style="background-color: #f8fafc; font-family: ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif">

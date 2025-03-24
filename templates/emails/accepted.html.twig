@@ -28,11 +28,17 @@
             <td style="width: 100px; border-bottom-left-radius: 4px; background-color: #f1f5f9; padding-top: 8px; padding-bottom: 8px; padding-left: 8px; font-weight: 700">Fin</td>
             <td style="width: 500px; border-bottom-right-radius: 4px; background-color: #f1f5f9; padding-top: 8px; padding-bottom: 8px">{{ reservation.end|date(param('format', 'php_datetime')) }}</td>
         </tr>
+        {% if reservation.estimatedPrice %}
+        <tr>
+            <td style="width: 100px; border-bottom-left-radius: 4px; background-color: #f1f5f9; padding-top: 8px; padding-bottom: 8px; padding-left: 8px; font-weight: 700">>Prix Estimé</td>
+            <td style="width: 500px; border-bottom-right-radius: 4px; background-color: #f1f5f9; padding-top: 8px; padding-bottom: 8px">{{ reservation.estimatedPrice }} CHF</td>
+        </tr>
+        {% endif %}
         </tbody>
     </table>
     </td>
 </tr>
-{% if reservation.cabane.conditionsList %}
+{% if reservation.cabane.conditionsList and not intendantMode %}
 <tr>
     <td style="width: 600px; max-width: 100%;">
     <p style="margin: 20px 0 6px; font-size: 18px; font-weight: 600; color: #0f172a">Conditions de la cabane</p>

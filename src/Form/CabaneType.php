@@ -33,12 +33,13 @@ class CabaneType extends AbstractType
                 'multiple'  => true, 
                 'required' => false
             ])
-
+            ->add('invoiceEmail', TextareaType::class, ['label' => 'Emails pour facturation', 'required' => false])
             ->add('receivedEmail', TextareaType::class, ['label' => 'Emails de réception', 'required' => false])
             ->add('rejectedEmail', TextareaType::class, ['label' => 'Emails de refus', 'required' => false])
             ->add('correctionEmail', TextareaType::class, ['label' => 'Emails de correction', 'required' => false])
             ->add('confirmedEmail', TextareaType::class, ['label' => 'Emails de confirmation', 'required' => false])
             ->add('cancelledEmail', TextareaType::class, ['label' => 'Emails d\'annulation', 'required' => false])
+            ->add('closeEmail', TextareaType::class, ['label' => 'Emails quand c\'est fini', 'required' => false])
             ->add('prices', TextareaType::class, ['label' => 'Prix', 'required' => false])
             ->add('conditions', TextareaType::class, ['label' => "Conditions d'utilisation", 'required' => false])
             ->add('disabledDates', TextareaType::class, ['label' => 'Dates désactivées', 'required' => false])

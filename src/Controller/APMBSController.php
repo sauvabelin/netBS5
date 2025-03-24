@@ -370,12 +370,16 @@ class APMBSController extends AbstractController
             $log = new ReservationLog();
             $log->setUsername($this->getUser()->getUserIdentifier());
             $log->setReservation($reservation);
-            $log->setPayload(['message' => $msg->message]);
+            $log->setPayload([
+                'message' => $msg->message,
+                'estimatedPrice' => $msg->estimatedPrice,
+            ]);
             $log->setAction(ReservationLog::ACCEPTED);
 
             $reservation->setStatus(APMBSReservation::ACCEPTED);
             $reservation->setIntendantDebut($msg->intendantDebut);
             $reservation->setIntendantFin($msg->intendantFin);
+            $reservation->setEstimatedPrice($msg->estimatedPrice);
 
             $gcm->updateReservation($reservation);
             $em->persist($reservation);

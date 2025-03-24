@@ -14,12 +14,14 @@ use Symfony\Component\ExpressionLanguage\ExpressionLanguage;
  */
 class APMBSReservation {
 
-    const PENDING = 'pending';
-    const MODIFICATION_PENDING = 'modification_pending';
-    const MODIFICATION_ACCEPTED = 'modification_accepted';
-    const ACCEPTED = 'accepted';
-    const REFUSED = 'refused';
-    const CANCELLED = 'cancelled';
+    const PENDING = '1_pending';
+    const MODIFICATION_PENDING = '2_modification_pending';
+    const MODIFICATION_ACCEPTED = '3_modification_accepted';
+    const ACCEPTED = '4_accepted';
+    const REFUSED = '5_refused';
+    const CANCELLED = '6_cancelled';
+    const INVOICE_SENT = '7_invoice_sent';
+    const CLOSED = '8_closed';
 
     /**
      * @var int
@@ -149,6 +151,18 @@ class APMBSReservation {
      * @ORM\Column(name="block_end_day", type="boolean")
      */
     protected $blockEndDay = true;
+
+    /**
+     * @var float
+     * @ORM\Column(name="estimated_price", type="string", length=255)
+     */
+    protected $estimatedPrice;
+
+    /**
+     * @var float
+     * @ORM\Column(name="final_price", type="string", length=255)
+     */
+    protected $finalPrice;
 
     public function __construct() {
         $this->createdAt = new \DateTime();
@@ -441,5 +455,21 @@ class APMBSReservation {
 
     public function setBlockEndDay($blockEndDay) {
         $this->blockEndDay = $blockEndDay;
+    }
+
+    public function getFinalPrice() {
+        return $this->finalPrice;
+    }
+
+    public function setFinalPrice($finalPrice) {
+        $this->finalPrice = $finalPrice;
+    }
+
+    public function getEstimatedPrice() {
+        return $this->estimatedPrice;
+    }
+
+    public function setEstimatedPrice($estimatedPrice) {
+        $this->estimatedPrice = $estimatedPrice;
     }
 }

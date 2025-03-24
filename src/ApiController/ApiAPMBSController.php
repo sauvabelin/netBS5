@@ -97,7 +97,7 @@ class ApiAPMBSController extends AbstractController
         $end = new \DateTimeImmutable($request->get('end'));
 
         $pendingReservations = $em->createQueryBuilder()->select('r')
-            ->from('App:APMBSReservation', 'r')
+            ->from(APMBSReservation::class, 'r')
             ->where('r.start <= :end')
             ->andWhere('r.end >= :start')
             ->andWhere('r.status = :status')

@@ -7,4 +7,5 @@ class AcceptReservation
     public $intendantDebut;
     public $intendantFin;
     public $message;
+    public $estimatedPrice;
 }

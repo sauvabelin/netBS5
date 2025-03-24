@@ -51,15 +51,15 @@ class MainMenuListener
         if ($user->hasRole("ROLE_APMBS")) {
             $apmbs = $menu->registerCategory("APMBS", "APMBS", 0);
             $apmbs->addLink("apmbs.reservations", "Réservations", "fas fa-calendar-alt", "sauvabelin.apmbs.reservations");
-            $apmbs->addLink("apmbs.intendants", "Intendants", "fas fa-user", "sauvabelin.apmbs.intendants");
-            $apmbs->addLink("apmbs.time-period", "Périodes de réservation", "fas fa-time", "sauvabelin.apmbs.time_periods");
             $cabanes = $this->em->getRepository(Cabane::class)->findAll();
-            $cabanesCat = $apmbs->addSubMenu('apmbs.cabanes', 'Cabanes', 'fas fa-home');
             foreach ($cabanes as $cabane) {
-                $cabanesCat->addSubLink($cabane->getNom(), "sauvabelin.apmbs.cabane", ['id' => $cabane->getId()]);
+                $apmbs->addLink('apmbs.cabane.' . $cabane->getId(), $cabane->getNom(), 'fas fa-home', "sauvabelin.apmbs.cabane", ['id' => $cabane->getId()]);
             }
 
-            $cabanesCat->addSubLink('Ajouter une cabane', 'sauvabelin.apmbs.add_cabane');
+            $otherAPMBS = $apmbs->addSubMenu('apmbs.other', 'Autre', '');
+            $otherAPMBS->addSubLink('Ajouter une cabane', 'sauvabelin.apmbs.add_cabane');
+            $otherAPMBS->addSubLink("Intendants", "sauvabelin.apmbs.intendants");
+            $otherAPMBS->addSubLink("Périodes de réservation", "sauvabelin.apmbs.time_periods");
         }
     }
 }

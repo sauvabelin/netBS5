@@ -50,6 +50,12 @@
                                 <li class="nav-item">
                                     <a class="nav-link" href="#cancelled-email" data-toggle="tab">Reservation Annulée</a>
                                 </li>
+                                <li class="nav-item">
+                                    <a class="nav-link" href="#invoice-email" data-toggle="tab">Facture Envoyée</a>
+                                </li>
+                                <li class="nav-item">
+                                    <a class="nav-link" href="#close-email" data-toggle="tab">Reservation Terminée</a>
+                                </li>
                             </ul>
                         </div>
 
@@ -75,6 +81,12 @@
                             </div>
                             <div id="cancelled-email" class="tab-pane fade">
                                 {{ form_row(cabaneForm.cancelledEmail) }}
+                            </div>
+                            <div id="invoice-email" class="tab-pane fade">
+                                {{ form_row(cabaneForm.invoiceEmail) }}
+                            </div>
+                            <div id="close-email" class="tab-pane fade">
+                                {{ form_row(cabaneForm.closeEmail) }}
                             </div>
                         </div>
                     </div>

@@ -32,7 +32,7 @@ class ReservationLogList extends BaseListModel
 
         return $this->entityManager->createQueryBuilder()
             ->select('l')
-            ->from('App:ReservationLog', 'l')
+            ->from(ReservationLog::class, 'l')
             ->where('l.reservation = :id')
             ->setParameter('id', $id)
             ->orderBy('l.createdAt', 'DESC')

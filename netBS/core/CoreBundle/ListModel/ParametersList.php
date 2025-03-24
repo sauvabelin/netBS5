@@ -23,7 +23,7 @@ class ParametersList extends BaseListModel
     {
         return $this->entityManager->createQueryBuilder()
             ->select('p')
-            ->from('NetBSCoreBundle:Parameter', 'p')
+            ->from(Parameter::class, 'p')
             ->orderBy('p.namespace', 'DESC')
             ->getQuery()
             ->execute();

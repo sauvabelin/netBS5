@@ -6,6 +6,7 @@ use App\Model\AcceptReservation;
 use NetBS\CoreBundle\Form\Type\Select2DocumentType;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Extension\Core\Type\TextareaType;
+use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 
@@ -27,6 +28,7 @@ class ReservationAcceptType extends AbstractType
                 'multiple'  => false,
                 'choices'   => $options['cabane']->getIntendants(),
             ])
+            ->add('estimatedPrice', TextType::class, ['label' => 'Prix estimé'])
             ->add('message', TextareaType::class, ['label' => 'Message'])
         ;
     }

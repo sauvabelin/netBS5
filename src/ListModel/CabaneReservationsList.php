@@ -13,8 +13,9 @@ use NetBS\ListBundle\Column\ClosureColumn;
 use NetBS\ListBundle\Column\SimpleColumn;
 use NetBS\ListBundle\Model\BaseListModel;
 use NetBS\ListBundle\Model\ListColumnsConfiguration;
+use Symfony\Component\OptionsResolver\OptionsResolver;
 
-class APMBSReservationList extends BaseListModel
+class CabaneReservationsList extends BaseListModel
 {
     use EntityManagerTrait, RouterTrait;
 
@@ -24,12 +25,21 @@ class APMBSReservationList extends BaseListModel
      */
     protected function buildItemsList()
     {
+        $cabaneId = $this->getParameter('cabaneId');
         return $this->entityManager->createQueryBuilder()
             ->select('r')
             ->from(APMBSReservation::class, 'r')
-            ->orderBy('r.createdAt', 'DESC')
+            ->where('r.cabane = :id')
+            ->setParameter('id', $cabaneId)
+            ->addOrderBy('r.status', 'ASC')
+            ->addOrderBy('r.createdAt', 'DESC')
             ->getQuery()
             ->getResult();
+    }
+
+    public function configureOptions(OptionsResolver $resolver)
+    {
+        $resolver->isRequired('cabaneId');
     }
 
     /**
@@ -47,7 +57,7 @@ class APMBSReservationList extends BaseListModel
      */
     public function getAlias()
     {
-        return "app.apmbs.reservations";
+        return "app.apmbs.cabane.reservations";
     }
 
     /**
@@ -70,7 +80,6 @@ class APMBSReservationList extends BaseListModel
                     return "<span class='badge' style='background:{$bg};color:white'>{$reservation->getStatus()}</span>";
                 }
             ])
-            ->addColumn("Cabane", "cabane.nom", SimpleColumn::class)
             ->addColumn("Début", null, ClosureColumn:: class, [
                 ClosureColumn::CLOSURE => function(APMBSReservation $reservation) {
                     return $reservation->getStart()->format('d/m/Y H:i');
@@ -81,10 +90,6 @@ class APMBSReservationList extends BaseListModel
                     return $reservation->getEnd()->format('d/m/Y H:i');
                 }
             ])
-            ->addColumn("Prénom", "prenom", SimpleColumn::class)
-            ->addColumn("Nom", "nom", SimpleColumn::class)
-            ->addColumn("Email", "email", SimpleColumn::class)
-            ->addColumn("Téléphone", "phone", SimpleColumn::class)
             ->addColumn("Groupe", "unite", SimpleColumn::class)
             ->addColumn("Actions", null,ActionColumn::class, array(
                 ActionColumn::ACTIONS_KEY   => [
