@@ -5,6 +5,7 @@ namespace Ovesco\FacturationBundle\Form;
 use Doctrine\ORM\EntityManagerInterface;
 use NetBS\CoreBundle\Form\PDFConfig\FPDFType;
 use NetBS\CoreBundle\Form\Type\DatepickerType;
+use Ovesco\FacturationBundle\Entity\FactureModel;
 use Ovesco\FacturationBundle\Model\FactureConfig;
 use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
 use Symfony\Component\Form\Extension\Core\Type\NumberType;

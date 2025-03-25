@@ -6,6 +6,7 @@ use Doctrine\ORM\EntityManagerInterface;
 use NetBS\CoreBundle\Form\PDFConfig\FPDFType;
 use NetBS\CoreBundle\Form\Type\DatepickerType;
 use NetBS\CoreBundle\Form\Type\SwitchType;
+use Ovesco\FacturationBundle\Entity\FactureModel;
 use Ovesco\FacturationBundle\Model\QrFactureConfig;
 use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
 use Symfony\Component\Form\Extension\Core\Type\NumberType;
