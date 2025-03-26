@@ -214,7 +214,7 @@ class PDFQrFacture extends BaseFactureExporter
         $fpdf->Cell(self::DEBTOR_WIDTH - 2*$margin, 7, 'Section paiement');
 
         // Print qr
-        $fpdf->Image($qrData->getQrCode('png')->writeDataUri(), $left, $top + 2*$margin + 7, 46, 46, 'png');
+        $fpdf->Image($qrData->getQrCode('png')->getDataUri('png'), $left, $top + 2*$margin + 7, 46, 46, 'png');
 
         // Montant
         $fpdf->SetXY($left, $top + 3*$margin + 7 + 46);
