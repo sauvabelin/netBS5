@@ -20,10 +20,16 @@ use App\Model\ReservationMessage;
 use App\Service\GoogleCalendarManager;
 use Doctrine\ORM\EntityManagerInterface;
 use NetBS\CoreBundle\Utils\Modal;
+use NetBS\FichierBundle\Entity\Membre;
+use Ovesco\FacturationBundle\Entity\Facture;
+use Ovesco\FacturationBundle\Exporter\PDFQrFacture;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Security;
+use Symfony\Bridge\Twig\Mime\TemplatedEmail;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\Mailer\MailerInterface;
+use Symfony\Component\Mime\Address;
 use Symfony\Component\Routing\RouterInterface;
 
 /**
@@ -456,6 +462,67 @@ class APMBSController extends AbstractController
 
             $gcm->sendEmailToClient($reservation, 'Demande de réservation annulée', $msg->message);
             $this->addFlash('info', "Réservation annulée");
+            return Modal::refresh();
+        }
+
+        return $this->render('reservation/message.modal.twig', [
+            'title' => 'Refuser',
+            'type' => 'info',
+            'alert' => "Vous allez annuler cette réservation, ce qui enverra un e-mail d'information au demandeur. L'annulation a lieu si le demandeur s'est trompé ou s'est rétracté",
+            'form'  => $form->createView()
+        ], Modal::renderModal($form));
+    }
+
+    /**
+     * @Route("/reservation/{id}/cancel", name="sauvabelin.apmbs.reservation.cancel")
+     */
+    public function reservationSendInvoiceAction(Request $request, APMBSReservation $reservation, EntityManagerInterface $em, MailerInterface $mailer, PDFQrFacture $invoicer) {
+        $msg = new ReservationMessage();
+        $form = $this->createForm(ReservationMessageType::class, $msg);
+        $form->handleRequest($request);
+
+        if($form->isSubmitted() && $form->isValid()) {
+            $log = new ReservationLog();
+            $log->setUsername($this->getUser()->getUserIdentifier());
+            $log->setReservation($reservation);
+            $log->setPayload(['message' => $msg->message]);
+            $log->setAction(ReservationLog::INVOICE_SENT);
+
+            $reservation->setStatus(APMBSReservation::CANCELLED);
+            $em->persist($reservation);
+            $em->persist($log);
+            $em->flush();
+
+            $email = (new TemplatedEmail())
+                ->from(new Address($reservation->getCabane()->getFromEmail(), "APMBS {$reservation->getCabane()->getNom()}"))
+                ->to(new Address($reservation->getEmail()))
+                ->subject("Facture de réservation")
+                ->htmlTemplate("emails/invoice.html.twig")
+                ->attach(
+                    $this->renderView('emails/invoice.pdf.twig', [
+                        'reservation' => $reservation,
+                        'message' => $msg->message,
+                    ]),
+                    'facture.pdf',
+                    'application/pdf'
+                )
+                ->context([]);
+
+            // Generate invoice on the fly
+            $debiteur = new Membre();<xam
+            $membre->setNom($reservation->getNom())
+                ->setPrenom($reservation->getPrenom())
+                ->setEmail($reservation->getEmail())
+                ->setAdresse($reservation->getAdresse())
+                ->setCodePostal($reservation->getCodePostal())
+                ->setLocalite($reservation->getLocalite());
+            
+            $facture = new Facture();
+            $facture->set
+
+            $mailer->send($email);
+
+            $this->addFlash('info', "Facture envoyée");
             return Modal::refresh();
         }
 

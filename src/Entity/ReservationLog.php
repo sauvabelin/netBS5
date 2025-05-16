@@ -15,6 +15,9 @@ class ReservationLog {
     const ACCEPTED = 'validation';
     const REFUSED = 'refus';
     const CANCELLED = 'annulation';
+    const INVOICE_SENT = 'invoice_sent';
+    const CLOSED = 'closed';
+
 
     /**
      * @var int
