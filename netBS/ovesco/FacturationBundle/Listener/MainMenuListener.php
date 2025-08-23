@@ -17,13 +17,13 @@ class MainMenuListener
 
     public function onMenuConfigure(ExtendMainMenuEvent $event)
     {
-        /** @var BaseUser $user */
         $menu   = $event->getMenu();
+        /** @var BaseUser $user */
         $user   = $this->storage->getToken()->getUser();
         if (!$user->hasRole('ROLE_TRESORIER')) return;
         $category = $menu->registerCategory('ovesco.facturation', 'Facturation');
 
-        $category->addLink('facturation.dashboard', 'Administration', 'fas fa-money-bill-alt', 'ovesco.facturation.dashboard');
+        // $category->addLink('facturation.dashboard', 'Administration', 'fas fa-money-bill-alt', 'ovesco.facturation.dashboard');
 
         $listes = $category->addSubMenu('facturation.lists', 'Listes de factures', 'fas fa-file-alt');
         $listes->addSubLink('En attente de paiement', 'ovesco.facturation.facture.attente_paiement');

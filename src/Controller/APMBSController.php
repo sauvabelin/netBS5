@@ -14,17 +14,19 @@ use App\Form\IntendantType;
 use App\Form\ModifyReservationType;
 use App\Form\ReservationAcceptType;
 use App\Form\ReservationMessageType;
+use App\Form\SendInvoiceReservationType;
 use App\Model\AcceptReservation;
 use App\Model\ModifyReservation;
 use App\Model\ReservationMessage;
+use App\Model\SendInvoiceReservation;
+use App\Service\APMBSFactureExporter;
 use App\Service\GoogleCalendarManager;
 use Doctrine\ORM\EntityManagerInterface;
 use NetBS\CoreBundle\Utils\Modal;
-use NetBS\FichierBundle\Entity\Membre;
-use Ovesco\FacturationBundle\Entity\Facture;
-use Ovesco\FacturationBundle\Exporter\PDFQrFacture;
+use Ovesco\FacturationBundle\Entity\Creance;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Security;
+use Sprain\SwissQrBill\Exception\InvalidQrBillDataException;
 use Symfony\Bridge\Twig\Mime\TemplatedEmail;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\HttpFoundation\Request;
@@ -474,62 +476,94 @@ class APMBSController extends AbstractController
     }
 
     /**
-     * @Route("/reservation/{id}/cancel", name="sauvabelin.apmbs.reservation.cancel")
+     * @Route("/reservation/{id}/close", name="sauvabelin.apmbs.reservation.close")
      */
-    public function reservationSendInvoiceAction(Request $request, APMBSReservation $reservation, EntityManagerInterface $em, MailerInterface $mailer, PDFQrFacture $invoicer) {
-        $msg = new ReservationMessage();
-        $form = $this->createForm(ReservationMessageType::class, $msg);
+    public function closeAction(APMBSReservation $reservation, EntityManagerInterface $em) {
+        $log = new ReservationLog();
+        $log->setUsername($this->getUser()->getUserIdentifier());
+        $log->setReservation($reservation);
+        $log->setPayload([]);
+        $log->setAction(ReservationLog::CLOSED);
+
+        $reservation->setStatus(APMBSReservation::CLOSED);
+        $em->persist($reservation);
+        $em->persist($log);
+        $em->flush();
+
+        $this->addFlash('info', "Réservation terminée");
+        return $this->redirectToRoute('sauvabelin.apmbs.reservation', ['id' => $reservation->getId()]);
+    }
+
+    /**
+     * @Route("/reservation/{id}/send-invoice", name="sauvabelin.apmbs.reservation.send-invoice")
+     */
+    public function reservationSendInvoiceAction(Request $request, APMBSReservation $reservation, EntityManagerInterface $em, MailerInterface $mailer, APMBSFactureExporter $invoicer) {
+        $data = new SendInvoiceReservation();
+        $form = $this->createForm(SendInvoiceReservationType::class, $data);
         $form->handleRequest($request);
 
         if($form->isSubmitted() && $form->isValid()) {
+            $reservation->setFinalPrice($data->montant);
             $log = new ReservationLog();
+            $log->setAction(ReservationLog::INVOICE_SENT);
             $log->setUsername($this->getUser()->getUserIdentifier());
             $log->setReservation($reservation);
-            $log->setPayload(['message' => $msg->message]);
-            $log->setAction(ReservationLog::INVOICE_SENT);
+            $log->setPayload([
+                'message' => $data->message,
+                'montant' => $data->montant,
+                'autreFraisDescription' => $data->autreFraisDescription,
+                'autreFraisMontant' => $data->autreFraisMontant,
+            ]);
 
-            $reservation->setStatus(APMBSReservation::CANCELLED);
-            $em->persist($reservation);
-            $em->persist($log);
-            $em->flush();
+            $reservation->addLog($log);
+            
+            if ($data->autreFraisMontant) {
+                $autreFrais = new Creance();
+                $autreFrais->setTitre($data->autreFraisDescription ?: "Autres frais");
+                $autreFrais->setMontant($data->autreFraisMontant);
+                $autreFrais->setDate(new \DateTime());
+            }
 
-            $email = (new TemplatedEmail())
+            try {
+                $email = (new TemplatedEmail())
                 ->from(new Address($reservation->getCabane()->getFromEmail(), "APMBS {$reservation->getCabane()->getNom()}"))
                 ->to(new Address($reservation->getEmail()))
                 ->subject("Facture de réservation")
                 ->htmlTemplate("emails/invoice.html.twig")
                 ->attach(
-                    $this->renderView('emails/invoice.pdf.twig', [
-                        'reservation' => $reservation,
-                        'message' => $msg->message,
-                    ]),
-                    'facture.pdf',
+                    $invoicer->generate([$reservation])->Output('S'),
+                    'facture_apmbs.pdf',
                     'application/pdf'
                 )
-                ->context([]);
-
-            // Generate invoice on the fly
-            $debiteur = new Membre();<xam
-            $membre->setNom($reservation->getNom())
-                ->setPrenom($reservation->getPrenom())
-                ->setEmail($reservation->getEmail())
-                ->setAdresse($reservation->getAdresse())
-                ->setCodePostal($reservation->getCodePostal())
-                ->setLocalite($reservation->getLocalite());
-            
-            $facture = new Facture();
-            $facture->set
-
+                ->context([
+                    'reservation' => $reservation,
+                    'message' => $data->message,
+                    'autreFrais' => $data->autreFraisMontant ? [
+                        'message' => $data->autreFraisDescription,
+                        'montant' => $data->autreFraisMontant
+                    ] : null
+                ]);
             $mailer->send($email);
+
+            } catch (InvalidQrBillDataException $e) {
+                dump($e);
+                $this->addFlash('error', "Erreur lors de la génération de la facture: " . $e->getMessage());
+                return Modal::refresh();
+            }
+
+            $reservation->setStatus(APMBSReservation::INVOICE_SENT);
+            $em->persist($reservation);
+            $em->persist($log);
+            $em->flush();
 
             $this->addFlash('info', "Facture envoyée");
             return Modal::refresh();
         }
 
-        return $this->render('reservation/message.modal.twig', [
-            'title' => 'Refuser',
+        return $this->render('reservation/send_invoice.modal.twig', [
+            'title' => 'Envoyer la facture',
             'type' => 'info',
-            'alert' => "Vous allez annuler cette réservation, ce qui enverra un e-mail d'information au demandeur. L'annulation a lieu si le demandeur s'est trompé ou s'est rétracté",
+            'alert' => "Vous allez envoyer la facture de réservation au demandeur. Vous pouvez ajouter des frais supplémentaires à la facture",
             'form'  => $form->createView()
         ], Modal::renderModal($form));
     }

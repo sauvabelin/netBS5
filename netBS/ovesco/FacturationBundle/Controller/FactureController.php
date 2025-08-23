@@ -50,9 +50,10 @@ class FactureController extends AbstractController
 
         if (!$instance->getForm()->isSubmitted()) {
             $params['title'] = $title;
-            $instance->getForm()->get('statut')->submit(Facture::OUVERTE);
-            $instance->getForm()->get('isPrinted')->submit($printed);
-            $instance->getSearcher()->setForm($instance->getForm());
+            $form = $instance->getForm();
+            $form->get('statut')->submit(Facture::OUVERTE);
+            $form->get('isPrinted')->submit($printed);
+            $instance->getSearcher()->setForm($form);
         }
 
 
@@ -64,6 +65,15 @@ class FactureController extends AbstractController
      */
     public function searchFactureAction() {
         $instance = $this->searcherManager->bind(Facture::class);
+
+        if (!$instance->getForm()->isSubmitted()) {
+            $form = $instance->getForm();
+            $form->get('remarques', 'hochet');
+            $form->get('compteToUse')->submit(1);
+            $form->get('statut')->submit(Facture::OUVERTE);
+            $instance->getSearcher()->setForm($form);
+        }
+
         return $this->searcherManager->render($instance);
     }
 

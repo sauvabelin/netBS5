@@ -23,3 +23,5 @@
 ###< liip/imagine-bundle ###
 
 .idea
+
+/docker/

@@ -53,11 +53,14 @@ class GoogleCalendarManager {
             $state = $reservation->getStatus();
         }
 
+        $template = explode('_', $state);
+        $tplName = count($template) > 1 ? $template[1] : $template[0];
+
         $email = (new TemplatedEmail())
             ->from(new Address($reservation->getCabane()->getFromEmail(), "APMBS {$reservation->getCabane()->getNom()}"))
             ->to(new Address($reservation->getEmail()))
             ->subject($title)
-            ->htmlTemplate("emails/$state.html.twig")
+            ->htmlTemplate("emails/$tplName.html.twig")
             ->context(array_merge($data, [
                 'reservation' => $reservation,
                 'message' => $message,

@@ -126,12 +126,6 @@ class Cabane {
 
     /**
      * @var string
-     * @ORM\Column(name="close_email", type="text", nullable=true)
-     */
-    protected $closeEmail;
-
-    /**
-     * @var string
      * @ORM\Column(name="price_method", type="text", nullable=true)
      */
     protected $priceMethod;
@@ -351,13 +345,5 @@ class Cabane {
 
     public function setInvoiceEmail($invoiceEmail) {
         $this->invoiceEmail = $invoiceEmail;
-    }
-
-    public function getCloseEmail() {
-        return $this->closeEmail;
-    }
-
-    public function setCloseEmail($closeEmail) {
-        $this->closeEmail = $closeEmail;
     }
 }

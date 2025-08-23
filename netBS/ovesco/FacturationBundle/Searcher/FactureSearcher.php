@@ -18,6 +18,7 @@ use Ovesco\FacturationBundle\Form\SearchFactureType;
 use Ovesco\FacturationBundle\Model\SearchFacture;
 use Ovesco\FacturationBundle\Util\FactureListTrait;
 use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
+use Symfony\Component\Form\Form;
 
 class FactureSearcher extends BaseSearcher
 {
@@ -49,5 +50,10 @@ class FactureSearcher extends BaseSearcher
     public function getFormTemplate()
     {
         return "@OvescoFacturation/facture/search_facture.html.twig";
+    }
+
+    public function setForm(Form $form)
+    {
+        $this->form = $form;
     }
 }

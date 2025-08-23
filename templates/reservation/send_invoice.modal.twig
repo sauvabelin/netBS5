@@ -1,0 +1,18 @@
+{% extends '@NetBSCore/layout/modal.layout.twig' %}
+
+{% block title %}{{ title }}{% endblock %}
+
+{% block content %}
+    <div class="alert alert-{{ type }}">
+        <p>{{ alert }}</p>
+    </div>
+    {{ form_start(form)}}
+    {{ form_row(form.montant) }}
+    {{ form_row(form.message) }}
+    <details>
+      <summary>Ajouter une autre ligne de frais</summary>
+      {{ form_row(form.autreFraisMontant) }}
+      {{ form_row(form.autreFraisDescription) }}
+    </details>
+    {{form_end(form)}}
+{% endblock %}

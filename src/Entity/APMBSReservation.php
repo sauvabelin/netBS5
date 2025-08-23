@@ -96,6 +96,27 @@ class APMBSReservation {
 
     /**
      * @var string
+     * @Assert\NotBlank()
+     * @ORM\Column(name="rue", type="string", length=255)
+     */
+    protected $rue;
+
+    /**
+     * @var string
+     * @Assert\NotBlank()
+     * @ORM\Column(name="npa", type="string", length=255)
+     */
+    protected $npa;
+
+    /**
+     * @var string
+     * @Assert\NotBlank()
+     * @ORM\Column(name="localite", type="string", length=255)
+     */
+    protected $localite;
+
+    /**
+     * @var string
      * @Assert\Email
      * @Assert\NotBlank()
      * @ORM\Column(name="email", type="string", length=255)
@@ -154,16 +175,16 @@ class APMBSReservation {
 
     /**
      * @var float
-     * @ORM\Column(name="estimated_price", type="string", length=255)
+     * @ORM\Column(name="estimated_price", type="float")
      */
-    protected $estimatedPrice;
+    protected $estimatedPrice = 0;
 
     /**
      * @var float
-     * @ORM\Column(name="final_price", type="string", length=255)
+     * @ORM\Column(name="final_price", type="float")
      */
-    protected $finalPrice;
-
+    protected $finalPrice = 0;
+    
     public function __construct() {
         $this->createdAt = new \DateTime();
         $this->status = self::PENDING;
@@ -457,6 +478,14 @@ class APMBSReservation {
         $this->blockEndDay = $blockEndDay;
     }
 
+    public function getEstimatedPrice() {
+        return $this->estimatedPrice;
+    }
+
+    public function setEstimatedPrice($estimatedPrice) {
+        $this->estimatedPrice = $estimatedPrice;
+    }
+
     public function getFinalPrice() {
         return $this->finalPrice;
     }
@@ -465,11 +494,27 @@ class APMBSReservation {
         $this->finalPrice = $finalPrice;
     }
 
-    public function getEstimatedPrice() {
-        return $this->estimatedPrice;
+    public function getRue() {
+        return $this->rue;
     }
 
-    public function setEstimatedPrice($estimatedPrice) {
-        $this->estimatedPrice = $estimatedPrice;
+    public function setRue($rue) {
+        $this->rue = $rue;
+    }
+
+    public function getNpa() {
+        return $this->npa;
+    }
+
+    public function setNpa($npa) {
+        $this->npa = $npa;
+    }
+
+    public function getLocalite() {
+        return $this->localite;
+    }
+
+    public function setLocalite($localite) {
+        $this->localite = $localite;
     }
 }

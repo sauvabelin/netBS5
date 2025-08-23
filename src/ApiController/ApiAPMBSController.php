@@ -68,6 +68,9 @@ class ApiAPMBSController extends AbstractController
         $reservation->setEmail($parameters['email']);
         $reservation->setPhone($parameters['phone']);
         $reservation->setUnite($parameters['unit']);
+        $reservation->setRue($parameters['street']);
+        $reservation->setNpa($parameters['npa']);
+        $reservation->setLocalite($parameters['city']);
         $reservation->setDescription($parameters['description']);
         $errors = $validator->validate($reservation);
         

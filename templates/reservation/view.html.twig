@@ -18,31 +18,46 @@
         <div class="no-gutters">
             <div class="row">
                 <div class="col-12 col-md-4">
-                    {% if reservation.status == 'pending' %}
-                        <div class="alert alert-warning">Cette réservation est en attente</div>
-                    {% elseif reservation.status == 'refused' %}
-                        <div class="alert alert-danger">Cette réservation a été refusée</div>
-                    {% elseif reservation.status == 'modification_pending' %}
-                        <div class="alert alert-warning">Cette réservation a été modifiée et est en attente de validation du demandeur</div>
-                    {% elseif reservation.status == 'modification_accepted' %}
-                        <div class="alert alert-warning">Cette réservation a été modifiée et acceptée par le demandeur, veuillez la valider</div>
-                    {% elseif reservation.status == 'accepted' %}
-                        <div class="alert alert-success">Cette réservation a été acceptée</div>
-                    {% else %}
-                        <div class="alert alert-secondary">Cette réservation a été annulée</div>
-                    {% endif %}
+                    <div style="font-size: 20px; font-weight: 700; color: #334155; margin-bottom: 20px">
+                        Status: 
+                        {% if reservation.status == '1_pending' %}
+                            <span class="badge badge-warning">En attente</span>
+                        {% elseif reservation.status == '5_refused' %}
+                            <span class="badge badge-danger">Refusée</span>
+                        {% elseif reservation.status == '2_modification_pending' %}
+                            <span class="badge badge-warning">Modification en attente</span>
+                        {% elseif reservation.status == '3_modification_accepted' %}
+                            <span class="badge badge-warning">Modification acceptée</span>
+                        {% elseif reservation.status == '8_closed' %}
+                            <span class="badge badge-success">Payée</span>
+                        {% elseif reservation.status == '7_invoice_sent' %}
+                            <span class="badge badge-success">Facture envoyée</span>
+                        {% elseif reservation.status == '4_accepted' %}
+                            <span class="badge badge-success">Acceptée</span>
+                        {% else %}
+                            <span class="badge badge-secondary">Annulée</span>
+                        {% endif %}
+                    </div>
                     <div class="row mt-2">
                         <div class="col-3">
-                            <button class='btn btn-warning btn-block' data-modal data-modal-url='{{ path('sauvabelin.apmbs.reservation.modify', {id: reservation.id}) }}'>Modifier</button>
+                            <button class='btn btn-secondary btn-block' data-modal data-modal-url='{{ path('sauvabelin.apmbs.reservation.modify', {id: reservation.id}) }}'>Modifier</button>
                         </div>
                         <div class="col-3">
-                            <button class='btn btn-success btn-block' data-modal data-modal-url='{{ path('sauvabelin.apmbs.reservation.accept', {id: reservation.id}) }}'>Valider</button>
+                            <button class='btn btn-secondary btn-block' data-modal data-modal-url='{{ path('sauvabelin.apmbs.reservation.accept', {id: reservation.id}) }}'>Valider</button>
                         </div>
                         <div class="col-3">
-                            <button class='btn btn-danger btn-block' data-modal data-modal-url='{{ path('sauvabelin.apmbs.reservation.refuse', {id: reservation.id}) }}'>Refuser</button>
+                            <button class='btn btn-secondary btn-block' data-modal data-modal-url='{{ path('sauvabelin.apmbs.reservation.refuse', {id: reservation.id}) }}'>Refuser</button>
                         </div>
                         <div class="col-3">
                             <button class='btn btn-secondary btn-block' data-modal data-modal-url='{{ path('sauvabelin.apmbs.reservation.cancel', {id: reservation.id}) }}'>Annuler</button>
+                        </div>
+                    </div>
+                    <div class="row mt-2">
+                        <div class="col-6">
+                            <button class='btn btn-secondary btn-block' data-modal data-modal-url='{{ path('sauvabelin.apmbs.reservation.send-invoice', {id: reservation.id}) }}'>Envoyer la facture</button>
+                        </div>
+                        <div class="col-6">
+                            <a class='btn btn-secondary btn-block' href='{{ path('sauvabelin.apmbs.reservation.close', {id: reservation.id}) }}'>Marquer comme payée</a>
                         </div>
                     </div>
                     <div class="card mt-3">
@@ -74,6 +89,18 @@
                                 <div class="form-group row" style="padding: 3px 0">
                                     <label class="col-lg-4 control-label" style="padding-top:6px;text-align:left;">Téléphone</label>
                                     <div class="col-lg-8">{{ reservation.phone }}</div>
+                                </div>
+                                <div class="form-group row" style="padding: 3px 0">
+                                    <label class="col-lg-4 control-label" style="padding-top:6px;text-align:left;">Rue</label>
+                                    <div class="col-lg-8">{{ reservation.rue }}</div>
+                                </div>
+                                <div class="form-group row" style="padding: 3px 0">
+                                    <label class="col-lg-4 control-label" style="padding-top:6px;text-align:left;">NPA</label>
+                                    <div class="col-lg-8">{{ reservation.npa }}</div>
+                                </div>
+                                <div class="form-group row" style="padding: 3px 0">
+                                    <label class="col-lg-4 control-label" style="padding-top:6px;text-align:left;">Localité</label>
+                                    <div class="col-lg-8">{{ reservation.localite }}</div>
                                 </div>
                                 <div class="form-group row" style="padding: 3px 0">
                                     <label class="col-lg-4 control-label" style="padding-top:6px;text-align:left;">Unité</label>
