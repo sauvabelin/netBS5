@@ -103,6 +103,37 @@ class APMBSFactureExporter
         return $this->manager->getRepository(Compte::class)->findOneBy(['nom' => 'APMBS']);
     }
 
+    private function getAmountDetails(APMBSReservation $reservation) {
+        $creances = [
+            [
+                'amount' => $reservation->getFinalPrice(),
+                'message' => $reservation->getCabane()->getNom(),
+            ]
+        ];
+
+        // Find latest sendInvoice log item
+        $logItem = null;
+        foreach ($reservation->getLogs() as $log) {
+            if ($log->getAction() === ReservationLog::INVOICE_SENT) {
+                if (!$logItem || $log->getCreatedAt() > $logItem->getCreatedAt()) {
+                    $logItem = $log;
+                }
+            }
+        }
+
+        if ($logItem) {
+            $payload = json_decode($logItem->getPayload(), true);
+            if (isset($payload['autreFraisMontant']) && isset($payload['autreFraisDescription'])) {
+                $creances[] = [
+                    'amount' => $payload['autreFraisMontant'],
+                    'message' => $payload['autreFraisDescription']
+                ];
+            }
+        }
+
+        return $creances;
+    }
+
     private function printFacture(APMBSReservation $reservation, \FPDF $fpdf) {
 
         /** @var FactureConfig $config */
@@ -161,30 +192,17 @@ class APMBSFactureExporter
         $currentY = $fpdf->GetY() + 2;
 
         $fpdf->SetFontSize(9);
+        $creances = $this->getAmountDetails($reservation);
+        $total = 0;
 
-        $total = $reservation->getFinalPrice();
-        $creanceTitle = $reservation->getCabane()->getNom();
-        $this->printCreanceLine($fpdf, $currentY, 0, $creanceTitle, $reservation->getFinalPrice());
-
-        // Find latest sendInvoice log item
-        $logItem = null;
-        foreach ($reservation->getLogs() as $log) {
-            if ($log->getAction() === ReservationLog::INVOICE_SENT) {
-                if (!$logItem || $log->getCreatedAt() > $logItem->getCreatedAt()) {
-                    $logItem = $log;
-                }
-            }
+        foreach ($creances as $i => $creance) {
+            $this->printCreanceLine($fpdf, $currentY, $i, $creance['message'], $creance['amount']);
+            $total += $creance['amount'];
         }
 
-        if ($logItem) {
-            $payload = json_decode($logItem->getPayload(), true);
-            if (isset($payload['autreFraisMontant']) && isset($payload['autreFraisDescription'])) {
-                $total += $payload['autreFraisMontant'];
-                $this->printCreanceLine($fpdf, $currentY, 1, $payload['autreFraisDescription'], $payload['autreFraisMontant']);
-                $this->printCreanceLine($fpdf, $currentY, 2, "Total", $total, true);
-            }
+        if (count($creances) > 1) {
+            $this->printCreanceLine($fpdf, $currentY, count($creances), "Total", $total, true);
         }
-            
 
         $currentY = $fpdf->GetY() + $config->interligne*2;
 
@@ -287,31 +305,8 @@ class APMBSFactureExporter
         $fpdf->SetFont('Arial', '', 8);
         $fpdf->Cell(12, 5, 'CHF');
 
-        // draw user put amount
-        $x = self::DEBTOR_WIDTH - $margin - 30;
-        $y = $margin + $top + 7 + 56 + 1;
-
-        /*
-        $width = 30;
-        $height = 10;
-        $fpdf->SetDrawColor(0,0,0);
-        $fpdf->SetLineWidth(0.25);
-        $fpdf->Line($x, $y, $x + 2, $y);
-        $fpdf->Line($x, $y, $x, $y + 1);
-
-        $fpdf->Line($x, $y + $height, $x + 2, $y + $height);
-        $fpdf->Line($x, $y + $height - 1, $x, $y + $height);
-
-        $fpdf->Line($x + $width - 2, $y, $x + $width, $y);
-        $fpdf->Line($x + $width, $y, $x + $width, $y + 1);
-
-        $fpdf->Line($x + $width - 2, $y + $height, $x + $width, $y + $height);
-        $fpdf->Line($x + $width, $y + $height - 1, $x + $width, $y + $height);
-
-        if ($this->getConfiguration()->border)
-            $fpdf->SetDrawColor(255,0,0);
-        */
-        $fpdf->Image(__DIR__ . '/Facture/coin_receipt.png', $x, $y, 30, 10);
+        $fpdf->SetXY($left + 11, $top + 7 + 56 + $margin + 4);
+        $fpdf->Cell(12, 5, number_format($qrData->getPaymentAmountInformation()->getAmount(), 2, '.', ''));
 
         // Acceptance point
         $fpdf->SetFont('Arial', 'B', 6);
@@ -349,31 +344,8 @@ class APMBSFactureExporter
         $fpdf->SetFont('Arial', '', 10);
         $fpdf->Cell(12, 5, 'CHF');
 
-        // draw user put amount
-        $x = $left + 11;
-        $y = $top + 3*$margin + 7 + 46 + 6;
-
-        /*
-        $width = 40;
-        $height = 15;
-        $fpdf->SetDrawColor(0,0,0);
-        $fpdf->SetLineWidth(0.25);
-        $fpdf->Line($x, $y, $x + 2, $y);
-        $fpdf->Line($x, $y, $x, $y + 1);
-
-        $fpdf->Line($x, $y + $height, $x + 2, $y + $height);
-        $fpdf->Line($x, $y + $height - 1, $x, $y + $height);
-
-        $fpdf->Line($x + $width - 2, $y, $x + $width, $y);
-        $fpdf->Line($x + $width, $y, $x + $width, $y + 1);
-
-        $fpdf->Line($x + $width - 2, $y + $height, $x + $width, $y + $height);
-        $fpdf->Line($x + $width, $y + $height - 1, $x + $width, $y + $height);
-
-        if ($this->getConfiguration()->border)
-            $fpdf->SetDrawColor(255,0,0);
-        */
-        $fpdf->Image(__DIR__ . '/Facture/coin_paiement.png', $x, $y, 40, 15);
+        $fpdf->SetXY($left + 14, $top + 3*$margin + 7 + 46 + 5);
+        $fpdf->Cell(12, 5, number_format($qrData->getPaymentAmountInformation()->getAmount(), 2, '.', ''));
 
         // More information
         $sleft = $left + 51;
@@ -424,6 +396,7 @@ class APMBSFactureExporter
 
     private function getQRData(APMBSReservation $reservation) {
 
+
         $qrBill = QrBill::create();
         $qrBill->setCreditor(CombinedAddress::create(
             $this->getCompteToUse()->getLine1(),
@@ -441,7 +414,13 @@ class APMBSFactureExporter
             'CH'
         ));
 
-        $qrBill->setPaymentAmountInformation(PaymentAmountInformation::create('CHF', null));
+        $creances = $this->getAmountDetails($reservation);
+        $total = 0;
+        foreach ($creances as $creance) {
+            $total += $creance['amount'];
+        }
+
+        $qrBill->setPaymentAmountInformation(PaymentAmountInformation::create('CHF', $total));
 
         $refNum = QrPaymentReferenceGenerator::generate(null, $reservation->getId());
         $qrBill->setPaymentReference(PaymentReference::create(PaymentReference::TYPE_QR, $refNum));
