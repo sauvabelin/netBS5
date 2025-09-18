@@ -54,10 +54,21 @@
                     <img src="https://netbs.sauvabelin.ch/bundles/netbscore/img/logo.png" width="70" alt="logo" style="max-width: 100%; vertical-align: middle">
                   </a>
                   <p style="margin: 20px 0; text-align: center; font-size: 16px; font-weight: 700; color: #334155;">
-                      {{ reservation.cabane.nom }}
+                      {{ reservation.cabane.nom }} - Réservation N° {{ reservation.id }} {% if toApmbs %} - Copie d'envoi d'email{% endif %}
                   </p>
                 </td>
               </tr>
+              {% if toApmbs %}
+              <tr>
+                  <td style="width: 600px; max-width: 100%;">
+                  <p style="margin: 0 0 20px; border-radius: 4px; background-color: #180081ff; padding-top: 12px; padding-bottom: 12px; text-align: center; font-size: 20px; font-weight: 700; box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05)">
+                      <a href="https://netbs.sauvabelin.ch/netBS/bs/apmbs/reservation/{{ reservation.id }}" style="color: #ffffffff;">
+                          Gérer la réservation
+                      </a>
+                  </p>
+                  </td>
+              </tr>
+              {% endif %}
               <tr>
                 <div class="sm-px-4" style="background-color: #f8fafc; font-family: ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif">
                   <table align="center" cellpadding="0" cellspacing="0" role="none">

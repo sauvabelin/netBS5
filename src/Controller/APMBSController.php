@@ -528,7 +528,7 @@ class APMBSController extends AbstractController
                 $email = (new TemplatedEmail())
                 ->from(new Address($reservation->getCabane()->getFromEmail(), "APMBS {$reservation->getCabane()->getNom()}"))
                 ->to(new Address($reservation->getEmail()))
-                ->subject("Facture de réservation")
+                ->subject("[APMBS {$reservation->getId()}] - Facture de réservation")
                 ->htmlTemplate("emails/invoice.html.twig")
                 ->attach(
                     $invoicer->generate([$reservation])->Output('S'),

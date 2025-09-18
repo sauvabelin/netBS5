@@ -47,7 +47,7 @@ class GoogleCalendarManager {
         }
     }
 
-    public function sendEmailToClient(APMBSReservation $reservation, $title, $message = null, $state = null, array $data = []) {
+    public function sendEmailToClient(APMBSReservation $reservation, $title, $message = null, $state = null, array $data = [], $toApmbs = false) {
 
         if (!$state) {
             $state = $reservation->getStatus();
@@ -55,18 +55,29 @@ class GoogleCalendarManager {
 
         $template = explode('_', $state);
         $tplName = count($template) > 1 ? $template[1] : $template[0];
+        $to = $toApmbs ? $reservation->getCabane()->getFromEmail() : $reservation->getEmail();
+        $subject = $toApmbs ? "suivi res. {$reservation->getId()}" : "[APMBS {$reservation->getId()}] - $title";
 
         $email = (new TemplatedEmail())
             ->from(new Address($reservation->getCabane()->getFromEmail(), "APMBS {$reservation->getCabane()->getNom()}"))
-            ->to(new Address($reservation->getEmail()))
-            ->subject($title)
+            ->to(new Address($to))
+            ->subject($subject)
             ->htmlTemplate("emails/$tplName.html.twig")
             ->context(array_merge($data, [
                 'reservation' => $reservation,
                 'message' => $message,
+                'toApmbs' => $toApmbs,
             ]));
 
         $this->mailer->send($email);
+
+        if (!$toApmbs) {
+            try {
+                $this->sendEmailToClient($reservation, $title, $message, $state, $data, true);
+            } catch (\Exception $e) {
+                // Handle exception
+            }
+        }
     }
 
     public function listReservations(Cabane $cabane, $start = null, $end = null) {
