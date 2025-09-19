@@ -29,7 +29,6 @@ class NextcloudApiCall {
     public function query(string $verb, string $path, array $data) {
 
         if ($this->env === 'dev') {
-            dump("Nextcloud Query", $verb, $path, $data);
             return null;
         }
 

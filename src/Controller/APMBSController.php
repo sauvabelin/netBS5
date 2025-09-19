@@ -126,8 +126,6 @@ class APMBSController extends AbstractController
             ];
         }
 
-        dump($result);
-
 
         $qb = $em->createQueryBuilder();
         $reservations = $qb
@@ -174,8 +172,6 @@ class APMBSController extends AbstractController
                 'url' => $this->generateUrl('sauvabelin.apmbs.reservation', ['id' => $reservation->getId()])
             ];
         }
-
-        dump($result);
 
         return $this->json($result);
     }
