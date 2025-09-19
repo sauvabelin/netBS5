@@ -1,4 +1,9 @@
 <?php
+
+namespace App\Service\Facture\Fonts;
+
+class arial {}
+
 $type = 'TrueType';
 $name = 'ArialMT';
 $desc = array('Ascent'=>728,'Descent'=>-210,'CapHeight'=>728,'Flags'=>32,'FontBBox'=>'[-665 -325 2028 1006]','ItalicAngle'=>0,'StemV'=>70,'MissingWidth'=>750);

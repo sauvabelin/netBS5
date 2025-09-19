@@ -1,4 +1,9 @@
 <?php
+
+namespace App\Service\Facture\Fonts;
+
+class ocrb10n {}
+
 $type='TrueType';
 $name='OCRB10PitchBT-Regular';
 $desc=array('Ascent'=>741,'Descent'=>-289,'CapHeight'=>583,'Flags'=>33,'FontBBox'=>'[-4 -289 1803 741]','ItalicAngle'=>0,'StemV'=>70,'MissingWidth'=>500);

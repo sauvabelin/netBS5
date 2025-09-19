@@ -1,4 +1,9 @@
 <?php
+
+namespace App\Service\Facture\Fonts;
+
+class OCR_BB {}
+
 $type = 'TrueType';
 $name = 'OCR-B-Bold';
 $desc = array('Ascent'=>800,'Descent'=>200,'CapHeight'=>800,'Flags'=>33,'FontBBox'=>'[-4 -289 644 800]','ItalicAngle'=>0,'StemV'=>120,'MissingWidth'=>602);
