@@ -64,6 +64,7 @@
             const calendar = new FullCalendar.Calendar(calendarEl, {
                 locale: 'fr',
                 initialView: 'dayGridMonth',
+                firstDay: 1,
                 events: "{{ path('sauvabelin.apmbs.full_calendar_cabane_reservations', { id: cabane.id }) }}",
                 headerToolbar: {
                     left: 'prev,next',

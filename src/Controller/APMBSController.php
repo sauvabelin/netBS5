@@ -50,20 +50,20 @@ class APMBSController extends AbstractController
         ]);
     }
 
-    private function getHighlightColor(APMBSReservation $reservation) {
-        $bgColor = 'darkblue';
+    public static function getHighlightColor(APMBSReservation $reservation) {
+        $bgColor = ["#aaa6ff", "#1f18b5"];
         if ($reservation->getStatus() === APMBSReservation::PENDING) {
-            $bgColor = 'darkorange';
+            $bgColor = ["#f8d4c2ff", "#c44a0e"];
         } else if ($reservation->getStatus() === APMBSReservation::ACCEPTED) {
-            $bgColor = 'darkgreen';
+            $bgColor = ["#b4ebd0ff", "#14834f"];
         } else if ($reservation->getStatus() === APMBSReservation::REFUSED) {
-            $bgColor = 'darkred';
+            $bgColor = ["#c8d8f0ff", "#6b7280"];
         } else if ($reservation->getStatus() === APMBSReservation::CANCELLED) {
-            $bgColor = 'darkgrey';
+            $bgColor = ["#c8d8f0ff", "#6b7280"];
         } else if ($reservation->getStatus() === APMBSReservation::MODIFICATION_PENDING) {
-            $bgColor = 'darkorange';
+            $bgColor = ["#f8d4c2ff", "#c44a0e"];
         } else if ($reservation->getStatus() === APMBSReservation::MODIFICATION_ACCEPTED) {
-            $bgColor = 'darkgreen';
+            $bgColor = ["#b4ebd0ff", "#14834f"];
         }
 
         return $bgColor;
@@ -103,16 +103,16 @@ class APMBSController extends AbstractController
                 }
             }
 
-            $bgColor = $highlight ? 'aliceblue' : null;
-            $textColor = $highlight ? 'black' : 'white';
+            $bgColor = "#aaa6ff";
+            $textColor = "black";
             $url = $gcmReservation->htmlLink;
             if ($foundItem) {
-                $textColor = 'white';
-                $bgColor = 'darkblue';
+                $bgColor = self::getHighlightColor($foundItem)[0];
                 $url = $this->generateUrl('sauvabelin.apmbs.reservation', ['id' => $foundItem->getId()]);
                 if ("{$foundItem->getId()}" === "$highlight") {
                     $foundHighlight = true;
-                    $bgColor = $this->getHighlightColor($foundItem);
+                    $textColor = "white";
+                    $bgColor = self::getHighlightColor($foundItem)[1];
                 }
             }
 
@@ -126,6 +126,7 @@ class APMBSController extends AbstractController
             ];
         }
 
+        dump($result);
 
 
         $qb = $em->createQueryBuilder();
@@ -152,15 +153,16 @@ class APMBSController extends AbstractController
 
         /** @var APMBSReservation $reservation */
         foreach ($reservations as $reservation) {
-
-            $bgColor = $highlight ? 'bisque' : "darkorange";
+            $textColor = "black";
+            $bgColor = self::getHighlightColor($reservation)[0];
             if ("{$reservation->getId()}" === "$highlight") {
                 if ($foundHighlight) {
 
                     // Already coming from google calendar events
                     continue;
                 }
-                $bgColor = $this->getHighlightColor($reservation);
+                $textColor = "white";
+                $bgColor = self::getHighlightColor($reservation)[1];
             }
 
             $result[] = [
@@ -168,10 +170,12 @@ class APMBSController extends AbstractController
                 'end'   => $reservation->getEnd()->format('c'),
                 'title'   => $reservation->getTitle(),
                 'backgroundColor' => $bgColor,
-                'textColor' => $highlight ? 'black' : 'white',
+                'textColor' => $textColor,
                 'url' => $this->generateUrl('sauvabelin.apmbs.reservation', ['id' => $reservation->getId()])
             ];
         }
+
+        dump($result);
 
         return $this->json($result);
     }
@@ -497,7 +501,7 @@ class APMBSController extends AbstractController
     /**
      * @Route("/reservation/{id}/send-invoice", name="sauvabelin.apmbs.reservation.send-invoice")
      */
-    public function reservationSendInvoiceAction(Request $request, APMBSReservation $reservation, EntityManagerInterface $em, MailerInterface $mailer, APMBSFactureExporter $invoicer) {
+    public function reservationSendInvoiceAction(Request $request, APMBSReservation $reservation, EntityManagerInterface $em, GoogleCalendarManager $gcm, APMBSFactureExporter $invoicer) {
         $data = new SendInvoiceReservation();
         $form = $this->createForm(SendInvoiceReservationType::class, $data);
         $form->handleRequest($request);
@@ -515,6 +519,7 @@ class APMBSController extends AbstractController
                 'autreFraisMontant' => $data->autreFraisMontant,
             ]);
 
+            $reservation->setStatus(APMBSReservation::INVOICE_SENT);
             $reservation->addLog($log);
             
             if ($data->autreFraisMontant) {
@@ -525,25 +530,22 @@ class APMBSController extends AbstractController
             }
 
             try {
-                $email = (new TemplatedEmail())
-                ->from(new Address($reservation->getCabane()->getFromEmail(), "APMBS {$reservation->getCabane()->getNom()}"))
-                ->to(new Address($reservation->getEmail()))
-                ->subject("[APMBS {$reservation->getId()}] - Facture de réservation")
-                ->htmlTemplate("emails/invoice.html.twig")
-                ->attach(
-                    $invoicer->generate([$reservation])->Output('S'),
-                    'facture_apmbs.pdf',
-                    'application/pdf'
-                )
-                ->context([
-                    'reservation' => $reservation,
-                    'message' => $data->message,
-                    'autreFrais' => $data->autreFraisMontant ? [
-                        'message' => $data->autreFraisDescription,
-                        'montant' => $data->autreFraisMontant
-                    ] : null
-                ]);
-            $mailer->send($email);
+                $gcm->sendEmailToClient(
+                    $reservation, 
+                    'Facture de réservation', 
+                    $data->message, 'invoice',
+                    [
+                        'autreFrais' => $data->autreFraisMontant ? [
+                            'message' => $data->autreFraisDescription,
+                            'montant' => $data->autreFraisMontant
+                        ] : null,
+                    ],
+                    [
+                        'file' => $invoicer->generate([$reservation])->Output('S'),
+                        'filename' => 'facture_apmbs.pdf',
+                        'mimetype' => 'application/pdf'
+                    ]
+                );
 
             } catch (InvalidQrBillDataException $e) {
                 dump($e);

@@ -47,7 +47,7 @@ class GoogleCalendarManager {
         }
     }
 
-    public function sendEmailToClient(APMBSReservation $reservation, $title, $message = null, $state = null, array $data = [], $toApmbs = false) {
+    public function sendEmailToClient(APMBSReservation $reservation, $title, $message = null, $state = null, array $data = [], $attachment = null, $toApmbs = false) {
 
         if (!$state) {
             $state = $reservation->getStatus();
@@ -69,11 +69,19 @@ class GoogleCalendarManager {
                 'toApmbs' => $toApmbs,
             ]));
 
+        if ($attachment) {
+            $email = $email->attach(
+                $attachment['file'],
+                $attachment['filename'],
+                $attachment['mimetype']
+            );
+        }
+
         $this->mailer->send($email);
 
         if (!$toApmbs) {
             try {
-                $this->sendEmailToClient($reservation, $title, $message, $state, $data, true);
+                $this->sendEmailToClient($reservation, $title, $message, $state, $data, $attachment, true);
             } catch (\Exception $e) {
                 // Handle exception
             }

@@ -212,6 +212,7 @@
             const calendar = new FullCalendar.Calendar(calendarEl, {
                 locale: 'fr',
                 initialView: 'timeGridWeek',
+                firstDay: 1,
                 initialDate: '{{ reservation.start|date('c') }}',
                 headerToolbar: {
                     left: 'prev,next',

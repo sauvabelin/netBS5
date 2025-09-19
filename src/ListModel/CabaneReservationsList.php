@@ -2,6 +2,7 @@
 
 namespace App\ListModel;
 
+use App\Controller\APMBSController;
 use App\Entity\APMBSReservation;
 use NetBS\CoreBundle\ListModel\Action\IconAction;
 use NetBS\CoreBundle\ListModel\Action\LinkAction;
@@ -69,14 +70,7 @@ class CabaneReservationsList extends BaseListModel
         $configuration
             ->addColumn("Status", null, ClosureColumn:: class, [
                 ClosureColumn::CLOSURE => function(APMBSReservation $reservation) {
-                    $bg = "#3c48c9";
-                    if($reservation->getStatus() === APMBSReservation::ACCEPTED)
-                        $bg = "#12a312";
-                    if($reservation->getStatus() === APMBSReservation::REFUSED)
-                        $bg = "#c92424";
-                    if($reservation->getStatus() === APMBSReservation::CANCELLED)
-                        $bg = "#757575";
-
+                    $bg = APMBSController::getHighlightColor($reservation)[1];
                     return "<span class='badge' style='background:{$bg};color:white'>{$reservation->getStatus()}</span>";
                 }
             ])
