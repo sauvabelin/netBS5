@@ -18,10 +18,12 @@ use App\Form\SendInvoiceReservationType;
 use App\Model\AcceptReservation;
 use App\Model\ModifyReservation;
 use App\Model\ReservationMessage;
+use App\Model\SearchAPMBSReservation;
 use App\Model\SendInvoiceReservation;
 use App\Service\APMBSFactureExporter;
 use App\Service\GoogleCalendarManager;
 use Doctrine\ORM\EntityManagerInterface;
+use NetBS\CoreBundle\Searcher\SearcherManager;
 use NetBS\CoreBundle\Utils\Modal;
 use Ovesco\FacturationBundle\Entity\Creance;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -219,12 +221,11 @@ class APMBSController extends AbstractController
     /**
      * @Route("/reservations", name="sauvabelin.apmbs.reservations")
      */
-    public function reservationsAction() {
-        return $this->render("@NetBSCore/generic/list.generic.twig", [
-            "header" => "Réservations",
-            "subHeader" => "Liste des réservations de cabanes",
-            "list" => "app.apmbs.reservations",
-        ]);
+    public function reservationsAction(SearcherManager $searcher) {
+        $item = new SearchAPMBSReservation();
+        $item->status = APMBSReservation::PENDING;
+        $instance = $searcher->bind(APMBSReservation::class, $item);
+        return $searcher->render($instance);
     }
 
     /**
@@ -499,6 +500,8 @@ class APMBSController extends AbstractController
      */
     public function reservationSendInvoiceAction(Request $request, APMBSReservation $reservation, EntityManagerInterface $em, GoogleCalendarManager $gcm, APMBSFactureExporter $invoicer) {
         $data = new SendInvoiceReservation();
+        $data->montant = $reservation->getEstimatedPrice();
+        $data->date = $reservation->getEnd();
         $form = $this->createForm(SendInvoiceReservationType::class, $data);
         $form->handleRequest($request);
 
@@ -513,6 +516,7 @@ class APMBSController extends AbstractController
                 'montant' => $data->montant,
                 'autreFraisDescription' => $data->autreFraisDescription,
                 'autreFraisMontant' => $data->autreFraisMontant,
+                'date' => $data->date->format('d.m.Y'),
             ]);
 
             $reservation->setStatus(APMBSReservation::INVOICE_SENT);

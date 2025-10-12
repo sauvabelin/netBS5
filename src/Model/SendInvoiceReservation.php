@@ -8,4 +8,5 @@ class SendInvoiceReservation
     public $autreFraisDescription;
     public $autreFraisMontant;
     public $message;
+    public $date;
 }

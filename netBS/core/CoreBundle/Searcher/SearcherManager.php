@@ -69,10 +69,14 @@ class SearcherManager
      * @param string $class
      * @return SearchInstance
      */
-    public function bind($class) {
+    public function bind($class, $object = null) {
 
         $searcher   = $this->getSearcher($class);
-        $form       = $this->factory->create($searcher->getSearchType(), $searcher->getSearchObject());
+        if($object) {
+            $object = $searcher->getSearchObject();
+        }
+
+        $form       = $this->factory->create($searcher->getSearchType(), $object);
 
         $form->handleRequest($this->request);
 

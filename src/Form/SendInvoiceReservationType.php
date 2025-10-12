@@ -5,6 +5,7 @@ namespace App\Form;
 use App\Model\ReservationMessage;
 use App\Model\SendInvoiceReservation;
 use Symfony\Component\Form\AbstractType;
+use Symfony\Component\Form\Extension\Core\Type\DateType;
 use Symfony\Component\Form\Extension\Core\Type\NumberType;
 use Symfony\Component\Form\Extension\Core\Type\TextareaType;
 use Symfony\Component\Form\FormBuilderInterface;
@@ -19,6 +20,7 @@ class SendInvoiceReservationType extends AbstractType
             ->add('autreFraisDescription', TextareaType::class, ['label' => 'Autre frais', 'required' => false])
             ->add('autreFraisMontant', NumberType::class, ['label' => 'Montant autre frais', 'required' => false])
             ->add('message', TextareaType::class, ['label' => "Message sur l'email", 'required' => false])
+            ->add('date', DateType::class, ['label' => 'Date de la facture', 'required' => true])
         ;
     }
 

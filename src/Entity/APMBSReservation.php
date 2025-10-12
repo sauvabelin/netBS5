@@ -190,6 +190,11 @@ class APMBSReservation {
         $this->status = self::PENDING;
     }
 
+    public function __toString()
+    {
+        return $this->getPrenom() . " " . $this->getNom() . " - " . $this->getUnite() . " (" . $this->getStart()->format('d/m/Y') . " - " . $this->getEnd()->format('d/m/Y') . ")";
+    }
+
     /**
      * @return int
      */
@@ -222,7 +227,7 @@ class APMBSReservation {
     /**
      * @return string
      */
-    public function getStatus(): string
+    public function getStatus()
     {
         return $this->status;
     }
@@ -366,7 +371,7 @@ class APMBSReservation {
     /**
      * @return Cabane
      */
-    public function getCabane(): Cabane
+    public function getCabane()
     {
         return $this->cabane;
     }

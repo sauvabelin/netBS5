@@ -1,36 +1,33 @@
 <?php
 
-namespace App\ListModel;
+namespace App\Searcher;
 
+use App\Form\Search\SearchAPMBSReservationType;
+use App\Model\SearchAPMBSReservation;
 use App\Controller\APMBSController;
 use App\Entity\APMBSReservation;
 use NetBS\CoreBundle\ListModel\Action\IconAction;
 use NetBS\CoreBundle\ListModel\Action\LinkAction;
 use NetBS\CoreBundle\ListModel\ActionItem;
 use NetBS\CoreBundle\ListModel\Column\ActionColumn;
+use NetBS\CoreBundle\Model\BaseSearcher;
 use NetBS\CoreBundle\Utils\Traits\EntityManagerTrait;
 use NetBS\CoreBundle\Utils\Traits\RouterTrait;
 use NetBS\ListBundle\Column\ClosureColumn;
 use NetBS\ListBundle\Column\SimpleColumn;
-use NetBS\ListBundle\Model\BaseListModel;
 use NetBS\ListBundle\Model\ListColumnsConfiguration;
 
-class APMBSReservationList extends BaseListModel
+class APMBSReservationSearcher extends BaseSearcher
 {
     use EntityManagerTrait, RouterTrait;
 
     /**
-     * Retrieves all elements managed by this list
-     * @return array
+     * Returns the search form type class
+     * @return string
      */
-    protected function buildItemsList()
+    public function getSearchType()
     {
-        return $this->entityManager->createQueryBuilder()
-            ->select('r')
-            ->from(APMBSReservation::class, 'r')
-            ->orderBy('r.createdAt', 'DESC')
-            ->getQuery()
-            ->getResult();
+        return SearchAPMBSReservationType::class;
     }
 
     /**
@@ -40,15 +37,6 @@ class APMBSReservationList extends BaseListModel
     public function getManagedItemsClass()
     {
         return APMBSReservation::class;
-    }
-
-    /**
-     * Returns this list's alias
-     * @return string
-     */
-    public function getAlias()
-    {
-        return "app.apmbs.reservations";
     }
 
     /**
@@ -80,7 +68,7 @@ class APMBSReservationList extends BaseListModel
             ->addColumn("Email", "email", SimpleColumn::class)
             ->addColumn("Téléphone", "phone", SimpleColumn::class)
             ->addColumn("Groupe", "unite", SimpleColumn::class)
-            ->addColumn("Actions", null,ActionColumn::class, array(
+            ->addColumn("Actions", null, ActionColumn::class, array(
                 ActionColumn::ACTIONS_KEY   => [
                     new ActionItem(IconAction::class, [
                         LinkAction::TITLE   => "Voir la réservation",
@@ -92,4 +80,24 @@ class APMBSReservationList extends BaseListModel
             ))
         ;
     }
+
+    /**
+     * Returns the twig template used to render the form. A variable casually named 'form' will be available
+     * for you to use
+     * @return string
+     */
+    public function getFormTemplate()
+    {
+        return 'reservation/search_reservation.html.twig';
+    }
+
+    /**
+     * Returns an object used to render form, which will contain search data
+     * @return object
+     */
+    public function getSearchObject()
+    {
+        return new SearchAPMBSReservation();
+    }
+
 }

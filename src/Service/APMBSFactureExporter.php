@@ -103,24 +103,28 @@ class APMBSFactureExporter
         return $this->manager->getRepository(Compte::class)->findOneBy(['nom' => 'APMBS']);
     }
 
-    private function getAmountDetails(APMBSReservation $reservation) {
-        $creances = [
-            [
-                'amount' => $reservation->getFinalPrice(),
-                'message' => $reservation->getCabane()->getNom(),
-            ]
-        ];
-
-        // Find latest sendInvoice log item
+    private function getLatestLog($reservation, $type) {
         $logItem = null;
         foreach ($reservation->getLogs() as $log) {
-            if ($log->getAction() === ReservationLog::INVOICE_SENT) {
+            if ($log->getAction() === $type) {
                 if (!$logItem || $log->getCreatedAt() > $logItem->getCreatedAt()) {
                     $logItem = $log;
                 }
             }
         }
+        return $logItem;
+    }
 
+    private function getAmountDetails(APMBSReservation $reservation) {
+        $creances = [
+            [
+                'amount' => $reservation->getFinalPrice(),
+                'message' => $reservation->getCabane()->getNom() . " - " . $reservation->getStart()->format('d.m.Y') . " au " . $reservation->getEnd()->format('d.m.Y'),
+            ]
+        ];
+
+        // Find latest sendInvoice log item
+        $logItem = $this->getLatestLog($reservation, ReservationLog::INVOICE_SENT);
         if ($logItem) {
             $payload = json_decode($logItem->getPayload(), true);
             if (isset($payload['autreFraisMontant']) && isset($payload['autreFraisDescription'])) {
@@ -132,6 +136,15 @@ class APMBSFactureExporter
         }
 
         return $creances;
+    }
+
+    private function getInvoiceDate(APMBSReservation $reservation) {
+        $logItem = $this->getLatestLog($reservation, ReservationLog::INVOICE_SENT);
+        if ($logItem) {
+            $payload = json_decode($logItem->getPayload(), true);
+            return $payload['date'];
+        }
+        return $reservation->getEnd()->format('d.m.Y');
     }
 
     private function printFacture(APMBSReservation $reservation, \FPDF $fpdf) {
@@ -160,7 +173,7 @@ class APMBSFactureExporter
 
         // Print date and destinataire
         $fpdf->SetXY(130, 17);
-        $printDate = $date->format('d') . " " .$this->toMois($date->format('m')) . " " . $date->format('Y');
+        $printDate = $this->getInvoiceDate($reservation);
         $fpdf->Cell(50, 10, utf8_decode($model->getCityFrom() . " le $printDate"));
 
         $adresseIndex = 0;
