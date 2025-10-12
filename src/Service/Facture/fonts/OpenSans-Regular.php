@@ -1,4 +1,9 @@
 <?php
+
+namespace App\Service\Facture\fonts;
+
+class OpenSans_Regular {};
+
 $type = 'TrueType';
 $name = 'OpenSans';
 $desc = array('Ascent'=>765,'Descent'=>-240,'CapHeight'=>714,'Flags'=>32,'FontBBox'=>'[-550 -271 1204 1048]','ItalicAngle'=>0,'StemV'=>70,'MissingWidth'=>600);
