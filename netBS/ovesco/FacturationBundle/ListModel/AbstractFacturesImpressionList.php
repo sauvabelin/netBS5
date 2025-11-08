@@ -42,7 +42,7 @@ abstract class AbstractFacturesImpressionList extends AjaxModel
         $result = $query->getQuery()->getArrayResult();
         $waitingForPrintIds = array_map(function(array $item) { return $item['id']; }, $result);
 
-        $adj = $this->hasBeenPrinted() ? '' : 'NOT';
+        $adj = $this->hasBeenPrinted() ? 'NOT' : '';
         $builder->andWhere("$alias.id $adj IN (:ids)")->setParameter('ids', $waitingForPrintIds);
         $builder->andWhere("$alias.statut = :statut")
             ->setParameter('statut', Facture::OUVERTE);
