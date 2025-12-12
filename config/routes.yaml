@@ -12,6 +12,10 @@ facturation:
   resource: '@OvescoFacturationBundle/Resources/config/routing.yml'
   prefix: /netBS/facturation
 
+mailing:
+  resource: '@IacopoMailingBundle/Resources/config/routing.yml'
+  prefix: /netBS/mailing
+
 home:
   path: /
   controller: Symfony\Bundle\FrameworkBundle\Controller\RedirectController::urlRedirectAction

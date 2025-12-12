@@ -21,4 +21,5 @@ return [
     NetBS\SecureBundle\NetBSSecureBundle::class => ['all' => true],
     Ovesco\FacturationBundle\OvescoFacturationBundle::class => ['all' => true],
     Liip\ImagineBundle\LiipImagineBundle::class => ['all' => true],
+    Iacopo\MailingBundle\IacopoMailingBundle::class => ['all' => true],
 ];

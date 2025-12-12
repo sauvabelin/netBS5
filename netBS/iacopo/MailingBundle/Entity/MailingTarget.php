@@ -1,0 +1,159 @@
+<?php
+
+namespace Iacopo\MailingBundle\Entity;
+
+use App\Entity\BSUser;
+use App\Entity\BSGroupe;
+use Doctrine\ORM\Mapping as ORM;
+
+/**
+ * @ORM\Entity(repositoryClass="Iacopo\MailingBundle\Repository\MailingTargetRepository")
+ * @ORM\Table(name="mailing_target")
+ */
+class MailingTarget
+{
+    const TYPE_EMAIL = 'email';
+    const TYPE_USER = 'user';
+    const TYPE_GROUP = 'group';
+
+    /**
+     * @ORM\Id
+     * @ORM\GeneratedValue
+     * @ORM\Column(type="integer")
+     */
+    private $id;
+
+    /**
+     * @ORM\ManyToOne(targetEntity="MailingList", inversedBy="targets")
+     * @ORM\JoinColumn(nullable=false, onDelete="CASCADE")
+     */
+    private $mailingList;
+
+    /**
+     * @ORM\Column(type="string", length=50)
+     */
+    private $type;
+
+    /**
+     * @ORM\Column(type="string", length=255, nullable=true)
+     */
+    private $targetEmail;
+
+    /**
+     * @ORM\ManyToOne(targetEntity="App\Entity\BSUser")
+     * @ORM\JoinColumn(nullable=true, onDelete="CASCADE")
+     */
+    private $targetUser;
+
+    /**
+     * @ORM\ManyToOne(targetEntity="App\Entity\BSGroupe")
+     * @ORM\JoinColumn(nullable=true, onDelete="CASCADE")
+     */
+    private $targetGroup;
+
+    /**
+     * @ORM\Column(type="datetime")
+     */
+    private $createdAt;
+
+    public function __construct()
+    {
+        $this->createdAt = new \DateTime();
+    }
+
+    public function getId(): ?int
+    {
+        return $this->id;
+    }
+
+    public function getMailingList(): ?MailingList
+    {
+        return $this->mailingList;
+    }
+
+    public function setMailingList(?MailingList $mailingList): self
+    {
+        $this->mailingList = $mailingList;
+        return $this;
+    }
+
+    public function getType(): ?string
+    {
+        return $this->type;
+    }
+
+    public function setType(string $type): self
+    {
+        if (!in_array($type, [self::TYPE_EMAIL, self::TYPE_USER, self::TYPE_GROUP])) {
+            throw new \InvalidArgumentException("Invalid target type");
+        }
+        $this->type = $type;
+        return $this;
+    }
+
+    public function getTargetEmail(): ?string
+    {
+        return $this->targetEmail;
+    }
+
+    public function setTargetEmail(?string $targetEmail): self
+    {
+        $this->targetEmail = $targetEmail;
+        return $this;
+    }
+
+    public function getTargetUser(): ?BSUser
+    {
+        return $this->targetUser;
+    }
+
+    public function setTargetUser(?BSUser $targetUser): self
+    {
+        $this->targetUser = $targetUser;
+        return $this;
+    }
+
+    public function getTargetGroup(): ?BSGroupe
+    {
+        return $this->targetGroup;
+    }
+
+    public function setTargetGroup(?BSGroupe $targetGroup): self
+    {
+        $this->targetGroup = $targetGroup;
+        return $this;
+    }
+
+    public function getCreatedAt(): ?\DateTimeInterface
+    {
+        return $this->createdAt;
+    }
+
+    public function setCreatedAt(\DateTimeInterface $createdAt): self
+    {
+        $this->createdAt = $createdAt;
+        return $this;
+    }
+
+    /**
+     * Get the display value for this target
+     */
+    public function getDisplayValue(): string
+    {
+        switch ($this->type) {
+            case self::TYPE_EMAIL:
+                return $this->targetEmail ?? '';
+            case self::TYPE_USER:
+                return $this->targetUser ? $this->targetUser->getUsername() : '';
+            case self::TYPE_GROUP:
+                return $this->targetGroup ? $this->targetGroup->getNom() : '';
+            default:
+                return '';
+        }
+    }
+
+    public function __toString(): string
+    {
+        return $this->getDisplayValue();
+    }
+}

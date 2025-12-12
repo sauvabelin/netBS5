@@ -1,0 +1,37 @@
+{% extends '@NetBSCore/layout/modal.layout.twig' %}
+
+{% block title %}Modifier le destinataire{% endblock %}
+
+{% block content %}
+    {{ form_start(form) }}
+    {{ form_row(form.type) }}
+    <div id="email-field">
+        {{ form_row(form.targetEmail) }}
+    </div>
+    <div id="user-field" style="display:none">
+        {{ form_row(form.targetUser) }}
+    </div>
+    <div id="group-field" style="display:none">
+        {{ form_row(form.targetGroup) }}
+    </div>
+    {{ form_end(form) }}
+
+    <script>
+        (function() {
+            const typeSelect = document.querySelector('.target-type-selector');
+            const emailField = document.getElementById('email-field');
+            const userField = document.getElementById('user-field');
+            const groupField = document.getElementById('group-field');
+
+            function updateFields() {
+                const type = typeSelect.value;
+                emailField.style.display = type === 'email' ? 'block' : 'none';
+                userField.style.display = type === 'user' ? 'block' : 'none';
+                groupField.style.display = type === 'group' ? 'block' : 'none';
+            }
+
+            typeSelect.addEventListener('change', updateFields);
+            updateFields();
+        })();
+    </script>
+{% endblock %}

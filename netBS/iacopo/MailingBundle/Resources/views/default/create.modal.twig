@@ -1,0 +1,23 @@
+{% extends '@NetBSCore/layout/modal.layout.twig' %}
+
+{% block title %}Créer une liste de diffusion{% endblock %}
+
+{% block content %}
+    {{ form_start(form) }}
+    <div class="row">
+        <div class="col-12">
+            {{ form_row(form.name) }}
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-12">
+            {{ form_row(form.baseAddress) }}
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-12">
+            {{ form_row(form.description) }}
+        </div>
+    </div>
+    {{ form_end(form) }}
+{% endblock %}

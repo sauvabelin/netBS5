@@ -1,0 +1,27 @@
+services:
+  _defaults:
+    autowire: true
+    autoconfigure: true
+    public: false
+
+  Iacopo\MailingBundle\:
+    resource: '../../*'
+    exclude: '../../{Entity,Tests}'
+
+  # Menu listener
+  Iacopo\MailingBundle\Listener\MainMenuListener:
+    tags:
+      - { name: kernel.event_listener, event: netbs.menu.extend, method: onMenuConfigure }
+
+  # List models
+  Iacopo\MailingBundle\ListModel\MailingListModel:
+    tags:
+      - { name: netbs.list.model }
+
+  Iacopo\MailingBundle\ListModel\MailingTargetListModel:
+    tags:
+      - { name: netbs.list.model }
+
+  Iacopo\MailingBundle\ListModel\MailingAliasListModel:
+    tags:
+      - { name: netbs.list.model }
