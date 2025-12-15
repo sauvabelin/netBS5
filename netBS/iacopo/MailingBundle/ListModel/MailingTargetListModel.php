@@ -84,8 +84,8 @@ class MailingTargetListModel extends BaseListModel
                     $emailsList = implode("\n", $emails);
 
                     $countBadge = $count > 0
-                        ? "<span class='badge badge-secondary ml-2'>{$count}</span>"
-                        : "<span class='badge badge-warning ml-2'>0</span>";
+                        ? "<span class='badge badge-secondary ml-2'>{$count} adresses</span>"
+                        : "<span class='badge badge-warning ml-2'>0 adresses</span>";
 
                     if ($count > 0) {
                         $title = htmlspecialchars($emailsList);
