@@ -41,3 +41,6 @@ roles:
             ROLE_IT:
                 description: "Responsable IT"
                 poids: 80000
+            ROLE_MAILING:
+                description: "Gestionnaire des listes de diffusion"
+                poids: 980
