@@ -10,6 +10,7 @@ use Iacopo\MailingBundle\Form\MailingListAliasType;
 use Iacopo\MailingBundle\Form\MailingTargetType;
 use Iacopo\MailingBundle\ListModel\MailingTargetListModel;
 use Iacopo\MailingBundle\ListModel\MailingAliasListModel;
+use Iacopo\MailingBundle\Service\MailingTargetResolver;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\HttpFoundation\Request;
@@ -22,15 +23,18 @@ class DefaultController extends AbstractController
     private $em;
     private $targetListModel;
     private $aliasListModel;
+    private $targetResolver;
 
     public function __construct(
         EntityManagerInterface $em,
         MailingTargetListModel $targetListModel,
-        MailingAliasListModel $aliasListModel
+        MailingAliasListModel $aliasListModel,
+        MailingTargetResolver $targetResolver
     ) {
         $this->em = $em;
         $this->targetListModel = $targetListModel;
         $this->aliasListModel = $aliasListModel;
+        $this->targetResolver = $targetResolver;
     }
 
     /**
@@ -57,8 +61,8 @@ class DefaultController extends AbstractController
 
             $this->addFlash('success', 'Liste de diffusion créée avec succès');
 
-            // Return redirect that modal.js will handle
-            return $this->redirectToRoute('iacopo.mailing.list');
+            // Redirect to edit page of newly created mailing list
+            return $this->redirectToRoute('iacopo.mailing.edit', ['id' => $mailingList->getId()]);
         }
 
         return $this->render('@IacopoMailing/default/create.modal.twig', [
@@ -133,12 +137,16 @@ class DefaultController extends AbstractController
         $this->targetListModel->setMailingListId($id);
         $this->aliasListModel->setMailingListId($id);
 
+        // Calculate recipient count
+        $recipientCount = $this->targetResolver->countMailingList($mailingList);
+
         return $this->render('@IacopoMailing/default/edit.html.twig', [
             'mailingList' => $mailingList,
             'listForm' => $listForm->createView(),
             'targetForm' => $targetForm->createView(),
             'aliasForm' => $aliasForm->createView(),
-            'lastType' => $lastType
+            'lastType' => $lastType,
+            'recipientCount' => $recipientCount
         ]);
     }
 

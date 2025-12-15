@@ -46,7 +46,7 @@
 
                 <div class="card">
                     <div class="card-header">
-                        <h5 class="card-title mb-0">Destinataires ({{ mailingList.targets|length }})</h5>
+                        <h5 class="card-title mb-0">Destinataires ({{ recipientCount }} adresse(s) - {{ mailingList.targets|length }} cible(s))</h5>
                     </div>
                     <div class="card-body p-0">
                         {% if mailingList.targets|length > 0 %}
@@ -112,6 +112,12 @@
                         <div id="group-field" style="display:none">
                             {{ form_row(targetForm.targetGroup) }}
                         </div>
+                        <div id="fonction-field" style="display:none">
+                            {{ form_row(targetForm.targetFonction) }}
+                        </div>
+                        <div id="list-field" style="display:none">
+                            {{ form_row(targetForm.targetList) }}
+                        </div>
                         <button type="submit" class="btn btn-primary btn-block">
                             <i class="fas fa-plus"></i> Ajouter
                         </button>
@@ -129,12 +135,16 @@
             const emailField = document.getElementById('email-field');
             const userField = document.getElementById('user-field');
             const groupField = document.getElementById('group-field');
+            const fonctionField = document.getElementById('fonction-field');
+            const listField = document.getElementById('list-field');
 
             function updateFields() {
                 const type = typeSelect.value;
                 emailField.style.display = type === 'email' ? 'block' : 'none';
                 userField.style.display = type === 'user' ? 'block' : 'none';
-                groupField.style.display = type === 'group' ? 'block' : 'none';
+                groupField.style.display = type === 'unite' ? 'block' : 'none';
+                fonctionField.style.display = type === 'role' ? 'block' : 'none';
+                listField.style.display = type === 'list' ? 'block' : 'none';
 
                 // Clear non-visible fields to avoid validation issues
                 if (type !== 'email') {
@@ -145,15 +155,30 @@
                     const userInput = userField.querySelector('select');
                     if (userInput) userInput.value = '';
                 }
-                if (type !== 'group') {
+                if (type !== 'unite') {
                     const groupInput = groupField.querySelector('select');
                     if (groupInput) groupInput.value = '';
+                }
+                if (type !== 'role') {
+                    const fonctionInput = fonctionField.querySelector('select');
+                    if (fonctionInput) fonctionInput.value = '';
+                }
+                if (type !== 'list') {
+                    const listInput = listField.querySelector('select');
+                    if (listInput) listInput.value = '';
                 }
             }
 
             typeSelect.addEventListener('change', updateFields);
             // Initialize on page load with pre-selected type
             updateFields();
+
+            // Initialize Bootstrap tooltips
+            $('[data-toggle="tooltip"]').tooltip({
+                html: true,
+                trigger: 'hover',
+                container: 'body'
+            });
         });
     </script>
 {% endblock %}

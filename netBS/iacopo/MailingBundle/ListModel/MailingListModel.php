@@ -3,6 +3,7 @@
 namespace Iacopo\MailingBundle\ListModel;
 
 use Iacopo\MailingBundle\Entity\MailingList;
+use Iacopo\MailingBundle\Service\MailingTargetResolver;
 use NetBS\CoreBundle\ListModel\Action\LinkAction;
 use NetBS\CoreBundle\ListModel\ActionItem;
 use NetBS\CoreBundle\ListModel\Column\ActionColumn;
@@ -16,6 +17,13 @@ use NetBS\ListBundle\Model\ListColumnsConfiguration;
 class MailingListModel extends BaseListModel
 {
     use EntityManagerTrait, RouterTrait;
+
+    private $targetResolver;
+
+    public function __construct(MailingTargetResolver $targetResolver)
+    {
+        $this->targetResolver = $targetResolver;
+    }
 
     /**
      * Retrieves all elements managed by this list
@@ -84,8 +92,23 @@ class MailingListModel extends BaseListModel
             ])
             ->addColumn("Destinataires", null, ClosureColumn::class, [
                 ClosureColumn::CLOSURE => function(MailingList $list) {
-                    $count = $list->getTargets()->count();
-                    return "<span class='badge badge-info'>{$count} destinataire(s)</span>";
+                    $targetCount = $list->getTargets()->count();
+                    $emailCount = $this->targetResolver->countMailingList($list);
+                    $emails = $this->targetResolver->resolveMailingList($list);
+                    $emailsList = implode("\n", array_map('htmlspecialchars', $emails));
+
+                    $badge = $emailCount > 0
+                        ? "<span class='badge badge-info'>{$emailCount} adresse(s)</span>"
+                        : "<span class='badge badge-warning'>0 adresse</span>";
+
+                    $targetBadge = "<span class='badge badge-secondary ml-1'>{$targetCount} cible(s)</span>";
+
+                    if ($emailCount > 0) {
+                        $title = htmlspecialchars($emailsList);
+                        return "<span title='{$title}' style='cursor: help;' data-toggle='tooltip' data-placement='left'>{$badge}</span>{$targetBadge}";
+                    }
+
+                    return "{$badge}{$targetBadge}";
                 }
             ])
             ->addColumn("Actions", null, ActionColumn::class, [

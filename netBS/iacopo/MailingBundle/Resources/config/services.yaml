@@ -8,6 +8,11 @@ services:
     resource: '../../*'
     exclude: '../../{Entity,Tests}'
 
+  # Data Fixtures
+  Iacopo\MailingBundle\DataFixtures\:
+    resource: '../../DataFixtures'
+    tags: ['doctrine.fixture.orm']
+
   # Menu listener
   Iacopo\MailingBundle\Listener\MainMenuListener:
     tags:
@@ -25,3 +30,13 @@ services:
   Iacopo\MailingBundle\ListModel\MailingAliasListModel:
     tags:
       - { name: netbs.list.model }
+
+  # Select2 Providers
+  Iacopo\MailingBundle\Select2\MailingListSelect2Provider:
+    tags:
+      - { name: netbs.select2_provider }
+
+  # Voters
+  Iacopo\MailingBundle\Voter\MailingListVoter:
+    tags:
+      - { name: security.voter }

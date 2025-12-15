@@ -20,7 +20,9 @@ class MailingTargetType extends AbstractType
                 'choices' => [
                     'Adresse email' => MailingTarget::TYPE_EMAIL,
                     'Utilisateur NetBS' => MailingTarget::TYPE_USER,
-                    'Groupe (attribution)' => MailingTarget::TYPE_GROUP,
+                    'Unité' => MailingTarget::TYPE_UNITE,
+                    'Rôle' => MailingTarget::TYPE_ROLE,
+                    'Liste' => MailingTarget::TYPE_LIST,
                 ],
                 'required' => true,
                 'attr' => ['class' => 'target-type-selector']
@@ -37,10 +39,22 @@ class MailingTargetType extends AbstractType
                 'attr' => ['class' => 'target-user-field']
             ])
             ->add('targetGroup', AjaxSelect2DocumentType::class, [
-                'label' => 'Groupe',
+                'label' => 'Unité',
                 'class' => 'App\Entity\BSGroupe',
                 'required' => false,
                 'attr' => ['class' => 'target-group-field']
+            ])
+            ->add('targetFonction', AjaxSelect2DocumentType::class, [
+                'label' => 'Rôle',
+                'class' => 'NetBS\FichierBundle\Entity\Fonction',
+                'required' => false,
+                'attr' => ['class' => 'target-fonction-field']
+            ])
+            ->add('targetList', AjaxSelect2DocumentType::class, [
+                'label' => 'Liste',
+                'class' => 'Iacopo\MailingBundle\Entity\MailingList',
+                'required' => false,
+                'attr' => ['class' => 'target-list-field']
             ]);
     }
 

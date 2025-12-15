@@ -22,10 +22,7 @@ class MainMenuListener
         /** @var BaseUser $user */
         $user = $this->storage->getToken()->getUser();
 
-        // Only show for admins
-        if (!$user->hasRole('ROLE_ADMIN')) {
-            return;
-        }
+        if (!$user->hasRole('ROLE_MAILING')) return;
 
         // Add to Administration category
         $adminCategory = $menu->getCategory('secure.admin');

@@ -4,6 +4,7 @@ namespace Iacopo\MailingBundle\Entity;
 
 use App\Entity\BSUser;
 use App\Entity\BSGroupe;
+use NetBS\FichierBundle\Entity\Fonction;
 use Doctrine\ORM\Mapping as ORM;
 
 /**
@@ -14,7 +15,9 @@ class MailingTarget
 {
     const TYPE_EMAIL = 'email';
     const TYPE_USER = 'user';
-    const TYPE_GROUP = 'group';
+    const TYPE_UNITE = 'unite';
+    const TYPE_ROLE = 'role';
+    const TYPE_LIST = 'list';
 
     /**
      * @ORM\Id
@@ -52,6 +55,18 @@ class MailingTarget
     private $targetGroup;
 
     /**
+     * @ORM\ManyToOne(targetEntity="NetBS\FichierBundle\Entity\Fonction")
+     * @ORM\JoinColumn(nullable=true, onDelete="CASCADE")
+     */
+    private $targetFonction;
+
+    /**
+     * @ORM\ManyToOne(targetEntity="Iacopo\MailingBundle\Entity\MailingList")
+     * @ORM\JoinColumn(nullable=true, onDelete="CASCADE")
+     */
+    private $targetList;
+
+    /**
      * @ORM\Column(type="datetime")
      */
     private $createdAt;
@@ -84,7 +99,7 @@ class MailingTarget
 
     public function setType(string $type): self
     {
-        if (!in_array($type, [self::TYPE_EMAIL, self::TYPE_USER, self::TYPE_GROUP])) {
+        if (!in_array($type, [self::TYPE_EMAIL, self::TYPE_USER, self::TYPE_UNITE, self::TYPE_ROLE, self::TYPE_LIST])) {
             throw new \InvalidArgumentException("Invalid target type");
         }
         $this->type = $type;
@@ -124,6 +139,28 @@ class MailingTarget
         return $this;
     }
 
+    public function getTargetFonction(): ?Fonction
+    {
+        return $this->targetFonction;
+    }
+
+    public function setTargetFonction(?Fonction $targetFonction): self
+    {
+        $this->targetFonction = $targetFonction;
+        return $this;
+    }
+
+    public function getTargetList(): ?MailingList
+    {
+        return $this->targetList;
+    }
+
+    public function setTargetList(?MailingList $targetList): self
+    {
+        $this->targetList = $targetList;
+        return $this;
+    }
+
     public function getCreatedAt(): ?\DateTimeInterface
     {
         return $this->createdAt;
@@ -145,8 +182,12 @@ class MailingTarget
                 return $this->targetEmail ?? '';
             case self::TYPE_USER:
                 return $this->targetUser ? $this->targetUser->getUsername() : '';
-            case self::TYPE_GROUP:
+            case self::TYPE_UNITE:
                 return $this->targetGroup ? $this->targetGroup->getNom() : '';
+            case self::TYPE_ROLE:
+                return $this->targetFonction ? $this->targetFonction->getNom() : '';
+            case self::TYPE_LIST:
+                return $this->targetList ? $this->targetList->getName() : '';
             default:
                 return '';
         }
