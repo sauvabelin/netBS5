@@ -61,8 +61,8 @@ class DefaultController extends AbstractController
 
             $this->addFlash('success', 'Liste de diffusion créée avec succès');
 
-            // Redirect to edit page of newly created mailing list
-            return $this->redirectToRoute('iacopo.mailing.edit', ['id' => $mailingList->getId()]);
+            // Return 201 to trigger page reload
+            return new Response('', 201);
         }
 
         return $this->render('@IacopoMailing/default/create.modal.twig', [
