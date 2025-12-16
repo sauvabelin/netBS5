@@ -16,7 +16,9 @@ use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\JsonResponse;
+use Symfony\Component\Form\FormInterface;
 use Doctrine\ORM\EntityManagerInterface;
+use Doctrine\DBAL\Exception\UniqueConstraintViolationException;
 
 class DefaultController extends AbstractController
 {
@@ -38,6 +40,27 @@ class DefaultController extends AbstractController
     }
 
     /**
+     * Helper method to collect all form errors and add them as flash messages
+     */
+    private function addFormErrorsAsFlash(FormInterface $form): void
+    {
+        // Get global form errors
+        foreach ($form->getErrors() as $error) {
+            $this->addFlash('error', $error->getMessage());
+        }
+
+        // Get field-specific errors
+        foreach ($form->all() as $child) {
+            if (!$child->isValid()) {
+                foreach ($child->getErrors() as $error) {
+                    $fieldName = $child->getConfig()->getOption('label') ?: $child->getName();
+                    $this->addFlash('error', $fieldName . ': ' . $error->getMessage());
+                }
+            }
+        }
+    }
+
+    /**
      * @Route("/", name="iacopo.mailing.list")
      */
     public function indexAction(): Response
@@ -51,18 +74,31 @@ class DefaultController extends AbstractController
     public function createAction(Request $request): Response
     {
         $mailingList = new MailingList();
+        $this->denyAccessUnlessGranted('create', $mailingList);
+
         $form = $this->createForm(MailingListType::class, $mailingList);
 
         $form->handleRequest($request);
 
-        if ($form->isSubmitted() && $form->isValid()) {
-            $this->em->persist($mailingList);
-            $this->em->flush();
+        if ($form->isSubmitted()) {
+            if ($form->isValid()) {
+                try {
+                    $this->em->persist($mailingList);
+                    $this->em->flush();
 
-            $this->addFlash('success', 'Liste de diffusion créée avec succès');
+                    $this->addFlash('success', 'Liste de diffusion créée avec succès');
 
-            // Return 201 to trigger page reload
-            return new Response('', 201);
+                    // Return 201 to trigger page reload
+                    return new Response('', 201);
+                } catch (UniqueConstraintViolationException $e) {
+                    $this->addFlash('error', 'Cette adresse de base est déjà utilisée.');
+                } catch (\Exception $e) {
+                    $this->addFlash('error', 'Une erreur est survenue lors de la création de la liste.');
+                }
+            } else {
+                // Add validation errors as flash messages
+                $this->addFormErrorsAsFlash($form);
+            }
         }
 
         return $this->render('@IacopoMailing/default/create.modal.twig', [
@@ -81,17 +117,29 @@ class DefaultController extends AbstractController
             throw $this->createNotFoundException('Liste non trouvée');
         }
 
+        $this->denyAccessUnlessGranted('update', $mailingList);
+
         // Form for editing the mailing list itself
         $listForm = $this->createForm(MailingListType::class, $mailingList);
         $listForm->handleRequest($request);
 
-        if ($listForm->isSubmitted() && $listForm->isValid()) {
-            $mailingList->setUpdatedAt(new \DateTime());
-            $this->em->flush();
+        if ($listForm->isSubmitted()) {
+            if ($listForm->isValid()) {
+                try {
+                    $mailingList->setUpdatedAt(new \DateTime());
+                    $this->em->flush();
 
-            $this->addFlash('success', 'Liste mise à jour avec succès');
+                    $this->addFlash('success', 'Liste mise à jour avec succès');
 
-            return $this->redirectToRoute('iacopo.mailing.edit', ['id' => $id]);
+                    return $this->redirectToRoute('iacopo.mailing.edit', ['id' => $id]);
+                } catch (UniqueConstraintViolationException $e) {
+                    $this->addFlash('error', 'Cette adresse de base est déjà utilisée.');
+                } catch (\Exception $e) {
+                    $this->addFlash('error', 'Une erreur est survenue lors de la mise à jour.');
+                }
+            } else {
+                $this->addFormErrorsAsFlash($listForm);
+            }
         }
 
         // Get the last used type from query parameter
@@ -105,16 +153,24 @@ class DefaultController extends AbstractController
 
         $targetForm->handleRequest($request);
 
-        if ($targetForm->isSubmitted() && $targetForm->isValid()) {
-            $this->em->persist($newTarget);
-            $this->em->flush();
+        if ($targetForm->isSubmitted()) {
+            if ($targetForm->isValid()) {
+                try {
+                    $this->em->persist($newTarget);
+                    $this->em->flush();
 
-            $this->addFlash('success', 'Destinataire ajouté avec succès');
+                    $this->addFlash('success', 'Destinataire ajouté avec succès');
 
-            return $this->redirectToRoute('iacopo.mailing.edit', [
-                'id' => $id,
-                'lastType' => $newTarget->getType()
-            ]);
+                    return $this->redirectToRoute('iacopo.mailing.edit', [
+                        'id' => $id,
+                        'lastType' => $newTarget->getType()
+                    ]);
+                } catch (\Exception $e) {
+                    $this->addFlash('error', 'Une erreur est survenue lors de l\'ajout du destinataire.');
+                }
+            } else {
+                $this->addFormErrorsAsFlash($targetForm);
+            }
         }
 
         // Form for adding new alias
@@ -124,13 +180,21 @@ class DefaultController extends AbstractController
 
         $aliasForm->handleRequest($request);
 
-        if ($aliasForm->isSubmitted() && $aliasForm->isValid()) {
-            $this->em->persist($newAlias);
-            $this->em->flush();
+        if ($aliasForm->isSubmitted()) {
+            if ($aliasForm->isValid()) {
+                try {
+                    $this->em->persist($newAlias);
+                    $this->em->flush();
 
-            $this->addFlash('success', 'Adresse alternative ajoutée avec succès');
+                    $this->addFlash('success', 'Adresse alternative ajoutée avec succès');
 
-            return $this->redirectToRoute('iacopo.mailing.edit', ['id' => $id]);
+                    return $this->redirectToRoute('iacopo.mailing.edit', ['id' => $id]);
+                } catch (\Exception $e) {
+                    $this->addFlash('error', 'Une erreur est survenue lors de l\'ajout de l\'adresse alternative.');
+                }
+            } else {
+                $this->addFormErrorsAsFlash($aliasForm);
+            }
         }
 
         // Configure list models
@@ -161,18 +225,28 @@ class DefaultController extends AbstractController
             throw $this->createNotFoundException('Destinataire non trouvé');
         }
 
+        $this->denyAccessUnlessGranted('update', $target);
+
         $form = $this->createForm(MailingTargetType::class, $target);
         $form->handleRequest($request);
 
-        if ($form->isSubmitted() && $form->isValid()) {
-            $this->em->flush();
+        if ($form->isSubmitted()) {
+            if ($form->isValid()) {
+                try {
+                    $this->em->flush();
 
-            $this->addFlash('success', 'Destinataire modifié avec succès');
+                    $this->addFlash('success', 'Destinataire modifié avec succès');
 
-            return $this->redirectToRoute('iacopo.mailing.edit', [
-                'id' => $target->getMailingList()->getId(),
-                'lastType' => $target->getType()
-            ]);
+                    return $this->redirectToRoute('iacopo.mailing.edit', [
+                        'id' => $target->getMailingList()->getId(),
+                        'lastType' => $target->getType()
+                    ]);
+                } catch (\Exception $e) {
+                    $this->addFlash('error', 'Une erreur est survenue lors de la modification du destinataire.');
+                }
+            } else {
+                $this->addFormErrorsAsFlash($form);
+            }
         }
 
         return $this->render('@IacopoMailing/default/edit_target.modal.twig', [
@@ -192,6 +266,8 @@ class DefaultController extends AbstractController
             return new JsonResponse(['error' => 'Liste non trouvée'], 404);
         }
 
+        $this->denyAccessUnlessGranted('update', $mailingList);
+
         $mailingList->setActive(!$mailingList->isActive());
         $this->em->flush();
 
@@ -209,6 +285,8 @@ class DefaultController extends AbstractController
         $target = $this->em->getRepository(MailingTarget::class)->find($id);
 
         if ($target) {
+            $this->denyAccessUnlessGranted('delete', $target);
+
             $listId = $target->getMailingList()->getId();
             $this->em->remove($target);
             $this->em->flush();
@@ -229,6 +307,8 @@ class DefaultController extends AbstractController
         $alias = $this->em->getRepository(MailingListAlias::class)->find($id);
 
         if ($alias) {
+            $this->denyAccessUnlessGranted('delete', $alias);
+
             $listId = $alias->getMailingList()->getId();
             $this->em->remove($alias);
             $this->em->flush();
@@ -248,6 +328,8 @@ class DefaultController extends AbstractController
     {
         $list = $this->em->getRepository(MailingList::class)->find($id);
         if ($list) {
+            $this->denyAccessUnlessGranted('delete', $list);
+
             $this->em->remove($list);
             $this->em->flush();
 

@@ -8,6 +8,9 @@ use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
 use Symfony\Component\Form\Extension\Core\Type\EmailType;
 use Symfony\Component\Form\FormBuilderInterface;
+use Symfony\Component\Form\FormEvent;
+use Symfony\Component\Form\FormEvents;
+use Symfony\Component\Form\FormError;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 
 class MailingTargetType extends AbstractType
@@ -56,6 +59,77 @@ class MailingTargetType extends AbstractType
                 'required' => false,
                 'attr' => ['class' => 'target-list-field']
             ]);
+
+        // Add event listener to validate that only the correct field is filled
+        $builder->addEventListener(FormEvents::PRE_SUBMIT, function (FormEvent $event) {
+            $data = $event->getData();
+            $type = $data['type'] ?? null;
+
+            if (!$type) {
+                return;
+            }
+
+            // Clear fields that don't match the selected type
+            if ($type !== MailingTarget::TYPE_EMAIL) {
+                $data['targetEmail'] = null;
+            }
+            if ($type !== MailingTarget::TYPE_USER) {
+                $data['targetUser'] = null;
+            }
+            if ($type !== MailingTarget::TYPE_UNITE) {
+                $data['targetGroup'] = null;
+            }
+            if ($type !== MailingTarget::TYPE_ROLE) {
+                $data['targetFonction'] = null;
+            }
+            if ($type !== MailingTarget::TYPE_LIST) {
+                $data['targetList'] = null;
+            }
+
+            $event->setData($data);
+        });
+
+        $builder->addEventListener(FormEvents::POST_SUBMIT, function (FormEvent $event) {
+            $form = $event->getForm();
+            $target = $event->getData();
+
+            if (!$target instanceof MailingTarget) {
+                return;
+            }
+
+            $type = $target->getType();
+
+            // Validate that the correct field has a value
+            $hasValue = false;
+            $fieldName = '';
+
+            switch ($type) {
+                case MailingTarget::TYPE_EMAIL:
+                    $hasValue = !empty($target->getTargetEmail());
+                    $fieldName = 'targetEmail';
+                    break;
+                case MailingTarget::TYPE_USER:
+                    $hasValue = $target->getTargetUser() !== null;
+                    $fieldName = 'targetUser';
+                    break;
+                case MailingTarget::TYPE_UNITE:
+                    $hasValue = $target->getTargetGroup() !== null;
+                    $fieldName = 'targetGroup';
+                    break;
+                case MailingTarget::TYPE_ROLE:
+                    $hasValue = $target->getTargetFonction() !== null;
+                    $fieldName = 'targetFonction';
+                    break;
+                case MailingTarget::TYPE_LIST:
+                    $hasValue = $target->getTargetList() !== null;
+                    $fieldName = 'targetList';
+                    break;
+            }
+
+            if (!$hasValue && $fieldName) {
+                $form->get($fieldName)->addError(new FormError('Ce champ est requis pour le type sélectionné.'));
+            }
+        });
     }
 
     public function configureOptions(OptionsResolver $resolver)

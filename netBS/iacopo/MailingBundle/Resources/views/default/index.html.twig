@@ -29,6 +29,15 @@
     </div>
 
     <script>
+        // Initialize Bootstrap tooltips
+        $(document).ready(function() {
+            $('[data-toggle="tooltip"]').tooltip({
+                html: true,
+                trigger: 'hover',
+                container: 'body'
+            });
+        });
+
         function toggleListActive(id) {
             const checkbox = document.getElementById('toggle-' + id);
             const label = document.getElementById('label-' + id);

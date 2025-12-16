@@ -20,9 +20,10 @@ class MailingTargetResolver
      * Resolve a single target to an array of email addresses
      *
      * @param MailingTarget $target
+     * @param array $visitedListIds Track visited lists to prevent circular references
      * @return array Array of email addresses
      */
-    public function resolveTarget(MailingTarget $target): array
+    private function resolveTargetInternal(MailingTarget $target, array $visitedListIds = []): array
     {
         $emails = [];
 
@@ -98,13 +99,28 @@ class MailingTargetResolver
             case MailingTarget::TYPE_LIST:
                 $nestedList = $target->getTargetList();
                 if ($nestedList) {
-                    // Recursively resolve the nested list
-                    $emails = array_merge($emails, $this->resolveMailingList($nestedList));
+                    $nestedListId = $nestedList->getId();
+                    // Check for circular reference
+                    if (!in_array($nestedListId, $visitedListIds)) {
+                        // Recursively resolve the nested list with updated visited list
+                        $emails = array_merge($emails, $this->resolveMailingListInternal($nestedList, $visitedListIds));
+                    }
                 }
                 break;
         }
 
         return array_unique($emails);
+    }
+
+    /**
+     * Resolve a single target to an array of email addresses
+     *
+     * @param MailingTarget $target
+     * @return array Array of email addresses
+     */
+    public function resolveTarget(MailingTarget $target): array
+    {
+        return $this->resolveTargetInternal($target, []);
     }
 
     /**
@@ -125,6 +141,28 @@ class MailingTargetResolver
     }
 
     /**
+     * Resolve all targets in a mailing list to unique email addresses (internal with circular reference protection)
+     *
+     * @param MailingList $mailingList
+     * @param array $visitedListIds Track visited lists to prevent circular references
+     * @return array Array of unique email addresses
+     */
+    private function resolveMailingListInternal(MailingList $mailingList, array $visitedListIds = []): array
+    {
+        $allEmails = [];
+
+        // Add current list to visited
+        $visitedListIds[] = $mailingList->getId();
+
+        foreach ($mailingList->getTargets() as $target) {
+            $emails = $this->resolveTargetInternal($target, $visitedListIds);
+            $allEmails = array_merge($allEmails, $emails);
+        }
+
+        return array_values(array_unique($allEmails));
+    }
+
+    /**
      * Resolve all targets in a mailing list to unique email addresses
      *
      * @param MailingList $mailingList
@@ -132,14 +170,7 @@ class MailingTargetResolver
      */
     public function resolveMailingList(MailingList $mailingList): array
     {
-        $allEmails = [];
-
-        foreach ($mailingList->getTargets() as $target) {
-            $emails = $this->resolveTarget($target);
-            $allEmails = array_merge($allEmails, $emails);
-        }
-
-        return array_values(array_unique($allEmails));
+        return $this->resolveMailingListInternal($mailingList, []);
     }
 
     /**

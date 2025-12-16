@@ -6,10 +6,13 @@ use App\Entity\BSUser;
 use App\Entity\BSGroupe;
 use NetBS\FichierBundle\Entity\Fonction;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Validator\Constraints as Assert;
+use Iacopo\MailingBundle\Validator\ValidMailingTarget;
 
 /**
  * @ORM\Entity(repositoryClass="Iacopo\MailingBundle\Repository\MailingTargetRepository")
  * @ORM\Table(name="mailing_target")
+ * @ValidMailingTarget
  */
 class MailingTarget
 {
@@ -29,16 +32,30 @@ class MailingTarget
     /**
      * @ORM\ManyToOne(targetEntity="MailingList", inversedBy="targets")
      * @ORM\JoinColumn(nullable=false, onDelete="CASCADE")
+     * @Assert\NotNull(message="La liste de diffusion est requise.")
      */
     private $mailingList;
 
     /**
      * @ORM\Column(type="string", length=50)
+     * @Assert\NotBlank(message="Le type est requis.")
+     * @Assert\Choice(
+     *     choices={"email", "user", "unite", "role", "list"},
+     *     message="Type invalide."
+     * )
      */
     private $type;
 
     /**
      * @ORM\Column(type="string", length=255, nullable=true)
+     * @Assert\Email(
+     *     message="L'adresse email n'est pas valide.",
+     *     groups={"email_type"}
+     * )
+     * @Assert\Length(
+     *     max=255,
+     *     maxMessage="L'adresse email ne peut pas dépasser {{ limit }} caractères."
+     * )
      */
     private $targetEmail;
 

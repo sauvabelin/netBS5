@@ -5,10 +5,18 @@ namespace Iacopo\MailingBundle\Entity;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Validator\Constraints as Assert;
+use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
+use Iacopo\MailingBundle\Validator\UniqueMailingAddress;
 
 /**
  * @ORM\Entity(repositoryClass="Iacopo\MailingBundle\Repository\MailingListRepository")
  * @ORM\Table(name="mailing_list")
+ * @UniqueEntity(
+ *     fields={"baseAddress"},
+ *     message="Cette adresse de base est déjà utilisée."
+ * )
+ * @UniqueMailingAddress
  */
 class MailingList
 {
@@ -21,16 +29,31 @@ class MailingList
 
     /**
      * @ORM\Column(type="string", length=255)
+     * @Assert\NotBlank(message="Le nom est requis.")
+     * @Assert\Length(
+     *     max=255,
+     *     maxMessage="Le nom ne peut pas dépasser {{ limit }} caractères."
+     * )
      */
     private $name;
 
     /**
      * @ORM\Column(type="string", length=255, unique=true)
+     * @Assert\NotBlank(message="L'adresse de base est requise.")
+     * @Assert\Email(message="L'adresse de base doit être une adresse email valide.")
+     * @Assert\Length(
+     *     max=255,
+     *     maxMessage="L'adresse de base ne peut pas dépasser {{ limit }} caractères."
+     * )
      */
     private $baseAddress;
 
     /**
      * @ORM\Column(type="text", nullable=true)
+     * @Assert\Length(
+     *     max=2000,
+     *     maxMessage="La description ne peut pas dépasser {{ limit }} caractères."
+     * )
      */
     private $description;
 

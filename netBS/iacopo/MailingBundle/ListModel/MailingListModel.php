@@ -67,24 +67,26 @@ class MailingListModel extends BaseListModel
             ->addColumn("Nom", "name", SimpleColumn::class)
             ->addColumn("Adresse de base", null, ClosureColumn::class, [
                 ClosureColumn::CLOSURE => function(MailingList $list) {
-                    return "<code>{$list->getBaseAddress()}</code>";
+                    $address = htmlspecialchars($list->getBaseAddress(), ENT_QUOTES, 'UTF-8');
+                    return "<code>{$address}</code>";
                 }
             ])
             ->addColumn("Description", "description", SimpleColumn::class)
             ->addColumn("Statut", null, ClosureColumn::class, [
                 ClosureColumn::CLOSURE => function(MailingList $list) {
                     $checked = $list->isActive() ? 'checked' : '';
-                    $label = $list->isActive() ? 'Active' : 'Inactive';
+                    $label = htmlspecialchars($list->isActive() ? 'Active' : 'Inactive', ENT_QUOTES, 'UTF-8');
                     $badgeClass = $list->isActive() ? 'badge-success' : 'badge-secondary';
+                    $id = (int)$list->getId(); // Ensure ID is an integer
                     return "
                         <div class='custom-control custom-switch' onclick='event.stopPropagation()'>
                             <input type='checkbox'
                                    class='custom-control-input'
-                                   id='toggle-{$list->getId()}'
+                                   id='toggle-{$id}'
                                    {$checked}
-                                   onchange='toggleListActive({$list->getId()})'>
-                            <label class='custom-control-label' for='toggle-{$list->getId()}'>
-                                <span class='badge {$badgeClass}' id='label-{$list->getId()}'>{$label}</span>
+                                   onchange='toggleListActive({$id})'>
+                            <label class='custom-control-label' for='toggle-{$id}'>
+                                <span class='badge {$badgeClass}' id='label-{$id}'>{$label}</span>
                             </label>
                         </div>
                     ";
@@ -92,23 +94,27 @@ class MailingListModel extends BaseListModel
             ])
             ->addColumn("Destinataires", null, ClosureColumn::class, [
                 ClosureColumn::CLOSURE => function(MailingList $list) {
-                    $targetCount = $list->getTargets()->count();
-                    $emailCount = $this->targetResolver->countMailingList($list);
+                    $targetCount = (int)$list->getTargets()->count();
+                    $emailCount = (int)$this->targetResolver->countMailingList($list);
                     $emails = $this->targetResolver->resolveMailingList($list);
-                    $emailsList = implode("\n", array_map('htmlspecialchars', $emails));
 
-                    $badge = $emailCount > 0
-                        ? "<span class='badge badge-info'>{$emailCount} adresses</span>"
+                    // Escape and format emails for tooltip
+                    $emailsList = implode("\n", array_map(function($email) {
+                        return htmlspecialchars($email, ENT_QUOTES, 'UTF-8');
+                    }, $emails));
+
+
+                    $emailBadge = $emailCount > 0
+                        ? "<span class='badge badge-info'>{$emailCount} adresse(s)</span>"
                         : "<span class='badge badge-warning'>0 adresses</span>";
 
-                    $targetBadge = "<span class='badge badge-secondary ml-1'>{$targetCount} groupes</span>";
-
+                    // Show tooltip with email list if there are emails
                     if ($emailCount > 0) {
-                        $title = htmlspecialchars($emailsList);
-                        return "<span title='{$title}' style='cursor: help;' data-toggle='tooltip' data-placement='left'>{$badge}</span>{$targetBadge}";
+                        $title = htmlspecialchars($emailsList, ENT_QUOTES, 'UTF-8');
+                        return "<span title='{$title}' style='cursor: help;' data-toggle='tooltip' data-placement='left'>{$emailBadge}</span>";
                     }
 
-                    return "{$badge}{$targetBadge}";
+                    return "{$emailBadge}";
                 }
             ])
             ->addColumn("Actions", null, ActionColumn::class, [
@@ -119,7 +125,7 @@ class MailingListModel extends BaseListModel
                         LinkAction::THEME => 'primary',
                         LinkAction::SIZE => 'btn-sm',
                         LinkAction::ROUTE => function(MailingList $list) {
-                            return $this->router->generate('iacopo.mailing.edit', ['id' => $list->getId()]);
+                            return htmlspecialchars($this->router->generate('iacopo.mailing.edit', ['id' => $list->getId()]), ENT_QUOTES, 'UTF-8');
                         }
                     ]),
                     new ActionItem(LinkAction::class, [
@@ -129,7 +135,7 @@ class MailingListModel extends BaseListModel
                         LinkAction::SIZE => 'btn-sm',
                         LinkAction::ATTRS => 'onclick="return confirm(\'Êtes-vous sûr de vouloir supprimer cette liste ?\')"',
                         LinkAction::ROUTE => function(MailingList $list) {
-                            return $this->router->generate('iacopo.mailing.delete', ['id' => $list->getId()]);
+                            return htmlspecialchars($this->router->generate('iacopo.mailing.delete', ['id' => $list->getId()]), ENT_QUOTES, 'UTF-8');
                         }
                     ])
                 ]

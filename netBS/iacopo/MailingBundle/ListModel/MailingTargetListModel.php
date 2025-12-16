@@ -78,9 +78,11 @@ class MailingTargetListModel extends BaseListModel
             ->addColumn("Destinataire", null, ClosureColumn::class, [
                 ClosureColumn::CLOSURE => function(MailingTarget $target) {
                     $details = $this->targetResolver->getTargetDetails($target);
-                    $display = htmlspecialchars($details['display']);
-                    $count = $details['count'];
-                    $emails = array_map('htmlspecialchars', $details['emails']);
+                    $display = htmlspecialchars($details['display'], ENT_QUOTES, 'UTF-8');
+                    $count = (int)$details['count'];
+                    $emails = array_map(function($email) {
+                        return htmlspecialchars($email, ENT_QUOTES, 'UTF-8');
+                    }, $details['emails']);
                     $emailsList = implode("\n", $emails);
 
                     $countBadge = $count > 0
@@ -88,7 +90,7 @@ class MailingTargetListModel extends BaseListModel
                         : "<span class='badge badge-warning ml-2'>0 adresses</span>";
 
                     if ($count > 0) {
-                        $title = htmlspecialchars($emailsList);
+                        $title = htmlspecialchars($emailsList, ENT_QUOTES, 'UTF-8');
                         return "<span title='{$title}' style='cursor: help;' data-toggle='tooltip' data-placement='right'>{$display}{$countBadge}</span>";
                     }
 
@@ -97,8 +99,8 @@ class MailingTargetListModel extends BaseListModel
             ])
             ->addColumn("Actions", null, ClosureColumn::class, [
                 ClosureColumn::CLOSURE => function(MailingTarget $target) {
-                    $editUrl = $this->router->generate('iacopo.mailing.target.edit', ['id' => $target->getId()]);
-                    $deleteUrl = $this->router->generate('iacopo.mailing.target.delete', ['id' => $target->getId()]);
+                    $editUrl = htmlspecialchars($this->router->generate('iacopo.mailing.target.edit', ['id' => $target->getId()]), ENT_QUOTES, 'UTF-8');
+                    $deleteUrl = htmlspecialchars($this->router->generate('iacopo.mailing.target.delete', ['id' => $target->getId()]), ENT_QUOTES, 'UTF-8');
 
                     return "
                         <form method=\"post\" action=\"{$deleteUrl}\" style=\"display:inline\" onsubmit=\"return confirm('Supprimer ce destinataire ?')\">

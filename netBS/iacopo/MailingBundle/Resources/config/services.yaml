@@ -40,3 +40,12 @@ services:
   Iacopo\MailingBundle\Voter\MailingListVoter:
     tags:
       - { name: security.voter }
+
+  # Validators
+  Iacopo\MailingBundle\Validator\ValidMailingTargetValidator:
+    tags:
+      - { name: validator.constraint_validator }
+
+  Iacopo\MailingBundle\Validator\UniqueMailingAddressValidator:
+    tags:
+      - { name: validator.constraint_validator }

@@ -14,6 +14,12 @@
     <div id="group-field" style="display:none">
         {{ form_row(form.targetGroup) }}
     </div>
+    <div id="fonction-field" style="display:none">
+        {{ form_row(form.targetFonction) }}
+    </div>
+    <div id="list-field" style="display:none">
+        {{ form_row(form.targetList) }}
+    </div>
     {{ form_end(form) }}
 
     <script>
@@ -22,12 +28,38 @@
             const emailField = document.getElementById('email-field');
             const userField = document.getElementById('user-field');
             const groupField = document.getElementById('group-field');
+            const fonctionField = document.getElementById('fonction-field');
+            const listField = document.getElementById('list-field');
 
             function updateFields() {
                 const type = typeSelect.value;
                 emailField.style.display = type === 'email' ? 'block' : 'none';
                 userField.style.display = type === 'user' ? 'block' : 'none';
-                groupField.style.display = type === 'group' ? 'block' : 'none';
+                groupField.style.display = type === 'unite' ? 'block' : 'none';
+                fonctionField.style.display = type === 'role' ? 'block' : 'none';
+                listField.style.display = type === 'list' ? 'block' : 'none';
+
+                // Clear non-visible fields to avoid validation issues
+                if (type !== 'email') {
+                    const emailInput = emailField.querySelector('input');
+                    if (emailInput) emailInput.value = '';
+                }
+                if (type !== 'user') {
+                    const userInput = userField.querySelector('select');
+                    if (userInput) userInput.value = '';
+                }
+                if (type !== 'unite') {
+                    const groupInput = groupField.querySelector('select');
+                    if (groupInput) groupInput.value = '';
+                }
+                if (type !== 'role') {
+                    const fonctionInput = fonctionField.querySelector('select');
+                    if (fonctionInput) fonctionInput.value = '';
+                }
+                if (type !== 'list') {
+                    const listInput = listField.querySelector('select');
+                    if (listInput) listInput.value = '';
+                }
             }
 
             typeSelect.addEventListener('change', updateFields);

@@ -51,12 +51,13 @@ class MailingAliasListModel extends BaseListModel
         $configuration
             ->addColumn("Adresse alternative", null, ClosureColumn::class, [
                 ClosureColumn::CLOSURE => function(MailingListAlias $alias) {
-                    return "<code>{$alias->getAddress()}</code>";
+                    $address = htmlspecialchars($alias->getAddress(), ENT_QUOTES, 'UTF-8');
+                    return "<code>{$address}</code>";
                 }
             ])
             ->addColumn("Actions", null, ClosureColumn::class, [
                 ClosureColumn::CLOSURE => function(MailingListAlias $alias) {
-                    $deleteUrl = $this->router->generate('iacopo.mailing.alias.delete', ['id' => $alias->getId()]);
+                    $deleteUrl = htmlspecialchars($this->router->generate('iacopo.mailing.alias.delete', ['id' => $alias->getId()]), ENT_QUOTES, 'UTF-8');
 
                     return "
                         <form method=\"post\" action=\"{$deleteUrl}\" style=\"display:inline\" onsubmit=\"return confirm('Supprimer cette adresse ?')\">
