@@ -22,7 +22,7 @@ class MailingTargetListModel extends BaseListModel
         $this->targetResolver = $targetResolver;
     }
 
-    public function setMailingListId($id)
+    public function setMailingListId(int $id): void
     {
         $this->mailingListId = $id;
     }

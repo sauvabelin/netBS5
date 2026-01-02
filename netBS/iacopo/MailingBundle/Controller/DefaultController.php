@@ -19,6 +19,7 @@ use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\Form\FormInterface;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\DBAL\Exception\UniqueConstraintViolationException;
+use Psr\Log\LoggerInterface;
 
 class DefaultController extends AbstractController
 {
@@ -26,17 +27,20 @@ class DefaultController extends AbstractController
     private $targetListModel;
     private $aliasListModel;
     private $targetResolver;
+    private $logger;
 
     public function __construct(
         EntityManagerInterface $em,
         MailingTargetListModel $targetListModel,
         MailingAliasListModel $aliasListModel,
-        MailingTargetResolver $targetResolver
+        MailingTargetResolver $targetResolver,
+        LoggerInterface $logger
     ) {
         $this->em = $em;
         $this->targetListModel = $targetListModel;
         $this->aliasListModel = $aliasListModel;
         $this->targetResolver = $targetResolver;
+        $this->logger = $logger;
     }
 
     /**
@@ -93,6 +97,10 @@ class DefaultController extends AbstractController
                 } catch (UniqueConstraintViolationException $e) {
                     $this->addFlash('error', 'Cette adresse de base est déjà utilisée.');
                 } catch (\Exception $e) {
+                    $this->logger->error('Failed to create mailing list', [
+                        'exception' => $e->getMessage(),
+                        'trace' => $e->getTraceAsString()
+                    ]);
                     $this->addFlash('error', 'Une erreur est survenue lors de la création de la liste.');
                 }
             } else {
@@ -135,6 +143,11 @@ class DefaultController extends AbstractController
                 } catch (UniqueConstraintViolationException $e) {
                     $this->addFlash('error', 'Cette adresse de base est déjà utilisée.');
                 } catch (\Exception $e) {
+                    $this->logger->error('Failed to update mailing list', [
+                        'list_id' => $id,
+                        'exception' => $e->getMessage(),
+                        'trace' => $e->getTraceAsString()
+                    ]);
                     $this->addFlash('error', 'Une erreur est survenue lors de la mise à jour.');
                 }
             } else {
@@ -166,6 +179,11 @@ class DefaultController extends AbstractController
                         'lastType' => $newTarget->getType()
                     ]);
                 } catch (\Exception $e) {
+                    $this->logger->error('Failed to add mailing target', [
+                        'list_id' => $id,
+                        'exception' => $e->getMessage(),
+                        'trace' => $e->getTraceAsString()
+                    ]);
                     $this->addFlash('error', 'Une erreur est survenue lors de l\'ajout du destinataire.');
                 }
             } else {
@@ -190,6 +208,11 @@ class DefaultController extends AbstractController
 
                     return $this->redirectToRoute('iacopo.mailing.edit', ['id' => $id]);
                 } catch (\Exception $e) {
+                    $this->logger->error('Failed to add mailing alias', [
+                        'list_id' => $id,
+                        'exception' => $e->getMessage(),
+                        'trace' => $e->getTraceAsString()
+                    ]);
                     $this->addFlash('error', 'Une erreur est survenue lors de l\'ajout de l\'adresse alternative.');
                 }
             } else {
@@ -242,6 +265,11 @@ class DefaultController extends AbstractController
                         'lastType' => $target->getType()
                     ]);
                 } catch (\Exception $e) {
+                    $this->logger->error('Failed to edit mailing target', [
+                        'target_id' => $id,
+                        'exception' => $e->getMessage(),
+                        'trace' => $e->getTraceAsString()
+                    ]);
                     $this->addFlash('error', 'Une erreur est survenue lors de la modification du destinataire.');
                 }
             } else {
@@ -319,6 +347,27 @@ class DefaultController extends AbstractController
         }
 
         return $this->redirectToRoute('iacopo.mailing.list');
+    }
+
+    /**
+     * @Route("/{id}/recipients", name="iacopo.mailing.recipients", methods={"GET"})
+     */
+    public function getRecipientsAction(int $id): JsonResponse
+    {
+        $mailingList = $this->em->getRepository(MailingList::class)->find($id);
+
+        if (!$mailingList) {
+            return new JsonResponse(['error' => 'Liste non trouvée'], 404);
+        }
+
+        $this->denyAccessUnlessGranted('read', $mailingList);
+
+        $emails = $this->targetResolver->resolveMailingList($mailingList);
+
+        return new JsonResponse([
+            'count' => count($emails),
+            'emails' => $emails
+        ]);
     }
 
     /**

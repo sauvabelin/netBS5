@@ -4,6 +4,14 @@
 
 {% block main %}
     {{ registerJs(asset('bundles/netbscore/js/modal.js')) }}
+    {{ registerJs(asset('bundles/iacopomailing/js/mailing.js')) }}
+
+    <script>
+        window.mailingRoutes = {
+            toggleActive: "{{ path('iacopo.mailing.toggle_active', {id: '__ID__'}) }}",
+            recipients: "{{ path('iacopo.mailing.recipients', {id: '__ID__'}) }}"
+        };
+    </script>
 
     <div class="container-fluid">
         {% include '@NetBSCore/includes/header.include.twig' with {
@@ -27,37 +35,4 @@
             </div>
         </div>
     </div>
-
-    <script>
-        // Initialize Bootstrap tooltips
-        $(document).ready(function() {
-            $('[data-toggle="tooltip"]').tooltip({
-                html: true,
-                trigger: 'hover',
-                container: 'body'
-            });
-        });
-
-        function toggleListActive(id) {
-            const checkbox = document.getElementById('toggle-' + id);
-            const label = document.getElementById('label-' + id);
-
-            fetch('{{ path('iacopo.mailing.toggle_active', {id: '__ID__'}) }}'.replace('__ID__', id), {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                }
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    label.textContent = data.active ? 'Active' : 'Inactive';
-                    label.className = 'badge ' + (data.active ? 'badge-success' : 'badge-secondary');
-                } else {
-                    checkbox.checked = !checkbox.checked;
-                    alert('Erreur lors de la mise à jour');
-                }
-            });
-        }
-    </script>
 {% endblock %}

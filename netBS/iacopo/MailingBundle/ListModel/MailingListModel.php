@@ -3,7 +3,6 @@
 namespace Iacopo\MailingBundle\ListModel;
 
 use Iacopo\MailingBundle\Entity\MailingList;
-use Iacopo\MailingBundle\Service\MailingTargetResolver;
 use NetBS\CoreBundle\ListModel\Action\LinkAction;
 use NetBS\CoreBundle\ListModel\ActionItem;
 use NetBS\CoreBundle\ListModel\Column\ActionColumn;
@@ -17,13 +16,6 @@ use NetBS\ListBundle\Model\ListColumnsConfiguration;
 class MailingListModel extends BaseListModel
 {
     use EntityManagerTrait, RouterTrait;
-
-    private $targetResolver;
-
-    public function __construct(MailingTargetResolver $targetResolver)
-    {
-        $this->targetResolver = $targetResolver;
-    }
 
     /**
      * Retrieves all elements managed by this list
@@ -94,27 +86,13 @@ class MailingListModel extends BaseListModel
             ])
             ->addColumn("Destinataires", null, ClosureColumn::class, [
                 ClosureColumn::CLOSURE => function(MailingList $list) {
+                    $id = (int)$list->getId();
                     $targetCount = (int)$list->getTargets()->count();
-                    $emailCount = (int)$this->targetResolver->countMailingList($list);
-                    $emails = $this->targetResolver->resolveMailingList($list);
 
-                    // Escape and format emails for tooltip
-                    $emailsList = implode("\n", array_map(function($email) {
-                        return htmlspecialchars($email, ENT_QUOTES, 'UTF-8');
-                    }, $emails));
-
-
-                    $emailBadge = $emailCount > 0
-                        ? "<span class='badge badge-info'>{$emailCount} adresse(s)</span>"
-                        : "<span class='badge badge-warning'>0 adresses</span>";
-
-                    // Show tooltip with email list if there are emails
-                    if ($emailCount > 0) {
-                        $title = htmlspecialchars($emailsList, ENT_QUOTES, 'UTF-8');
-                        return "<span title='{$title}' style='cursor: help;' data-toggle='tooltip' data-placement='left'>{$emailBadge}</span>";
-                    }
-
-                    return "{$emailBadge}";
+                    // Render placeholder badge - actual count loaded via AJAX on hover
+                    return "<span class='recipient-count' data-list-id='{$id}' data-toggle='tooltip' title='Survolez pour charger...'>"
+                         . "<span class='badge badge-secondary'>{$targetCount} cible(s)</span>"
+                         . "</span>";
                 }
             ])
             ->addColumn("Actions", null, ActionColumn::class, [

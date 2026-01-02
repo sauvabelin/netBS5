@@ -15,7 +15,7 @@ class MailingAliasListModel extends BaseListModel
 
     private $mailingListId;
 
-    public function setMailingListId($id)
+    public function setMailingListId(int $id): void
     {
         $this->mailingListId = $id;
     }

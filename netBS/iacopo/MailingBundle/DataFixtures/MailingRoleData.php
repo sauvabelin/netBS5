@@ -8,9 +8,6 @@ use Doctrine\Common\DataFixtures\OrderedFixtureInterface;
 use Doctrine\Persistence\ObjectManager;
 use NetBS\SecureBundle\Service\SecureConfig;
 
-
-// Shit does not work. Add manually to database: INSERT INTO netbs_secure_roles (role, poids, description, parent_id) VALUES ('ROLE_MAILING', 980, 'Gestionnaire des listes de diffusion', 2);
-
 class MailingRoleData extends AbstractFixture implements OrderedFixtureInterface, FixtureGroupInterface
 {
     protected $config;

@@ -7,23 +7,59 @@ use Doctrine\ORM\EntityManagerInterface;
 use Iacopo\MailingBundle\Entity\MailingList;
 use Iacopo\MailingBundle\Entity\MailingTarget;
 use NetBS\FichierBundle\Entity\Attribution;
+use Psr\Log\LoggerInterface;
 
 class MailingTargetResolver
 {
-    private $entityManager;
+    private const MAX_NESTING_DEPTH = 10;
 
-    public function __construct(EntityManagerInterface $entityManager)
+    private $entityManager;
+    private $logger;
+
+    public function __construct(EntityManagerInterface $entityManager, LoggerInterface $logger)
     {
         $this->entityManager = $entityManager;
+        $this->logger = $logger;
+    }
+
+    /**
+     * Batch load users for a collection of membres (fixes N+1 query problem)
+     *
+     * @param array $membres Array of membre entities
+     * @return array Associative array indexed by membre ID
+     */
+    private function getUsersForMembres(array $membres): array
+    {
+        if (empty($membres)) {
+            return [];
+        }
+
+        $users = $this->entityManager
+            ->getRepository(BSUser::class)
+            ->createQueryBuilder('u')
+            ->where('u.membre IN (:membres)')
+            ->setParameter('membres', $membres)
+            ->getQuery()
+            ->getResult();
+
+        // Index by membre ID for O(1) lookup
+        $usersByMembreId = [];
+        foreach ($users as $user) {
+            if ($user->getMembre()) {
+                $usersByMembreId[$user->getMembre()->getId()] = $user;
+            }
+        }
+        return $usersByMembreId;
     }
     /**
      * Resolve a single target to an array of email addresses
      *
      * @param MailingTarget $target
      * @param array $visitedListIds Track visited lists to prevent circular references
+     * @param int $depth Current nesting depth
      * @return array Array of email addresses
      */
-    private function resolveTargetInternal(MailingTarget $target, array $visitedListIds = []): array
+    private function resolveTargetInternal(MailingTarget $target, array $visitedListIds = [], int $depth = 0): array
     {
         $emails = [];
 
@@ -48,17 +84,25 @@ class MailingTargetResolver
             case MailingTarget::TYPE_UNITE:
                 $group = $target->getTargetGroup();
                 if ($group) {
+                    // Collect all membres first
+                    $membres = [];
                     foreach ($group->getActivesAttributions() as $attribution) {
                         $membre = $attribution->getMembre();
                         if ($membre) {
-                            // Get user from membre
-                            $user = $this->getUserFromMembre($membre);
-                            if ($user) {
-                                // Use getEmail() directly - NEVER fall back to membre email
-                                $email = $user->getEmail();
-                                if ($email) {
-                                    $emails[] = $email;
-                                }
+                            $membres[] = $membre;
+                        }
+                    }
+
+                    // Batch load users (fixes N+1 query problem)
+                    $usersByMembreId = $this->getUsersForMembres($membres);
+
+                    // Extract emails from loaded users
+                    foreach ($membres as $membre) {
+                        $user = $usersByMembreId[$membre->getId()] ?? null;
+                        if ($user) {
+                            $email = $user->getEmail();
+                            if ($email) {
+                                $emails[] = $email;
                             }
                         }
                     }
@@ -77,19 +121,27 @@ class MailingTargetResolver
                         ->getQuery()
                         ->getResult();
 
+                    // Collect all membres from active attributions first
+                    $membres = [];
                     foreach ($attributions as $attribution) {
                         if ($attribution->isActive()) {
                             $membre = $attribution->getMembre();
                             if ($membre) {
-                                // Get user from membre
-                                $user = $this->getUserFromMembre($membre);
-                                if ($user) {
-                                    // Use getEmail() directly - NEVER fall back to membre email
-                                    $email = $user->getEmail();
-                                    if ($email) {
-                                        $emails[] = $email;
-                                    }
-                                }
+                                $membres[] = $membre;
+                            }
+                        }
+                    }
+
+                    // Batch load users (fixes N+1 query problem)
+                    $usersByMembreId = $this->getUsersForMembres($membres);
+
+                    // Extract emails from loaded users
+                    foreach ($membres as $membre) {
+                        $user = $usersByMembreId[$membre->getId()] ?? null;
+                        if ($user) {
+                            $email = $user->getEmail();
+                            if ($email) {
+                                $emails[] = $email;
                             }
                         }
                     }
@@ -102,8 +154,8 @@ class MailingTargetResolver
                     $nestedListId = $nestedList->getId();
                     // Check for circular reference
                     if (!in_array($nestedListId, $visitedListIds)) {
-                        // Recursively resolve the nested list with updated visited list
-                        $emails = array_merge($emails, $this->resolveMailingListInternal($nestedList, $visitedListIds));
+                        // Recursively resolve the nested list with updated visited list and incremented depth
+                        $emails = array_merge($emails, $this->resolveMailingListInternal($nestedList, $visitedListIds, $depth + 1));
                     }
                 }
                 break;
@@ -124,38 +176,32 @@ class MailingTargetResolver
     }
 
     /**
-     * Get the user associated with a membre
-     *
-     * @param $membre
-     * @return BSUser|null
-     */
-    private function getUserFromMembre($membre): ?BSUser
-    {
-        return $this->entityManager
-            ->getRepository(BSUser::class)
-            ->createQueryBuilder('u')
-            ->where('u.membre = :membre')
-            ->setParameter('membre', $membre)
-            ->getQuery()
-            ->getOneOrNullResult();
-    }
-
-    /**
      * Resolve all targets in a mailing list to unique email addresses (internal with circular reference protection)
      *
      * @param MailingList $mailingList
      * @param array $visitedListIds Track visited lists to prevent circular references
+     * @param int $depth Current nesting depth
      * @return array Array of unique email addresses
      */
-    private function resolveMailingListInternal(MailingList $mailingList, array $visitedListIds = []): array
+    private function resolveMailingListInternal(MailingList $mailingList, array $visitedListIds = [], int $depth = 0): array
     {
+        // Check max nesting depth to prevent excessive recursion
+        if ($depth >= self::MAX_NESTING_DEPTH) {
+            $this->logger->warning('Mailing list nesting depth exceeded', [
+                'list_id' => $mailingList->getId(),
+                'list_name' => $mailingList->getName(),
+                'depth' => $depth
+            ]);
+            return [];
+        }
+
         $allEmails = [];
 
         // Add current list to visited
         $visitedListIds[] = $mailingList->getId();
 
         foreach ($mailingList->getTargets() as $target) {
-            $emails = $this->resolveTargetInternal($target, $visitedListIds);
+            $emails = $this->resolveTargetInternal($target, $visitedListIds, $depth);
             $allEmails = array_merge($allEmails, $emails);
         }
 

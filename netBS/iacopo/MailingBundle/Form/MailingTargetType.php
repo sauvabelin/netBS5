@@ -10,7 +10,6 @@ use Symfony\Component\Form\Extension\Core\Type\EmailType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\Form\FormEvent;
 use Symfony\Component\Form\FormEvents;
-use Symfony\Component\Form\FormError;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 
 class MailingTargetType extends AbstractType
@@ -87,48 +86,6 @@ class MailingTargetType extends AbstractType
             }
 
             $event->setData($data);
-        });
-
-        $builder->addEventListener(FormEvents::POST_SUBMIT, function (FormEvent $event) {
-            $form = $event->getForm();
-            $target = $event->getData();
-
-            if (!$target instanceof MailingTarget) {
-                return;
-            }
-
-            $type = $target->getType();
-
-            // Validate that the correct field has a value
-            $hasValue = false;
-            $fieldName = '';
-
-            switch ($type) {
-                case MailingTarget::TYPE_EMAIL:
-                    $hasValue = !empty($target->getTargetEmail());
-                    $fieldName = 'targetEmail';
-                    break;
-                case MailingTarget::TYPE_USER:
-                    $hasValue = $target->getTargetUser() !== null;
-                    $fieldName = 'targetUser';
-                    break;
-                case MailingTarget::TYPE_UNITE:
-                    $hasValue = $target->getTargetGroup() !== null;
-                    $fieldName = 'targetGroup';
-                    break;
-                case MailingTarget::TYPE_ROLE:
-                    $hasValue = $target->getTargetFonction() !== null;
-                    $fieldName = 'targetFonction';
-                    break;
-                case MailingTarget::TYPE_LIST:
-                    $hasValue = $target->getTargetList() !== null;
-                    $fieldName = 'targetList';
-                    break;
-            }
-
-            if (!$hasValue && $fieldName) {
-                $form->get($fieldName)->addError(new FormError('Ce champ est requis pour le type sélectionné.'));
-            }
         });
     }
 
