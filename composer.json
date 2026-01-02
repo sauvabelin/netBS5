@@ -72,7 +72,8 @@
             "NetBS\\SecureBundle\\": "netBS/core/SecureBundle",
             "NetBS\\FichierBundle\\": "netBS/core/FichierBundle",
             "NetBS\\ListBundle\\": "netBS/core/ListBundle",
-            "Ovesco\\FacturationBundle\\": "netBS/ovesco/FacturationBundle"
+            "Ovesco\\FacturationBundle\\": "netBS/ovesco/FacturationBundle",
+            "Iacopo\\MailingBundle\\": "netBS/iacopo/MailingBundle"
         }
     },
     "autoload-dev": {

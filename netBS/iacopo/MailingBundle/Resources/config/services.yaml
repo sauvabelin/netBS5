@@ -1,0 +1,51 @@
+services:
+  _defaults:
+    autowire: true
+    autoconfigure: true
+    public: false
+
+  Iacopo\MailingBundle\:
+    resource: '../../*'
+    exclude: '../../{Entity,Tests}'
+
+  # Data Fixtures
+  Iacopo\MailingBundle\DataFixtures\:
+    resource: '../../DataFixtures'
+    tags: ['doctrine.fixture.orm']
+
+  # Menu listener
+  Iacopo\MailingBundle\Listener\MainMenuListener:
+    tags:
+      - { name: kernel.event_listener, event: netbs.menu.extend, method: onMenuConfigure }
+
+  # List models
+  Iacopo\MailingBundle\ListModel\MailingListModel:
+    tags:
+      - { name: netbs.list.model }
+
+  Iacopo\MailingBundle\ListModel\MailingTargetListModel:
+    tags:
+      - { name: netbs.list.model }
+
+  Iacopo\MailingBundle\ListModel\MailingAliasListModel:
+    tags:
+      - { name: netbs.list.model }
+
+  # Select2 Providers
+  Iacopo\MailingBundle\Select2\MailingListSelect2Provider:
+    tags:
+      - { name: netbs.select2_provider }
+
+  # Voters
+  Iacopo\MailingBundle\Voter\MailingListVoter:
+    tags:
+      - { name: security.voter }
+
+  # Validators
+  Iacopo\MailingBundle\Validator\ValidMailingTargetValidator:
+    tags:
+      - { name: validator.constraint_validator }
+
+  Iacopo\MailingBundle\Validator\UniqueMailingAddressValidator:
+    tags:
+      - { name: validator.constraint_validator }

@@ -1,0 +1,4 @@
+iacopo_mailing:
+    resource: "@IacopoMailingBundle/Controller/"
+    type:     annotation
+    prefix:   /

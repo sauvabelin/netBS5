@@ -1,0 +1,131 @@
+{% extends '@NetBSCore/layout/backend.layout.twig' %}
+
+{% set title %}{{ mailingList.name }}{% endset %}
+
+{% block main %}
+    {{ registerJs(asset('bundles/netbscore/js/modal.js')) }}
+    {{ registerJs(asset('bundles/iacopomailing/js/mailing.js')) }}
+
+    <div class="container-fluid">
+        <div class="mb-3">
+            <h2>{{ mailingList.name }}</h2>
+            <p class="text-muted mb-0">
+                <code>{{ mailingList.baseAddress }}</code>
+            </p>
+            {% if mailingList.description %}
+                <p class="text-muted">{{ mailingList.description }}</p>
+            {% endif %}
+        </div>
+
+        <div class="row">
+            <div class="col-md-8">
+                <div class="card mb-3">
+                    <div class="card-header">
+                        <h5 class="card-title mb-0">Modifier les détails de la liste</h5>
+                    </div>
+                    <div class="card-body">
+                        {{ form_start(listForm) }}
+                        <div class="row">
+                            <div class="col-md-6">
+                                {{ form_row(listForm.name) }}
+                            </div>
+                            <div class="col-md-6">
+                                {{ form_row(listForm.baseAddress) }}
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-12">
+                                {{ form_row(listForm.description) }}
+                            </div>
+                        </div>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-save"></i> Enregistrer
+                        </button>
+                        {{ form_end(listForm) }}
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="card-title mb-0">Destinataires ({{ recipientCount }} adresse(s) - {{ mailingList.targets|length }} cible(s))</h5>
+                    </div>
+                    <div class="card-body p-0">
+                        {% if mailingList.targets|length > 0 %}
+                            {{ render_list('iacopo.mailing.targets', 'netbs') }}
+                        {% else %}
+                            <div class="p-3">
+                                <div class="alert alert-info mb-0">
+                                    <i class="fas fa-info-circle"></i>
+                                    Aucun destinataire. Ajoutez-en un avec le formulaire ci-contre.
+                                </div>
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-4">
+                <div class="card mb-3">
+                    <div class="card-header">
+                        <h5 class="card-title mb-0">Ajouter une adresse alternative</h5>
+                    </div>
+                    <div class="card-body">
+                        {{ form_start(aliasForm) }}
+                        {{ form_row(aliasForm.address) }}
+                        <button type="submit" class="btn btn-primary btn-block">
+                            <i class="fas fa-plus"></i> Ajouter
+                        </button>
+                        {{ form_end(aliasForm) }}
+                    </div>
+                </div>
+
+                <div class="card mb-3">
+                    <div class="card-header">
+                        <h5 class="card-title mb-0">Adresses alternatives ({{ mailingList.aliases|length }})</h5>
+                    </div>
+                    <div class="card-body p-0">
+                        {% if mailingList.aliases|length > 0 %}
+                            {{ render_list('iacopo.mailing.aliases', 'netbs') }}
+                        {% else %}
+                            <div class="p-3">
+                                <div class="alert alert-info mb-0">
+                                    <i class="fas fa-info-circle"></i>
+                                    Aucune adresse alternative.
+                                </div>
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="card-title mb-0">Ajouter un destinataire</h5>
+                    </div>
+                    <div class="card-body">
+                        {{ form_start(targetForm) }}
+                        {{ form_row(targetForm.type) }}
+                        <div id="email-field">
+                            {{ form_row(targetForm.targetEmail) }}
+                        </div>
+                        <div id="user-field" style="display:none">
+                            {{ form_row(targetForm.targetUser) }}
+                        </div>
+                        <div id="group-field" style="display:none">
+                            {{ form_row(targetForm.targetGroup) }}
+                        </div>
+                        <div id="fonction-field" style="display:none">
+                            {{ form_row(targetForm.targetFonction) }}
+                        </div>
+                        <div id="list-field" style="display:none">
+                            {{ form_row(targetForm.targetList) }}
+                        </div>
+                        <button type="submit" class="btn btn-primary btn-block">
+                            <i class="fas fa-plus"></i> Ajouter
+                        </button>
+                        {{ form_end(targetForm) }}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}

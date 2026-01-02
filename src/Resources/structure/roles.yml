@@ -13,6 +13,9 @@ roles:
                     ROLE_TRESORIER:
                         description: "Trésorier"
                         poids: 980
+                    ROLE_MAILING:
+                        description: "Gestionnaire des listes de diffusion"
+                        poids: 980
                     ROLE_RESPONSABLE_COMM:
                         description: "Responsable communication"
                         poids: 980
