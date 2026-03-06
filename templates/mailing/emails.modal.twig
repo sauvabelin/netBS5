@@ -11,28 +11,19 @@
 
 {% block footer %}
     <button type="button" data-dismiss="modal" class="btn btn-secondary">Fermer</button>
-    <button type="button" class="btn btn-primary" id="mailing-copy-btn">Copier</button>
+    <button type="button" class="btn btn-primary" id="mailing-copy-btn" onclick="
+        var btn = $(this);
+        var text = $('#mailing-emails-textarea').val();
+        if (navigator.clipboard) {
+            navigator.clipboard.writeText(text).then(function() {
+                btn.text('Copié !').addClass('btn-success').removeClass('btn-primary');
+                setTimeout(function() { btn.text('Copier').addClass('btn-primary').removeClass('btn-success'); }, 2000);
+            });
+        } else {
+            var ta = $('#mailing-emails-textarea');
+            ta.prop('readonly', false).select();
+            document.execCommand('copy');
+            ta.prop('readonly', true);
+        }
+    ">Copier</button>
 {% endblock %}
-
-{% set copyScript %}
-    <script>
-        $('#mailing-copy-btn').click(function() {
-            var btn = $(this);
-            var text = $('#mailing-emails-textarea').val();
-            if (navigator.clipboard) {
-                navigator.clipboard.writeText(text).then(function() {
-                    btn.text('Copié !').addClass('btn-success').removeClass('btn-primary');
-                    setTimeout(function() {
-                        btn.text('Copier').addClass('btn-primary').removeClass('btn-success');
-                    }, 2000);
-                });
-            } else {
-                var textarea = $('#mailing-emails-textarea');
-                textarea.prop('readonly', false).select();
-                document.execCommand('copy');
-                textarea.prop('readonly', true);
-            }
-        });
-    </script>
-{% endset %}
-{{ registerScript(copyScript) }}
