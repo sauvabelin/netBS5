@@ -5,7 +5,6 @@ namespace App\Automatics;
 use NetBS\CoreBundle\Model\BaseAutomatic;
 use NetBS\CoreBundle\Model\ConfigurableAutomaticInterface;
 use NetBS\CoreBundle\Utils\Traits\EntityManagerTrait;
-use NetBS\CoreBundle\Utils\Traits\ParamTrait;
 use NetBS\FichierBundle\Mapping\BaseGroupe;
 use NetBS\FichierBundle\Mapping\BaseMembre;
 use NetBS\FichierBundle\Utils\ListModel\MembreListHelper;
@@ -16,7 +15,7 @@ use Symfony\Component\Form\FormBuilderInterface;
 
 class CotisationsAutomatic extends BaseAutomatic implements ConfigurableAutomaticInterface
 {
-    use MembreListHelper, FichierConfigTrait, EntityManagerTrait, ParamTrait;
+    use MembreListHelper, FichierConfigTrait, EntityManagerTrait;
 
     /**
      * @return string
@@ -42,11 +41,10 @@ class CotisationsAutomatic extends BaseAutomatic implements ConfigurableAutomati
      */
     protected function getItems($data = null)
     {
-        $lvtx = $this->getMembresLouveteauxEtSMT();
-        $normal = $this->getToutLeReste();
-        $cleanLvtx = $this->filterGarsFromChefs(array_diff($lvtx, $normal));
+        $allMembres = $this->getAllMembres();
+        $split = $this->filterGarsFromChefs($allMembres);
 
-        return $data['type'] === 'lvtx' ? $cleanLvtx['gars'] : array_merge($normal, $cleanLvtx['chefs']);
+        return $data['type'] === 'participant' ? $split['gars'] : $split['chefs'];
     }
 
     /**
@@ -68,8 +66,8 @@ class CotisationsAutomatic extends BaseAutomatic implements ConfigurableAutomati
             ->add('type', ChoiceType::class, [
                 'label'     => 'Type',
                 'choices'   => [
-                    'Louveteaux & SMT'      => 'lvtx',
-                    'Cotisations normales'  => 'gars',
+                    'Participant'   => 'participant',
+                    'Chef'          => 'chef',
                 ]
             ]);
     }
@@ -89,40 +87,10 @@ class CotisationsAutomatic extends BaseAutomatic implements ConfigurableAutomati
         return ['type' => null];
     }
 
-    private function getMembresLouveteauxEtSMT() {
-
-        $louveteaux = $this->extractMembresFromGroupeTypes([$this->parameterManager->getValue('bs', 'groupe_type.meute_id')]);
-        $smt = $this->extractMembresFromGroupes([
-            $this->entityManager->find($this->getFichierConfig()->getGroupeClass(), $this->parameterManager->getValue('bs', 'groupe.branche_smt_id'))
-        ]);
-        return array_unique(array_merge($louveteaux, $smt));
-    }
-
-    private function getToutLeReste() {
-
-        $membres = $this->extractMembresFromGroupeTypes([
-            $this->parameterManager->getValue('bs', 'groupe_type.troupe_id'),
-            $this->parameterManager->getValue('bs', 'groupe_type.clan_id'),
-            $this->parameterManager->getValue('bs', 'groupe_type.edc_id'),
-            $this->parameterManager->getValue('bs', 'groupe_type.equipe_interne_id'),
-        ]);
-
-        $smt = $this->extractMembresFromGroupes([
-            $this->entityManager->find($this->getFichierConfig()->getGroupeClass(), $this->parameterManager->getValue('bs', 'groupe.branche_smt_id'))
-        ]);
-        return array_diff($membres, $smt);
-    }
-
-    private function extractMembresFromGroupeTypes($groupeTypes) {
+    private function getAllMembres() {
 
         $groupeRepo = $this->entityManager->getRepository($this->getFichierConfig()->getGroupeClass());
-        $query = $groupeRepo->createQueryBuilder('g');
-        $groupes = $query->where($query->expr()->in('g.groupeType', $groupeTypes))->getQuery()->getResult();
-
-        return $this->extractMembresFromGroupes($groupes);
-    }
-
-    private function extractMembresFromGroupes($groupes) {
+        $groupes = $groupeRepo->findAll();
 
         $membres = [];
         /** @var BaseGroupe $groupe */
@@ -130,8 +98,7 @@ class CotisationsAutomatic extends BaseAutomatic implements ConfigurableAutomati
             foreach($groupe->getActivesRecursivesAttributions() as $attribution)
                 $membres[] = $attribution->getMembre();
 
-
-        return array_unique($membres);
+        return array_filter(array_unique($membres), fn($m) => $m->consideredInscrit());
     }
 
     private function filterGarsFromChefs($membres) {
