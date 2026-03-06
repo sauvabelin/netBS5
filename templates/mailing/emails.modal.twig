@@ -1,0 +1,29 @@
+{% extends '@NetBSCore/layout/modal.layout.twig' %}
+
+{% block title %}{{ type == 'parents' ? 'Liste Parents' : 'Liste Chefs' }}{% endblock %}
+
+{% block content %}
+    <p><strong>{{ emails|length }} adresse(s) email trouvée(s)</strong></p>
+    <div class="form-group">
+        <textarea class="form-control" rows="8" readonly style="font-size:13px;" id="mailing-emails-textarea">{{ emails|join('; ') }}</textarea>
+    </div>
+{% endblock %}
+
+{% block footer %}
+    <button type="button" data-dismiss="modal" class="btn btn-secondary">Fermer</button>
+    <button type="button" class="btn btn-primary" id="mailing-copy-btn" onclick="
+        var btn = $(this);
+        var text = $('#mailing-emails-textarea').val();
+        if (navigator.clipboard) {
+            navigator.clipboard.writeText(text).then(function() {
+                btn.text('Copié !').addClass('btn-success').removeClass('btn-primary');
+                setTimeout(function() { btn.text('Copier').addClass('btn-primary').removeClass('btn-success'); }, 2000);
+            });
+        } else {
+            var ta = $('#mailing-emails-textarea');
+            ta.prop('readonly', false).select();
+            document.execCommand('copy');
+            ta.prop('readonly', true);
+        }
+    ">Copier</button>
+{% endblock %}

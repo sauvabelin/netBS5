@@ -109,7 +109,11 @@ and     @pv := concat(@pv, ',', id)
             $stats[] = $pallierData;
         }
 
-        return new JsonResponse($stats);
+        $response = new JsonResponse($stats);
+        $response->setMaxAge(86400);
+        $response->setPublic();
+
+        return $response;
     }
 
     /**
@@ -234,32 +238,29 @@ and     @pv := concat(@pv, ',', id)
             ->close()
         ;
 
-        if ($this->isGranted('ROLE_SG')) {
+        $now = new \DateTime();
+        $statsForm = $this->createFormBuilder([
+            'begin' => new \DateTime('@' . ($now->getTimestamp() - (3600*24*365))),
+            'steps' => 50,
+            'end'   => $now,
+            'total'   => true,
+            'hommes' => true,
+            'femmes' => true,
+        ]);
+        $statsForm->add('begin', DatepickerType::class, ['label' => 'Date de début'])
+            ->add('steps', NumberType::class, ['label' => 'Nombre de points'])
+            ->add('end', DatepickerType::class, ['label' => 'Date de fin'])
+            ->add('total', SwitchType::class, ['label' => 'Total', 'required' => false])
+            ->add('hommes', SwitchType::class, ['label' => 'Hommes', 'required' => false])
+            ->add('femmes', SwitchType::class, ['label' => 'Femmes', 'required' => false])
+        ;
 
-            $now = new \DateTime();
-            $form = $this->createFormBuilder([
-                'begin' => new \DateTime('@' . ($now->getTimestamp() - (3600*24*365))),
-                'steps' => 50,
-                'end'   => $now,
-                'total'   => true,
-                'hommes' => true,
-                'femmes' => true,
-            ]);
-            $form->add('begin', DatepickerType::class, ['label' => 'Date de début'])
-                ->add('steps', NumberType::class, ['label' => 'Nombre de points'])
-                ->add('end', DatepickerType::class, ['label' => 'Date de fin'])
-                ->add('total', SwitchType::class, ['label' => 'Total', 'required' => false])
-                ->add('hommes', SwitchType::class, ['label' => 'Hommes', 'required' => false])
-                ->add('femmes', SwitchType::class, ['label' => 'Femmes', 'required' => false])
-            ;
-
-            $config->getRow(0)->getColumn(1)->addRow()->pushColumn(12)->setBlock(CardBlock::class, [
-                'title' => 'Statistiques',
-                'subtitle' => 'Effectifs au cours du temps',
-                'template' => '@NetBSFichier/groupe/statistics.block.twig',
-                'params' => ['groupe' => $groupe, 'statsForm' => $form->getForm()->createView()],
-            ]);
-        }
+        $config->getRow(0)->getColumn(1)->addRow()->pushColumn(12)->setBlock(CardBlock::class, [
+            'title' => 'Statistiques',
+            'subtitle' => 'Effectifs au cours du temps',
+            'template' => '@NetBSFichier/groupe/statistics.block.twig',
+            'params' => ['groupe' => $groupe, 'statsForm' => $statsForm->getForm()->createView()],
+        ]);
 
         return $layout->renderResponse('netbs', $config, [
             'title' => $groupe->getNom(),
