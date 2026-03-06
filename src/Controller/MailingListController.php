@@ -10,8 +10,8 @@ use NetBS\FichierBundle\Service\FichierConfig;
 use NetBS\SecureBundle\Mapping\BaseUser;
 use NetBS\SecureBundle\Service\SecureConfig;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
-use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 
 /**
@@ -29,25 +29,27 @@ class MailingListController extends AbstractController
         SecureConfig $secureConfig,
         LoaderManager $loaderManager,
         ListBridgeManager $listBridgeManager
-    ): JsonResponse {
-        $data = json_decode($request->getContent(), true);
-        $selectedIds = $data['selectedIds'] ?? [];
-        $type = $data['type'] ?? '';
-        $itemsClass = base64_decode($data['itemsClass'] ?? '');
+    ): Response {
+        $selectedIds = $request->request->all('selectedIds');
+        $type = $request->request->get('type', '');
+        $itemsClass = base64_decode($request->request->get('itemsClass', ''));
 
-        if (empty($selectedIds) || !in_array($type, ['parents', 'chefs'])) {
-            return new JsonResponse(['emails' => [], 'count' => 0]);
+        $emails = [];
+
+        if (!empty($selectedIds) && in_array($type, ['parents', 'chefs'])) {
+            $membres = $this->loadMembres($itemsClass, $selectedIds, $em, $loaderManager, $listBridgeManager, $fichierConfig);
+
+            $emails = $type === 'parents'
+                ? $this->collectParentEmails($membres)
+                : $this->collectChefEmails($membres, $em, $secureConfig);
+
+            $emails = array_values(array_unique(array_filter($emails)));
         }
 
-        $membres = $this->loadMembres($itemsClass, $selectedIds, $em, $loaderManager, $listBridgeManager, $fichierConfig);
-
-        $emails = $type === 'parents'
-            ? $this->collectParentEmails($membres)
-            : $this->collectChefEmails($membres, $em, $secureConfig);
-
-        $emails = array_values(array_unique(array_filter($emails)));
-
-        return new JsonResponse(['emails' => $emails, 'count' => count($emails)]);
+        return $this->render('mailing/emails.modal.twig', [
+            'type' => $type,
+            'emails' => $emails,
+        ], new Response(null, Response::HTTP_OK));
     }
 
     /**

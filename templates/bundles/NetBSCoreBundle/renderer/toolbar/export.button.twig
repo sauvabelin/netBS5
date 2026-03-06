@@ -36,80 +36,12 @@
         });
 
         $('[data-mailing]').click(function() {
-            var type = $(this).attr("data-mailing");
-            var selectedIds = {{ tableId }}.getSelectedIds();
-
-            if (selectedIds.length === 0) {
-                alert("Veuillez sélectionner au moins un élément.");
-                return;
-            }
-
-            var payload = JSON.stringify({
+            var modal = new BSModal("{{ path('netbs.mailing_list.emails') }}", {
                 itemsClass: "{{ table.itemClass|toBase64 }}",
-                selectedIds: selectedIds,
-                type: type
+                selectedIds: {{ tableId }}.getSelectedIds(),
+                type: $(this).attr("data-mailing")
             });
-
-            $.ajax({
-                url: "{{ path('netbs.mailing_list.emails') }}",
-                method: "POST",
-                contentType: "application/json",
-                data: payload,
-                success: function(result) {
-                    var emails = result.emails || [];
-                    var count = result.count || 0;
-                    var emailText = emails.join("; ");
-
-                    var modalId = "mailingModal_" + Date.now();
-                    var modal = $(
-                        '<div class="modal fade netbs-modal" id="' + modalId + '" tabindex="-1" role="dialog">' +
-                            '<div class="modal-dialog modal-lg" role="document">' +
-                                '<div class="modal-content">' +
-                                    '<div class="modal-header">' +
-                                        '<h5 class="modal-title">' + (type === 'parents' ? 'Liste Parents' : 'Liste Chefs') + '</h5>' +
-                                        '<button type="button" class="close" data-dismiss="modal"><span>&times;</span></button>' +
-                                    '</div>' +
-                                    '<div class="modal-body">' +
-                                        '<p><strong>' + count + ' adresse(s) email trouvée(s)</strong></p>' +
-                                        '<div class="form-group">' +
-                                            '<textarea class="form-control" rows="8" readonly style="font-size:13px;">' + $('<div>').text(emailText).html() + '</textarea>' +
-                                        '</div>' +
-                                    '</div>' +
-                                    '<div class="modal-footer">' +
-                                        '<button type="button" class="btn btn-secondary" data-dismiss="modal">Fermer</button>' +
-                                        '<button type="button" class="btn btn-primary mailing-copy-btn">Copier</button>' +
-                                    '</div>' +
-                                '</div>' +
-                            '</div>' +
-                        '</div>'
-                    );
-
-                    modal.find('.mailing-copy-btn').click(function() {
-                        var textarea = modal.find('textarea');
-                        if (navigator.clipboard) {
-                            navigator.clipboard.writeText(textarea.val()).then(function() {
-                                modal.find('.mailing-copy-btn').text('Copié !').addClass('btn-success').removeClass('btn-primary');
-                                setTimeout(function() {
-                                    modal.find('.mailing-copy-btn').text('Copier').addClass('btn-primary').removeClass('btn-success');
-                                }, 2000);
-                            });
-                        } else {
-                            textarea.prop('readonly', false).select();
-                            document.execCommand('copy');
-                            textarea.prop('readonly', true);
-                        }
-                    });
-
-                    $('body').append(modal);
-                    modal.modal('show');
-                    modal.on('hidden.bs.modal', function() {
-                        modal.remove();
-                    });
-                },
-                error: function() {
-                    alert("Erreur lors de la récupération des emails.");
-                }
-            });
+            modal.launch();
         });
     </script>
 {% endset %}
@@ -117,3 +49,4 @@
 {{ registerScript(exportScript) }}
 
 {{ registerJs(asset('bundles/netbscore/js/post_link.js')) }}
+{{ registerJs(asset('bundles/netbscore/js/modal.js')) }}
