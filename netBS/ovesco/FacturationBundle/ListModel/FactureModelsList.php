@@ -4,6 +4,7 @@ namespace Ovesco\FacturationBundle\ListModel;
 
 use NetBS\CoreBundle\ListModel\Action\ModalAction;
 use NetBS\CoreBundle\ListModel\Action\RemoveAction;
+use NetBS\CoreBundle\ListModel\ActionItem;
 use NetBS\CoreBundle\ListModel\Column\ActionColumn;
 use NetBS\CoreBundle\ListModel\Column\XEditableColumn;
 use NetBS\CoreBundle\Utils\Traits\EntityManagerTrait;
@@ -80,12 +81,17 @@ class FactureModelsList extends BaseListModel
                 XEditableColumn::TYPE_CLASS => NumberType::class,
                 XEditableColumn::PROPERTY => 'poids',
             ])
-            ->addColumn('Supprimer', null, ActionColumn::class, [
+            ->addColumn('Actions', null, ActionColumn::class, [
                 ActionColumn::ACTIONS_KEY => [
                     RemoveAction::class,
-                    ModalAction::class => [
-                        ModalAction::ROUTE => function(FactureModel $model) { return $this->router->generate('ovesco.facturation.facture_model.edit_modal', ['id' => $model->getId()]); }
-                    ]
+                    new ActionItem(ModalAction::class, [
+                        ModalAction::ROUTE => function(FactureModel $model) { return $this->router->generate('ovesco.facturation.facture_model.edit_modal', ['id' => $model->getId()]); },
+                        ModalAction::ICON => 'fas fa-edit',
+                    ]),
+                    new ActionItem(ModalAction::class, [
+                        ModalAction::ROUTE => function(FactureModel $model) { return $this->router->generate('ovesco.facturation.facture_model.duplicate', ['id' => $model->getId()]); },
+                        ModalAction::ICON => 'fas fa-copy',
+                    ]),
                 ]
             ])
             ;

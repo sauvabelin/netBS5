@@ -42,10 +42,20 @@ abstract class AbstractFacturesImpressionList extends AjaxModel
         $result = $query->getQuery()->getArrayResult();
         $waitingForPrintIds = array_map(function(array $item) { return $item['id']; }, $result);
 
-        $adj = $this->hasBeenPrinted() ? 'NOT' : '';
-        $builder->andWhere("$alias.id $adj IN (:ids)")->setParameter('ids', $waitingForPrintIds);
         $builder->andWhere("$alias.statut = :statut")
             ->setParameter('statut', Facture::OUVERTE);
+
+        if (empty($waitingForPrintIds)) {
+            if (!$this->hasBeenPrinted()) {
+                // No factures waiting for print → return empty
+                $builder->andWhere("1 = 0");
+            }
+            // else: all factures have been printed → no filter needed
+        } else {
+            $adj = $this->hasBeenPrinted() ? 'NOT' : '';
+            $builder->andWhere("$alias.id $adj IN (:ids)")->setParameter('ids', $waitingForPrintIds);
+        }
+
         return $builder;
     }
 

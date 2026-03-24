@@ -40,8 +40,9 @@ class NetbsToolbarListener
         $addCreances    = $itemClass !== Creance::class && $this->bridgeManager->isValidTransformation($itemClass, AdressableInterface::class);
         $addRappels     = $itemClass === Facture::class;
         $generate       = $itemClass === Creance::class;
+        $markPrint      = $itemClass === Facture::class;
 
-        if(!$addCreances && !$generate)
+        if(!$addCreances && !$generate && !$markPrint)
             return;
 
         $content = $this->twig->render('@OvescoFacturation/renderer/facturation_toolbar.button.twig', [
@@ -49,7 +50,8 @@ class NetbsToolbarListener
             'tableId'       => $event->getTableId(),
             'addCreances'   => $addCreances,
             'addRappels'    => $addRappels,
-            'generate'      => $generate
+            'generate'      => $generate,
+            'markPrint'     => $markPrint,
         ]);
 
         $event->getToolbar()->addItem(new BasicToolbarItem($content, BasicToolbarItem::RIGHT));

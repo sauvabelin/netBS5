@@ -2,7 +2,9 @@
 
 namespace Ovesco\FacturationBundle\Form;
 
+use Ovesco\FacturationBundle\Entity\FactureModel;
 use Ovesco\FacturationBundle\Model\MassRappel;
+use Symfony\Bridge\Doctrine\Form\Type\EntityType;
 use Symfony\Component\Form\Extension\Core\Type\HiddenType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
@@ -14,6 +16,12 @@ class MassRappelType extends RappelType
         parent::buildForm($builder, $options);
 
         $builder
+            ->add('factureModel', EntityType::class, [
+                'label' => 'Modèle de facture',
+                'class' => FactureModel::class,
+                'required' => false,
+                'placeholder' => 'Automatique (selon règles)',
+            ])
             ->add('selectedIds', HiddenType::class)
         ;
     }

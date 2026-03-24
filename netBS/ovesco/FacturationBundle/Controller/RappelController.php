@@ -43,6 +43,7 @@ class RappelController extends AbstractController
                 $rappel = new Rappel();
                 $rappel->setDate($mass->getDate());
                 $facture->addRappel($rappel);
+                $facture->setFactureModel($mass->getFactureModel());
                 $em->persist($rappel);
             }
 

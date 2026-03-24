@@ -11,7 +11,8 @@
             $(this).data('_show_helper', true);
             $.data(this, "_helper_timer", setTimeout($.proxy(function() {
 
-                $.post("{{ path('netbs.core.helper.get_help') }}", {"class": bclass, id: id}).done(function(response) {
+                var csrfMeta = document.querySelector('meta[name="csrf-token"]');
+                $.post("{{ path('netbs.core.helper.get_help') }}", {"class": bclass, id: id, _token: csrfMeta ? csrfMeta.getAttribute('content') : ''}).done(function(response) {
 
                     if ($(elem).data('_show_helper')) {
                         $(elem).popover({

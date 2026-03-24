@@ -2,6 +2,8 @@
 
 namespace Ovesco\FacturationBundle\Model;
 
+use Ovesco\FacturationBundle\Entity\FactureModel;
+
 class MergeCreancesToFacture
 {
     private $compteToUse;
@@ -9,6 +11,8 @@ class MergeCreancesToFacture
     private $remarques;
 
     private $creanceIds;
+
+    private $factureModel;
 
     /**
      * @return mixed
@@ -58,5 +62,19 @@ class MergeCreancesToFacture
         $this->creanceIds = $creanceIds;
     }
 
+    /**
+     * @return FactureModel|null
+     */
+    public function getFactureModel()
+    {
+        return $this->factureModel;
+    }
 
+    /**
+     * @param FactureModel|null $factureModel
+     */
+    public function setFactureModel($factureModel)
+    {
+        $this->factureModel = $factureModel;
+    }
 }

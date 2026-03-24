@@ -2,6 +2,7 @@
 
 namespace Ovesco\FacturationBundle\Controller;
 
+use Doctrine\ORM\EntityManagerInterface;
 use NetBS\CoreBundle\Searcher\SearcherManager;
 use NetBS\CoreBundle\Service\PreviewerManager;
 use Ovesco\FacturationBundle\Entity\Facture;
@@ -9,6 +10,8 @@ use Ovesco\FacturationBundle\Exporter\PDFQrFacture;
 use Ovesco\FacturationBundle\Model\FactureConfig;
 use Ovesco\FacturationBundle\Model\QrFactureConfig;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\HttpFoundation\JsonResponse;
+use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Annotation\Route;
 
 /**
@@ -106,8 +109,56 @@ class FactureController extends AbstractController
     public function facturePdfNoDateExportAction(Facture $facture, PDFQrFacture $exporter, PreviewerManager $previewerManager) {
         $items      = [$facture];
         $config = new QrFactureConfig();
+        $config->setPrintDate = false;
         $exporter->setConfig($config);
         $previewer  = $previewerManager->getPreviewer($exporter->getPreviewer());
         return $previewer->preview($items, $exporter);
+    }
+
+    /**
+     * @Route("/mark-printed", name="ovesco.facturation.facture.mark_printed", methods={"POST"})
+     */
+    public function markPrintedAction(Request $request, EntityManagerInterface $em) {
+        $this->denyAccessUnlessGranted('update', new Facture());
+
+        if (!$this->isCsrfTokenValid('ajax', $request->request->get('_token'))) {
+            return new JsonResponse(['error' => 'Token CSRF invalide'], 403);
+        }
+
+        $ids = json_decode($request->request->get('ids'), true);
+        if (!is_array($ids) || empty($ids)) {
+            return new JsonResponse(['error' => 'IDs invalides'], 400);
+        }
+
+        $factures = $em->getRepository(Facture::class)->findBy(['id' => $ids]);
+        $now = new \DateTime();
+        foreach ($factures as $facture) {
+            $facture->setDateImpression($now);
+        }
+        $em->flush();
+        return new JsonResponse(['success' => true, 'count' => count($factures)]);
+    }
+
+    /**
+     * @Route("/unmark-printed", name="ovesco.facturation.facture.unmark_printed", methods={"POST"})
+     */
+    public function unmarkPrintedAction(Request $request, EntityManagerInterface $em) {
+        $this->denyAccessUnlessGranted('update', new Facture());
+
+        if (!$this->isCsrfTokenValid('ajax', $request->request->get('_token'))) {
+            return new JsonResponse(['error' => 'Token CSRF invalide'], 403);
+        }
+
+        $ids = json_decode($request->request->get('ids'), true);
+        if (!is_array($ids) || empty($ids)) {
+            return new JsonResponse(['error' => 'IDs invalides'], 400);
+        }
+
+        $factures = $em->getRepository(Facture::class)->findBy(['id' => $ids]);
+        foreach ($factures as $facture) {
+            $facture->setDateImpression(null);
+        }
+        $em->flush();
+        return new JsonResponse(['success' => true, 'count' => count($factures)]);
     }
 }

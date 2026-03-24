@@ -178,8 +178,24 @@ class ExportController extends AbstractController
             return new Response();
 
         $this->configureExporter($exporter, $blob, $em);
+
+        // Disable print date marking during preview
+        $config = $exporter instanceof ConfigurableExporterInterface ? $exporter->getConfiguration() : null;
+        $originalSetPrintDate = null;
+        if ($config && property_exists($config, 'setPrintDate')) {
+            $originalSetPrintDate = $config->setPrintDate;
+            $config->setPrintDate = false;
+        }
+
         $previewer  = $previewerManager->getPreviewer($exporter->getPreviewer());
-        return $previewer->preview($items, $exporter);
+        $response = $previewer->preview($items, $exporter);
+
+        // Restore original value
+        if ($config && $originalSetPrintDate !== null) {
+            $config->setPrintDate = $originalSetPrintDate;
+        }
+
+        return $response;
     }
 
 

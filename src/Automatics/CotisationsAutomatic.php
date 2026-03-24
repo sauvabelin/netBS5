@@ -5,6 +5,7 @@ namespace App\Automatics;
 use NetBS\CoreBundle\Model\BaseAutomatic;
 use NetBS\CoreBundle\Model\ConfigurableAutomaticInterface;
 use NetBS\CoreBundle\Utils\Traits\EntityManagerTrait;
+use NetBS\CoreBundle\Utils\Traits\ParamTrait;
 use NetBS\FichierBundle\Mapping\BaseGroupe;
 use NetBS\FichierBundle\Mapping\BaseMembre;
 use NetBS\FichierBundle\Utils\ListModel\MembreListHelper;
@@ -15,7 +16,7 @@ use Symfony\Component\Form\FormBuilderInterface;
 
 class CotisationsAutomatic extends BaseAutomatic implements ConfigurableAutomaticInterface
 {
-    use MembreListHelper, FichierConfigTrait, EntityManagerTrait;
+    use MembreListHelper, FichierConfigTrait, EntityManagerTrait, ParamTrait;
 
     /**
      * @return string
@@ -42,9 +43,9 @@ class CotisationsAutomatic extends BaseAutomatic implements ConfigurableAutomati
     protected function getItems($data = null)
     {
         $allMembres = $this->getAllMembres();
-        $split = $this->filterGarsFromChefs($allMembres);
+        $split = $this->filterTarif($allMembres);
 
-        return $data['type'] === 'participant' ? $split['gars'] : $split['chefs'];
+        return $data['type'] === 'normal' ? $split['normal'] : $split['reduit'];
     }
 
     /**
@@ -66,8 +67,8 @@ class CotisationsAutomatic extends BaseAutomatic implements ConfigurableAutomati
             ->add('type', ChoiceType::class, [
                 'label'     => 'Type',
                 'choices'   => [
-                    'Participant'   => 'participant',
-                    'Chef'          => 'chef',
+                    'Normal'    => 'normal',
+                    'Réduit'    => 'reduit',
                 ]
             ]);
     }
@@ -101,24 +102,34 @@ class CotisationsAutomatic extends BaseAutomatic implements ConfigurableAutomati
         return array_filter(array_unique($membres), fn($m) => $m->consideredInscrit());
     }
 
-    private function filterGarsFromChefs($membres) {
+    private function filterTarif($membres) {
 
-        $chefs = [];
-        $gars = [];
+        $smtId = $this->parameterManager->getValue('bs', 'groupe.branche_smt_id');
+
+        $normal = [];
+        $reduit = [];
         /** @var BaseMembre $membre */
         foreach($membres as $membre) {
-            $small = true;
-            foreach($membre->getActivesAttributions() as $attribution)
-                if($attribution->getFonction()->getPoids() > 99)
-                    $small = false;
+            $isReduit = false;
 
-            if ($small) $gars[] = $membre;
-            else $chefs[] = $membre;
+            foreach($membre->getActivesAttributions() as $attribution) {
+                if($attribution->getFonction()->getPoids() > 99) {
+                    $isReduit = true;
+                    break;
+                }
+                if($smtId > 0 && ($attribution->getGroupe()->getId() == $smtId || ($attribution->getGroupe()->getParent() && $attribution->getGroupe()->getParent()->getId() == $smtId))) {
+                    $isReduit = true;
+                    break;
+                }
+            }
+
+            if ($isReduit) $reduit[] = $membre;
+            else $normal[] = $membre;
         }
 
         return [
-            'chefs' => $chefs,
-            'gars' => $gars,
+            'normal' => $normal,
+            'reduit' => $reduit,
         ];
     }
 }

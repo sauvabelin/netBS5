@@ -5,6 +5,7 @@ namespace Ovesco\FacturationBundle\Form;
 use Doctrine\ORM\EntityManagerInterface;
 use NetBS\CoreBundle\Form\PDFConfig\FPDFType;
 use NetBS\CoreBundle\Form\Type\DatepickerType;
+use NetBS\CoreBundle\Form\Type\SwitchType;
 use Ovesco\FacturationBundle\Entity\FactureModel;
 use Ovesco\FacturationBundle\Model\FactureConfig;
 use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
@@ -23,14 +24,17 @@ class FactureConfigType extends FPDFType
 
     public function buildForm(FormBuilderInterface $builder, array $options)
     {
-        $choices = ['null' => 'laisser faire'];
+        $choices = [
+            'Modèle attribué' => 'attributed',
+            'Réévaluer les règles' => 'rules',
+        ];
         $models = $this->manager->getRepository(FactureModel::class)->findAll();
-        foreach ($models as $model) $choices[$model->getId()] = $model->getName();
+        foreach ($models as $model) $choices[$model->getName()] = 'force_' . $model->getId();
         parent::buildForm($builder, $options);
         $builder
             ->add('model', ChoiceType::class, [
                 'label' => 'Modèle à utiliser',
-                'choices' => array_flip($choices)
+                'choices' => $choices,
             ])
             ->add('date', DatepickerType::class, [
                 'label' => 'Date sur la facture',
@@ -49,6 +53,7 @@ class FactureConfigType extends FPDFType
             ->add('wb', NumberType::class, ['label' => "position X num. référence"])
             ->add('hb', NumberType::class, ['label' => "position Y num. référence"])
             ->add('bvrIl', NumberType::class, ['label' => 'Interligne BVR'])
+            ->add('sortAlpha', SwitchType::class, ['label' => 'Trier par ordre alphabétique'])
             ;
     }
 

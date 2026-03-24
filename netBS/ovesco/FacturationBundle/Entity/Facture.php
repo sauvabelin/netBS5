@@ -90,6 +90,14 @@ class Facture
     protected $compteToUse;
 
     /**
+     * @var FactureModel|null
+     *
+     * @ORM\ManyToOne(targetEntity="Ovesco\FacturationBundle\Entity\FactureModel")
+     * @Groups({"default"})
+     */
+    protected $factureModel;
+
+    /**
      * Constructor
      */
     public function __construct()
@@ -309,6 +317,22 @@ class Facture
     public function setCompteToUse($compteToUse)
     {
         $this->compteToUse = $compteToUse;
+    }
+
+    /**
+     * @return FactureModel|null
+     */
+    public function getFactureModel()
+    {
+        return $this->factureModel;
+    }
+
+    /**
+     * @param FactureModel|null $factureModel
+     */
+    public function setFactureModel($factureModel)
+    {
+        $this->factureModel = $factureModel;
     }
 
     /**

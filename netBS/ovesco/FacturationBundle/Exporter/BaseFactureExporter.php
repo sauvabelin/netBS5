@@ -75,6 +75,14 @@ abstract class BaseFactureExporter implements ExporterInterface, ConfigurableExp
         $fpdf->AddFont('Arial', 'B', 'arialbd.php');
         $fpdf->AddFont('BVR', '', 'ocrb10n.php');
 
+        if (!empty($config->sortAlpha)) {
+            usort($items, function(Facture $a, Facture $b) {
+                $cmp = strcasecmp($this->getDebiteurNom($a), $this->getDebiteurNom($b));
+                if ($cmp !== 0) return $cmp;
+                return strcasecmp($this->getDebiteurAdresse($a), $this->getDebiteurAdresse($b));
+            });
+        }
+
         /** @var Facture[] $noAdress */
         $noAdress = [];
         foreach($items as $facture)
@@ -95,13 +103,15 @@ abstract class BaseFactureExporter implements ExporterInterface, ConfigurableExp
         foreach($items as $facture)
             $this->printFacture($facture, $fpdf);
 
-        foreach($items as $facture) {
-            if (!$facture->hasBeenPrinted())
-                $facture->setLatestImpression(new \DateTime());
-        }
+        if (!empty($config->setPrintDate)) {
+            foreach($items as $facture) {
+                if (!$facture->hasBeenPrinted())
+                    $facture->setLatestImpression(new \DateTime());
+            }
 
-        // We've set impression date
-        $this->manager->flush();
+            // We've set impression date
+            $this->manager->flush();
+        }
 
         return new StreamedResponse(function() use ($fpdf) {
             $fpdf->Output();
@@ -110,20 +120,55 @@ abstract class BaseFactureExporter implements ExporterInterface, ConfigurableExp
 
     private function getModel(Facture $facture) {
 
-        $modelId = $this->getConfiguration()->model;
-        if (is_int($modelId)) return $this->manager->getRepository(FactureModel::class)
-            ->find($modelId);
-        else {
-            $models = $this->manager->getRepository(FactureModel::class)
-                ->createQueryBuilder('m')->orderBy('m.poids', 'DESC')->getQuery()->getResult();
+        $config = $this->getConfiguration();
+        $model = $config->model ?? 'attributed';
 
-            /** @var FactureModel $item */
-            foreach($models as $item)
-                if ($this->evaluate($item->getApplicationRule(), $facture, false))
-                    return $item;
-
-            return $models[0];
+        // Force a specific model
+        if (str_starts_with($model, 'force_')) {
+            $modelId = (int)substr($model, 6);
+            $forced = $this->manager->getRepository(FactureModel::class)->find($modelId);
+            if ($forced) return $forced;
         }
+
+        // Attributed: use the stored model if set, otherwise fall through to rules
+        if ($model === 'attributed' && $facture->getFactureModel() !== null) {
+            return $facture->getFactureModel();
+        }
+
+        // Rules (or fallback): evaluate applicationRules
+        return $this->evaluateRules($facture);
+    }
+
+    private function getDebiteurNom(Facture $facture) {
+        $debiteur = $facture->getDebiteur();
+        if (!$debiteur) return '';
+        if ($debiteur instanceof BaseFamille) return $debiteur->getNom();
+        return $debiteur->_getNom();
+    }
+
+    private function getDebiteurAdresse(Facture $facture) {
+        $debiteur = $facture->getDebiteur();
+        if (!$debiteur) return '';
+        $adresse = $debiteur->getSendableAdresse();
+        if (!$adresse) return '';
+        return $adresse->getRue() . ' ' . $adresse->getNpa() . ' ' . $adresse->getLocalite();
+    }
+
+    private function evaluateRules(Facture $facture) {
+
+        $models = $this->manager->getRepository(FactureModel::class)
+            ->createQueryBuilder('m')->orderBy('m.poids', 'DESC')->getQuery()->getResult();
+
+        if (empty($models)) {
+            throw new \RuntimeException("Aucun modèle de facture trouvé en base de données");
+        }
+
+        /** @var FactureModel $item */
+        foreach($models as $item)
+            if ($this->evaluate($item->getApplicationRule(), $facture, false))
+                return $item;
+
+        return $models[0];
     }
 
     private function evaluate($string, Facture $facture, $parse = true) {
