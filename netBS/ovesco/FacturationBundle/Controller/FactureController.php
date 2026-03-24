@@ -29,6 +29,13 @@ class FactureController extends AbstractController
     }
 
     /**
+     * @Route("/aide", name="ovesco.facturation.aide")
+     */
+    public function aideAction() {
+        return $this->render("@OvescoFacturation/facture/aide_facturation.html.twig");
+    }
+
+    /**
      * @Route("/attente-paiement", name="ovesco.facturation.facture.attente_paiement")
      * @return \Symfony\Component\HttpFoundation\Response
      * @throws \Exception

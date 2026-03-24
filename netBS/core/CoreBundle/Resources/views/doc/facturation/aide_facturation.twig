@@ -1,0 +1,62 @@
+<h4>Cycle de vie d'une facture</h4>
+<p>Une <strong>cr&eacute;ance</strong> est une somme d'argent due (cotisation, camp, &eacute;conomat, etc.). Un d&eacute;biteur (membre ou famille) peut avoir plusieurs cr&eacute;ances. Pour &eacute;viter d'envoyer une facture par cr&eacute;ance, on <strong>fusionne</strong> les cr&eacute;ances en factures regroup&eacute;es par adresse.</p>
+<ol>
+    <li><strong>Cr&eacute;ance</strong> &rarr; Une dette est enregistr&eacute;e dans le syst&egrave;me.</li>
+    <li><strong>Fusion</strong> &rarr; Les cr&eacute;ances sont regroup&eacute;es par adresse et fusionn&eacute;es en factures.</li>
+    <li><strong>Attente d'impression</strong> &rarr; La facture doit &ecirc;tre export&eacute;e en PDF et imprim&eacute;e.</li>
+    <li><strong>Attente de paiement</strong> &rarr; La facture a &eacute;t&eacute; envoy&eacute;e, on attend le paiement (import CAMT ou saisie manuelle).</li>
+    <li><strong>Rappel</strong> &rarr; Si le paiement n'arrive pas, on g&eacute;n&egrave;re un rappel. La facture repasse en attente d'impression.</li>
+</ol>
+
+<hr/>
+<h4>Ordre recommand&eacute; des op&eacute;rations</h4>
+<p>Lors d'une campagne de facturation, suivez cet ordre :</p>
+<ol>
+    <li><strong>G&eacute;n&eacute;rer les rappels</strong> pour les factures impay&eacute;es (depuis <em>En attente de paiement</em>).</li>
+    <li><strong>G&eacute;n&eacute;rer les cr&eacute;ances</strong> (cotisations, camps, etc.) si ce n'est pas d&eacute;j&agrave; fait.</li>
+    <li><strong>Fusionner les cr&eacute;ances ouvertes</strong> en factures (depuis <em>Cr&eacute;ances Ouvertes</em>).</li>
+    <li><strong>Imprimer les factures</strong> en attente d'impression.</li>
+</ol>
+
+<hr/>
+<h4>G&eacute;n&eacute;rer les cotisations</h4>
+<ol>
+    <li>Aller dans <strong>Facturation</strong> &rarr; <strong>Autre</strong> &rarr; <strong>Cotisations</strong>.</li>
+    <li>Choisir le type <em>Louveteaux &amp; SMT</em>, puis cliquer sur <em>Valider</em>.</li>
+    <li>La liste des membres s'affiche. Cliquer sur <strong>Facturation</strong> &rarr; <strong>Ajouter des cr&eacute;ances</strong>.</li>
+    <li>Renseigner le titre (ex: <code>Cotisation 2024 pour [PRENOM] [NOM]</code>), le montant et le rabais famille.</li>
+    <li>Cliquer sur <em>Valider</em>.</li>
+    <li>R&eacute;p&eacute;ter pour le type <em>Cotisations normales</em>.</li>
+    <li>Toutes les cr&eacute;ances de cotisation sont g&eacute;n&eacute;r&eacute;es. Passer &agrave; la fusion.</li>
+</ol>
+
+<hr/>
+<h4>G&eacute;n&eacute;rer des rappels</h4>
+<ol>
+    <li>Aller dans <strong>Facturation</strong> &rarr; <strong>Listes de factures</strong> &rarr; <strong>En attente de paiement</strong>.</li>
+    <li>En bas &agrave; droite, cliquer sur <strong>Facturation</strong> &rarr; <strong>Ajouter des rappels</strong>.</li>
+    <li>Choisir une <strong>date de rappel</strong> (affich&eacute;e sur la facture).</li>
+    <li>Valider. Les factures repassent en <em>attente d'impression</em>.</li>
+</ol>
+
+<hr/>
+<h4>Fusionner les cr&eacute;ances en factures</h4>
+<ol>
+    <li>Aller dans <strong>Facturation</strong> &rarr; <strong>Listes de factures</strong> &rarr; <strong>Cr&eacute;ances Ouvertes</strong>.</li>
+    <li>S&eacute;lectionner les cr&eacute;ances, puis cliquer sur <strong>Facturation</strong> :
+        <ul>
+            <li><em>Pr&eacute;visualiser la fusion</em> &mdash; pour v&eacute;rifier sans modifier.</li>
+            <li><em>Fusionner en facture</em> &mdash; pour g&eacute;n&eacute;rer les factures.</li>
+        </ul>
+    </li>
+    <li>Les factures cr&eacute;&eacute;es sont en <em>attente d'impression</em>.</li>
+</ol>
+
+<hr/>
+<h4>Ajouter des cr&eacute;ances &agrave; des membres sp&eacute;cifiques</h4>
+<ol>
+    <li>Rechercher les membres concern&eacute;s (formulaire de recherche, par troupe, etc.).</li>
+    <li>Les ajouter &agrave; une liste.</li>
+    <li>Depuis la liste, cliquer sur <strong>Facturation</strong> &rarr; <strong>Ajouter des cr&eacute;ances</strong>.</li>
+    <li>Renseigner le titre, le montant, puis valider.</li>
+</ol>
