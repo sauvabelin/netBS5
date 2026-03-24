@@ -27,7 +27,8 @@ class FactureModelController extends AbstractController
             'title' => 'Modèles de facture',
             'subtitle' => "Tous les modèles de facture enregistrés et utilisables",
             'list' => 'ovesco.facturation.facture_models',
-            'modalPath' => $router->generate('ovesco.facturation.facture_model.add_modal')
+            'modalPath' => $router->generate('ovesco.facturation.facture_model.add_modal'),
+            'doc' => '@OvescoFacturation/doc/facture_models.twig',
         ]);
     }
 

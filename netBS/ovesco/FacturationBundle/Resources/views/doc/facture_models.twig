@@ -1,0 +1,11 @@
+<p><strong>Modèles de facture</strong> &mdash; Chaque modèle définit l'en-tête, le signataire et les coordonnées qui apparaissent sur la facture imprimée.</p>
+<ul>
+    <li><strong>Poids</strong> &mdash; Détermine la priorité : le modèle avec le poids le plus élevé dont la règle correspond est utilisé.</li>
+    <li><strong>Règle</strong> &mdash; Expression évaluée pour chaque facture (ex: nombre de rappels). Si aucune règle n'est définie, le modèle s'applique par défaut.</li>
+    <li><strong>Dupliquer</strong> <i class="fas fa-copy"></i> &mdash; Crée une copie du modèle pour le modifier sans affecter l'original.</li>
+</ul>
+<p>Lors de l'impression, le système choisit le modèle selon ce processus :<br>
+    1. Si un modèle est <em>attribué</em> à la facture &rarr; il est utilisé.<br>
+    2. Sinon, les règles sont évaluées par ordre de poids décroissant.<br>
+    3. Le premier modèle dont la règle correspond (ou sans règle) est sélectionné.
+</p>

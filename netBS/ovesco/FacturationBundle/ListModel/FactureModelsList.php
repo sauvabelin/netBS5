@@ -9,6 +9,7 @@ use NetBS\CoreBundle\ListModel\Column\ActionColumn;
 use NetBS\CoreBundle\ListModel\Column\XEditableColumn;
 use NetBS\CoreBundle\Utils\Traits\EntityManagerTrait;
 use NetBS\CoreBundle\Utils\Traits\RouterTrait;
+use NetBS\ListBundle\Column\ClosureColumn;
 use NetBS\ListBundle\Model\BaseListModel;
 use NetBS\ListBundle\Model\ListColumnsConfiguration;
 use Ovesco\FacturationBundle\Entity\FactureModel;
@@ -25,7 +26,8 @@ class FactureModelsList extends BaseListModel
      */
     protected function buildItemsList()
     {
-        return $this->entityManager->getRepository(FactureModel::class)->findAll();
+        return $this->entityManager->getRepository(FactureModel::class)
+            ->createQueryBuilder('m')->orderBy('m.poids', 'DESC')->getQuery()->getResult();
     }
 
     /**
@@ -76,6 +78,14 @@ class FactureModelsList extends BaseListModel
             ->addColumn('Origine', null, XEditableColumn::class, [
                 XEditableColumn::TYPE_CLASS => TextType::class,
                 XEditableColumn::PROPERTY => 'cityFrom',
+            ])
+            ->addColumn('Règle', null, ClosureColumn::class, [
+                ClosureColumn::CLOSURE => function(FactureModel $model) {
+                    $rule = $model->getApplicationRule();
+                    if (!$rule) return '<span class="badge badge-secondary">Aucune</span>';
+                    $escaped = htmlspecialchars($rule, ENT_QUOTES, 'UTF-8');
+                    return "<span class='badge badge-warning' data-toggle='tooltip' data-placement='top' title='{$escaped}' style='cursor:help;'>Active</span>";
+                }
             ])
             ->addColumn('Poids', null, XEditableColumn::class, [
                 XEditableColumn::TYPE_CLASS => NumberType::class,
