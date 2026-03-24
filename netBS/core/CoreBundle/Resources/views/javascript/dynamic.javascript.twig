@@ -8,12 +8,10 @@
 
         addToList: function(listId, itemsClass, selectedIds) {
 
-            var csrfMeta = document.querySelector('meta[name="csrf-token"]');
             $.post("{{ path('netbs.core.dynamics_list.items_add') }}", {
                     itemsClass:     itemsClass,
                     selectedIds:    selectedIds,
-                    listId:         listId,
-                    _token:         csrfMeta ? csrfMeta.getAttribute('content') : ''
+                    listId:         listId
 
             }).done(function(data) {
                 toastr.success("éléments ajoutés avec succès, la liste en contient désormais " + data.count);

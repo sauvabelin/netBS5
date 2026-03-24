@@ -121,10 +121,6 @@ class FactureController extends AbstractController
     public function markPrintedAction(Request $request, EntityManagerInterface $em) {
         $this->denyAccessUnlessGranted('update', new Facture());
 
-        if (!$this->isCsrfTokenValid('ajax', $request->request->get('_token'))) {
-            return new JsonResponse(['error' => 'Token CSRF invalide'], 403);
-        }
-
         $ids = json_decode($request->request->get('ids'), true);
         if (!is_array($ids) || empty($ids)) {
             return new JsonResponse(['error' => 'IDs invalides'], 400);
@@ -144,10 +140,6 @@ class FactureController extends AbstractController
      */
     public function unmarkPrintedAction(Request $request, EntityManagerInterface $em) {
         $this->denyAccessUnlessGranted('update', new Facture());
-
-        if (!$this->isCsrfTokenValid('ajax', $request->request->get('_token'))) {
-            return new JsonResponse(['error' => 'Token CSRF invalide'], 403);
-        }
 
         $ids = json_decode($request->request->get('ids'), true);
         if (!is_array($ids) || empty($ids)) {

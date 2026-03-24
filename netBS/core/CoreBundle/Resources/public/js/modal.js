@@ -16,9 +16,6 @@ var BSModal = function(path, params) {
 
         var mdl = this;
 
-        var csrfMeta = document.querySelector('meta[name="csrf-token"]');
-        if (csrfMeta) params._token = csrfMeta.getAttribute('content');
-
         $.post(path, params).done(function(data, status, response) {
 
             if (parseInt(response.status) === 202)

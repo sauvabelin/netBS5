@@ -58,8 +58,7 @@
                 var ids = {{ tableId }}.getSelectedIds();
                 if (ids.length === 0) { alert('Veuillez sélectionner des factures'); return; }
                 if (!confirm('Marquer ' + ids.length + ' facture(s) comme imprimée(s) ?')) return;
-                var csrfMeta = document.querySelector('meta[name="csrf-token"]');
-                $.post("{{ path('ovesco.facturation.facture.mark_printed') }}", { ids: JSON.stringify(ids), _token: csrfMeta ? csrfMeta.getAttribute('content') : '' }, function(data) {
+                $.post("{{ path('ovesco.facturation.facture.mark_printed') }}", { ids: JSON.stringify(ids) }, function(data) {
                     alert(data.count + ' facture(s) marquée(s) comme imprimée(s)');
                     location.reload();
                 }).fail(function() {
@@ -71,8 +70,7 @@
                 var ids = {{ tableId }}.getSelectedIds();
                 if (ids.length === 0) { alert('Veuillez sélectionner des factures'); return; }
                 if (!confirm('Marquer ' + ids.length + ' facture(s) comme non-imprimée(s) ?')) return;
-                var csrfMeta = document.querySelector('meta[name="csrf-token"]');
-                $.post("{{ path('ovesco.facturation.facture.unmark_printed') }}", { ids: JSON.stringify(ids), _token: csrfMeta ? csrfMeta.getAttribute('content') : '' }, function(data) {
+                $.post("{{ path('ovesco.facturation.facture.unmark_printed') }}", { ids: JSON.stringify(ids) }, function(data) {
                     alert(data.count + ' facture(s) marquée(s) comme non-imprimée(s)');
                     location.reload();
                 }).fail(function() {
