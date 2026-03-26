@@ -52,6 +52,13 @@ trait FactureListTrait
                 return count($facture->getRappels());
             }, SimpleColumn::class)
             ->addColumn('Creances', 'creances', FactureCreancesColumn::class)
+            ->addColumn('Modèle', function(Facture $facture) {
+                $model = $facture->getFactureModel();
+                if ($model) {
+                    return '<span class="badge badge-primary">' . htmlspecialchars($model->getName()) . '</span>';
+                }
+                return '<span class="badge badge-secondary facture-model-auto" data-facture-id="' . $facture->getId() . '" style="cursor:help;">Auto</span>';
+            }, SimpleColumn::class)
             ->addColumn('Remarques', null, XEditableColumn::class, [
                 XEditableColumn::TYPE_CLASS => TextType::class,
                 XEditableColumn::PROPERTY => 'remarques',

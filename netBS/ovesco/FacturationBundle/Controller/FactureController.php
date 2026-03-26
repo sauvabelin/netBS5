@@ -5,10 +5,16 @@ namespace Ovesco\FacturationBundle\Controller;
 use Doctrine\ORM\EntityManagerInterface;
 use NetBS\CoreBundle\Searcher\SearcherManager;
 use NetBS\CoreBundle\Service\PreviewerManager;
+use NetBS\CoreBundle\Utils\Modal;
+use NetBS\FichierBundle\Entity\BaseFamille;
 use Ovesco\FacturationBundle\Entity\Facture;
+use Ovesco\FacturationBundle\Entity\FactureModel;
 use Ovesco\FacturationBundle\Exporter\PDFQrFacture;
+use Ovesco\FacturationBundle\Form\MassAssignModelType;
 use Ovesco\FacturationBundle\Model\FactureConfig;
+use Ovesco\FacturationBundle\Model\MassAssignModel;
 use Ovesco\FacturationBundle\Model\QrFactureConfig;
+use Symfony\Component\ExpressionLanguage\ExpressionLanguage;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
@@ -140,6 +146,68 @@ class FactureController extends AbstractController
         }
         $em->flush();
         return new JsonResponse(['success' => true, 'count' => count($factures)]);
+    }
+
+    /**
+     * @Route("/modal-assign-model", name="ovesco.facturation.facture.assign_model_modal")
+     */
+    public function assignModelModalAction(Request $request, EntityManagerInterface $em) {
+        $mass = new MassAssignModel();
+        $mass->setSelectedIds(serialize($request->request->get('selectedIds')));
+        $form = $this->createForm(MassAssignModelType::class, $mass);
+        $form->handleRequest($request);
+
+        if ($form->isSubmitted() && $form->isValid()) {
+            $selectedIds = unserialize($mass->getSelectedIds());
+            $factures = $em->getRepository(Facture::class)->findBy(['id' => $selectedIds]);
+
+            foreach ($factures as $facture) {
+                $facture->setFactureModel($mass->getFactureModel());
+            }
+
+            $em->flush();
+            $this->addFlash("success", count($factures) . " facture(s) mises à jour");
+            return Modal::refresh();
+        }
+
+        return $this->render('@NetBSFichier/generic/add_generic.modal.twig', [
+            'form' => $form->createView(),
+        ], Modal::renderModal($form));
+    }
+
+    /**
+     * @Route("/resolve-model/{id}", name="ovesco.facturation.facture.resolve_model", methods={"GET"})
+     */
+    public function resolveModelAction(Facture $facture, EntityManagerInterface $em) {
+        $engine = new ExpressionLanguage();
+        $models = $em->getRepository(FactureModel::class)
+            ->createQueryBuilder('m')->orderBy('m.poids', 'DESC')->getQuery()->getResult();
+
+        $resolved = null;
+        foreach ($models as $model) {
+            $rule = $model->getApplicationRule();
+            if ($rule === null) {
+                $resolved = $model;
+                break;
+            }
+            try {
+                $result = $engine->evaluate($rule, [
+                    'facture' => $facture,
+                    'debiteur' => $facture->getDebiteur(),
+                    'isFamille' => $facture->getDebiteur() instanceof BaseFamille,
+                ]);
+                if ($result) {
+                    $resolved = $model;
+                    break;
+                }
+            } catch (\Exception $e) {
+                continue;
+            }
+        }
+
+        return new JsonResponse([
+            'model' => $resolved ? $resolved->getName() : 'Aucun modèle applicable',
+        ]);
     }
 
     /**

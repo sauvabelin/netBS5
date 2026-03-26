@@ -41,6 +41,7 @@ class NetbsToolbarListener
         $addRappels     = $itemClass === Facture::class;
         $generate       = $itemClass === Creance::class;
         $markPrint      = $itemClass === Facture::class;
+        $assignModel    = $itemClass === Facture::class;
 
         if(!$addCreances && !$generate && !$markPrint)
             return;
@@ -52,6 +53,7 @@ class NetbsToolbarListener
             'addRappels'    => $addRappels,
             'generate'      => $generate,
             'markPrint'     => $markPrint,
+            'assignModel'   => $assignModel,
         ]);
 
         $event->getToolbar()->addItem(new BasicToolbarItem($content, BasicToolbarItem::RIGHT));
