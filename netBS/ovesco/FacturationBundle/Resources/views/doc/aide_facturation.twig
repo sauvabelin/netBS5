@@ -1,0 +1,62 @@
+<h4>Cycle de vie d'une facture</h4>
+<p>Une <strong>créance</strong> est une somme d'argent due (cotisation, camp, économat, etc.). Un débiteur (membre ou famille) peut avoir plusieurs créances. Pour éviter d'envoyer une facture par créance, on <strong>fusionne</strong> les créances en factures regroupées par adresse.</p>
+<ol>
+    <li><strong>Créance</strong> → Une dette est enregistrée dans le système.</li>
+    <li><strong>Fusion</strong> → Les créances sont regroupées par adresse et fusionnées en factures.</li>
+    <li><strong>Attente d'impression</strong> → La facture doit être exportée en PDF et imprimée.</li>
+    <li><strong>Attente de paiement</strong> → La facture a été envoyée, on attend le paiement (import CAMT ou saisie manuelle).</li>
+    <li><strong>Rappel</strong> → Si le paiement n'arrive pas, on génère un rappel. La facture repasse en attente d'impression.</li>
+</ol>
+
+<hr/>
+<h4>Ordre recommandé des opérations</h4>
+<p>Lors d'une campagne de facturation, suivez cet ordre :</p>
+<ol>
+    <li><strong>Générer les rappels</strong> pour les factures impayées (depuis <em>En attente de paiement</em>).</li>
+    <li><strong>Générer les créances</strong> (cotisations, camps, etc.) si ce n'est pas déjà fait.</li>
+    <li><strong>Fusionner les créances ouvertes</strong> en factures (depuis <em>Créances Ouvertes</em>).</li>
+    <li><strong>Imprimer les factures</strong> en attente d'impression.</li>
+</ol>
+
+<hr/>
+<h4>Générer les cotisations</h4>
+<ol>
+    <li>Aller dans <strong>Facturation</strong> → <strong>Autre</strong> → <strong>Cotisations</strong>.</li>
+    <li>Choisir le type <em>Normal</em>, puis cliquer sur <em>Valider</em>.</li>
+    <li>La liste des membres s'affiche. Cliquer sur <strong>Facturation</strong> → <strong>Ajouter des créances</strong>.</li>
+    <li>Renseigner le titre (ex: <code>Cotisation 2026 pour [PRENOM] [NOM]</code>), le montant et le rabais famille.</li>
+    <li>Cliquer sur <em>Valider</em>.</li>
+    <li>Répéter pour le type <em>Réduit</em>.</li>
+    <li>Toutes les créances de cotisation sont générées. Passer à la fusion.</li>
+</ol>
+
+<hr/>
+<h4>Générer des rappels</h4>
+<ol>
+    <li>Aller dans <strong>Facturation</strong> → <strong>Listes de factures</strong> → <strong>En attente de paiement</strong>.</li>
+    <li>En bas à droite, cliquer sur <strong>Facturation</strong> → <strong>Ajouter des rappels</strong>.</li>
+    <li>Choisir une <strong>date de rappel</strong> (affichée sur la facture).</li>
+    <li>Valider. Les factures repassent en <em>attente d'impression</em>.</li>
+</ol>
+
+<hr/>
+<h4>Fusionner les créances en factures</h4>
+<ol>
+    <li>Aller dans <strong>Facturation</strong> → <strong>Listes de factures</strong> → <strong>Créances Ouvertes</strong>.</li>
+    <li>Sélectionner les créances, puis cliquer sur <strong>Facturation</strong> :
+        <ul>
+            <li><em>Prévisualiser la fusion</em> — pour vérifier sans modifier.</li>
+            <li><em>Fusionner en facture</em> — pour générer les factures.</li>
+        </ul>
+    </li>
+    <li>Les factures créées sont en <em>attente d'impression</em>.</li>
+</ol>
+
+<hr/>
+<h4>Ajouter des créances à des membres spécifiques</h4>
+<ol>
+    <li>Rechercher les membres concernés (formulaire de recherche, par troupe, etc.).</li>
+    <li>Les ajouter à une liste.</li>
+    <li>Depuis la liste, cliquer sur <strong>Facturation</strong> → <strong>Ajouter des créances</strong>.</li>
+    <li>Renseigner le titre, le montant, puis valider.</li>
+</ol>
