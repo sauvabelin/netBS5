@@ -325,6 +325,17 @@ class PDFQrFacture extends BaseFactureExporter
         $refNum = QrPaymentReferenceGenerator::generate(null, $facture->getId());
         $qrBill->setPaymentReference(PaymentReference::create(PaymentReference::TYPE_QR, $refNum));
 
+        $violations = $qrBill->getViolations();
+        if (count($violations) > 0) {
+            $messages = [];
+            foreach ($violations as $v) {
+                $messages[] = $v->getPropertyPath() . ': ' . $v->getMessage();
+            }
+            throw new \RuntimeException(
+                "Facture #{$facture->getFactureId()} ({$facture->getDebiteur()}) - QR invalide: " . implode('; ', $messages)
+            );
+        }
+
         return $qrBill;
     }
 
