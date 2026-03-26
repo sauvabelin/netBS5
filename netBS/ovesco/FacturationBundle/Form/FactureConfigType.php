@@ -54,6 +54,7 @@ class FactureConfigType extends FPDFType
             ->add('hb', NumberType::class, ['label' => "position Y num. référence"])
             ->add('bvrIl', NumberType::class, ['label' => 'Interligne BVR'])
             ->add('sortAlpha', SwitchType::class, ['label' => 'Trier par ordre alphabétique'])
+            ->add('groupByBranche', SwitchType::class, ['label' => 'Grouper par branche'])
             ;
     }
 

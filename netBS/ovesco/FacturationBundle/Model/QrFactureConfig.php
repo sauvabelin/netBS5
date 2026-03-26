@@ -17,6 +17,8 @@ class QrFactureConfig extends FPDFConfig implements ExporterConfigInterface
 
     public $sortAlpha = false;
 
+    public $groupByBranche = false;
+
     public $date;
 
     public function __construct()

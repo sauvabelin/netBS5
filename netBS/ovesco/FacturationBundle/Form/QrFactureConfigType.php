@@ -45,6 +45,7 @@ class QrFactureConfigType extends FPDFType
             ])
             ->add('border', SwitchType::class, ['label' => 'Repères visuels'])
             ->add('sortAlpha', SwitchType::class, ['label' => 'Trier par ordre alphabétique'])
+            ->add('groupByBranche', SwitchType::class, ['label' => 'Grouper par branche'])
         ;
     }
 
