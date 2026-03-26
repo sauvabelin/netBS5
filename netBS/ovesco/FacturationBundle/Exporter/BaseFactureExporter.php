@@ -244,6 +244,7 @@ abstract class BaseFactureExporter implements ExporterInterface, ConfigurableExp
 
         $brancheTypeId = (int) $this->parameterManager->getValue('bs', 'groupe_type.branche_id');
 
+        // First pass: look for a branche-type group in the hierarchy
         foreach ($membre->getActivesAttributions() as $attribution) {
             $groupe = $attribution->getGroupe();
             while ($groupe !== null) {
@@ -252,6 +253,15 @@ abstract class BaseFactureExporter implements ExporterInterface, ConfigurableExp
                 }
                 $groupe = $groupe->getParent();
             }
+        }
+
+        // Fallback: use the top-level group (root) of the first active attribution
+        foreach ($membre->getActivesAttributions() as $attribution) {
+            $groupe = $attribution->getGroupe();
+            while ($groupe->getParent() !== null) {
+                $groupe = $groupe->getParent();
+            }
+            return $groupe;
         }
 
         return null;
