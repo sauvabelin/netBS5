@@ -8,8 +8,11 @@ use NetBS\CoreBundle\Model\ConfigurableExporterInterface;
 use NetBS\CoreBundle\Model\ExporterInterface;
 use NetBS\CoreBundle\Utils\Countries;
 use NetBS\CoreBundle\Utils\StrUtil;
+use NetBS\CoreBundle\Service\ParameterManager;
 use NetBS\CoreBundle\Utils\Traits\ConfigurableExporterTrait;
 use NetBS\FichierBundle\Mapping\BaseFamille;
+use NetBS\FichierBundle\Mapping\BaseGeniteur;
+use NetBS\FichierBundle\Mapping\BaseMembre;
 use Ovesco\FacturationBundle\Entity\Creance;
 use Ovesco\FacturationBundle\Entity\Facture;
 use Ovesco\FacturationBundle\Entity\FactureModel;
@@ -25,9 +28,12 @@ abstract class BaseFactureExporter implements ExporterInterface, ConfigurableExp
 
     private $engine;
 
-    public function __construct(EntityManagerInterface $manager)
+    private $parameterManager;
+
+    public function __construct(EntityManagerInterface $manager, ParameterManager $parameterManager)
     {
         $this->manager = $manager;
+        $this->parameterManager = $parameterManager;
         $this->engine = new ExpressionLanguage();
     }
 
@@ -75,6 +81,14 @@ abstract class BaseFactureExporter implements ExporterInterface, ConfigurableExp
         $fpdf->AddFont('Arial', 'B', 'arialbd.php');
         $fpdf->AddFont('BVR', '', 'ocrb10n.php');
 
+        if (!empty($config->sortAlpha)) {
+            usort($items, function(Facture $a, Facture $b) {
+                $cmp = strcasecmp($this->getDebiteurNom($a), $this->getDebiteurNom($b));
+                if ($cmp !== 0) return $cmp;
+                return strcasecmp($this->getDebiteurAdresse($a), $this->getDebiteurAdresse($b));
+            });
+        }
+
         /** @var Facture[] $noAdress */
         $noAdress = [];
         foreach($items as $facture)
@@ -92,16 +106,28 @@ abstract class BaseFactureExporter implements ExporterInterface, ConfigurableExp
             $fpdf->MultiCell(200, 6, utf8_decode($text));
         }
 
-        foreach($items as $facture)
-            $this->printFacture($facture, $fpdf);
-
-        foreach($items as $facture) {
-            if (!$facture->hasBeenPrinted())
-                $facture->setLatestImpression(new \DateTime());
+        if (!empty($config->groupByBranche)) {
+            $grouped = $this->groupByBranche($items);
+            foreach ($grouped as $brancheName => $factures) {
+                $this->printBrancheHeader($fpdf, $brancheName, count($factures));
+                foreach ($factures as $facture) {
+                    $this->printFacture($facture, $fpdf);
+                }
+            }
+        } else {
+            foreach($items as $facture)
+                $this->printFacture($facture, $fpdf);
         }
 
-        // We've set impression date
-        $this->manager->flush();
+        if (!empty($config->setPrintDate)) {
+            foreach($items as $facture) {
+                if (!$facture->hasBeenPrinted())
+                    $facture->setLatestImpression(new \DateTime());
+            }
+
+            // We've set impression date
+            $this->manager->flush();
+        }
 
         return new StreamedResponse(function() use ($fpdf) {
             $fpdf->Output();
@@ -110,20 +136,167 @@ abstract class BaseFactureExporter implements ExporterInterface, ConfigurableExp
 
     private function getModel(Facture $facture) {
 
-        $modelId = $this->getConfiguration()->model;
-        if (is_int($modelId)) return $this->manager->getRepository(FactureModel::class)
-            ->find($modelId);
-        else {
-            $models = $this->manager->getRepository(FactureModel::class)
-                ->createQueryBuilder('m')->orderBy('m.poids', 'DESC')->getQuery()->getResult();
+        $config = $this->getConfiguration();
+        $model = $config->model ?? 'attributed';
 
-            /** @var FactureModel $item */
-            foreach($models as $item)
-                if ($this->evaluate($item->getApplicationRule(), $facture, false))
-                    return $item;
-
-            return $models[0];
+        // Force a specific model
+        if (str_starts_with($model, 'force_')) {
+            $modelId = (int)substr($model, 6);
+            $forced = $this->manager->getRepository(FactureModel::class)->find($modelId);
+            if ($forced) return $forced;
         }
+
+        // Attributed: use the stored model if set, otherwise fall through to rules
+        if ($model === 'attributed' && $facture->getFactureModel() !== null) {
+            return $facture->getFactureModel();
+        }
+
+        // Rules (or fallback): evaluate applicationRules
+        return $this->evaluateRules($facture);
+    }
+
+    private function getDebiteurNom(Facture $facture) {
+        $debiteur = $facture->getDebiteur();
+        if (!$debiteur) return '';
+        if ($debiteur instanceof BaseFamille) return $debiteur->getNom();
+        if (method_exists($debiteur, '_getNom')) return $debiteur->_getNom();
+        return $debiteur->getNom();
+    }
+
+    private function getDebiteurAdresse(Facture $facture) {
+        $debiteur = $facture->getDebiteur();
+        if (!$debiteur) return '';
+        $adresse = $debiteur->getSendableAdresse();
+        if (!$adresse) return '';
+        return $adresse->getRue() . ' ' . $adresse->getNpa() . ' ' . $adresse->getLocalite();
+    }
+
+    /**
+     * @param Facture[] $items
+     * @return array<string, Facture[]> Ordered map: branch name => factures
+     */
+    private function groupByBranche(array $items): array
+    {
+        $groups = [];
+        $mixed = [];
+
+        foreach ($items as $facture) {
+            $debiteur = $facture->getDebiteur();
+
+            // Famille or Geniteur: resolve through family members
+            $famille = null;
+            if ($debiteur instanceof BaseFamille) {
+                $famille = $debiteur;
+            } elseif ($debiteur instanceof BaseGeniteur) {
+                $famille = $debiteur->getFamille();
+            }
+
+            if ($famille) {
+                $branches = $this->resolveFamilleBranches($famille);
+                if (count($branches) >= 1) {
+                    $names = array_map(function($b) { return $b->getNom(); }, $branches);
+                    sort($names);
+                    $key = implode(' et ', $names);
+                    $groups[$key][] = $facture;
+                } else {
+                    $mixed[] = $facture;
+                }
+                continue;
+            }
+
+            // Membre: resolve directly
+            $branche = $this->resolveMembreBranche($debiteur);
+            $key = $branche ? $branche->getNom() : 'Autres';
+            $groups[$key][] = $facture;
+        }
+
+        ksort($groups);
+
+        if (!empty($mixed)) {
+            $groups['Autres'] = array_merge($groups['Autres'] ?? [], $mixed);
+        }
+
+        return $groups;
+    }
+
+    private function printBrancheHeader(\FPDF $fpdf, string $brancheName, int $count)
+    {
+        $fpdf->AddPage();
+        $names = explode(' et ', $brancheName);
+        $lineHeight = 15;
+        $totalHeight = count($names) * $lineHeight;
+        $startY = 120 - ($totalHeight / 2);
+
+        $fpdf->SetFont('OpenSans', 'B', 24);
+        foreach ($names as $name) {
+            $fpdf->SetXY(0, $startY);
+            $fpdf->Cell(210, $lineHeight, utf8_decode($name), 0, 1, 'C');
+            $startY += $lineHeight;
+        }
+        $fpdf->SetFont('OpenSans', '', 12);
+        $fpdf->SetXY(0, $startY + 5);
+        $fpdf->Cell(210, 10, utf8_decode("$count facture(s)"), 0, 1, 'C');
+    }
+
+    private function resolveMembreBranche($membre)
+    {
+        if (!$membre instanceof BaseMembre) return null;
+
+        $brancheTypeId = (int) $this->parameterManager->getValue('bs', 'groupe_type.branche_id');
+
+        // First pass: look for a branche-type group in the hierarchy
+        foreach ($membre->getActivesAttributions() as $attribution) {
+            $groupe = $attribution->getGroupe();
+            while ($groupe !== null) {
+                if ($groupe->getGroupeType() && $groupe->getGroupeType()->getId() === $brancheTypeId) {
+                    return $groupe;
+                }
+                $groupe = $groupe->getParent();
+            }
+        }
+
+        // Fallback: use the top-level group (root) of the first active attribution
+        foreach ($membre->getActivesAttributions() as $attribution) {
+            $groupe = $attribution->getGroupe();
+            while ($groupe->getParent() !== null) {
+                $groupe = $groupe->getParent();
+            }
+            return $groupe;
+        }
+
+        return null;
+    }
+
+    /**
+     * @return array Unique branches for all active members in a family
+     */
+    private function resolveFamilleBranches(BaseFamille $famille): array
+    {
+        $branches = [];
+        foreach ($famille->getMembres() as $membre) {
+            $branche = $this->resolveMembreBranche($membre);
+            if ($branche && !isset($branches[$branche->getId()])) {
+                $branches[$branche->getId()] = $branche;
+            }
+        }
+        return $branches;
+    }
+
+    private function evaluateRules(Facture $facture) {
+
+        $models = $this->manager->getRepository(FactureModel::class)
+            ->createQueryBuilder('m')->orderBy('m.poids', 'DESC')->getQuery()->getResult();
+
+        if (empty($models)) {
+            throw new \RuntimeException("Aucun modèle de facture trouvé en base de données");
+        }
+
+        /** @var FactureModel $item */
+        foreach($models as $item)
+            if ($this->evaluate($item->getApplicationRule(), $facture, false))
+                return $item;
+
+        return $models[0];
     }
 
     private function evaluate($string, Facture $facture, $parse = true) {

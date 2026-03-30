@@ -2,13 +2,22 @@
 
 namespace Ovesco\FacturationBundle\Controller;
 
+use Doctrine\ORM\EntityManagerInterface;
 use NetBS\CoreBundle\Searcher\SearcherManager;
 use NetBS\CoreBundle\Service\PreviewerManager;
+use NetBS\CoreBundle\Utils\Modal;
+use NetBS\FichierBundle\Entity\BaseFamille;
 use Ovesco\FacturationBundle\Entity\Facture;
+use Ovesco\FacturationBundle\Entity\FactureModel;
 use Ovesco\FacturationBundle\Exporter\PDFQrFacture;
+use Ovesco\FacturationBundle\Form\MassAssignModelType;
 use Ovesco\FacturationBundle\Model\FactureConfig;
+use Ovesco\FacturationBundle\Model\MassAssignModel;
 use Ovesco\FacturationBundle\Model\QrFactureConfig;
+use Symfony\Component\ExpressionLanguage\ExpressionLanguage;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\HttpFoundation\JsonResponse;
+use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Annotation\Route;
 
 /**
@@ -23,6 +32,13 @@ class FactureController extends AbstractController
     public function __construct(SearcherManager $searcherManager)
     {
         $this->searcherManager = $searcherManager;
+    }
+
+    /**
+     * @Route("/aide", name="ovesco.facturation.aide")
+     */
+    public function aideAction() {
+        return $this->render("@OvescoFacturation/facture/aide_facturation.html.twig");
     }
 
     /**
@@ -106,8 +122,110 @@ class FactureController extends AbstractController
     public function facturePdfNoDateExportAction(Facture $facture, PDFQrFacture $exporter, PreviewerManager $previewerManager) {
         $items      = [$facture];
         $config = new QrFactureConfig();
+        $config->setPrintDate = false;
         $exporter->setConfig($config);
         $previewer  = $previewerManager->getPreviewer($exporter->getPreviewer());
         return $previewer->preview($items, $exporter);
+    }
+
+    /**
+     * @Route("/mark-printed", name="ovesco.facturation.facture.mark_printed", methods={"POST"})
+     */
+    public function markPrintedAction(Request $request, EntityManagerInterface $em) {
+        $this->denyAccessUnlessGranted('update', new Facture());
+
+        $ids = json_decode($request->request->get('ids'), true);
+        if (!is_array($ids) || empty($ids)) {
+            return new JsonResponse(['error' => 'IDs invalides'], 400);
+        }
+
+        $factures = $em->getRepository(Facture::class)->findBy(['id' => $ids]);
+        $now = new \DateTime();
+        foreach ($factures as $facture) {
+            $facture->setDateImpression($now);
+        }
+        $em->flush();
+        return new JsonResponse(['success' => true, 'count' => count($factures)]);
+    }
+
+    /**
+     * @Route("/modal-assign-model", name="ovesco.facturation.facture.assign_model_modal")
+     */
+    public function assignModelModalAction(Request $request, EntityManagerInterface $em) {
+        $mass = new MassAssignModel();
+        $mass->setSelectedIds(serialize($request->request->get('selectedIds')));
+        $form = $this->createForm(MassAssignModelType::class, $mass);
+        $form->handleRequest($request);
+
+        if ($form->isSubmitted() && $form->isValid()) {
+            $selectedIds = unserialize($mass->getSelectedIds());
+            $factures = $em->getRepository(Facture::class)->findBy(['id' => $selectedIds]);
+
+            foreach ($factures as $facture) {
+                $facture->setFactureModel($mass->getFactureModel());
+            }
+
+            $em->flush();
+            $this->addFlash("success", count($factures) . " facture(s) mises à jour");
+            return Modal::refresh();
+        }
+
+        return $this->render('@NetBSFichier/generic/add_generic.modal.twig', [
+            'form' => $form->createView(),
+        ], Modal::renderModal($form));
+    }
+
+    /**
+     * @Route("/resolve-model/{id}", name="ovesco.facturation.facture.resolve_model", methods={"GET"})
+     */
+    public function resolveModelAction(Facture $facture, EntityManagerInterface $em) {
+        $engine = new ExpressionLanguage();
+        $models = $em->getRepository(FactureModel::class)
+            ->createQueryBuilder('m')->orderBy('m.poids', 'DESC')->getQuery()->getResult();
+
+        $resolved = null;
+        foreach ($models as $model) {
+            $rule = $model->getApplicationRule();
+            if ($rule === null) {
+                $resolved = $model;
+                break;
+            }
+            try {
+                $result = $engine->evaluate($rule, [
+                    'facture' => $facture,
+                    'debiteur' => $facture->getDebiteur(),
+                    'isFamille' => $facture->getDebiteur() instanceof BaseFamille,
+                ]);
+                if ($result) {
+                    $resolved = $model;
+                    break;
+                }
+            } catch (\Exception $e) {
+                continue;
+            }
+        }
+
+        return new JsonResponse([
+            'model' => $resolved ? $resolved->getName() : 'Aucun modèle applicable',
+        ]);
+    }
+
+    /**
+     * @Route("/unmark-printed", name="ovesco.facturation.facture.unmark_printed", methods={"POST"})
+     */
+    public function unmarkPrintedAction(Request $request, EntityManagerInterface $em) {
+        $this->denyAccessUnlessGranted('update', new Facture());
+
+        $ids = json_decode($request->request->get('ids'), true);
+        if (!is_array($ids) || empty($ids)) {
+            return new JsonResponse(['error' => 'IDs invalides'], 400);
+        }
+
+        $factures = $em->getRepository(Facture::class)->findBy(['id' => $ids]);
+        foreach ($factures as $facture) {
+            $facture->setDateImpression(null);
+        }
+        $em->flush();
+        return new JsonResponse(['success' => true, 'count' => count($factures)]);
     }
 }

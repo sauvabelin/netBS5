@@ -3,18 +3,17 @@
 namespace Ovesco\FacturationBundle\Form;
 
 use Ovesco\FacturationBundle\Entity\FactureModel;
-use Ovesco\FacturationBundle\Model\MassRappel;
+use Ovesco\FacturationBundle\Model\MassAssignModel;
 use Symfony\Bridge\Doctrine\Form\Type\EntityType;
+use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Extension\Core\Type\HiddenType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 
-class MassRappelType extends RappelType
+class MassAssignModelType extends AbstractType
 {
     public function buildForm(FormBuilderInterface $builder, array $options)
     {
-        parent::buildForm($builder, $options);
-
         $builder
             ->add('factureModel', EntityType::class, [
                 'label' => 'Modèle de facture',
@@ -28,8 +27,8 @@ class MassRappelType extends RappelType
 
     public function configureOptions(OptionsResolver $resolver)
     {
-        $resolver->setDefaults(array(
-            'data_class' => MassRappel::class
-        ));
+        $resolver->setDefaults([
+            'data_class' => MassAssignModel::class,
+        ]);
     }
 }

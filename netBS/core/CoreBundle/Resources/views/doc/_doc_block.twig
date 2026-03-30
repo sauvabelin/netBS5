@@ -1,0 +1,17 @@
+{#
+  Documentation block component.
+  Usage: {% include '@NetBSCore/doc/_doc_block.twig' with {doc: '@NetBSCore/doc/facturation/facture_models.twig'} %}
+#}
+{% set docId = doc|replace({'@': '', '/': '-', '.': '-', '_': '-'}) %}
+<div class="card mb-3 border-info">
+    <div class="card-header bg-white d-flex justify-content-between align-items-center py-2"
+         data-toggle="collapse" data-target="#doc-{{ docId }}" style="cursor:pointer;" aria-expanded="false">
+        <small class="text-info"><i class="fas fa-question-circle"></i> Aide</small>
+        <i class="fas fa-chevron-down text-muted small"></i>
+    </div>
+    <div id="doc-{{ docId }}" class="collapse">
+        <div class="card-body small text-muted">
+            {% include doc %}
+        </div>
+    </div>
+</div>

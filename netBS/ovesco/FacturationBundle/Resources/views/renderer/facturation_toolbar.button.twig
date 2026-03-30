@@ -1,3 +1,20 @@
+{% if assignModel or markPrint %}
+<div class="btn-group dropup">
+    <button type="button" data-toggle="dropdown" class="btn btn-secondary ml-1 dropdown-toggle">
+        Actions de masse
+        <span class="icon-dropdown mdi mdi-chevron-down"></span>
+    </button>
+
+    <div role="menu" class="dropdown-menu dropdown-menu-right">
+        {% if assignModel %}<a class="dropdown-item" style="cursor:pointer;" id="assign-model-{{ tableId }}">Assigner un modèle de facture</a>{% endif %}
+        {% if markPrint %}
+        <a class="dropdown-item" style="cursor:pointer;" id="mark-printed-{{ tableId }}">Marquer comme imprimé</a>
+        <a class="dropdown-item" style="cursor:pointer;" id="unmark-printed-{{ tableId }}">Marquer comme non-imprimé</a>
+        {% endif %}
+    </div>
+</div>
+{% endif %}
+
 <div class="btn-group dropup">
     <button type="button" data-toggle="dropdown" class="btn btn-secondary ml-1 dropdown-toggle">
         Facturation
@@ -35,6 +52,13 @@
                 modal.launch();
             });
 
+            $('#assign-model-{{ tableId }}').click(function() {
+                var modal = new BSModal("{{ path('ovesco.facturation.facture.assign_model_modal') }}", {
+                    selectedIds: {{ tableId }}.getSelectedIds(),
+                });
+                modal.launch();
+            });
+
             $('#generate-factures-{{ tableId }}').click(function() {
                 var modal = new BSModal("{{ path('ovesco.facturation.creance.merge') }}", {
                     creanceIds: {{ tableId }}.getSelectedIds(),
@@ -45,6 +69,41 @@
             $('#check-factures-{{ tableId }}').click(function() {
                 PostLink("{{ path('ovesco.facturation.creance.check_merge') }}", {
                     creanceIds: {{ tableId }}.getSelectedIds(),
+                });
+            });
+
+            $(document).on('mouseenter', '.facture-model-auto', function() {
+                var $badge = $(this);
+                if ($badge.data('loaded')) return;
+                $badge.data('loaded', true);
+                var factureId = $badge.data('facture-id');
+                $.get("{{ path('ovesco.facturation.facture.resolve_model', {id: '__ID__'})}}"
+                    .replace('__ID__', factureId), function(data) {
+                    $badge.text(data.model);
+                });
+            });
+
+            $('#mark-printed-{{ tableId }}').click(function() {
+                var ids = {{ tableId }}.getSelectedIds();
+                if (ids.length === 0) { alert('Veuillez sélectionner des factures'); return; }
+                if (!confirm('Marquer ' + ids.length + ' facture(s) comme imprimée(s) ?')) return;
+                $.post("{{ path('ovesco.facturation.facture.mark_printed') }}", { ids: JSON.stringify(ids) }, function(data) {
+                    alert(data.count + ' facture(s) marquée(s) comme imprimée(s)');
+                    location.reload();
+                }).fail(function() {
+                    alert('Erreur lors de la mise à jour');
+                });
+            });
+
+            $('#unmark-printed-{{ tableId }}').click(function() {
+                var ids = {{ tableId }}.getSelectedIds();
+                if (ids.length === 0) { alert('Veuillez sélectionner des factures'); return; }
+                if (!confirm('Marquer ' + ids.length + ' facture(s) comme non-imprimée(s) ?')) return;
+                $.post("{{ path('ovesco.facturation.facture.unmark_printed') }}", { ids: JSON.stringify(ids) }, function(data) {
+                    alert(data.count + ' facture(s) marquée(s) comme non-imprimée(s)');
+                    location.reload();
+                }).fail(function() {
+                    alert('Erreur lors de la mise à jour');
                 });
             });
         })();

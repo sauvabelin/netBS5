@@ -1,0 +1,18 @@
+{% extends '@NetBSCore/layout/backend.layout.twig' %}
+
+{% set title = 'Aide Facturation' %}
+
+{% block main %}
+    <div class="container-fluid">
+        {% include '@NetBSCore/includes/header.include.twig' with {
+            header: 'Aide Facturation',
+            subHeader: 'Guide complet du processus de facturation',
+        } %}
+
+        <div class="card">
+            <div class="card-body">
+                {% include '@OvescoFacturation/doc/aide_facturation.twig' %}
+            </div>
+        </div>
+    </div>
+{% endblock %}

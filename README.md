@@ -41,15 +41,32 @@ Les membres font ensuite partie de ces groupes au travers d'attributions, qui le
 potentielle, ainsi qu'une fonction qu'ils exercent dans ce groupe. Les fonctions leurs donnent ensuite les autorisations
 d'exécuter certaines actions ou d'accéder à certaines parties de l'application par exemple.
 
-## installation
-- faites un git clone de ce repository
+## Installation
+- Faites un git clone de ce repository
 - Configurez votre fichier d'environnement `.env.local`
-- Ouvrez un terminal à l'intérieur du dossier ainsi cloné, et utilisez composer pour faire un composer install
+- Ouvrez un terminal à l'intérieur du dossier ainsi cloné, et utilisez composer pour faire un `composer install`
 - Une fois l'installation terminée, assurez-vous que les paramètres de base de donnée soient corrects.
 - Exécutez `php bin/console doctrine:fixtures:load --group=fill` pour charger des données d'exemple
 - Générez les clés pour les JWT:
-    - créez le dossier des clés `mkdir`
+    - créez le dossier des clés `mkdir config/jwt`
     - Générez les clés `openssl genpkey -out config/jwt/private.pem -aes256 -algorithm rsa -pkeyopt rsa_keygen_bits:4096`
     - Puis `openssl pkey -in config/jwt/private.pem -out config/jwt/public.pem -pubout`
     - Et mettez la clé utilisée dans votre fichier `.env.local`
 - Connectez vous avec `admin` et `password`
+
+## Migrations de base de données
+
+Les migrations se trouvent dans `migrations/` et suivent la convention de nommage `Version<NNNN>_<description>.php`.
+
+```bash
+# Voir l'état actuel des migrations
+php bin/console doctrine:migrations:status
+
+# Appliquer les migrations en attente
+php bin/console doctrine:migrations:migrate
+
+# Générer une migration après modification d'une entité
+php bin/console doctrine:migrations:diff
+```
+
+Après avoir généré une migration avec `diff`, pensez à renommer le fichier et la classe selon la convention (`Version<NNNN>_<description>`) avant de commiter.

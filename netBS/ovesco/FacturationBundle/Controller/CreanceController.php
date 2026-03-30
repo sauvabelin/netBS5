@@ -137,6 +137,7 @@ class CreanceController extends AbstractController
                 foreach ($factures as $facture) {
                     $facture->setCompteToUse($merger->getCompteToUse());
                     $facture->setRemarques($merger->getRemarques());
+                    $facture->setFactureModel($merger->getFactureModel());
                     $em->persist($facture);
                 }
                 $em->flush();

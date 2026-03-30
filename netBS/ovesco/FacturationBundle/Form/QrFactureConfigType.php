@@ -26,13 +26,16 @@ class QrFactureConfigType extends FPDFType
     {
         parent::buildForm($builder, $options);
 
-        $choices = ['null' => 'laisser faire'];
+        $choices = [
+            'Modèle attribué' => 'attributed',
+            'Réévaluer les règles' => 'rules',
+        ];
         $models = $this->manager->getRepository(FactureModel::class)->findAll();
-        foreach ($models as $model) $choices[$model->getId()] = $model->getName();
+        foreach ($models as $model) $choices[$model->getName()] = 'force_' . $model->getId();
         $builder
             ->add('model', ChoiceType::class, [
                 'label' => 'Modèle à utiliser',
-                'choices' => array_flip($choices)
+                'choices' => $choices,
             ])
             ->add('adresseLeft', NumberType::class, ['label' => 'Gauche adresse postale'])
             ->add('adresseTop', NumberType::class, ['label' => 'Haut adresse postale'])
@@ -41,6 +44,8 @@ class QrFactureConfigType extends FPDFType
                 'required' => false,
             ])
             ->add('border', SwitchType::class, ['label' => 'Repères visuels'])
+            ->add('sortAlpha', SwitchType::class, ['label' => 'Trier par ordre alphabétique'])
+            ->add('groupByBranche', SwitchType::class, ['label' => 'Grouper par branche'])
         ;
     }
 

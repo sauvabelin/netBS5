@@ -8,11 +8,16 @@ use NetBS\CoreBundle\Model\ExporterConfigInterface;
 class QrFactureConfig extends FPDFConfig implements ExporterConfigInterface
 {
     public $border = true;
+    public $setPrintDate = true;
 
     public $adresseTop = 46; // décalage haut adresse lettre
     public $adresseLeft = 130; // décalage gauche adresse lettre
 
-    public $model = null;
+    public $model = 'attributed';
+
+    public $sortAlpha = false;
+
+    public $groupByBranche = false;
 
     public $date;
 

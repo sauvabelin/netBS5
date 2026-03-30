@@ -4,6 +4,7 @@ namespace Ovesco\FacturationBundle\Form;
 
 use NetBS\FichierBundle\Utils\Form\RemarquesUtils;
 use Ovesco\FacturationBundle\Entity\Compte;
+use Ovesco\FacturationBundle\Entity\FactureModel;
 use Ovesco\FacturationBundle\Model\MergeCreancesToFacture;
 use Symfony\Bridge\Doctrine\Form\Type\EntityType;
 use Symfony\Component\Form\AbstractType;
@@ -17,6 +18,12 @@ class MergeCreancesToFactureType extends AbstractType
     {
         $builder
             ->add('compteToUse', EntityType::class, ['label' => 'Compte à utiliser', 'class' => Compte::class])
+            ->add('factureModel', EntityType::class, [
+                'label' => 'Modèle de facture',
+                'class' => FactureModel::class,
+                'required' => false,
+                'placeholder' => 'Automatique (selon règles)',
+            ])
             ->add('creanceIds', HiddenType::class)
         ;
 

@@ -38,5 +38,6 @@ class MainMenuListener
         $autre->addSubLink('Liste des comptes', 'ovesco.facturation.compte.list');
         $autre->addSubLink('Importer un fichier BVR', 'ovesco.facturation.camt.import');
         $autre->addSubLink('Modèles de facture', 'ovesco.facturation.facture_model.list');
+        $autre->addSubLink('Aide Facturation', 'ovesco.facturation.aide');
     }
 }

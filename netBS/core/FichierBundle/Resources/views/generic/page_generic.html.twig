@@ -5,6 +5,9 @@
     {{ registerJs(asset('bundles/netbscore/js/modal.js')) }}
 
     <div class="container-fluid">
+        {% if doc is defined and doc %}
+            {% include '@NetBSCore/doc/_doc_block.twig' with {doc: doc} %}
+        {% endif %}
         <div class="row">
             <div class="col-9">
                 <div class="card card-table">

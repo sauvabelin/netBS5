@@ -61,4 +61,9 @@
     {{ registerScript(_ajax_loader_script) }}
 
     {% include '@NetBSCore/helper/init.javascript.twig' %}
+
+    {% set _tooltip_init %}
+    <script>$(function(){ $('[data-toggle="tooltip"]').tooltip({html:true, trigger:'hover', container:'body'}); });</script>
+    {% endset %}
+    {{ registerScript(_tooltip_init) }}
 {% endblock %}
