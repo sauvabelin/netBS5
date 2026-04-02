@@ -19,15 +19,15 @@ use Symfony\Component\Routing\Annotation\Route;
 
 /**
  * Class ExportController
- * @Route("/export")
  */
+#[Route('/export')]
 class ExportController extends AbstractController
 {
     /**
-     * @Route("/export/selected", name="netbs.core.export.export_selected")
      * @param Request $request
      * @return Response
      */
+    #[Route('/export/selected', name: 'netbs.core.export.export_selected')]
     public function generateExportBlobAction(Request $request, ExporterManager $manager, EntityManagerInterface $em, LoaderManager $loaderManager, ListBridgeManager $listBridgeManager) {
 
         $session    = $this->get('session');
@@ -51,11 +51,11 @@ class ExportController extends AbstractController
     }
 
     /**
-     * @Route("/switch-config/{blobKey}/{configId}", name="netbs.core.export.switch_config")
      * @param $blobKey
      * @param $configId
      * @return \Symfony\Component\HttpFoundation\RedirectResponse
      */
+    #[Route('/switch-config/{blobKey}/{configId}', name: 'netbs.core.export.switch_config')]
     public function switchConfigAction($blobKey, $configId, ExporterManager $manager, EntityManagerInterface $em) {
 
         /** @var ExportBlob $blob */
@@ -91,11 +91,11 @@ class ExportController extends AbstractController
     }
 
     /**
-     * @Route("/remove-config/{blobKey}/{configId}", name="netbs.core.export.remove_config")
      * @param $blobKey
      * @param $configId
      * @return \Symfony\Component\HttpFoundation\RedirectResponse
      */
+    #[Route('/remove-config/{blobKey}/{configId}', name: 'netbs.core.export.remove_config')]
     public function removeConfigAction($blobKey, $configId, EntityManagerInterface $em, ExporterManager $manager) {
 
         /** @var ExportBlob $blob */
@@ -122,11 +122,11 @@ class ExportController extends AbstractController
     }
 
     /**
-     * @Route("/check-settings/{blobKey}", name="netbs.core.export.check_settings")
      * @param Request $request
      * @param $blobKey
      * @return Response
      */
+    #[Route('/check-settings/{blobKey}', name: 'netbs.core.export.check_settings')]
     public function exportSettingsViewAction(Request $request, $blobKey, EntityManagerInterface $em, ExporterManager $manager) {
 
         /** @var ExportBlob $blob */
@@ -162,8 +162,8 @@ class ExportController extends AbstractController
      * @param $blobKey
      * @return Response
      * @throws \Exception
-     * @Route("/preview/{blobKey}", name="netbs.core.export.preview")
      */
+    #[Route('/preview/{blobKey}', name: 'netbs.core.export.preview')]
     public function previewExportAction($blobKey, ExporterManager $manager, PreviewerManager $previewerManager, EntityManagerInterface $em, LoaderManager $loaderManager, ListBridgeManager $listBridgeManager) {
 
         $session    = $this->get('session');
@@ -202,8 +202,8 @@ class ExportController extends AbstractController
     /**
      * @param $blobKey
      * @return Response
-     * @Route("/generate-export/{blobKey}", name="netbs.core.export.generate")
      */
+    #[Route('/generate-export/{blobKey}', name: 'netbs.core.export.generate')]
     public function generateExportAction($blobKey, ExporterManager $manager, EntityManagerInterface $em, LoaderManager $loaderManager, ListBridgeManager $listBridgeManager) {
 
         /** @var ExportBlob $blob */

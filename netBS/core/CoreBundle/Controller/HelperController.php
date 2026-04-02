@@ -12,10 +12,10 @@ use Symfony\Component\Routing\Annotation\Route;
 class HelperController extends AbstractController
 {
     /**
-     * @Route("/helper/get-help", name="netbs.core.helper.get_help")
      * @param Request $request
      * @return JsonResponse
      */
+    #[Route('/helper/get-help', name: 'netbs.core.helper.get_help')]
     public function getHelpAction(Request $request, HelperManager $helperManager)
     {
         $class          = base64_decode($request->request->get('class'));

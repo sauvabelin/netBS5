@@ -15,8 +15,8 @@ use Symfony\Component\Routing\Annotation\Route;
 
 /**
  * @package FichierBundle\Controller
- * @Route("/email")
  */
+#[Route('/email')]
 class EmailController extends AbstractController
 {
     protected $config;
@@ -27,12 +27,12 @@ class EmailController extends AbstractController
     }
 
     /**
-     * @Route("/delete/{ownerType}/{ownerId}/{emailId}", name="netbs.fichier.email.delete")
      * @param $ownerType
      * @param $ownerId
      * @param $emailId
      * @return Response
      */
+    #[Route('/delete/{ownerType}/{ownerId}/{emailId}', name: 'netbs.fichier.email.delete')]
     public function deleteEmailAction($ownerType, $ownerId, $emailId, EntityManagerInterface $em, History $history) {
 
         $class  = $this->config->getEmailClass();
@@ -51,12 +51,12 @@ class EmailController extends AbstractController
     }
 
     /**
-     * @Route("/modal/creation/{ownerType}/{ownerId}", name="netbs.fichier.email.modal_creation")
      * @param $ownerType
      * @param $ownerId
      * @param Request $request
      * @return Response
      */
+    #[Route('/modal/creation/{ownerType}/{ownerId}', name: 'netbs.fichier.email.modal_creation')]
     public function modalAddAction($ownerType, $ownerId, Request $request, EntityManagerInterface $em) {
 
         $class  = $this->config->getEmailClass();

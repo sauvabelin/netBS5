@@ -11,9 +11,9 @@ use Symfony\Component\Routing\Annotation\Route;
 class MenuController extends AbstractController
 {
     /**
-     * @Route("/menu/render-main", name="netbs.core.menu.render_main")
      * @return \Symfony\Component\HttpFoundation\Response
      */
+    #[Route('/menu/render-main', name: 'netbs.core.menu.render_main')]
     public function renderMainMenuAction(EventDispatcherInterface $dispatcher)
     {
         $menu       = new MainMenu();

@@ -27,9 +27,7 @@ use Symfony\Component\Security\Core\Encoder\UserPasswordEncoderInterface;
  */
 class UserController extends AbstractController
 {
-    /**
-     * @Route("/user/list", name="netbs.secure.user.list_users")
-     */
+    #[Route('/user/list', name: 'netbs.secure.user.list_users')]
     public function listUsersAction(Request $request) {
 
         $username = empty($request->get('username')) ? null : $request->get('username');
@@ -39,10 +37,10 @@ class UserController extends AbstractController
     }
 
     /**
-     * @Route("/user/edit/{id}", name="netbs.secure.user.edit_user")
      * @param Request $request
      * @return \Symfony\Component\HttpFoundation\RedirectResponse|\Symfony\Component\HttpFoundation\Response
      */
+    #[Route('/user/edit/{id}', name: 'netbs.secure.user.edit_user')]
     public function updateUserAction(Request $request, $id, UserManager $manager) {
         $user       = $manager->find($id);
         $form       = $this->createForm(UserType::class, $user, ['operation' => CRUD::UPDATE]);
@@ -69,8 +67,8 @@ class UserController extends AbstractController
      * @throws \Doctrine\ORM\ORMException
      * @throws \Doctrine\ORM\OptimisticLockException
      * @throws \Doctrine\ORM\TransactionRequiredException
-     * @Route("/user/delete/{id}", name="netbs.secure.user.delete_user")
      */
+    #[Route('/user/delete/{id}', name: 'netbs.secure.user.delete_user')]
     public function deleteUserAction($id, SecureConfig $secureConfig, UserManager $manager, EntityManagerInterface $em, History $history) {
 
         $user           = $em->find($secureConfig->getUserClass(), $id);
@@ -85,10 +83,10 @@ class UserController extends AbstractController
     }
 
     /**
-     * @Route("/user/add", name="netbs.secure.user.add_user")
      * @param Request $request
      * @return \Symfony\Component\HttpFoundation\Response
      */
+    #[Route('/user/add', name: 'netbs.secure.user.add_user')]
     public function addUserAction(Request $request, SecureConfig $config, UserManager $manager) {
         $user       = $config->createUser();
         $form       = $this->createForm(UserType::class, $user);
@@ -114,9 +112,7 @@ class UserController extends AbstractController
         ));
     }
 
-    /**
-     * @Route("/user/my-account", name="netbs.secure.user.account_page")
-     */
+    #[Route('/user/my-account', name: 'netbs.secure.user.account_page')]
     public function accountPageAction(Request $request, UserManager $manager, LayoutManager $designer, EventDispatcherInterface $dispatcher, UserPasswordEncoderInterface $encoder) {
         /** @var BaseUser $user */
         $user               = $this->getUser();

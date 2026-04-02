@@ -21,8 +21,8 @@ use Symfony\Component\Routing\Annotation\Route;
 
 /**
  * Class MembreController
- * @Route("/famille")
  */
+#[Route('/famille')]
 class FamilleController extends AbstractController
 {
     protected $config;
@@ -37,10 +37,10 @@ class FamilleController extends AbstractController
     }
 
     /**
-     * @Route("/page/{id}", name="netbs.fichier.famille.page_famille")
      * @param $id
      * @return Response
      */
+    #[Route('/page/{id}', name: 'netbs.fichier.famille.page_famille')]
     public function pageFamilleAction($id, EntityManagerInterface $em, LayoutManager $layout) {
 
         /** @var BaseFamille $famille */
@@ -111,9 +111,7 @@ class FamilleController extends AbstractController
     }
 
 
-    /**
-     * @Route("/remove/{id}", name="netbs.fichier.famille.remove")
-     */
+    #[Route('/remove/{id}', name: 'netbs.fichier.famille.remove')]
     public function removeFamilleAction($id, EventDispatcherInterface $dispatcher) {
 
         if(!$this->isGranted('ROLE_SG'))

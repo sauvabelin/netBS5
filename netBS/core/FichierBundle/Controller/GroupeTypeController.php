@@ -6,14 +6,12 @@ use Doctrine\ORM\EntityManagerInterface;
 use NetBS\CoreBundle\Utils\Modal;
 use NetBS\FichierBundle\Form\GroupeTypeType;
 use NetBS\FichierBundle\Service\FichierConfig;
-use Sensio\Bundle\FrameworkExtraBundle\Configuration\Security;
+use Symfony\Component\Security\Http\Attribute\IsGranted;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Annotation\Route;
 
-/**
- * @Route("/groupe-type")
- */
+#[Route('/groupe-type')]
 class GroupeTypeController extends AbstractController
 {
     protected $config;
@@ -23,10 +21,8 @@ class GroupeTypeController extends AbstractController
         $this->config = $config;
     }
 
-    /**
-     * @Route("/manage", name="netbs.fichier.groupe_type.page_groupe_types")
-     * @Security("is_granted('ROLE_READ_EVERYWHERE')")
-     */
+    #[Route('/manage', name: 'netbs.fichier.groupe_type.page_groupe_types')]
+    #[IsGranted('ROLE_READ_EVERYWHERE')]
     public function pageGroupeTypesAction() {
 
         return $this->render('@NetBSFichier/generic/page_generic.html.twig', array(
@@ -39,10 +35,10 @@ class GroupeTypeController extends AbstractController
 
     /**
      * @param Request $request
-     * @Route("/modal/add", name="netbs.fichier.groupe_type.modal_add")
      * @return \Symfony\Component\HttpFoundation\Response
-     * @Security("is_granted('ROLE_CREATE_EVERYWHERE')")
      */
+    #[Route('/modal/add', name: 'netbs.fichier.groupe_type.modal_add')]
+    #[IsGranted('ROLE_CREATE_EVERYWHERE')]
     public function addGroupeTypeModalAction(Request $request, EntityManagerInterface $em) {
 
         $class          = $this->config->getGroupeTypeClass();

@@ -27,7 +27,7 @@ use NetBS\CoreBundle\Searcher\SearcherManager;
 use NetBS\CoreBundle\Utils\Modal;
 use Ovesco\FacturationBundle\Entity\Creance;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
-use Sensio\Bundle\FrameworkExtraBundle\Configuration\Security;
+use Symfony\Component\Security\Http\Attribute\IsGranted;
 use Sprain\SwissQrBill\Exception\InvalidQrBillDataException;
 use Symfony\Bridge\Twig\Mime\TemplatedEmail;
 use Symfony\Component\Routing\Annotation\Route;
@@ -36,15 +36,11 @@ use Symfony\Component\Mailer\MailerInterface;
 use Symfony\Component\Mime\Address;
 use Symfony\Component\Routing\RouterInterface;
 
-/**
- * @Route("/apmbs")
- * @Security("is_granted('ROLE_APMBS')")
- */
+#[Route('/apmbs')]
+#[IsGranted('ROLE_APMBS')]
 class APMBSController extends AbstractController
 {
-    /**
-     * @Route("/cabanes/{id}", name="sauvabelin.apmbs.cabane")
-     */
+    #[Route('/cabanes/{id}', name: 'sauvabelin.apmbs.cabane')]
     public function cabaneAction(Cabane $cabane) {
         return $this->render('cabane/cabane_page.html.twig', [
             'cabane' => $cabane,
@@ -71,9 +67,7 @@ class APMBSController extends AbstractController
         return $bgColor;
     }
 
-    /**
-     * @Route("/cabane/{id}/full-calendar-reservations", name="sauvabelin.apmbs.full_calendar_cabane_reservations")
-     */
+    #[Route('/cabane/{id}/full-calendar-reservations', name: 'sauvabelin.apmbs.full_calendar_cabane_reservations')]
     public function cabaneFullCalendarReservationsAction(Cabane $cabane, Request $request, EntityManagerInterface $em, GoogleCalendarManager $gcm) {
         $start = new \DateTimeImmutable($request->get('start'));
         $end = new \DateTimeImmutable($request->get('end'));
@@ -178,9 +172,7 @@ class APMBSController extends AbstractController
         return $this->json($result);
     }
 
-    /**
-     * @Route("/cabane/edit/{id}", name="sauvabelin.apmbs.cabane_edit")
-     */
+    #[Route('/cabane/edit/{id}', name: 'sauvabelin.apmbs.cabane_edit')]
     public function cabaneEditAction(Cabane $cabane, Request $request, EntityManagerInterface $em) {
         $form = $this->createForm(CabaneType::class, $cabane);
         $form->handleRequest($request);
@@ -196,9 +188,7 @@ class APMBSController extends AbstractController
         ]);
     }
 
-    /**
-     * @Route("/add-cabane", name="sauvabelin.apmbs.add_cabane")
-     */
+    #[Route('/add-cabane', name: 'sauvabelin.apmbs.add_cabane')]
     public function addCabaneAction(Request $request, EntityManagerInterface $em) {
         $cabane = new Cabane();
         $form = $this->createForm(CabaneType::class, $cabane);
@@ -218,9 +208,7 @@ class APMBSController extends AbstractController
         ));
     }
 
-    /**
-     * @Route("/reservations", name="sauvabelin.apmbs.reservations")
-     */
+    #[Route('/reservations', name: 'sauvabelin.apmbs.reservations')]
     public function reservationsAction(SearcherManager $searcher) {
         $item = new SearchAPMBSReservation();
         $item->status = APMBSReservation::PENDING;
@@ -228,9 +216,7 @@ class APMBSController extends AbstractController
         return $searcher->render($instance);
     }
 
-    /**
-     * @Route("/reservation/{id}", name="sauvabelin.apmbs.reservation")
-     */
+    #[Route('/reservation/{id}', name: 'sauvabelin.apmbs.reservation')]
     public function viewReservationAction(APMBSReservation $reservation, GoogleCalendarManager $gcm) {
         $form = $this->createForm(APMBSReservationType::class, $reservation);
         $reservations = $gcm->listReservations($reservation->getCabane(), $reservation->getStart(), $reservation->getEnd());
@@ -245,9 +231,7 @@ class APMBSController extends AbstractController
     }
 
 
-    /**
-     * @Route("/time-periods", name="sauvabelin.apmbs.time_periods")
-     */
+    #[Route('/time-periods', name: 'sauvabelin.apmbs.time_periods')]
     public function timePeriodAction(RouterInterface $router) {
 
         return $this->render('@NetBSFichier/generic/page_generic.html.twig', array(
@@ -260,9 +244,9 @@ class APMBSController extends AbstractController
 
     /**
      * @param Request $request
-     * @Route("/time-period/modal/add", name="sauvabelin.apmbs.time_periods.modal_add")
      * @return \Symfony\Component\HttpFoundation\Response
      */
+    #[Route('/time-period/modal/add', name: 'sauvabelin.apmbs.time_periods.modal_add')]
     public function addTimePeriodModalAction(Request $request, EntityManagerInterface $em) {
         $timePeriod = new CabaneTimePeriod();
         $form = $this->createForm(CabaneTimePeriodType::class, $timePeriod);
@@ -281,9 +265,7 @@ class APMBSController extends AbstractController
         ], Modal::renderModal($form));
     }
 
-    /**
-     * @Route("/intendants", name="sauvabelin.apmbs.intendants")
-     */
+    #[Route('/intendants', name: 'sauvabelin.apmbs.intendants')]
     public function intendantsAction(RouterInterface $router) {
 
         return $this->render('@NetBSFichier/generic/page_generic.html.twig', array(
@@ -296,9 +278,9 @@ class APMBSController extends AbstractController
 
     /**
      * @param Request $request
-     * @Route("/intendant/modal/add", name="sauvabelin.apmbs.intendants.modal_add")
      * @return \Symfony\Component\HttpFoundation\Response
      */
+    #[Route('/intendant/modal/add', name: 'sauvabelin.apmbs.intendants.modal_add')]
     public function addIntendantModalAction(Request $request, EntityManagerInterface $em) {
         $intendant = new Intendant();
         $form = $this->createForm(IntendantType::class, $intendant);
@@ -317,9 +299,7 @@ class APMBSController extends AbstractController
         ], Modal::renderModal($form));
     }
     
-    /**
-     * @Route("/reservation/{id}/modify", name="sauvabelin.apmbs.reservation.modify")
-     */
+    #[Route('/reservation/{id}/modify', name: 'sauvabelin.apmbs.reservation.modify')]
     public function reservationModifyModalAction(Request $request, APMBSReservation $reservation, EntityManagerInterface $em, GoogleCalendarManager $gcm) {
         $modify = new ModifyReservation();
         $modify->start = $reservation->getStart();
@@ -367,9 +347,7 @@ class APMBSController extends AbstractController
         ], Modal::renderModal($form));
     }
 
-    /**
-     * @Route("/reservation/{id}/accept", name="sauvabelin.apmbs.reservation.accept")
-     */
+    #[Route('/reservation/{id}/accept', name: 'sauvabelin.apmbs.reservation.accept')]
     public function reservationAcceptModalAction(Request $request, APMBSReservation $reservation, EntityManagerInterface $em, GoogleCalendarManager $gcm) {
         $msg = new AcceptReservation();
         $form = $this->createForm(ReservationAcceptType::class, $msg, ['cabane' => $reservation->getCabane()]);
@@ -408,9 +386,7 @@ class APMBSController extends AbstractController
         ], Modal::renderModal($form));
     }
 
-    /**
-     * @Route("/reservation/{id}/refuse", name="sauvabelin.apmbs.reservation.refuse")
-     */
+    #[Route('/reservation/{id}/refuse', name: 'sauvabelin.apmbs.reservation.refuse')]
     public function reservationRefuseModalAction(Request $request, APMBSReservation $reservation, EntityManagerInterface $em, GoogleCalendarManager $gcm) {
         $msg = new ReservationMessage();
         $form = $this->createForm(ReservationMessageType::class, $msg);
@@ -442,9 +418,7 @@ class APMBSController extends AbstractController
         ], Modal::renderModal($form));
     }
 
-    /**
-     * @Route("/reservation/{id}/cancel", name="sauvabelin.apmbs.reservation.cancel")
-     */
+    #[Route('/reservation/{id}/cancel', name: 'sauvabelin.apmbs.reservation.cancel')]
     public function reservationCancelModalAction(Request $request, APMBSReservation $reservation, EntityManagerInterface $em, GoogleCalendarManager $gcm) {
         $msg = new ReservationMessage();
         $form = $this->createForm(ReservationMessageType::class, $msg);
@@ -476,9 +450,7 @@ class APMBSController extends AbstractController
         ], Modal::renderModal($form));
     }
 
-    /**
-     * @Route("/reservation/{id}/close", name="sauvabelin.apmbs.reservation.close")
-     */
+    #[Route('/reservation/{id}/close', name: 'sauvabelin.apmbs.reservation.close')]
     public function closeAction(APMBSReservation $reservation, EntityManagerInterface $em) {
         $log = new ReservationLog();
         $log->setUsername($this->getUser()->getUserIdentifier());
@@ -495,9 +467,7 @@ class APMBSController extends AbstractController
         return $this->redirectToRoute('sauvabelin.apmbs.reservation', ['id' => $reservation->getId()]);
     }
 
-    /**
-     * @Route("/reservation/{id}/send-invoice", name="sauvabelin.apmbs.reservation.send-invoice")
-     */
+    #[Route('/reservation/{id}/send-invoice', name: 'sauvabelin.apmbs.reservation.send-invoice')]
     public function reservationSendInvoiceAction(Request $request, APMBSReservation $reservation, EntityManagerInterface $em, GoogleCalendarManager $gcm, APMBSFactureExporter $invoicer) {
         $data = new SendInvoiceReservation();
         $data->montant = $reservation->getEstimatedPrice();

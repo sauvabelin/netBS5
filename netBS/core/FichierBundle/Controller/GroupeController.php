@@ -18,7 +18,7 @@ use NetBS\FichierBundle\Mapping\BaseGroupe;
 use NetBS\FichierBundle\Mapping\Personne;
 use NetBS\FichierBundle\Service\FichierConfig;
 use NetBS\SecureBundle\Voter\CRUD;
-use Sensio\Bundle\FrameworkExtraBundle\Configuration\Security;
+use Symfony\Component\Security\Http\Attribute\IsGranted;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\Form\Extension\Core\Type\NumberType;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -45,9 +45,9 @@ class GroupeController extends AbstractController
     /**
      * @param Request $request
      * @param $id
-     * @Route("/groupe/statistics/effectifs/{id}", name="netbs.fichier.groupe.statistics_effectifs")
      * @throws \Exception
      */
+    #[Route('/groupe/statistics/effectifs/{id}', name: 'netbs.fichier.groupe.statistics_effectifs')]
     public function getGroupeEffectifsStats(Request $request, $id, EntityManagerInterface $em) {
         $begin = new \DateTime($request->get('begin'));
         $end = new \DateTime($request->get('end'));
@@ -118,10 +118,10 @@ and     @pv := concat(@pv, ',', id)
 
     /**
      * @param Request $request
-     * @Route("/modal/add", name="netbs.fichier.groupe.modal_add")
      * @return \Symfony\Component\HttpFoundation\Response
-     * @Security("is_granted('ROLE_CREATE_EVERYWHERE')")
      */
+    #[Route('/modal/add', name: 'netbs.fichier.groupe.modal_add')]
+    #[IsGranted('ROLE_CREATE_EVERYWHERE')]
     public function addGroupeModalAction(Request $request, EntityManagerInterface $em) {
 
         $gclass         = $this->getGroupeClass();
@@ -144,10 +144,10 @@ and     @pv := concat(@pv, ',', id)
     }
 
     /**
-     * @Route("/groupes", name="netbs.fichier.groupe.page_groupes_hierarchy")
-     * @Security("is_granted('ROLE_READ_EVERYWHERE')")
      * @return Response
      */
+    #[Route('/groupes', name: 'netbs.fichier.groupe.page_groupes_hierarchy')]
+    #[IsGranted('ROLE_READ_EVERYWHERE')]
     public function pageGroupesHierarchyAction(EntityManagerInterface $em) {
 
         $repo       = $em->getRepository($this->getGroupeClass());
@@ -165,9 +165,9 @@ and     @pv := concat(@pv, ',', id)
     }
 
     /**
-     * @Route("/groupe/{id}", name="netbs.fichier.groupe.page_groupe")
      * @return Response
      */
+    #[Route('/groupe/{id}', name: 'netbs.fichier.groupe.page_groupe')]
     public function pageGroupeAction($id, EntityManagerInterface $em, LayoutManager $layout) {
 
         /** @var BaseGroupe $groupe */

@@ -18,9 +18,9 @@ class MembreController extends AbstractController
 {
     /**
      * @param Request $request
-     * @Route("/membre/nouveau", name="sauvabelin.membre.add_membre")
      * @return Response
      */
+    #[Route('/membre/nouveau', name: 'sauvabelin.membre.add_membre')]
     public function pageAddMembreAction(Request $request, FichierConfig $config, EntityManagerInterface $em) {
 
         /** @var BSUser $user */
@@ -69,9 +69,9 @@ class MembreController extends AbstractController
 
     /**
      * @param Request $request
-     * @Route("/search", name="sauvabelin.famille.search")
      * @return Response
      */
+    #[Route('/search', name: 'sauvabelin.famille.search')]
     public function searchFamilleAction(Request $request, FamilleProvider $provider) {
 
         $term       = $request->get('term');

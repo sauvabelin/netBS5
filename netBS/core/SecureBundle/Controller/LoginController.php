@@ -9,9 +9,7 @@ use Symfony\Component\Security\Http\Authentication\AuthenticationUtils;
 
 class LoginController extends AbstractController
 {
-    /**
-     * @Route("/login", name="netbs.secure.login.login")
-     */
+    #[Route('/login', name: 'netbs.secure.login.login')]
     public function loginAction(AuthenticationUtils $authenticationUtils)
     {
         return $this->render('@NetBSSecure/login/login.html.twig', array(
@@ -20,9 +18,7 @@ class LoginController extends AbstractController
         ));
     }
 
-    /**
-     * @Route("/logout", name="netbs.secure.login.logout")
-     */
+    #[Route('/logout', name: 'netbs.secure.login.logout')]
     public function logoutAction()
     {
     }

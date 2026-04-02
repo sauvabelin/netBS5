@@ -9,26 +9,24 @@ use NetBS\CoreBundle\Utils\Modal;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
-use Sensio\Bundle\FrameworkExtraBundle\Configuration\Security;
+use Symfony\Component\Security\Http\Attribute\IsGranted;
 use Symfony\Component\Routing\Annotation\Route;
 
 class NewsChannelBotController extends AbstractController
 {
     /**
      * @param Request $request
-     * @Route("/news-channel-bot/manage", name="sauvabelin.news_channel_bot.manage")
-     * @Security("is_granted('ROLE_IT')")
      * @return Response
      */
+    #[Route('/news-channel-bot/manage', name: 'sauvabelin.news_channel_bot.manage')]
+    #[IsGranted('ROLE_IT')]
     public function manageBotsAction() {
         return $this->render('newsChannelBot/manage_bots.html.twig');
     }
 
 
-    /**
-     * @route("/modal/news-channel-bot/add", name="sauvabelin.news_channel_bot.add_modal")
-     * @Security("is_granted('ROLE_IT')")
-     */
+    #[Route('/modal/news-channel-bot/add', name: 'sauvabelin.news_channel_bot.add_modal')]
+    #[IsGranted('ROLE_IT')]
     public function addNewsChannelModalAction(Request $request, EntityManagerInterface $em) {
 
         $bot = new NewsChannelBot();

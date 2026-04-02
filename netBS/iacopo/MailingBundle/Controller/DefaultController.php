@@ -64,17 +64,13 @@ class DefaultController extends AbstractController
         }
     }
 
-    /**
-     * @Route("/", name="iacopo.mailing.list")
-     */
+    #[Route('/', name: 'iacopo.mailing.list')]
     public function indexAction(): Response
     {
         return $this->render('@IacopoMailing/default/index.html.twig');
     }
 
-    /**
-     * @Route("/create", name="iacopo.mailing.create")
-     */
+    #[Route('/create', name: 'iacopo.mailing.create')]
     public function createAction(Request $request): Response
     {
         $mailingList = new MailingList();
@@ -114,9 +110,7 @@ class DefaultController extends AbstractController
         ]);
     }
 
-    /**
-     * @Route("/edit/{id}", name="iacopo.mailing.edit")
-     */
+    #[Route('/edit/{id}', name: 'iacopo.mailing.edit')]
     public function editAction(int $id, Request $request): Response
     {
         $mailingList = $this->em->getRepository(MailingList::class)->find($id);
@@ -237,9 +231,7 @@ class DefaultController extends AbstractController
         ]);
     }
 
-    /**
-     * @Route("/target/{id}/edit", name="iacopo.mailing.target.edit")
-     */
+    #[Route('/target/{id}/edit', name: 'iacopo.mailing.target.edit')]
     public function editTargetAction(int $id, Request $request): Response
     {
         $target = $this->em->getRepository(MailingTarget::class)->find($id);
@@ -283,9 +275,7 @@ class DefaultController extends AbstractController
         ]);
     }
 
-    /**
-     * @Route("/{id}/toggle-active", name="iacopo.mailing.toggle_active", methods={"POST"})
-     */
+    #[Route('/{id}/toggle-active', name: 'iacopo.mailing.toggle_active', methods: ['POST'])]
     public function toggleActiveAction(int $id): JsonResponse
     {
         $mailingList = $this->em->getRepository(MailingList::class)->find($id);
@@ -305,9 +295,7 @@ class DefaultController extends AbstractController
         ]);
     }
 
-    /**
-     * @Route("/target/{id}/delete", name="iacopo.mailing.target.delete", methods={"POST"})
-     */
+    #[Route('/target/{id}/delete', name: 'iacopo.mailing.target.delete', methods: ['POST'])]
     public function deleteTargetAction(int $id): Response
     {
         $target = $this->em->getRepository(MailingTarget::class)->find($id);
@@ -327,9 +315,7 @@ class DefaultController extends AbstractController
         return $this->redirectToRoute('iacopo.mailing.list');
     }
 
-    /**
-     * @Route("/alias/{id}/delete", name="iacopo.mailing.alias.delete", methods={"POST"})
-     */
+    #[Route('/alias/{id}/delete', name: 'iacopo.mailing.alias.delete', methods: ['POST'])]
     public function deleteAliasAction(int $id): Response
     {
         $alias = $this->em->getRepository(MailingListAlias::class)->find($id);
@@ -349,9 +335,7 @@ class DefaultController extends AbstractController
         return $this->redirectToRoute('iacopo.mailing.list');
     }
 
-    /**
-     * @Route("/{id}/recipients", name="iacopo.mailing.recipients", methods={"GET"})
-     */
+    #[Route('/{id}/recipients', name: 'iacopo.mailing.recipients', methods: ['GET'])]
     public function getRecipientsAction(int $id): JsonResponse
     {
         $mailingList = $this->em->getRepository(MailingList::class)->find($id);
@@ -370,9 +354,7 @@ class DefaultController extends AbstractController
         ]);
     }
 
-    /**
-     * @Route("/delete/{id}", name="iacopo.mailing.delete")
-     */
+    #[Route('/delete/{id}', name: 'iacopo.mailing.delete')]
     public function deleteAction(int $id): Response
     {
         $list = $this->em->getRepository(MailingList::class)->find($id);

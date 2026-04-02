@@ -16,13 +16,11 @@ use Symfony\Component\Routing\Annotation\Route;
 
 /**
  * Class DynamicListController
- * @Route("/dynamic-list")
  */
+#[Route('/dynamic-list')]
 class DynamicListController extends AbstractController
 {
-    /**
-     * @Route("/manage/lists", name="netbs.core.dynamics_list.manage_lists")
-     */
+    #[Route('/manage/lists', name: 'netbs.core.dynamics_list.manage_lists')]
     public function manageListsAction(DynamicListManager $dynamics) {
         return $this->render('@NetBSCore/dynamics/manage_dynamic_lists.html.twig', array(
             'lists' => $dynamics->getCurrentUserLists(),
@@ -31,13 +29,13 @@ class DynamicListController extends AbstractController
     }
 
     /**
-     * @Route("/remove-items/{id}", name="netbs.core.dynamics_list.remove_items")
      * @param Request $request
      * @param DynamicList $list
      * @return \Symfony\Component\HttpFoundation\RedirectResponse
      * @throws \Doctrine\ORM\ORMException
      * @throws \Doctrine\ORM\OptimisticLockException
      */
+    #[Route('/remove-items/{id}', name: 'netbs.core.dynamics_list.remove_items')]
     public function removeElementFromListAction(Request $request, DynamicList $list, EntityManagerInterface $em) {
 
         $ids    = json_decode($request->get('data'), true)['removed_ids'];
@@ -58,13 +56,13 @@ class DynamicListController extends AbstractController
     }
 
     /**
-     * @Route("/remove-share/{id}", name="netbs.core.dynamics_list.remove_share")
      * @param Request $request
      * @param DynamicList $list
      * @return \Symfony\Component\HttpFoundation\RedirectResponse
      * @throws \Doctrine\ORM\ORMException
      * @throws \Doctrine\ORM\OptimisticLockException
      */
+    #[Route('/remove-share/{id}', name: 'netbs.core.dynamics_list.remove_share')]
     public function removeShareFromListAction(Request $request, DynamicList $list, EntityManagerInterface $em) {
         $id = $request->get('userid');
         if (!$id) {
@@ -94,9 +92,9 @@ class DynamicListController extends AbstractController
 
     /**
      * @param Request $request
-     * @Route("/modal/add-share-to-list/{id}", name="netbs.core.dynamic_list.modal_add_share")
      * @return \Symfony\Component\HttpFoundation\Response
      */
+    #[Route('/modal/add-share-to-list/{id}', name: 'netbs.core.dynamic_list.modal_add_share')]
     public function addShareModalAction(Request $request, DynamicList $list, EntityManagerInterface $em) {
 
         $form = $this->createForm(DynamicListShareType::class, $list);
@@ -116,12 +114,12 @@ class DynamicListController extends AbstractController
     }
 
     /**
-     * @Route("/remove/list/{id}", name="netbs.core.dynamics_list.remove_list")
      * @param DynamicList $list
      * @return \Symfony\Component\HttpFoundation\RedirectResponse
      * @throws \Doctrine\ORM\ORMException
      * @throws \Doctrine\ORM\OptimisticLockException
      */
+    #[Route('/remove/list/{id}', name: 'netbs.core.dynamics_list.remove_list')]
     public function removeListAction(DynamicList $list, EntityManagerInterface $em) {
 
         if(!$this->isGranted(CRUD::DELETE, $list))
@@ -135,11 +133,11 @@ class DynamicListController extends AbstractController
     }
 
     /**
-     * @Route("/manage/{id}", name="netbs.core.dynamics_list.manage_list")
      * @param DynamicList $list
      * @return \Symfony\Component\HttpFoundation\Response
      * @throws \NetBS\ListBundle\Exceptions\ListModelNotFoundException
      */
+    #[Route('/manage/{id}', name: 'netbs.core.dynamics_list.manage_list')]
     public function manageListAction(DynamicList $list, DynamicListManager $manager) {
 
         if(!$this->isGranted(CRUD::READ, $list))
@@ -156,10 +154,10 @@ class DynamicListController extends AbstractController
     }
 
     /**
-     * @Route("/items/direct-add", name="netbs.core.dynamics_list.items_add")
      * @param Request $request
      * @return DynamicList|null|object
      */
+    #[Route('/items/direct-add', name: 'netbs.core.dynamics_list.items_add')]
     public function addItemsToList(Request $request, DynamicListManager $dynamics, EntityManagerInterface $em) {
 
         $listId     = $request->get('listId');
@@ -204,9 +202,9 @@ class DynamicListController extends AbstractController
 
     /**
      * @param Request $request
-     * @Route("/modal/add-list", name="netbs.core.dynamic_list.modal_add")
      * @return \Symfony\Component\HttpFoundation\Response
      */
+    #[Route('/modal/add-list', name: 'netbs.core.dynamic_list.modal_add')]
     public function addListModalAction(Request $request, DynamicListManager $dynamics) {
 
         $encoded    = $request->request->get('itemClass');

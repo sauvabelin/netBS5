@@ -6,15 +6,15 @@ use Doctrine\ORM\EntityManagerInterface;
 use NetBS\CoreBundle\Utils\Modal;
 use NetBS\FichierBundle\Form\GroupeCategorieType;
 use NetBS\FichierBundle\Service\FichierConfig;
-use Sensio\Bundle\FrameworkExtraBundle\Configuration\Security;
+use Symfony\Component\Security\Http\Attribute\IsGranted;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Annotation\Route;
 
 /**
  * Class DistinctionController
- * @Route("/groupe-categorie")
  */
+#[Route('/groupe-categorie')]
 class GroupeCategorieController extends AbstractController
 {
     protected $config;
@@ -24,10 +24,8 @@ class GroupeCategorieController extends AbstractController
         $this->config = $config;
     }
 
-    /**
-     * @Route("/manage", name="netbs.fichier.groupe_categorie.page_groupe_categories")
-     * @Security("is_granted('ROLE_READ_EVERYWHERE')")
-     */
+    #[Route('/manage', name: 'netbs.fichier.groupe_categorie.page_groupe_categories')]
+    #[IsGranted('ROLE_READ_EVERYWHERE')]
     public function pageGroupeCategorieAction() {
 
         return $this->render('@NetBSFichier/generic/page_generic.html.twig', array(
@@ -40,10 +38,10 @@ class GroupeCategorieController extends AbstractController
 
     /**
      * @param Request $request
-     * @Route("/modal/add", name="netbs.fichier.groupe_categorie.modal_add")
      * @return \Symfony\Component\HttpFoundation\Response
-     * @Security("is_granted('ROLE_CREATE_EVERYWHERE')")
      */
+    #[Route('/modal/add', name: 'netbs.fichier.groupe_categorie.modal_add')]
+    #[IsGranted('ROLE_CREATE_EVERYWHERE')]
     public function addGroupeCategorieModalAction(Request $request, EntityManagerInterface $em) {
 
         $class          = $this->config->getGroupeCategorieClass();

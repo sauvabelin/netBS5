@@ -13,13 +13,13 @@ use Symfony\Component\Routing\Annotation\Route;
 class QuickExportController extends AbstractController
 {
     /**
-     * @Route("/etiquettes/groupe/{id}", name="sauvabelin.etiquettes.groupe")
      * @param $id
      * @return \Symfony\Component\HttpFoundation\RedirectResponse
      * @throws \Doctrine\ORM\ORMException
      * @throws \Doctrine\ORM\OptimisticLockException
      * @throws \Doctrine\ORM\TransactionRequiredException
      */
+    #[Route('/etiquettes/groupe/{id}', name: 'sauvabelin.etiquettes.groupe')]
     public function etiquettesGroupeAction($id, FichierConfig $config, EntityManagerInterface $em) {
 
         /** @var BaseGroupe $groupe */
@@ -34,13 +34,13 @@ class QuickExportController extends AbstractController
     }
 
     /**
-     * @Route("/liste-rega/groupe/{id}", name="sauvabelin.liste_rega.groupe")
      * @param $id
      * @return \Symfony\Component\HttpFoundation\RedirectResponse
      * @throws \Doctrine\ORM\ORMException
      * @throws \Doctrine\ORM\OptimisticLockException
      * @throws \Doctrine\ORM\TransactionRequiredException
      */
+    #[Route('/liste-rega/groupe/{id}', name: 'sauvabelin.liste_rega.groupe')]
     public function regaGroupeAction($id, FichierConfig $config, EntityManagerInterface $em) {
         /** @var BaseGroupe $groupe */
         $groupe = $em->find($config->getGroupeClass(), $id);
@@ -59,8 +59,8 @@ class QuickExportController extends AbstractController
 
     /**
      * @param $id
-     * @Route("/etiquettes/no-chef-groupe/{id}", name="sauvabelin.etiquettes.no_chef_groupe")
      */
+    #[Route('/etiquettes/no-chef-groupe/{id}', name: 'sauvabelin.etiquettes.no_chef_groupe')]
     public function etiquettesNoChefsGroupeAction($id, FichierConfig $config, EntityManagerInterface $em) {
 
         /** @var BaseGroupe $groupe */

@@ -14,13 +14,11 @@ use Symfony\Component\Routing\RouterInterface;
 /**
  * Class CompteController
  * @package Ovesco\FacturationBundle\Controller
- * @Route("/compte")
  */
+#[Route('/compte')]
 class CompteController extends AbstractController
 {
-    /**
-     * @Route("/list", name="ovesco.facturation.compte.list")
-     */
+    #[Route('/list', name: 'ovesco.facturation.compte.list')]
     public function listAccountsAction(RouterInterface $router) {
 
         return $this->render('@NetBSFichier/generic/page_generic.html.twig', array(
@@ -35,8 +33,8 @@ class CompteController extends AbstractController
      * @param Request $request
      * @return \Symfony\Component\HttpFoundation\Response
      * @throws \Exception
-     * @Route("/modal/add", name="ovesco.facturation.compte.modal_add")
      */
+    #[Route('/modal/add', name: 'ovesco.facturation.compte.modal_add')]
     public function addAccountModalAction(Request $request, EntityManagerInterface $em) {
 
         $account = new Compte();

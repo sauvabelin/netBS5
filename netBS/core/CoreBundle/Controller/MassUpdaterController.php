@@ -6,7 +6,7 @@ use Doctrine\ORM\EntityManagerInterface;
 use NetBS\CoreBundle\Model\BaseMassUpdater;
 use NetBS\CoreBundle\Service\History;
 use NetBS\CoreBundle\Service\MassUpdaterManager;
-use Sensio\Bundle\FrameworkExtraBundle\Configuration\Security;
+use Symfony\Component\Security\Http\Attribute\IsGranted;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\Form\Extension\Core\Type\CollectionType;
 use Symfony\Component\Form\Extension\Core\Type\HiddenType;
@@ -16,8 +16,8 @@ use Symfony\Component\Routing\Annotation\Route;
 
 /**
  * Class MassUpdaterController
- * @Route("/mass-updater")
  */
+#[Route('/mass-updater')]
 class MassUpdaterController extends AbstractController
 {
     const FORM_DATA   = 'data';
@@ -28,9 +28,9 @@ class MassUpdaterController extends AbstractController
     /**
      * @param Request $request
      * @return \Symfony\Component\HttpFoundation\Response
-     * @Route("/update-data", name="netbs.core.mass_updater.data_update")
-     * @Security("is_granted('ROLE_UPDATE_EVERYWHERE')")
      */
+    #[Route('/update-data', name: 'netbs.core.mass_updater.data_update')]
+    #[IsGranted('ROLE_UPDATE_EVERYWHERE')]
     public function dataUpdateAction(Request $request, MassUpdaterManager $mass, EntityManagerInterface $em, History $history) {
 
         if($request->getMethod() !== 'POST') {
@@ -73,7 +73,6 @@ class MassUpdaterController extends AbstractController
      * @param array $data
      * @param BaseMassUpdater $updater
      * @return \Symfony\Component\HttpFoundation\RedirectResponse|\Symfony\Component\HttpFoundation\Response
-     * @Security("is_granted('ROLE_UPDATE_EVERYWHERE')")
      */
     protected function handleUpdater(Request $request, array $data, BaseMassUpdater $updater, EntityManagerInterface $em, History $history, string $title = 'Mise à jour rapide') {
 

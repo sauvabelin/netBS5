@@ -13,8 +13,8 @@ use Symfony\Component\Routing\Annotation\Route;
 
 /**
  * Class DistinctionController
- * @Route("/geniteur")
  */
+#[Route('/geniteur')]
 class GeniteurController extends AbstractController
 {
     protected $config;
@@ -24,9 +24,7 @@ class GeniteurController extends AbstractController
         $this->config = $config;
     }
 
-    /**
-     * @Route("/create-for-famille/{id}", name="netbs.fichier.geniteur.create")
-     */
+    #[Route('/create-for-famille/{id}', name: 'netbs.fichier.geniteur.create')]
     public function createGeniteurAction(Request $request, $id, EntityManagerInterface $em) {
 
         $class          = $this->config->getGeniteurClass();
@@ -67,8 +65,8 @@ class GeniteurController extends AbstractController
 
     /**
      * @return \Symfony\Component\HttpFoundation\RedirectResponse
-     * @Route("/remove/{id}", name="netbs.fichier.geniteur.remove")
      */
+    #[Route('/remove/{id}', name: 'netbs.fichier.geniteur.remove')]
     public function removeGeniteurAction($id, EntityManagerInterface $em) {
 
         $class          = $this->config->getGeniteurClass();

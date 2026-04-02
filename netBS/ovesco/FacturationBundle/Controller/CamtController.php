@@ -19,14 +19,14 @@ use Symfony\Component\Routing\Annotation\Route;
 /**
  * Class CamtController
  * @package Ovesco\FacturationBundle\Controller
- * @Route("/camt")
  */
+#[Route('/camt')]
 class CamtController extends AbstractController
 {
     /**
      * @param Request $request
-     * @Route("/import", name="ovesco.facturation.camt.import")
      */
+    #[Route('/import', name: 'ovesco.facturation.camt.import')]
     public function importAction(Request $request, EntityManagerInterface $em) {
 
         $parsedBVR = null;

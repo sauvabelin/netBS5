@@ -14,18 +14,16 @@ use Symfony\Component\Routing\Annotation\Route;
  */
 class AutorisationController extends AbstractController
 {
-    /**
-     * @Route("/autorisation/list", name="netbs.secure.autorisation.list")
-     */
+    #[Route('/autorisation/list', name: 'netbs.secure.autorisation.list')]
     public function listAutorisationsAction() {
         return $this->render('@NetBSSecure/autorisation/list.html.twig');
     }
 
     /**
-     * @Route("/autorisation/add", name="netbs.secure.autorisation.add")
      * @param Request $request
      * @return \Symfony\Component\HttpFoundation\Response
      */
+    #[Route('/autorisation/add', name: 'netbs.secure.autorisation.add')]
     public function addUserAction(Request $request, SecureConfig $config, EntityManagerInterface $em) {
         $autr       = $config->createAutorisation();
         $form       = $this->createForm(AutorisationType::class, $autr);
@@ -53,8 +51,8 @@ class AutorisationController extends AbstractController
      * @throws \Doctrine\ORM\ORMException
      * @throws \Doctrine\ORM\OptimisticLockException
      * @throws \Doctrine\ORM\TransactionRequiredException
-     * @Route("/autorisation/delete/{id}", name="netbs.secure.autorisation.delete")
      */
+    #[Route('/autorisation/delete/{id}', name: 'netbs.secure.autorisation.delete')]
     public function deleteAutorisationAction($id, SecureConfig $secureConfig, EntityManagerInterface $em) {
         $autorisation   = $em->find($secureConfig->getAutorisationClass(), $id);
 

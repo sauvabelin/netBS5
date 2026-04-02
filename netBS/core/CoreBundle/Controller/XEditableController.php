@@ -17,10 +17,10 @@ use Symfony\Component\Routing\Annotation\Route;
 class XEditableController extends AbstractController
 {
     /**
-     * @Route("/utils/xeditable", name="netbs.core.xeditable.endpoint")
      * @param Request $request
      * @return JsonResponse
      */
+    #[Route('/utils/xeditable', name: 'netbs.core.xeditable.endpoint')]
     public function endpointAction(Request $request, EntityManagerInterface $em, PropertyAccessorInterface $accessor, FormTypesRegistrer $registrer)
     {
         $xeditable  = new XEditable($request);

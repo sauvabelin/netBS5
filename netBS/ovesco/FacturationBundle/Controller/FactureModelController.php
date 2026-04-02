@@ -14,13 +14,11 @@ use Symfony\Component\Routing\RouterInterface;
 /**
  * Class CreanceController
  * @package Ovesco\FacturationBundle\Controller
- * @Route("/facture-model")
  */
+#[Route('/facture-model')]
 class FactureModelController extends AbstractController
 {
-    /**
-     * @Route("/list", name="ovesco.facturation.facture_model.list")
-     */
+    #[Route('/list', name: 'ovesco.facturation.facture_model.list')]
 
     public function listAction(RouterInterface $router) {
         return $this->render('@NetBSFichier/generic/page_generic.html.twig', [
@@ -37,8 +35,8 @@ class FactureModelController extends AbstractController
      * @return \Symfony\Component\HttpFoundation\Response
      * @throws \Doctrine\ORM\ORMException
      * @throws \Doctrine\ORM\OptimisticLockException
-     * @Route("/add-modal", name="ovesco.facturation.facture_model.add_modal")
      */
+    #[Route('/add-modal', name: 'ovesco.facturation.facture_model.add_modal')]
     public function addModalAction(Request $request, EntityManagerInterface $em) {
 
         $model = new FactureModel();
@@ -59,13 +57,13 @@ class FactureModelController extends AbstractController
     }
 
     /**
-     * @Route("/edit-modal/{id}", name="ovesco.facturation.facture_model.edit_modal")
      * @param FactureModel $model
      * @param Request $request
      * @return \Symfony\Component\HttpFoundation\Response
      * @throws \Doctrine\ORM\ORMException
      * @throws \Doctrine\ORM\OptimisticLockException
      */
+    #[Route('/edit-modal/{id}', name: 'ovesco.facturation.facture_model.edit_modal')]
     public function editModalAction(FactureModel $model, Request $request, EntityManagerInterface $em) {
 
         $form = $this->createForm(FactureModelType::class, $model);
@@ -84,9 +82,7 @@ class FactureModelController extends AbstractController
         ], Modal::renderModal($form));
     }
 
-    /**
-     * @Route("/duplicate/{id}", name="ovesco.facturation.facture_model.duplicate")
-     */
+    #[Route('/duplicate/{id}', name: 'ovesco.facturation.facture_model.duplicate')]
     public function duplicateModalAction(FactureModel $model, Request $request, EntityManagerInterface $em) {
 
         $this->denyAccessUnlessGranted('create', $model);

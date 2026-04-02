@@ -15,9 +15,7 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 
-/**
- * @Route("/attribution")
- */
+#[Route('/attribution')]
 class AttributionController extends AbstractController
 {
     protected $config;
@@ -28,10 +26,10 @@ class AttributionController extends AbstractController
     }
 
     /**
-     * @Route("/modal/creation/{membreId}", defaults={"membreId"=null}, name="netbs.fichier.attribution.modal_creation")
      * @param Request $request
      * @return Response
      */
+    #[Route('/modal/creation/{membreId}', defaults: ['membreId' => null], name: 'netbs.fichier.attribution.modal_creation')]
     public function modalAddAction(Request $request, $membreId, EntityManagerInterface $em) {
 
         $attrClass      = $this->config->getAttributionClass();

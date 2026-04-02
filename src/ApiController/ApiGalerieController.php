@@ -23,8 +23,8 @@ class ApiGalerieController extends AbstractController
     /**
      * @param Request $request
      * @return Response
-     * @Route("/api/v1/public/netBS/galerie/root-pictures", name="ovesco.galerie.public_api.root-pictures")
      */
+    #[Route('/api/v1/public/netBS/galerie/root-pictures', name: 'ovesco.galerie.public_api.root-pictures')]
     public function publicPicturesAction(GalerieConfig $config) {
 
         $realPath       = $config->getFullMappedDirectory() . '/';
@@ -39,8 +39,8 @@ class ApiGalerieController extends AbstractController
     /**
      * @param Request $request
      * @return Response
-     * @Route("/api/v1/public/netBS/galerie/latest-change", name="ovesco.galerie.public_api.latest-change")
      */
+    #[Route('/api/v1/public/netBS/galerie/latest-change', name: 'ovesco.galerie.public_api.latest-change')]
     public function latestChangeAction(GalerieConfig $config, EntityManagerInterface $em) {
 
         try {
@@ -97,8 +97,8 @@ class ApiGalerieController extends AbstractController
     /**
      * @param Request $request
      * @return Response
-     * @Route("/api/v1/public/netBS/galerie/directory", name="ovesco.galerie.public_api.directory")
      */
+    #[Route('/api/v1/public/netBS/galerie/directory', name: 'ovesco.galerie.public_api.directory')]
     public function publicAccessAction(Request $request, ParameterManager $manager, GalerieConfig $config) {
 
         $token          = $request->headers->get('x-authorization');
@@ -113,8 +113,8 @@ class ApiGalerieController extends AbstractController
     /**
      * @param Request $request
      * @return Response
-     * @Route("/api/v1/netBS/galerie/directory", name="ovesco.galerie.api.directory")
      */
+    #[Route('/api/v1/netBS/galerie/directory', name: 'ovesco.galerie.api.directory')]
     public function getDirectoryAction(Request $request, GalerieConfig $config) {
         return $this->generateDirectoryResponse($request, $config);
     }

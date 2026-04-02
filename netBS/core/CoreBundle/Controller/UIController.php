@@ -17,10 +17,10 @@ use Symfony\Component\Routing\Annotation\Route;
 class UIController extends AbstractController
 {
     /**
-     * @Route("/ui/global-search", name="netbs.core.ui.global_search")
      * @param Request $request
      * @return JsonResponse
      */
+    #[Route('/ui/global-search', name: 'netbs.core.ui.global_search')]
     public function globalSearchAction(Request $request, MembreProvider $membreProvider, GroupeProvider $groupeProvider, FamilleProvider $familleProvider)
     {
         $term           = $request->get('query');

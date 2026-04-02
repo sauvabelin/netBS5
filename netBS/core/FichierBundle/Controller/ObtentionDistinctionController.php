@@ -13,9 +13,7 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 
-/**
- * @Route("/obtention-distinction")
- */
+#[Route('/obtention-distinction')]
 class ObtentionDistinctionController extends AbstractController
 {
     protected $config;
@@ -26,11 +24,11 @@ class ObtentionDistinctionController extends AbstractController
     }
 
     /**
-     * @Route("/modal/creation/{membreId}", defaults={"membreId"=null}, name="netbs.fichier.obtention_distinction.modal_creation")
      * @param Request $request
      * @param $membreId
      * @return Response
      */
+    #[Route('/modal/creation/{membreId}', defaults: ['membreId' => null], name: 'netbs.fichier.obtention_distinction.modal_creation')]
     public function modalAddAction(Request $request, $membreId, EntityManagerInterface $em) {
         $odClass        = $this->config->getObtentionDistinctionClass();
 

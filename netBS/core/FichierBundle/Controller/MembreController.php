@@ -23,8 +23,8 @@ use Symfony\Component\Routing\Annotation\Route;
 
 /**
  * Class MembreController
- * @Route("/membre")
  */
+#[Route('/membre')]
 class MembreController extends AbstractController
 {
     protected $config;
@@ -36,9 +36,9 @@ class MembreController extends AbstractController
 
     /**
      * @param int $id
-     * @Route("/page/{id}", name="netbs.fichier.membre.page_membre")
      * @return Response
      */
+    #[Route('/page/{id}', name: 'netbs.fichier.membre.page_membre')]
     public function pageMembreAction($id, ExporterManager $exporterManager, EntityManagerInterface $em, LayoutManager $designer, DynamicListManager $dynamics) {
 
         $exporters  = $exporterManager->getExportersForClass($this->config->getMembreClass());
@@ -111,17 +111,15 @@ class MembreController extends AbstractController
 
 
     /**
-     * @Route("/search", name="netbs.fichier.membre.search")
      * @return Response
      */
+    #[Route('/search', name: 'netbs.fichier.membre.search')]
     public function searchMembreAction(SearcherManager $searcher) {
         $instance = $searcher->bind($this->config->getMembreClass());
         return $searcher->render($instance);
     }
 
-    /**
-     * @Route("/remove/{id}", name="netbs.fichier.membre.remove")
-     */
+    #[Route('/remove/{id}', name: 'netbs.fichier.membre.remove')]
     public function removeMembreAction($id, EventDispatcherInterface $dispatcher) {
 
         if(!$this->isGranted('ROLE_SG'))

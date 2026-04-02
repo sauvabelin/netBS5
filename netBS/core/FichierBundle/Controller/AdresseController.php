@@ -15,8 +15,8 @@ use Symfony\Component\Routing\Annotation\Route;
 
 /**
  * Class AdresseController
- * @Route("/adresse")
  */
+#[Route('/adresse')]
 class AdresseController extends AbstractController
 {
     protected $config;
@@ -31,11 +31,11 @@ class AdresseController extends AbstractController
     }
 
     /**
-     * @Route("/delete/{ownerType}/{ownerId}/{adresseId}", name="netbs.fichier.adresse.delete")
      * @param $ownerType
      * @param $ownerId
      * @return Response
      */
+    #[Route('/delete/{ownerType}/{ownerId}/{adresseId}', name: 'netbs.fichier.adresse.delete')]
     public function deleteAdresseAction($ownerType, $ownerId, $adresseId, EntityManagerInterface $em, History $history) {
 
         $class  = $this->getClass();
@@ -55,9 +55,9 @@ class AdresseController extends AbstractController
     }
 
     /**
-     * @Route("/modal/creation/{ownerType}/{ownerId}", name="netbs.fichier.adresse.modal_creation")
      * @return Response
      */
+    #[Route('/modal/creation/{ownerType}/{ownerId}', name: 'netbs.fichier.adresse.modal_creation')]
     public function modalCreationAction($ownerType, $ownerId, Request $request, EntityManagerInterface $em) {
 
         $class  = $this->getClass();

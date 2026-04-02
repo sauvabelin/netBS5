@@ -14,16 +14,14 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
 
-/**
- * @Route("/api/v1/public/netBS/apmbs")
- */
+#[Route('/api/v1/public/netBS/apmbs')]
 class ApiAPMBSController extends AbstractController
 {
     /**
      * @param Request $request
      * @return Response
-     * @Route("/cabane-metadata/{id}", name="apmbs.api.cabane_metadata")
      */
+    #[Route('/cabane-metadata/{id}', name: 'apmbs.api.cabane_metadata')]
     public function cabaneMetadataAction(Request $request, Cabane $cabane) {
 
         $conditions = $cabane->getConditions();
@@ -53,8 +51,8 @@ class ApiAPMBSController extends AbstractController
     /**
      * @param Request $request
      * @return Response
-     * @Route("/cabane-reservation/{id}", name="apmbs.api.cabane_reservation")
      */
+    #[Route('/cabane-reservation/{id}', name: 'apmbs.api.cabane_reservation')]
     public function reservationAction(Request $request, EntityManagerInterface $em, GoogleCalendarManager $gcm, ValidatorInterface $validator, Cabane $cabane) {
         $reservation = new APMBSReservation();
         $reservation->setCabane($cabane);
@@ -93,8 +91,8 @@ class ApiAPMBSController extends AbstractController
     /**
      * @param Request $request
      * @return Response
-     * @Route("/cabane-monthly-events/{id}", name="apmbs.api.cabane_calendar")
      */
+    #[Route('/cabane-monthly-events/{id}', name: 'apmbs.api.cabane_calendar')]
     public function monthlyEventsAction(Request $request, Cabane $cabane, EntityManagerInterface $em, GoogleCalendarManager $gcm) {
         $start = new \DateTimeImmutable($request->get('start'));
         $end = new \DateTimeImmutable($request->get('end'));
@@ -120,9 +118,7 @@ class ApiAPMBSController extends AbstractController
         ));
     }
 
-    /**
-     * @Route("/client/accept/{id}/{email}", name="apmbs.api.client.accept")
-     */
+    #[Route('/client/accept/{id}/{email}', name: 'apmbs.api.client.accept')]
     public function clientAcceptReservation(APMBSReservation $reservation, $email, EntityManagerInterface $em, GoogleCalendarManager $gcm) {
         // Denied if not same email or reservation not in pending state
         if ($reservation->getEmail() !== $email || $reservation->getStatus() !== APMBSReservation::MODIFICATION_PENDING) {
@@ -145,9 +141,7 @@ class ApiAPMBSController extends AbstractController
         ]);
     }
 
-    /**
-     * @Route("/client/reject/{id}/{email}", name="apmbs.api.client.reject")
-     */
+    #[Route('/client/reject/{id}/{email}', name: 'apmbs.api.client.reject')]
     public function clientRejectReservation(APMBSReservation $reservation, $email, EntityManagerInterface $em, GoogleCalendarManager $gcm) {
         // Denied if not same email or reservation not in pending state
         if ($reservation->getEmail() !== $email || $reservation->getStatus() !== APMBSReservation::MODIFICATION_PENDING) {

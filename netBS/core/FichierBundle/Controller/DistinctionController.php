@@ -7,7 +7,7 @@ use NetBS\CoreBundle\Utils\Modal;
 use NetBS\FichierBundle\Form\DistinctionType;
 use NetBS\FichierBundle\Mapping\BaseDistinction;
 use NetBS\FichierBundle\Service\FichierConfig;
-use Sensio\Bundle\FrameworkExtraBundle\Configuration\Security;
+use Symfony\Component\Security\Http\Attribute\IsGranted;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -16,8 +16,8 @@ use Symfony\Component\Routing\RouterInterface;
 
 /**
  * Class DistinctionController
- * @Route("/distinction")
  */
+#[Route('/distinction')]
 class DistinctionController extends AbstractController
 {
     protected $config;
@@ -27,10 +27,8 @@ class DistinctionController extends AbstractController
         $this->config = $config;
     }
 
-    /**
-     * @Route("/manage", name="netbs.fichier.distinction.page_distinctions")
-     * @Security("is_granted('ROLE_READ_EVERYWHERE')")
-     */
+    #[Route('/manage', name: 'netbs.fichier.distinction.page_distinctions')]
+    #[IsGranted('ROLE_READ_EVERYWHERE')]
     public function pageDistinctionsAction(RouterInterface $router) {
 
         return $this->render('@NetBSFichier/generic/page_generic.html.twig', array(
@@ -44,9 +42,9 @@ class DistinctionController extends AbstractController
     /**
      * @param Request $request
      * @return Response
-     * @Route("/modal/add", name="netbs.fichier.distinction.modal_add")
-     * @Security("is_granted('ROLE_CREATE_EVERYWHERE')")
      */
+    #[Route('/modal/add', name: 'netbs.fichier.distinction.modal_add')]
+    #[IsGranted('ROLE_CREATE_EVERYWHERE')]
     public function addDistinctionModalAction(Request $request, EntityManagerInterface $em) {
 
         $distClass      = $this->config->getDistinctionClass();
