@@ -2,10 +2,9 @@
 
 namespace NetBS\CoreBundle\Validator\Constraints;
 
-use Doctrine\Common\Annotations\Reader;
 use Doctrine\Common\Util\ClassUtils;
 use Doctrine\ORM\EntityManagerInterface;
-use Symfony\Component\Cache\Adapter\AdapterInterface;
+use Psr\Cache\CacheItemPoolInterface;
 use Symfony\Component\ExpressionLanguage\ExpressionLanguage;
 use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInterface;
 use Symfony\Component\Validator\Constraint;
@@ -25,17 +24,14 @@ class UserValidator extends ConstraintValidator
 
     private $manager;
 
-    private $parser;
-
-    public function __construct(TokenStorageInterface $storage, AdapterInterface $cache, EntityManagerInterface $manager, Reader $parser)
+    public function __construct(TokenStorageInterface $storage, CacheItemPoolInterface $cache, EntityManagerInterface $manager)
     {
         $this->storage  = $storage;
         $this->cache    = $cache;
         $this->manager  = $manager;
-        $this->parser   = $parser;
     }
 
-    public function validate($item, Constraint $constraint)
+    public function validate($item, Constraint $constraint): void
     {
         $this->constraints[] = [
             'item'          => $item,
@@ -112,18 +108,18 @@ class UserValidator extends ConstraintValidator
         foreach($this->manager->getMetadataFactory()->getAllMetadata() as $metadata) {
 
             $rclass         = $metadata->getReflectionClass();
-            $annotations    = [];
+            $attributes     = [];
             $current        = $rclass;
 
             while($current) {
 
-                $annotations = array_merge($annotations, $this->parser->getClassAnnotations($current));
+                foreach($current->getAttributes(User::class) as $attr) {
+                    $attributes[] = $attr->newInstance();
+                }
                 $current = $current->getParentClass();
             }
 
-            /** @var User[] $constraints */
-            $constraints = array_filter($annotations, function($item) {return $item instanceof User;});
-            if(count($constraints) === 0)
+            if(count($attributes) === 0)
                 continue;
 
             $data = [
@@ -132,7 +128,7 @@ class UserValidator extends ConstraintValidator
                 'rules' => []
             ];
 
-            foreach($constraints as $constraint) {
+            foreach($attributes as $constraint) {
                 $data['rule'] = $constraint->rule;
                 $data['rules'] = array_merge($data['rules'], $constraint->rules);
             }

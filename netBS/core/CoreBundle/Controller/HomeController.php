@@ -8,9 +8,7 @@ use Symfony\Component\Routing\Annotation\Route;
 
 class HomeController extends AbstractController
 {
-    /**
-     * @Route("/", name="netbs.core.home.dashboard")
-     */
+    #[Route('/', name: 'netbs.core.home.dashboard')]
     public function indexAction(LayoutManager $layout)
     {
         $config     = $layout::configurator();

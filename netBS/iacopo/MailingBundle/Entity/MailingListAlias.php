@@ -6,41 +6,28 @@ use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Validator\Constraints as Assert;
 use Iacopo\MailingBundle\Validator\UniqueMailingAddress;
 
-/**
- * @ORM\Entity(repositoryClass="Iacopo\MailingBundle\Repository\MailingListAliasRepository")
- * @ORM\Table(name="mailing_list_alias")
- * @UniqueMailingAddress
- */
+#[ORM\Entity(repositoryClass: \Iacopo\MailingBundle\Repository\MailingListAliasRepository::class)]
+#[ORM\Table(name: 'mailing_list_alias')]
+#[UniqueMailingAddress]
 class MailingListAlias
 {
-    /**
-     * @ORM\Id
-     * @ORM\GeneratedValue
-     * @ORM\Column(type="integer")
-     */
+    #[ORM\Id]
+    #[ORM\GeneratedValue]
+    #[ORM\Column(type: 'integer')]
     private $id;
 
-    /**
-     * @ORM\ManyToOne(targetEntity="MailingList", inversedBy="aliases")
-     * @ORM\JoinColumn(nullable=false, onDelete="CASCADE")
-     * @Assert\NotNull(message="La liste de diffusion est requise.")
-     */
+    #[ORM\ManyToOne(targetEntity: MailingList::class, inversedBy: 'aliases')]
+    #[ORM\JoinColumn(nullable: false, onDelete: 'CASCADE')]
+    #[Assert\NotNull(message: 'La liste de diffusion est requise.')]
     private $mailingList;
 
-    /**
-     * @ORM\Column(type="string", length=255)
-     * @Assert\NotBlank(message="L'adresse est requise.")
-     * @Assert\Email(message="L'adresse doit être une adresse email valide.")
-     * @Assert\Length(
-     *     max=255,
-     *     maxMessage="L'adresse ne peut pas dépasser {{ limit }} caractères."
-     * )
-     */
+    #[ORM\Column(type: 'string', length: 255)]
+    #[Assert\NotBlank(message: "L'adresse est requise.")]
+    #[Assert\Email(message: "L'adresse doit être une adresse email valide.")]
+    #[Assert\Length(max: 255, maxMessage: "L'adresse ne peut pas dépasser {{ limit }} caractères.")]
     private $address;
 
-    /**
-     * @ORM\Column(type="datetime")
-     */
+    #[ORM\Column(type: 'datetime')]
     private $createdAt;
 
     public function __construct()

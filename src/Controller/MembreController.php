@@ -13,14 +13,15 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
+use Symfony\Component\Serializer\SerializerInterface;
 
 class MembreController extends AbstractController
 {
     /**
      * @param Request $request
-     * @Route("/membre/nouveau", name="sauvabelin.membre.add_membre")
      * @return Response
      */
+    #[Route('/membre/nouveau', name: 'sauvabelin.membre.add_membre')]
     public function pageAddMembreAction(Request $request, FichierConfig $config, EntityManagerInterface $em) {
 
         /** @var BSUser $user */
@@ -69,14 +70,13 @@ class MembreController extends AbstractController
 
     /**
      * @param Request $request
-     * @Route("/search", name="sauvabelin.famille.search")
      * @return Response
      */
-    public function searchFamilleAction(Request $request, FamilleProvider $provider) {
+    #[Route('/search', name: 'sauvabelin.famille.search')]
+    public function searchFamilleAction(Request $request, FamilleProvider $provider, SerializerInterface $serializer) {
 
         $term       = $request->get('term');
         $results    = $provider->search($term, 10);
-        $serializer = $this->get('serializer');
 
         $response   = new Response($serializer->serialize($results, 'json', array(
             'groups'    => ['default', 'familleMembres', 'familleAdresse', 'familleGeniteurs']

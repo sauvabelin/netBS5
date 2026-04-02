@@ -23,8 +23,8 @@ use Symfony\Component\Routing\Annotation\Route;
 /**
  * Class CreanceController
  * @package Ovesco\FacturationBundle\Controller
- * @Route("/factures")
  */
+#[Route('/factures')]
 class FactureController extends AbstractController
 {
     private $searcherManager;
@@ -34,27 +34,25 @@ class FactureController extends AbstractController
         $this->searcherManager = $searcherManager;
     }
 
-    /**
-     * @Route("/aide", name="ovesco.facturation.aide")
-     */
+    #[Route('/aide', name: 'ovesco.facturation.aide')]
     public function aideAction() {
         return $this->render("@OvescoFacturation/facture/aide_facturation.html.twig");
     }
 
     /**
-     * @Route("/attente-paiement", name="ovesco.facturation.facture.attente_paiement")
      * @return \Symfony\Component\HttpFoundation\Response
      * @throws \Exception
      */
+    #[Route('/attente-paiement', name: 'ovesco.facturation.facture.attente_paiement')]
     public function factureAttentePaiementAction() {
         return $this->render("@OvescoFacturation/facture/attente_paiement.html.twig");
         // return $this->search('Factures en attente de paiement', 'no');
     }
 
     /**
-     * @Route("/attente-impression", name="ovesco.facturation.facture.attente_impression")
      * @return \Symfony\Component\HttpFoundation\Response
      */
+    #[Route('/attente-impression', name: 'ovesco.facturation.facture.attente_impression')]
     public function factureAttenteImpressionAction() {
         return $this->render("@OvescoFacturation/facture/attente_impression.html.twig");
         // return $this->search('Factures en attente d\'impression', 'yes');
@@ -76,9 +74,7 @@ class FactureController extends AbstractController
         return $this->searcherManager->render($instance, $params);
     }
 
-    /**
-     * @Route("/search", name="ovesco.facturation.search_factures")
-     */
+    #[Route('/search', name: 'ovesco.facturation.search_factures')]
     public function searchFactureAction() {
         $instance = $this->searcherManager->bind(Facture::class);
 
@@ -95,9 +91,9 @@ class FactureController extends AbstractController
 
     /**
      * @param Facture $facture
-     * @Route("/modal-view/{id}", name="ovesco.facturation.facture_modal")
      * @return \Symfony\Component\HttpFoundation\Response
      */
+    #[Route('/modal-view/{id}', name: 'ovesco.facturation.facture_modal')]
     public function factureModalAction(Facture $facture) {
         return $this->render('@OvescoFacturation/facture/facture.modal.twig', [
             'facture' => $facture,
@@ -106,9 +102,9 @@ class FactureController extends AbstractController
 
     /**
      * @param Facture $facture
-     * @Route("/modal-pdf-view/{id}", name="ovesco.facturation.pdf_facture_modal")
      * @return \Symfony\Component\HttpFoundation\Response
      */
+    #[Route('/modal-pdf-view/{id}', name: 'ovesco.facturation.pdf_facture_modal')]
     public function facturePdfModalAction(Facture $facture) {
         return $this->render('@OvescoFacturation/facture/pdf_facture.modal.twig', [
             'facture' => $facture,
@@ -117,8 +113,8 @@ class FactureController extends AbstractController
 
     /**
      * @param Facture $facture
-     * @Route("/facture-pdf-no-print-date/{id}", name="ovesco.facturation.export_pdf_facture_no_date")
      */
+    #[Route('/facture-pdf-no-print-date/{id}', name: 'ovesco.facturation.export_pdf_facture_no_date')]
     public function facturePdfNoDateExportAction(Facture $facture, PDFQrFacture $exporter, PreviewerManager $previewerManager) {
         $items      = [$facture];
         $config = new QrFactureConfig();
@@ -128,9 +124,7 @@ class FactureController extends AbstractController
         return $previewer->preview($items, $exporter);
     }
 
-    /**
-     * @Route("/mark-printed", name="ovesco.facturation.facture.mark_printed", methods={"POST"})
-     */
+    #[Route('/mark-printed', name: 'ovesco.facturation.facture.mark_printed', methods: ['POST'])]
     public function markPrintedAction(Request $request, EntityManagerInterface $em) {
         $this->denyAccessUnlessGranted('update', new Facture());
 
@@ -148,12 +142,10 @@ class FactureController extends AbstractController
         return new JsonResponse(['success' => true, 'count' => count($factures)]);
     }
 
-    /**
-     * @Route("/modal-assign-model", name="ovesco.facturation.facture.assign_model_modal")
-     */
+    #[Route('/modal-assign-model', name: 'ovesco.facturation.facture.assign_model_modal')]
     public function assignModelModalAction(Request $request, EntityManagerInterface $em) {
         $mass = new MassAssignModel();
-        $mass->setSelectedIds(serialize($request->request->get('selectedIds')));
+        $mass->setSelectedIds(serialize($request->request->all('selectedIds')));
         $form = $this->createForm(MassAssignModelType::class, $mass);
         $form->handleRequest($request);
 
@@ -175,9 +167,7 @@ class FactureController extends AbstractController
         ], Modal::renderModal($form));
     }
 
-    /**
-     * @Route("/resolve-model/{id}", name="ovesco.facturation.facture.resolve_model", methods={"GET"})
-     */
+    #[Route('/resolve-model/{id}', name: 'ovesco.facturation.facture.resolve_model', methods: ['GET'])]
     public function resolveModelAction(Facture $facture, EntityManagerInterface $em) {
         $engine = new ExpressionLanguage();
         $models = $em->getRepository(FactureModel::class)
@@ -210,9 +200,7 @@ class FactureController extends AbstractController
         ]);
     }
 
-    /**
-     * @Route("/unmark-printed", name="ovesco.facturation.facture.unmark_printed", methods={"POST"})
-     */
+    #[Route('/unmark-printed', name: 'ovesco.facturation.facture.unmark_printed', methods: ['POST'])]
     public function unmarkPrintedAction(Request $request, EntityManagerInterface $em) {
         $this->denyAccessUnlessGranted('update', new Facture());
 

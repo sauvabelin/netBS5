@@ -16,8 +16,8 @@ class ActionController extends AbstractController
      * @param $itemId
      * @param $itemClass
      * @return Response
-     * @Route("/app/actions/remove-item/{itemId}/{itemClass}", name="netbs.core.action.remove_item")
      */
+    #[Route('/app/actions/remove-item/{itemId}/{itemClass}', name: 'netbs.core.action.remove_item')]
     public function removeItemAction($itemId, $itemClass, DeleterManager $manager, EntityManagerInterface $em, History $history) {
 
         $itemClass  = base64_decode($itemClass);

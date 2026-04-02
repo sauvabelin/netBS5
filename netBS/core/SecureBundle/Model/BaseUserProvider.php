@@ -16,8 +16,8 @@ abstract class BaseUserProvider implements UserProviderInterface
 
     abstract public function refresh(BaseUser $user);
 
-    public function refreshUser(UserInterface $user) {
+    public function refreshUser(UserInterface $user): UserInterface {
 
-        $this->refresh($user);
+        return $this->refresh($user);
     }
 }

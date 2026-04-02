@@ -18,8 +18,7 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Annotation\Route;
-use Symfony\Component\Security\Core\Encoder\PasswordEncoderInterface;
-use Symfony\Component\Security\Core\Encoder\UserPasswordEncoderInterface;
+use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 
 /**
  * Class UserController
@@ -27,9 +26,7 @@ use Symfony\Component\Security\Core\Encoder\UserPasswordEncoderInterface;
  */
 class UserController extends AbstractController
 {
-    /**
-     * @Route("/user/list", name="netbs.secure.user.list_users")
-     */
+    #[Route('/user/list', name: 'netbs.secure.user.list_users')]
     public function listUsersAction(Request $request) {
 
         $username = empty($request->get('username')) ? null : $request->get('username');
@@ -39,10 +36,10 @@ class UserController extends AbstractController
     }
 
     /**
-     * @Route("/user/edit/{id}", name="netbs.secure.user.edit_user")
      * @param Request $request
      * @return \Symfony\Component\HttpFoundation\RedirectResponse|\Symfony\Component\HttpFoundation\Response
      */
+    #[Route('/user/edit/{id}', name: 'netbs.secure.user.edit_user')]
     public function updateUserAction(Request $request, $id, UserManager $manager) {
         $user       = $manager->find($id);
         $form       = $this->createForm(UserType::class, $user, ['operation' => CRUD::UPDATE]);
@@ -69,8 +66,8 @@ class UserController extends AbstractController
      * @throws \Doctrine\ORM\ORMException
      * @throws \Doctrine\ORM\OptimisticLockException
      * @throws \Doctrine\ORM\TransactionRequiredException
-     * @Route("/user/delete/{id}", name="netbs.secure.user.delete_user")
      */
+    #[Route('/user/delete/{id}', name: 'netbs.secure.user.delete_user')]
     public function deleteUserAction($id, SecureConfig $secureConfig, UserManager $manager, EntityManagerInterface $em, History $history) {
 
         $user           = $em->find($secureConfig->getUserClass(), $id);
@@ -85,10 +82,10 @@ class UserController extends AbstractController
     }
 
     /**
-     * @Route("/user/add", name="netbs.secure.user.add_user")
      * @param Request $request
      * @return \Symfony\Component\HttpFoundation\Response
      */
+    #[Route('/user/add', name: 'netbs.secure.user.add_user')]
     public function addUserAction(Request $request, SecureConfig $config, UserManager $manager) {
         $user       = $config->createUser();
         $form       = $this->createForm(UserType::class, $user);
@@ -114,10 +111,8 @@ class UserController extends AbstractController
         ));
     }
 
-    /**
-     * @Route("/user/my-account", name="netbs.secure.user.account_page")
-     */
-    public function accountPageAction(Request $request, UserManager $manager, LayoutManager $designer, EventDispatcherInterface $dispatcher, UserPasswordEncoderInterface $encoder) {
+    #[Route('/user/my-account', name: 'netbs.secure.user.account_page')]
+    public function accountPageAction(Request $request, UserManager $manager, LayoutManager $designer, EventDispatcherInterface $dispatcher, UserPasswordHasherInterface $encoder) {
         /** @var BaseUser $user */
         $user               = $this->getUser();
         $userForm           = $this->createForm(UserType::class, $user);
@@ -129,7 +124,7 @@ class UserController extends AbstractController
         if($changePasswordForm->isSubmitted() && $changePasswordForm->isValid()) {
 
             $newPassword    = $changePassword->getNewPassword();
-            $password       = $encoder->encodePassword($user, $newPassword);
+            $password       = $encoder->hashPassword($user, $newPassword);
 
             $user->setPassword($password);
             $manager->updateUser($user);

@@ -15,8 +15,8 @@ class AjaxListController extends AbstractController
 {
     /**
      * @return Response
-     * @Route("/ajax-list/query/{listId}", name="netbs.core.ajax_list_query")
      */
+    #[Route('/ajax-list/query/{listId}', name: 'netbs.core.ajax_list_query')]
     public function removeItemAction($listId, Request $request, ListManager $listManager, ListEngine $engine) {
 
         $model = $listManager->getModelByAlias($listId);
@@ -31,7 +31,7 @@ class AjaxListController extends AbstractController
         $search = empty($search) ? null : $search;
 
 
-        foreach ($params as $key => $value) {
+        foreach ($params ?? [] as $key => $value) {
             $model->setParameter($key, $value);
         }
 

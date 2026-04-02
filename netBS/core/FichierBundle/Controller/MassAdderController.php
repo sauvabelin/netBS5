@@ -8,15 +8,15 @@ use NetBS\CoreBundle\Service\History;
 use NetBS\CoreBundle\Service\ListBridgeManager;
 use NetBS\CoreBundle\Service\MassUpdaterManager;
 use NetBS\FichierBundle\Service\FichierConfig;
-use Sensio\Bundle\FrameworkExtraBundle\Configuration\Security;
+use Symfony\Component\Security\Http\Attribute\IsGranted;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Annotation\Route;
 
 
 /**
  * Class MassUpdaterController
- * @Route("/mass")
  */
+#[Route('/mass')]
 class MassAdderController extends MassUpdaterController
 {
     protected $config;
@@ -27,11 +27,11 @@ class MassAdderController extends MassUpdaterController
     }
 
     /**
-     * @Route("/adder", name="netbs.fichier.mass.add")
      * @param Request $request
      * @return \Symfony\Component\HttpFoundation\RedirectResponse
-     * @Security("is_granted('ROLE_CREATE_EVERYWHERE')")
      */
+    #[Route('/adder', name: 'netbs.fichier.mass.add')]
+    #[IsGranted('ROLE_CREATE_EVERYWHERE')]
     public function dataCreateAction(Request $request, ListBridgeManager $bridges, MassUpdaterManager $mass, EntityManagerInterface $em, History $history) {
         if($request->getMethod() !== 'POST') {
 

@@ -4,7 +4,7 @@ namespace NetBS\CoreBundle\Exporter;
 
 use Symfony\Component\HttpFoundation\Request;
 
-class ExportBlob implements \Serializable
+class ExportBlob
 {
     /**
      * @var string
@@ -93,20 +93,19 @@ class ExportBlob implements \Serializable
         return $this->configId;
     }
 
-    public function serialize() {
-
-        return serialize([
+    public function __serialize(): array
+    {
+        return [
             'key'           => $this->key,
             'ids'           => $this->ids,
             'exporterAlias' => $this->exporterAlias,
             'itemsClass'    => $this->itemsClass,
             'configId'      => $this->configId
-        ]);
+        ];
     }
 
-    public function unserialize($serialized)
+    public function __unserialize(array $data): void
     {
-        $data                   = unserialize($serialized);
         $this->key              = $data['key'];
         $this->ids              = $data['ids'];
         $this->exporterAlias    = $data['exporterAlias'];

@@ -7,10 +7,9 @@ use NetBS\FichierBundle\Mapping\BaseFonction;
 
 /**
  * Fonction
- *
- * @ORM\Table(name="netbs_fichier_fonctions")
- * @ORM\Entity()
  */
+#[ORM\Table(name: 'netbs_fichier_fonctions')]
+#[ORM\Entity]
 class Fonction extends BaseFonction
 {
 }

@@ -14,14 +14,10 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 
-/**
- * @Route("/netBS/mailing-list")
- */
+#[Route('/netBS/mailing-list')]
 class MailingListController extends AbstractController
 {
-    /**
-     * @Route("/emails", name="netbs.mailing_list.emails", methods={"POST"})
-     */
+    #[Route('/emails', name: 'netbs.mailing_list.emails', methods: ['POST'])]
     public function getEmailsAction(
         Request $request,
         EntityManagerInterface $em,

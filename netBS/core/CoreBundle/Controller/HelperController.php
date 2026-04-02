@@ -2,6 +2,7 @@
 
 namespace NetBS\CoreBundle\Controller;
 
+use Doctrine\ORM\EntityManagerInterface;
 use NetBS\CoreBundle\Service\HelperManager;
 use NetBS\SecureBundle\Voter\CRUD;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -12,15 +13,15 @@ use Symfony\Component\Routing\Annotation\Route;
 class HelperController extends AbstractController
 {
     /**
-     * @Route("/helper/get-help", name="netbs.core.helper.get_help")
      * @param Request $request
      * @return JsonResponse
      */
-    public function getHelpAction(Request $request, HelperManager $helperManager)
+    #[Route('/helper/get-help', name: 'netbs.core.helper.get_help')]
+    public function getHelpAction(Request $request, HelperManager $helperManager, EntityManagerInterface $em)
     {
         $class          = base64_decode($request->request->get('class'));
         $id             = $request->request->get('id');
-        $item           = $this->getDoctrine()->getRepository($class)->find($id);
+        $item           = $em->getRepository($class)->find($id);
 
         if(!$item)
             throw $this->createNotFoundException("Object not found");

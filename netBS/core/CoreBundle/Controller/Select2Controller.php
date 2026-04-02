@@ -14,9 +14,9 @@ class Select2Controller extends AbstractController
 
     /**
      * @param Request $request
-     * @Route("/netbs/select2/results", name="netbs.core.select2.results")
      * @return \Symfony\Component\HttpFoundation\JsonResponse
      */
+    #[Route('/netbs/select2/results', name: 'netbs.core.select2.results')]
     public function resultsAction(Request $request, Select2ProviderManager $select2ProviderManager) {
 
         $class      = $request->get('ajaxClass');

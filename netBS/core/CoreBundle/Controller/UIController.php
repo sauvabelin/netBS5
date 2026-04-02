@@ -13,18 +13,18 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Annotation\Route;
+use Symfony\Component\Routing\RouterInterface;
 
 class UIController extends AbstractController
 {
     /**
-     * @Route("/ui/global-search", name="netbs.core.ui.global_search")
      * @param Request $request
      * @return JsonResponse
      */
-    public function globalSearchAction(Request $request, MembreProvider $membreProvider, GroupeProvider $groupeProvider, FamilleProvider $familleProvider)
+    #[Route('/ui/global-search', name: 'netbs.core.ui.global_search')]
+    public function globalSearchAction(Request $request, MembreProvider $membreProvider, GroupeProvider $groupeProvider, FamilleProvider $familleProvider, RouterInterface $router)
     {
         $term           = $request->get('query');
-        $router         = $this->get('router');
         $membres        = $membreProvider->search($term, 20);
         $groupes        = $groupeProvider->search($term, 20);
         $familles       = $familleProvider->search($term, 20);

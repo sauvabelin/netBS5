@@ -2,17 +2,21 @@
 
 namespace NetBS\CoreBundle\Utils\Traits;
 
-use Symfony\Component\HttpFoundation\Session\Session;
+use Symfony\Component\HttpFoundation\RequestStack;
 
 trait SessionTrait
 {
     /**
-     * @var Session
+     * @var RequestStack
      */
-    protected $session;
+    protected $requestStack;
 
-    public function setSession(Session $session) {
+    public function setRequestStack(RequestStack $requestStack) {
 
-        $this->session = $session;
+        $this->requestStack = $requestStack;
+    }
+
+    protected function getSession() {
+        return $this->requestStack->getSession();
     }
 }

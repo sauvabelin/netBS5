@@ -2,7 +2,7 @@
 
 namespace NetBS\CoreBundle\Model;
 
-class RouteHistory implements \Serializable
+class RouteHistory
 {
     /**
      * @var string
@@ -42,18 +42,17 @@ class RouteHistory implements \Serializable
         return $this->params;
     }
 
-    public function serialize()
+    public function __serialize(): array
     {
-        return serialize([
+        return [
             'routeName' => $this->routeName,
             'params'    => json_encode($this->params),
             'date'      => $this->date
-        ]);
+        ];
     }
 
-    public function unserialize($serialized)
+    public function __unserialize(array $data): void
     {
-        $data   = unserialize($serialized);
         $this->routeName    = $data['routeName'];
         $this->params       = json_decode($data['params'], true);
         $this->date         = $data['date'];

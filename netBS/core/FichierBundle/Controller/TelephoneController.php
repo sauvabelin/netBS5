@@ -15,8 +15,8 @@ use Symfony\Component\Routing\Annotation\Route;
 
 /**
  * @package FichierBundle\Controller
- * @Route("/telephone")
  */
+#[Route('/telephone')]
 class TelephoneController extends AbstractController
 {
     protected $config;
@@ -27,12 +27,12 @@ class TelephoneController extends AbstractController
     }
 
     /**
-     * @Route("/delete/{ownerType}/{ownerId}/{telephoneId}", name="netbs.fichier.telephone.delete")
      * @param $ownerType
      * @param $ownerId
      * @param $telephoneId
      * @return Response
      */
+    #[Route('/delete/{ownerType}/{ownerId}/{telephoneId}', name: 'netbs.fichier.telephone.delete')]
     public function deleteTelephoneAction($ownerType, $ownerId, $telephoneId, EntityManagerInterface $em, History $history) {
 
         $class  = $this->config->getTelephoneClass();
@@ -51,9 +51,9 @@ class TelephoneController extends AbstractController
     }
 
     /**
-     * @Route("/modal/creation/{ownerType}/{ownerId}", name="netbs.fichier.telephone.modal_creation")
      * @return Response
      */
+    #[Route('/modal/creation/{ownerType}/{ownerId}', name: 'netbs.fichier.telephone.modal_creation')]
     public function modalAddAction($ownerType, $ownerId, Request $request, EntityManagerInterface $em) {
 
         $class  = $this->config->getTelephoneClass();

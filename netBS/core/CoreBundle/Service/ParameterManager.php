@@ -4,7 +4,7 @@ namespace NetBS\CoreBundle\Service;
 
 use Doctrine\ORM\EntityManagerInterface;
 use NetBS\CoreBundle\Entity\Parameter;
-use Symfony\Component\Cache\Adapter\AdapterInterface;
+use Psr\Cache\CacheItemPoolInterface as AdapterInterface;
 
 class ParameterManager
 {

@@ -7,10 +7,9 @@ use NetBS\FichierBundle\Mapping\BaseGeniteur;
 
 /**
  * Geniteur
- *
- * @ORM\Table(name="netbs_fichier_geniteurs")
- * @ORM\Entity()
  */
+#[ORM\Table(name: 'netbs_fichier_geniteurs')]
+#[ORM\Entity]
 class Geniteur extends BaseGeniteur
 {
 }

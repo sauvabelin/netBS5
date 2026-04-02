@@ -8,9 +8,7 @@ use Symfony\Component\Routing\Annotation\Route;
 
 class ApiAuthController extends AbstractController
 {
-    /**
-     * @Route("/gettoken", name="netbs_secure_api_gettoken", methods={"POST"})
-     */
+    #[Route('/gettoken', name: 'netbs_secure_api_gettoken', methods: ['POST'])]
     public function getTokenAction()
     {
         $user = $this->getUser();

@@ -8,14 +8,14 @@ class GarsQuiBougentData
 {
     /**
      * @var string
-     * @Assert\NotBlank()
      */
+    #[Assert\NotBlank]
     private $sexe;
 
     /**
      * @var string
-     * @Assert\NotBlank()
      */
+    #[Assert\NotBlank]
     private $age;
 
     /**

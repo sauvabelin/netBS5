@@ -7,9 +7,9 @@ use NetBS\FichierBundle\Mapping\BaseObtentionDistinction;
 
 /**
  * ObtentionDistinction
- * @ORM\Table(name="netbs_fichier_obtentions_distinction")
- * @ORM\Entity()
  */
+#[ORM\Table(name: 'netbs_fichier_obtentions_distinction')]
+#[ORM\Entity]
 class ObtentionDistinction extends BaseObtentionDistinction
 {
 }

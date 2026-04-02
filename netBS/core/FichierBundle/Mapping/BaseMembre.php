@@ -14,9 +14,9 @@ use NetBS\CoreBundle\Validator\Constraints as BSAssert;
 
 /**
  * Membre
- * @ORM\MappedSuperclass()
- * @BSAssert\User(rule="user.hasRole('ROLE_SG')")
  */
+#[ORM\MappedSuperclass]
+#[BSAssert\User(rule: "user.hasRole('ROLE_SG')")]
 abstract class BaseMembre extends Personne implements EqualInterface
 {
     const   INSCRIT     = 'inscrit';
@@ -28,8 +28,8 @@ abstract class BaseMembre extends Personne implements EqualInterface
     /**
      * @var BaseFamille
      * @Groups({"withFamille"})
-     * @Assert\NotBlank()
      */
+    #[Assert\NotBlank]
     protected $famille;
 
     /**
@@ -46,51 +46,51 @@ abstract class BaseMembre extends Personne implements EqualInterface
 
     /**
      * @var \DateTime
-     * @Assert\Type("\DateTimeInterface")
-     * @Assert\NotBlank
      * @Groups({"default"})
-     * @ORM\Column(name="naissance", type="datetime")
      */
+    #[ORM\Column(name: 'naissance', type: 'datetime')]
+    #[Assert\Type("\DateTimeInterface")]
+    #[Assert\NotBlank]
     protected $naissance;
 
     /**
      * @var \DateTime
-     * @Assert\Type("\DateTimeInterface")
-     * @Assert\NotBlank
-     * @ORM\Column(name="inscription", type="datetime")
      * @Groups({"default"})
      */
+    #[ORM\Column(name: 'inscription', type: 'datetime')]
+    #[Assert\Type("\DateTimeInterface")]
+    #[Assert\NotBlank]
     protected $inscription;
 
     /**
      * @var \DateTime
-     * @Assert\Type("\DateTimeInterface")
-     * @ORM\Column(name="desinscription", type="datetime", nullable=true)
      * @Groups({"default"})
      */
+    #[ORM\Column(name: 'desinscription', type: 'datetime', nullable: true)]
+    #[Assert\Type("\DateTimeInterface")]
     protected $desinscription;
 
     /**
      * @var string
-     * @Assert\NotBlank()
-     * @ORM\Column(name="statut", type="string", length=255)
      * @Groups({"default"})
      */
+    #[ORM\Column(name: 'statut', type: 'string', length: 255)]
+    #[Assert\NotBlank]
     protected $statut;
 
     /**
      * @var string
-     * @ORM\Column(name="num_avs", type="string", length=255, nullable=true)
-     * @Assert\Regex("/^(\d{3}).?(\d{4}).?(\d{4}).?(\d{2})$/", message="Numéro AVS au format 123.1234.1234.12")
      */
+    #[ORM\Column(name: 'num_avs', type: 'string', length: 255, nullable: true)]
+    #[Assert\Regex(pattern: "/^(\d{3}).?(\d{4}).?(\d{4}).?(\d{2})$/", message: "Numéro AVS au format 123.1234.1234.12")]
     protected $numeroAvs;
 
     //Quick data
     /**
      * Défini automatiquement lorsque la famille est mise à jour
      * @var string
-     * @ORM\Column(name="nom", type="string", length=255)
      */
+    #[ORM\Column(name: 'nom', type: 'string', length: 255)]
     protected $nom;
 
     // Store

@@ -7,10 +7,9 @@ use NetBS\SecureBundle\Mapping\BaseRole;
 
 /**
  * Role
- *
- * @ORM\Table(name="netbs_secure_roles")
- * @ORM\Entity()
  */
+#[ORM\Table(name: 'netbs_secure_roles')]
+#[ORM\Entity]
 class Role extends BaseRole
 {
 }

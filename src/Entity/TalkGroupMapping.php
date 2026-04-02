@@ -5,33 +5,30 @@ namespace App\Entity;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Validator\Constraints as Assert;
 
-/**
- * @ORM\Table(name="bs_talk_group_mapping")
- * @ORM\Entity()
- */
+#[ORM\Table(name: 'bs_talk_group_mapping')]
+#[ORM\Entity]
 class TalkGroupMapping {
 
     /**
      * @var int
-     *
-     * @ORM\Column(name="id", type="integer")
-     * @ORM\Id
-     * @ORM\GeneratedValue(strategy="AUTO")
      */
+    #[ORM\Column(name: 'id', type: 'integer')]
+    #[ORM\Id]
+    #[ORM\GeneratedValue(strategy: 'AUTO')]
     protected $id;
 
     /**
      * @var string
-     * @Assert\NotBlank()
-     * @ORM\Column(name="username", type="string", length=255)
      */
+    #[ORM\Column(name: 'username', type: 'string', length: 255)]
+    #[Assert\NotBlank]
     protected $username;
 
     /**
      * @var string
-     * @Assert\NotBlank()
-     * @ORM\Column(name="group_name", type="string", length=255)
      */
+    #[ORM\Column(name: 'group_name', type: 'string', length: 255)]
+    #[Assert\NotBlank]
     protected $groupName;
 
     public function getId(): int
@@ -62,5 +59,5 @@ class TalkGroupMapping {
         return $this->groupName;
     }
 
-    
+
 }

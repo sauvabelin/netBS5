@@ -5,47 +5,35 @@ namespace App\Entity;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\ORM\Mapping as ORM;
 use Gedmo\Timestampable\Traits\TimestampableEntity;
+use NetBS\CoreBundle\Entity\NewsChannel;
 
-/**
- * @ORM\Table(name="news_channel_bot")
- * @ORM\Entity()
- */
+#[ORM\Table(name: 'news_channel_bot')]
+#[ORM\Entity]
 class NewsChannelBot
 {
     use TimestampableEntity;
 
     /**
      * @var int
-     *
-     * @ORM\Column(name="id", type="integer")
-     * @ORM\Id
-     * @ORM\GeneratedValue(strategy="AUTO")
      */
+    #[ORM\Column(name: 'id', type: 'integer')]
+    #[ORM\Id]
+    #[ORM\GeneratedValue(strategy: 'AUTO')]
     protected $id;
 
-    /**
-     * @ORM\ManyToMany(targetEntity="NetBS\CoreBundle\Entity\NewsChannel")
-     */
+    #[ORM\ManyToMany(targetEntity: NewsChannel::class)]
     protected $channels;
 
-    /**
-     * @ORM\Column(name="name", type="string", length=255)
-     */
+    #[ORM\Column(name: 'name', type: 'string', length: 255)]
     protected $name;
 
-    /**
-     * @ORM\Column(name="description", type="string", length=255)
-     */
+    #[ORM\Column(name: 'description', type: 'string', length: 255)]
     protected $description;
 
-    /**
-     * @ORM\Column(name="nc_username", type="string", length=255)
-     */
+    #[ORM\Column(name: 'nc_username', type: 'string', length: 255)]
     protected $ncUsername;
 
-    /**
-     * @ORM\Column(name="nc_password", type="string", length=255)
-     */
+    #[ORM\Column(name: 'nc_password', type: 'string', length: 255)]
     protected $ncPassword;
 
     public function __construct()

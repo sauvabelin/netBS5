@@ -7,54 +7,49 @@ use Doctrine\ORM\Mapping as ORM;
 
 /**
  * NewsChannel
- *
- * @ORM\Table(name="netbs_core_news_channel")
- * @ORM\Entity(repositoryClass="NetBS\CoreBundle\Repository\NewsChannelRepository")
  */
+#[ORM\Table(name: 'netbs_core_news_channel')]
+#[ORM\Entity(repositoryClass: \NetBS\CoreBundle\Repository\NewsChannelRepository::class)]
 class NewsChannel
 {
     /**
      * @var int
-     *
-     * @ORM\Column(name="id", type="integer")
-     * @ORM\Id
-     * @ORM\GeneratedValue(strategy="AUTO")
      */
+    #[ORM\Column(name: 'id', type: 'integer')]
+    #[ORM\Id]
+    #[ORM\GeneratedValue(strategy: 'AUTO')]
     protected $id;
 
     /**
      * @var string
-     * @Assert\NotBlank()
-     * @ORM\Column(name="nom", type="string", length=255, unique=true)
      */
+    #[ORM\Column(name: 'nom', type: 'string', length: 255, unique: true)]
+    #[Assert\NotBlank]
     protected $nom;
 
     /**
      * @var string
-     * @Assert\NotBlank()
-     * @ORM\Column(name="color", type="string", length=255, unique=true)
      */
+    #[ORM\Column(name: 'color', type: 'string', length: 255, unique: true)]
+    #[Assert\NotBlank]
     protected $color;
 
     /**
      * @var string
-     *
-     * @ORM\Column(name="postRule", type="text", nullable=true)
      */
+    #[ORM\Column(name: 'postRule', type: 'text', nullable: true)]
     protected $postRule;
 
     /**
      * @var string
-     *
-     * @ORM\Column(name="read_rule", type="text", nullable=true)
      */
+    #[ORM\Column(name: 'read_rule', type: 'text', nullable: true)]
     protected $readRule;
 
     /**
      * @var News
-     *
-     * @ORM\OneToMany(targetEntity="News", mappedBy="channel")
      */
+    #[ORM\OneToMany(targetEntity: News::class, mappedBy: 'channel')]
     protected $news;
 
     public function __toString()

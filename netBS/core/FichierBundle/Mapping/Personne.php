@@ -25,34 +25,32 @@ abstract class Personne implements AdressableInterface, TelephonableInterface, E
 
     /**
      * @var int
-     *
-     * @ORM\Column(name="id", type="integer")
-     * @ORM\Id
-     * @ORM\GeneratedValue(strategy="AUTO")
      * @Groups({"default"})
      */
+    #[ORM\Column(name: 'id', type: 'integer')]
+    #[ORM\Id]
+    #[ORM\GeneratedValue(strategy: 'AUTO')]
     protected $id;
 
     /**
      * @var string
-     * @Assert\NotBlank()
-     * @ORM\Column(name="prenom", type="string", length=255)
      * @Groups({"default"})
      */
+    #[ORM\Column(name: 'prenom', type: 'string', length: 255)]
+    #[Assert\NotBlank]
     protected $prenom;
 
     /**
      * @var string
-     *
-     * @ORM\Column(name="sexe", type="string", length=255)
      * @Groups({"default"})
      */
+    #[ORM\Column(name: 'sexe', type: 'string', length: 255)]
     protected $sexe;
 
     /**
      * @var BaseContactInformation
-     * @Assert\Valid()
      */
+    #[Assert\Valid]
     protected $contactInformation;
 
     /**

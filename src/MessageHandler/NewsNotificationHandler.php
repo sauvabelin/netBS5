@@ -10,8 +10,8 @@ use NetBS\CoreBundle\Entity\News;
 use NetBS\CoreBundle\Entity\NewsChannel;
 use NetBS\SecureBundle\Service\SecureConfig;
 use Psr\Log\LoggerInterface;
-use Sensio\Bundle\FrameworkExtraBundle\Security\ExpressionLanguage;
-use Symfony\Component\Cache\Adapter\AdapterInterface;
+use Symfony\Component\ExpressionLanguage\ExpressionLanguage;
+use Psr\Cache\CacheItemPoolInterface as AdapterInterface;
 use Symfony\Component\Messenger\Attribute\AsMessageHandler;
 
 #[AsMessageHandler]
@@ -36,7 +36,7 @@ class NewsNotificationHandler
     public function __invoke(NewsNotification $message)
     {
         /** @var News $news */
-        $news = $this->em->find('NetBSCoreBundle:News', $message->getNewsId());
+        $news = $this->em->find(News::class, $message->getNewsId());
         if (!$news) {
             $this->log->warning("News not found from notification handler", [
                 'id' => $message->getNewsId(),

@@ -10,9 +10,7 @@ use Symfony\Component\Routing\Annotation\Route;
 
 class FacturationController extends AbstractController
 {
-    /**
-     * @Route("/dashboard", name="ovesco.facturation.dashboard")
-     */
+    #[Route('/dashboard', name: 'ovesco.facturation.dashboard')]
     public function dashboardAction(FacturesAttentePaiementList $attentePaiementList, FacturesAttenteImpressionList $attenteImpressionList) {
 
         $attentePaiement = $attentePaiementList->getElements();

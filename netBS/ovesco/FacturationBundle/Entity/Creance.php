@@ -11,69 +11,62 @@ use Symfony\Component\Serializer\Annotation\Groups;
 
 /**
  * Creance
- *
- * @ORM\Table(name="ovesco_facturation_creances")
- * @ORM\Entity
  */
+#[ORM\Table(name: 'ovesco_facturation_creances')]
+#[ORM\Entity]
 class Creance
 {
     use TimestampableEntity, RemarqueTrait, DebiteurTrait;
 
     /**
      * @var int
-     *
-     * @ORM\Column(name="id", type="integer")
-     * @ORM\Id
-     * @ORM\GeneratedValue(strategy="AUTO")
      * @Groups({"default"})
      */
+    #[ORM\Column(name: 'id', type: 'integer')]
+    #[ORM\Id]
+    #[ORM\GeneratedValue(strategy: 'AUTO')]
     protected $id;
 
     /**
      * @var string
      * @Groups({"default"})
-     * @ORM\Column(name="titre", type="string", length=255)
      */
+    #[ORM\Column(name: 'titre', type: 'string', length: 255)]
     protected $titre;
 
     /**
      * @var \DateTime
-     *
-     * @ORM\Column(name="date", type="datetime")
      * @Groups({"default"})
      */
+    #[ORM\Column(name: 'date', type: 'datetime')]
     protected $date;
 
     /**
      * @var float
-     *
-     * @ORM\Column(name="montant", type="float")
      * @Groups({"default"})
      */
+    #[ORM\Column(name: 'montant', type: 'float')]
     protected $montant;
 
     /**
      * @var float
-     *
-     * @ORM\Column(name="rabais", type="float")
      * @Groups({"default"})
      */
+    #[ORM\Column(name: 'rabais', type: 'float')]
     protected $rabais = 0;
 
     /**
      * @var float
-     *
-     * @ORM\Column(name="rabais_if_in_famille", type="float")
      * @Groups({"default"})
      */
+    #[ORM\Column(name: 'rabais_if_in_famille', type: 'float')]
     protected $rabaisIfInFamille = 0;
 
     /**
      * @var Facture
-     *
-     * @ORM\ManyToOne(targetEntity="Ovesco\FacturationBundle\Entity\Facture", inversedBy="creances")
      * @Groups({"creance_with_facture"})
      */
+    #[ORM\ManyToOne(targetEntity: Facture::class, inversedBy: 'creances')]
     protected $facture;
 
     public function __construct()

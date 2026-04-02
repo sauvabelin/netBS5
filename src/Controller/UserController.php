@@ -15,23 +15,21 @@ use Symfony\Component\Routing\Annotation\Route;
 /**
  * Class UserController
  * @package App\Controller
- * @Route("/user")
  */
+#[Route('/user')]
 class UserController extends AbstractController
 {
-    /**
-     * @Route("/latest-accounts", name="sauvabelin.user.latest_created")
-     */
+    #[Route('/latest-accounts', name: 'sauvabelin.user.latest_created')]
     public function latestCreatedAction() {
 
         return $this->render('user/last_created_accounts.html.twig');
     }
 
     /**
-     * @Route("/user/admin-change-password/{id}", name="sauvabelin.user.admin_change_password_modal")
      * @param Request $request
      * @return \Symfony\Component\HttpFoundation\Response
      */
+    #[Route('/user/admin-change-password/{id}', name: 'sauvabelin.user.admin_change_password_modal')]
     public function modalAdminChangePasswordAction(Request $request, $id, UserManager $manager) {
         /** @var BSUser $user */
         $user       = $manager->find($id);

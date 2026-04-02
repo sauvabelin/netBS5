@@ -11,59 +11,56 @@ use NetBS\CoreBundle\Validator\Constraints as BSAssert;
 
 /**
  * Attribution
- * @ORM\MappedSuperclass()
- * @BSAssert\User(rule="user.hasRole('ROLE_SG')")
  */
+#[ORM\MappedSuperclass]
+#[BSAssert\User(rule: "user.hasRole('ROLE_SG')")]
 abstract class BaseAttribution
 {
     use RemarqueTrait, TimestampableEntity;
 
     /**
      * @var int
-     *
-     * @ORM\Column(name="id", type="integer")
-     * @ORM\Id
-     * @ORM\GeneratedValue(strategy="AUTO")
      * @Groups({"default"})
      */
+    #[ORM\Column(name: 'id', type: 'integer')]
+    #[ORM\Id]
+    #[ORM\GeneratedValue(strategy: 'AUTO')]
     protected $id;
 
     /**
      * @var \DateTime
-     *
-     * @ORM\Column(name="dateDebut", type="datetime")
      * @Groups({"default"})
-     * @Assert\NotBlank()
      */
+    #[ORM\Column(name: 'dateDebut', type: 'datetime')]
+    #[Assert\NotBlank]
     protected $dateDebut;
 
     /**
      * @var \DateTime
-     *
-     * @ORM\Column(name="dateFin", type="datetime", nullable=true)
      * @Groups({"default"})
      */
+    #[ORM\Column(name: 'dateFin', type: 'datetime', nullable: true)]
     protected $dateFin;
 
     /**
      * @var BaseGroupe
-     * @Assert\NotBlank()
      * @Groups({"attributionWithGroupe"})
      */
+    #[Assert\NotBlank]
     protected $groupe;
 
     /**
      * @var BaseFonction
-     * @Assert\NotBlank()
      * @Groups({"attributionWithFonction"})
      */
+    #[Assert\NotBlank]
     protected $fonction;
 
     /**
      * @var BaseMembre
-     * @Assert\NotBlank()
      * @Groups({"attributionWithMembre"})
      */
+    #[Assert\NotBlank]
     protected $membre;
 
 

@@ -4,32 +4,30 @@ namespace NetBS\CoreBundle\Controller;
 
 use Doctrine\ORM\EntityManagerInterface;
 use NetBS\CoreBundle\Entity\LoggedChange;
-use Sensio\Bundle\FrameworkExtraBundle\Configuration\Security;
+use Symfony\Component\Security\Http\Attribute\IsGranted;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 
-/**
- * @Route("/changelog")
- */
+#[Route('/changelog')]
 class ChangelogController extends AbstractController
 {
     /**
-     * @Route("/list", name="netbs.core.changelog.list")
      * @return \Symfony\Component\HttpFoundation\Response
-     * @Security("is_granted('ROLE_SG')")
      */
+    #[Route('/list', name: 'netbs.core.changelog.list')]
+    #[IsGranted('ROLE_SG')]
     public function lookupChangesAction() {
         return $this->render('@NetBSCore/changelog/list_changes.html.twig');
     }
 
     /**
-     * @Route("/approve", name="netbs.core.changelog.approve")
      * @param Request $request
      * @return Response
-     * @Security("is_granted('ROLE_SG')")
      */
+    #[Route('/approve', name: 'netbs.core.changelog.approve')]
+    #[IsGranted('ROLE_SG')]
     public function approveChangesAction(Request $request, EntityManagerInterface $em) {
 
         $data       = json_decode($request->request->get('data'), true);
@@ -54,14 +52,14 @@ class ChangelogController extends AbstractController
     /**
      * @param Request $request
      * @internal param LoggedChange $change
-     * @Route("ajax/preview", name="netbs.core.changelog.preview_change")
      * @return Response
-     * @Security("is_granted('ROLE_SG')")
      */
+    #[Route('ajax/preview', name: 'netbs.core.changelog.preview_change')]
+    #[IsGranted('ROLE_SG')]
     public function ajaxPreviewChangeAction(Request $request, EntityManagerInterface $em) {
 
         $id     = $request->get('logId');
-        $change = $em->find('NetBSCoreBundle:LoggedChange', $id);
+        $change = $em->find(LoggedChange::class, $id);
 
         if(!$change)
             throw $this->createNotFoundException();

@@ -15,8 +15,8 @@ use Symfony\Component\Routing\Annotation\Route;
 /**
  * Class CompteController
  * @package Ovesco\FacturationBundle\Controller
- * @Route("/paiement")
  */
+#[Route('/paiement')]
 class PaiementController extends AbstractController
 {
     /**
@@ -25,8 +25,8 @@ class PaiementController extends AbstractController
      * @return \Symfony\Component\HttpFoundation\Response
      * @throws \Doctrine\ORM\ORMException
      * @throws \Doctrine\ORM\OptimisticLockException
-     * @Route("/{id}/modal-add", name="ovesco.facturation.paiement.modal_add")
      */
+    #[Route('/{id}/modal-add', name: 'ovesco.facturation.paiement.modal_add')]
     public function modalAddAction(Facture $facture, Request $request, EntityManagerInterface $em) {
 
         $paiement = new Paiement();
@@ -49,8 +49,8 @@ class PaiementController extends AbstractController
 
     /**
      * @param Paiement $paiement
-     * @Route("/details/{id}", name="ovesco.facturation.paiement.modal_details")
      */
+    #[Route('/details/{id}', name: 'ovesco.facturation.paiement.modal_details')]
     public function modalDetailsAction(Paiement $paiement) {
         return $this->render('@OvescoFacturation/paiement/modal_details.html.twig', array(
             'paiement' => $paiement,
@@ -58,9 +58,7 @@ class PaiementController extends AbstractController
 
     }
 
-    /**
-     * @Route("/search", name="ovesco.facturation.search_paiements")
-     */
+    #[Route('/search', name: 'ovesco.facturation.search_paiements')]
     public function searchPaiementsAction(SearcherManager $searcher) {
         $instance       = $searcher->bind(Paiement::class);
         return $searcher->render($instance);

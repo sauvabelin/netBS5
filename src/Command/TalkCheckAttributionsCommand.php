@@ -13,7 +13,7 @@ use NetBS\FichierBundle\Mapping\BaseGroupe;
 use NetBS\FichierBundle\Service\FichierConfig;
 use NetBS\SecureBundle\Mapping\BaseUser;
 use NetBS\SecureBundle\Service\SecureConfig;
-use Symfony\Component\Cache\Adapter\AdapterInterface;
+use Psr\Cache\CacheItemPoolInterface as AdapterInterface;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;

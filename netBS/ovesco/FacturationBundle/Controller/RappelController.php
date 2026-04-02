@@ -15,20 +15,20 @@ use Symfony\Component\Routing\Annotation\Route;
 /**
  * Class RappelController
  * @package Ovesco\FacturationBundle\Controller
- * @Route("/rappel")
  */
+#[Route('/rappel')]
 class RappelController extends AbstractController
 {
     /**
      * @param Request $request
-     * @Route("/modal-add", name="ovesco.facturation.rappel.add_modal")
      * @return \Symfony\Component\HttpFoundation\Response
      * @throws \Exception
      */
+    #[Route('/modal-add', name: 'ovesco.facturation.rappel.add_modal')]
     public function addModalAction(Request $request, EntityManagerInterface $em) {
 
         $mass = new MassRappel();
-        $mass->setSelectedIds(serialize($request->request->get('selectedIds')));
+        $mass->setSelectedIds(serialize($request->request->all('selectedIds')));
         $form = $this->createForm(MassRappelType::class, $mass);
         $form->handleRequest($request);
 

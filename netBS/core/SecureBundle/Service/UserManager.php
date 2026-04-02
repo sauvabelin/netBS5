@@ -17,7 +17,7 @@ use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 class UserManager
 {
     /**
-     * @var UserPasswordEncoderInterface
+     * @var UserPasswordHasherInterface
      */
     protected $encoder;
 
@@ -74,7 +74,6 @@ class UserManager
         $this->checkUsernameAndEmail($user);
 
         $this->em->persist($user);
-        dump('persisted', $user);
         $this->em->flush();
     }
 

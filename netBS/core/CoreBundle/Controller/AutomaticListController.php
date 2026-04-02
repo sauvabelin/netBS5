@@ -6,19 +6,17 @@ use NetBS\CoreBundle\Model\ConfigurableAutomaticInterface;
 use NetBS\CoreBundle\Service\AutomaticListsManager;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\Routing\Annotation\Route;
-use Sensio\Bundle\FrameworkExtraBundle\Configuration\Security;
+use Symfony\Component\Security\Http\Attribute\IsGranted;
 use Symfony\Component\HttpFoundation\Request;
 
 /**
  * Class DynamicListController
- * @Route("/automatic-list")
  */
+#[Route('/automatic-list')]
 class AutomaticListController extends AbstractController
 {
-    /**
-     * @Route("/view/lists", name="netbs.core.automatic_list.view_lists")
-     * @Security("is_granted('ROLE_READ_EVERYWHERE')")
-     */
+    #[Route('/view/lists', name: 'netbs.core.automatic_list.view_lists')]
+    #[IsGranted('ROLE_READ_EVERYWHERE')]
     public function viewListsAction(AutomaticListsManager $automatics) {
         return $this->render('@NetBSCore/automatics/view_automatics.page.twig', array(
             'models'    => $automatics->getAutomatics()
@@ -26,12 +24,12 @@ class AutomaticListController extends AbstractController
     }
 
     /**
-     * @Route("/view/{alias}", name="netbs.core.automatic_list.view_list")
      * @param Request $request
      * @param $alias
-     * @Security("is_granted('ROLE_READ_EVERYWHERE')")
      * @return \Symfony\Component\HttpFoundation\Response
      */
+    #[Route('/view/{alias}', name: 'netbs.core.automatic_list.view_list')]
+    #[IsGranted('ROLE_READ_EVERYWHERE')]
     public function viewListAction($alias, Request $request, AutomaticListsManager $manager) {
 
         $model  = $manager->getAutomaticByAlias($alias);

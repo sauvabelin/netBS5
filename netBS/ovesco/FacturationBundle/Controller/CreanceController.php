@@ -22,13 +22,11 @@ use Symfony\Component\Routing\Annotation\Route;
 /**
  * Class CreanceController
  * @package Ovesco\FacturationBundle\Controller
- * @Route("/creances")
  */
+#[Route('/creances')]
 class CreanceController extends AbstractController
 {
-    /**
-     * @Route("/search", name="ovesco.facturation.search_creances")
-     */
+    #[Route('/search', name: 'ovesco.facturation.search_creances')]
     public function searchCreanceAction(SearcherManager $searcher) {
         $instance = $searcher->bind(Creance::class);
         return $searcher->render($instance);
@@ -38,14 +36,14 @@ class CreanceController extends AbstractController
      * @param Request $request
      * @return \Symfony\Component\HttpFoundation\Response
      * @throws \Exception
-     * @Route("/modal-add", name="ovesco.facturation.creance.modal_add_many")
      */
+    #[Route('/modal-add', name: 'ovesco.facturation.creance.modal_add_many')]
     public function modalAddManyCreancesAction(Request $request, ListBridgeManager $bridges, EntityManagerInterface $em) {
 
         $mass = new MassCreances();
         $mass->setItemsClass($request->request->get('itemsClass'));
-        if ($request->request->get('selectedIds'))
-            $mass->setSelectedIds(serialize($request->request->get('selectedIds')));
+        if ($request->request->all('selectedIds'))
+            $mass->setSelectedIds(serialize($request->request->all('selectedIds')));
 
         $form = $this->createForm(MassCreanceType::class, $mass);
         $form->handleRequest($request);
@@ -96,10 +94,10 @@ class CreanceController extends AbstractController
 
     /**
      * @param Request $request
-     * @Route("/check-merge", name="ovesco.facturation.creance.check_merge")
      * @return \Symfony\Component\HttpFoundation\Response
      * @throws \Exception
      */
+    #[Route('/check-merge', name: 'ovesco.facturation.creance.check_merge')]
     public function checkMergeCreances(Request $request, EntityManagerInterface $em) {
 
         $data = json_decode($request->request->get('data'), true);
@@ -115,14 +113,14 @@ class CreanceController extends AbstractController
 
     /**
      * @param Request $request
-     * @Route("/merge", name="ovesco.facturation.creance.merge")
      * @return \Symfony\Component\HttpFoundation\Response
      * @throws \Exception
      */
+    #[Route('/merge', name: 'ovesco.facturation.creance.merge')]
     public function mergeCreances(Request $request, EntityManagerInterface $em) {
 
         $merger = new MergeCreancesToFacture();
-        $merger->setCreanceIds(serialize($request->get('creanceIds')));
+        $merger->setCreanceIds(serialize($request->request->all('creanceIds')));
         $form = $this->createForm(MergeCreancesToFactureType::class, $merger);
         $form->handleRequest($request);
 
@@ -155,10 +153,10 @@ class CreanceController extends AbstractController
     }
 
     /**
-     * @Route("/find-ouvertes", name="ovesco.facturation.creance.find_ouvertes")
      * @param SearcherManager $searcher
      * @return \Symfony\Component\HttpFoundation\Response
      */
+    #[Route('/find-ouvertes', name: 'ovesco.facturation.creance.find_ouvertes')]
     public function creancesOuvertesAction() {
         return $this->render("@OvescoFacturation/creance/creances_ouvertes.html.twig");
     }

@@ -8,9 +8,8 @@ trait DateImpressionTrait
 {
     /**
      * @var \DateTime
-     *
-     * @ORM\Column(name="date_impression", type="datetime", nullable=true)
      */
+    #[ORM\Column(name: 'date_impression', type: 'datetime', nullable: true)]
     protected $dateImpression;
 
     /**

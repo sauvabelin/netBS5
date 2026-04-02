@@ -7,9 +7,9 @@ use NetBS\SecureBundle\Mapping\BaseUser;
 
 /**
  * User
- * @ORM\Table(name="netbs_secure_users")
- * @ORM\Entity
  */
+#[ORM\Table(name: 'netbs_secure_users')]
+#[ORM\Entity]
 class User extends BaseUser
 {
 }

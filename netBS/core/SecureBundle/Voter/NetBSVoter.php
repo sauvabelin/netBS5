@@ -32,7 +32,7 @@ abstract class NetBSVoter extends Voter
      *
      * @return bool True if the attribute and subject are supported, false otherwise
      */
-    protected function supports($attribute, $subject)
+    protected function supports(string $attribute, mixed $subject): bool
     {
         return in_array($attribute, CRUD::toArray()) &&
             (is_string($this->supportClass())
@@ -50,7 +50,7 @@ abstract class NetBSVoter extends Voter
      *
      * @return bool
      */
-    protected function voteOnAttribute($attribute, $subject, TokenInterface $token)
+    protected function voteOnAttribute(string $attribute, mixed $subject, TokenInterface $token): bool
     {
         $user   = $token->getUser();
 

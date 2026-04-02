@@ -12,10 +12,9 @@ use Symfony\Component\Serializer\Annotation\Groups;
 
 /**
  * Facture
- *
- * @ORM\Table(name="ovesco_facturation_factures")
- * @ORM\Entity(repositoryClass="Ovesco\FacturationBundle\Repository\FactureRepository")
  */
+#[ORM\Table(name: 'ovesco_facturation_factures')]
+#[ORM\Entity(repositoryClass: \Ovesco\FacturationBundle\Repository\FactureRepository::class)]
 class Facture
 {
     const PAYEE     = 'payee';
@@ -26,75 +25,67 @@ class Facture
 
     /**
      * @var int
-     *
-     * @ORM\Column(name="id", type="integer")
-     * @ORM\Id
-     * @ORM\GeneratedValue(strategy="AUTO")
      * @Groups({"default"})
      */
+    #[ORM\Column(name: 'id', type: 'integer')]
+    #[ORM\Id]
+    #[ORM\GeneratedValue(strategy: 'AUTO')]
     protected $id;
 
     /**
      * @var int
-     * @ORM\Column(name="old_fichier_id", type="integer")
      * @Groups({"default"})
      */
+    #[ORM\Column(name: 'old_fichier_id', type: 'integer')]
     protected $oldFichierId = -1;
 
     /**
      * @var string
-     *
-     * @ORM\Column(name="statut", type="string", length=255)
      * @Groups({"default"})
      */
+    #[ORM\Column(name: 'statut', type: 'string', length: 255)]
     protected $statut = self::OUVERTE;
 
     /**
      * @var \DateTime
-     *
-     * @ORM\Column(name="date", type="datetime")
      * @Groups({"default"})
      */
+    #[ORM\Column(name: 'date', type: 'datetime')]
     protected $date;
 
     /**
      * @var Creance[]
-     *
-     * @ORM\OneToMany(targetEntity="Creance", mappedBy="facture", fetch="EAGER", cascade={"persist", "remove"})
      * @Groups({"facture_with_creances"})
      */
+    #[ORM\OneToMany(targetEntity: Creance::class, mappedBy: 'facture', fetch: 'EAGER', cascade: ['persist', 'remove'])]
     protected $creances;
 
     /**
      * @var Rappel[]
-     *
-     * @ORM\OneToMany(targetEntity="Rappel", mappedBy="facture", cascade={"persist", "remove"}, fetch="EAGER")
      * @Groups({"default"})
      */
+    #[ORM\OneToMany(targetEntity: Rappel::class, mappedBy: 'facture', cascade: ['persist', 'remove'], fetch: 'EAGER')]
     protected $rappels;
 
     /**
      * @var Paiement[]
-     *
-     * @ORM\OneToMany(targetEntity="Paiement", mappedBy="facture", cascade={"persist", "remove"}, fetch="EAGER")
      * @Groups({"facture_with_paiements"})
      */
+    #[ORM\OneToMany(targetEntity: Paiement::class, mappedBy: 'facture', cascade: ['persist', 'remove'], fetch: 'EAGER')]
     protected $paiements;
 
     /**
      * @var Compte
-     *
-     * @ORM\ManyToOne(targetEntity="Ovesco\FacturationBundle\Entity\Compte")
      * @Groups({"default"})
      */
+    #[ORM\ManyToOne(targetEntity: Compte::class)]
     protected $compteToUse;
 
     /**
      * @var FactureModel|null
-     *
-     * @ORM\ManyToOne(targetEntity="Ovesco\FacturationBundle\Entity\FactureModel")
      * @Groups({"default"})
      */
+    #[ORM\ManyToOne(targetEntity: FactureModel::class)]
     protected $factureModel;
 
     /**

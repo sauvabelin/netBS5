@@ -6,9 +6,7 @@ use Doctrine\ORM\Mapping as ORM;
 
 trait ExpediableTrait
 {
-    /**
-     * @ORM\Column(type="boolean")
-     */
+    #[ORM\Column(type: 'boolean')]
     protected $expediable = true;
 
     /**

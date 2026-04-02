@@ -10,22 +10,22 @@ use Doctrine\ORM\Mapping as ORM;
 /**
  * Class BSGroupe
  * @package App\Entity
- * @ORM\Entity()
- * @ORM\Table(name="sauvabelin_netbs_groupes")
- * @ORM\HasLifecycleCallbacks
  */
+#[ORM\Entity]
+#[ORM\Table(name: 'sauvabelin_netbs_groupes')]
+#[ORM\HasLifecycleCallbacks]
 class BSGroupe extends BaseGroupe
 {
     /**
      * On crée une vue SQL pour les accès au groupe, groupName<->username
-     * @ORM\Column(name="nc_group_name", type="string", length=255, nullable=true)
      */
+    #[ORM\Column(name: 'nc_group_name', type: 'string', length: 255, nullable: true)]
     protected $ncGroupName = null;
 
     /**
      * @var boolean
-     * @ORM\Column(name="nc_mapped", type="boolean", length=255)
      */
+    #[ORM\Column(name: 'nc_mapped', type: 'boolean', length: 255)]
     protected $ncMapped = false;
 
     /**
@@ -65,18 +65,14 @@ class BSGroupe extends BaseGroupe
         $this->ncMapped = $ncMapped;
     }
 
-    /**
-     * @ORM\PrePersist()
-     */
+    #[ORM\PrePersist]
     public function PrePersist(LifecycleEventArgs $args) {
 
         if($this->ncGroupName === null)
             $this->updateNCGroupName();
     }
 
-    /**
-     * @ORM\PreUpdate()
-     */
+    #[ORM\PreUpdate]
     public function PreUpdate(PreUpdateEventArgs $args) {
 
         if($this->ncGroupName === null)

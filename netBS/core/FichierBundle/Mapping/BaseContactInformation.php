@@ -10,37 +10,34 @@ use Symfony\Component\Serializer\Annotation\Groups;
 /**
  * Class ContactInformation
  * @package FichierBundle\Entity
- * @ORM\MappedSuperclass()
  */
+#[ORM\MappedSuperclass]
 class BaseContactInformation
 {
-    /**
-     * @var int
-     * @ORM\Column(name="id", type="integer")
-     * @ORM\Id
-     * @ORM\GeneratedValue(strategy="AUTO")
-     */
+    #[ORM\Column(name: 'id', type: 'integer')]
+    #[ORM\Id]
+    #[ORM\GeneratedValue(strategy: 'AUTO')]
     protected $id;
 
     /**
      * @var BaseEmail[]
-     * @Assert\Valid()
      * @Groups({"emails"})
      */
+    #[Assert\Valid]
     protected $emails;
 
     /**
      * @var BaseTelephone[]
-     * @Assert\Valid()
      * @Groups({"telephones"})
      */
+    #[Assert\Valid]
     protected $telephones;
 
     /**
      * @var BaseAdresse[]
-     * @Assert\Valid()
      * @Groups({"adresses"})
      */
+    #[Assert\Valid]
     protected $adresses;
 
     public function __construct()

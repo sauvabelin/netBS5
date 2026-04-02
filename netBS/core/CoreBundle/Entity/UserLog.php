@@ -7,33 +7,29 @@ use NetBS\SecureBundle\Mapping\BaseUser;
 
 /**
  * UserLog
- *
- * @ORM\Table(name="netbs_core_user_logs")
- * @ORM\Entity()
  */
+#[ORM\Table(name: 'netbs_core_user_logs')]
+#[ORM\Entity]
 class UserLog
 {
     /**
      * @var int
-     *
-     * @ORM\Column(name="id", type="integer")
-     * @ORM\Id
-     * @ORM\GeneratedValue(strategy="AUTO")
      */
+    #[ORM\Column(name: 'id', type: 'integer')]
+    #[ORM\Id]
+    #[ORM\GeneratedValue(strategy: 'AUTO')]
     private $id;
 
     /**
      * @var string
-     *
-     * @ORM\Column(name="level", type="string", length=255)
      */
+    #[ORM\Column(name: 'level', type: 'string', length: 255)]
     private $level;
 
     /**
      * @var string
-     *
-     * @ORM\Column(name="message", type="text")
      */
+    #[ORM\Column(name: 'message', type: 'text')]
     private $message;
 
     /**

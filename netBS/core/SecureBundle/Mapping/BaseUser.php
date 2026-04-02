@@ -10,51 +10,46 @@ use Symfony\Component\Validator\Constraints as Assert;
 use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 use Symfony\Component\Security\Core\User\EquatableInterface;
 use Symfony\Component\Security\Core\User\UserInterface;
+use Symfony\Component\Security\Core\User\LegacyPasswordAuthenticatedUserInterface;
 
-/**
- * @ORM\MappedSuperclass()
- * @UniqueEntity(fields={"membre"})
- */
+#[ORM\MappedSuperclass]
+#[UniqueEntity(fields: ['membre'])]
 class BaseUser implements
-    \Serializable,
     EquatableInterface,
-    UserInterface
+    UserInterface,
+    LegacyPasswordAuthenticatedUserInterface
 {
     /**
      * @var int
-     *
-     * @ORM\Column(name="id", type="integer")
-     * @ORM\Id
-     * @ORM\GeneratedValue(strategy="AUTO")
      */
+    #[ORM\Column(name: 'id', type: 'integer')]
+    #[ORM\Id]
+    #[ORM\GeneratedValue(strategy: 'AUTO')]
     protected $id;
 
     /**
      * @var string
-     *
-     * @ORM\Column(name="username", type="string", length=255, unique=true)
      */
+    #[ORM\Column(name: 'username', type: 'string', length: 255, unique: true)]
     protected $username;
 
     /**
      * @var string
-     *
-     * @ORM\Column(name="password", type="string", length=255)
      */
+    #[ORM\Column(name: 'password', type: 'string', length: 255)]
     protected $password;
 
     /**
      * @var string
-     * @Assert\Email
-     * @ORM\Column(name="email", type="string", length=255, nullable=true, unique=true)
      */
+    #[ORM\Column(name: 'email', type: 'string', length: 255, nullable: true, unique: true)]
+    #[Assert\Email]
     protected $email;
 
     /**
      * @var bool
-     *
-     * @ORM\Column(name="isActive", type="boolean")
      */
+    #[ORM\Column(name: 'isActive', type: 'boolean')]
     protected $isActive;
 
     /**
@@ -64,16 +59,14 @@ class BaseUser implements
 
     /**
      * @var \DateTime
-     *
-     * @ORM\Column(name="dateAdded", type="datetime")
      */
+    #[ORM\Column(name: 'dateAdded', type: 'datetime')]
     protected $dateAdded;
 
     /**
      * @var string
-     *
-     * @ORM\Column(name="salt", type="string", length=255, nullable=true)
      */
+    #[ORM\Column(name: 'salt', type: 'string', length: 255, nullable: true)]
     protected $salt;
 
     /**
@@ -104,7 +97,7 @@ class BaseUser implements
      * @param UserInterface $user
      * @return bool
      */
-    public function isEqualTo(UserInterface $user)
+    public function isEqualTo(UserInterface $user): bool
     {
         return $user instanceof BaseUser && $user->getId() === $this->getId();
     }
@@ -151,6 +144,11 @@ class BaseUser implements
         return $this->username;
     }
 
+    public function getUserIdentifier(): string
+    {
+        return $this->username;
+    }
+
     /**
      * Set password
      *
@@ -170,7 +168,7 @@ class BaseUser implements
      *
      * @return string
      */
-    public function getPassword()
+    public function getPassword(): ?string
     {
         return $this->password;
     }
@@ -293,7 +291,7 @@ class BaseUser implements
         return $roles;
     }
 
-    public function getRoles()
+    public function getRoles(): array
     {
         return $this->roles->toArray();
     }
@@ -345,31 +343,43 @@ class BaseUser implements
      *
      * @return string
      */
-    public function getSalt()
+    public function getSalt(): ?string
     {
         return $this->salt;
     }
 
-    public function eraseCredentials()
+    public function eraseCredentials(): void
     {
     }
 
-    public function serialize()
+    public function __serialize(): array
     {
-        return serialize(array(
+        return [
             $this->id,
             $this->username,
             $this->password
-        ));
+        ];
     }
 
-    public function unserialize($serialized)
+    public function __unserialize(array $data): void
     {
-        list (
+        [
             $this->id,
             $this->username,
             $this->password,
-            ) = unserialize($serialized);
+        ] = $data;
+    }
+
+    /** @deprecated */
+    public function serialize()
+    {
+        return serialize($this->__serialize());
+    }
+
+    /** @deprecated */
+    public function unserialize($serialized)
+    {
+        $this->__unserialize(unserialize($serialized));
     }
 
     public function isAccountNonExpired()
@@ -408,4 +418,3 @@ class BaseUser implements
         $this->autorisations->removeElement($autorisation);
     }
 }
-

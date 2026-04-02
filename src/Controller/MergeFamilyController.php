@@ -10,13 +10,11 @@ use Symfony\Component\Routing\Annotation\Route;
 
 /**
  * @package App\Controller
- * @Route("/merge-family")
  */
+#[Route('/merge-family')]
 class MergeFamilyController extends AbstractController
 {
-    /**
-     * @Route("/merger", name="sauvabelin.merge_family.merger")
-     */
+    #[Route('/merger', name: 'sauvabelin.merge_family.merger')]
     public function mergerAction(FichierConfig $config, EntityManagerInterface $em) {
 
         $repo = $em->getRepository($config->getFamilleClass());
@@ -25,9 +23,7 @@ class MergeFamilyController extends AbstractController
         ]);
     }
 
-    /**
-     * @Route("/choose-what", name="sauvabelin.merge_family.choose_what")
-     */
+    #[Route('/choose-what', name: 'sauvabelin.merge_family.choose_what')]
     public function chooseWhatAction(Request $request, FichierConfig $config, EntityManagerInterface $em) {
 
         $repo = $em->getRepository($config->getFamilleClass());

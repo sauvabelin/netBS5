@@ -8,9 +8,9 @@ use NetBS\FichierBundle\Mapping\BaseDistinction;
 
 /**
  * Distinction
- * @ORM\Table(name="netbs_fichier_distinctions")
- * @ORM\Entity()
  */
+#[ORM\Table(name: 'netbs_fichier_distinctions')]
+#[ORM\Entity]
 class Distinction extends BaseDistinction
 {
 }

@@ -11,9 +11,9 @@ use Symfony\Component\Serializer\Annotation\Groups;
 /**
  * Class ContactInformation
  * @package FichierBundle\Entity
- * @ORM\Entity()
- * @ORM\Table(name="netbs_fichier_contact_informations")
  */
+#[ORM\Entity]
+#[ORM\Table(name: 'netbs_fichier_contact_informations')]
 class ContactInformation extends BaseContactInformation
 {
 

@@ -6,9 +6,10 @@ use Doctrine\ORM\EntityManager;
 use NetBS\SecureBundle\Exceptions\UserCreationException;
 use NetBS\SecureBundle\Mapping\BaseUser;
 use NetBS\SecureBundle\Model\BaseUserProvider;
-use Symfony\Component\Security\Core\Encoder\UserPasswordEncoderInterface;
+use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 use Symfony\Component\Security\Core\Exception\UnsupportedUserException;
-use Symfony\Component\Security\Core\Exception\UsernameNotFoundException;
+use Symfony\Component\Security\Core\Exception\UserNotFoundException;
+use Symfony\Component\Security\Core\User\UserInterface;
 
 class NetBSUserProvider extends BaseUserProvider
 {
@@ -16,22 +17,22 @@ class NetBSUserProvider extends BaseUserProvider
 
     protected $config;
 
-    protected $encoder;
+    protected $hasher;
 
-    public function __construct(EntityManager $manager, SecureConfig $config, UserPasswordEncoderInterface $encoder)
+    public function __construct(EntityManager $manager, SecureConfig $config, UserPasswordHasherInterface $hasher)
     {
         $this->manager  = $manager;
         $this->config   = $config;
-        $this->encoder  = $encoder;
+        $this->hasher   = $hasher;
     }
 
-    public function loadUserByUsername($username)
+    public function loadUserByIdentifier(string $identifier): UserInterface
     {
         $user   = $this->manager->getRepository($this->config->getUserClass())
-            ->findOneBy(array('username' => $username));
+            ->findOneBy(array('username' => $identifier));
 
         if(!$user)
-            throw new UsernameNotFoundException();
+            throw new UserNotFoundException();
 
         return $user;
     }
@@ -41,7 +42,7 @@ class NetBSUserProvider extends BaseUserProvider
         $this->checkUsernameAndEmail($user);
 
         if($encodePassword)
-            $user->setPassword($this->encoder->encodePassword($user, $user->getPassword()));
+            $user->setPassword($this->hasher->hashPassword($user, $user->getPassword()));
 
         $this->manager->persist($user);
         $this->manager->flush();
@@ -52,7 +53,7 @@ class NetBSUserProvider extends BaseUserProvider
         $this->checkUsernameAndEmail($user);
 
         if($encodePassword)
-            $user->setPassword($this->encoder->encodePassword($user, $user->getPassword()));
+            $user->setPassword($this->hasher->hashPassword($user, $user->getPassword()));
 
         $this->manager->persist($user);
         $this->manager->flush();
@@ -70,7 +71,7 @@ class NetBSUserProvider extends BaseUserProvider
         if(!$user instanceof $class)
             throw new UnsupportedUserException();
 
-        return $this->loadUserByUsername($user->getUsername());
+        return $this->loadUserByIdentifier($user->getUsername());
     }
 
     public function supportsClass($class)

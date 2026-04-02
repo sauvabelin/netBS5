@@ -9,34 +9,30 @@ use NetBS\SecureBundle\Mapping\BaseUser;
 
 /**
  * DynamicList
- *
- * @ORM\Table(name="netbs_core_dynamic_lists")
- * @ORM\Entity(repositoryClass="NetBS\CoreBundle\Repository\DynamicListRepository")
  */
+#[ORM\Table(name: 'netbs_core_dynamic_lists')]
+#[ORM\Entity(repositoryClass: \NetBS\CoreBundle\Repository\DynamicListRepository::class)]
 class DynamicList
 {
     /**
      * @var int
-     *
-     * @ORM\Column(name="id", type="integer")
-     * @ORM\Id
-     * @ORM\GeneratedValue(strategy="AUTO")
      */
+    #[ORM\Column(name: 'id', type: 'integer')]
+    #[ORM\Id]
+    #[ORM\GeneratedValue(strategy: 'AUTO')]
     protected $id;
 
     /**
      * @var string
-     *
-     * @ORM\Column(name="name", type="string", length=255)
-     * @Assert\NotBlank(message="Le nom de la liste ne peut être vide")
      */
+    #[ORM\Column(name: 'name', type: 'string', length: 255)]
+    #[Assert\NotBlank(message: 'Le nom de la liste ne peut être vide')]
     protected $name;
 
     /**
      * @var string
-     *
-     * @ORM\Column(name="itemClass", type="string", length=255)
      */
+    #[ORM\Column(name: 'itemClass', type: 'string', length: 255)]
     protected $itemsClass;
 
     /**
@@ -46,17 +42,16 @@ class DynamicList
 
     /**
      * @var BaseUser[]
-     * @ORM\JoinTable(name="netbs_core_dynamic_lists_shares",
-     *  joinColumns={@ORM\JoinColumn(name="dynamic_list_id", referencedColumnName="id")},
-     *  inverseJoinColumns={@ORM\JoinColumn(name="user_id", referencedColumnName="id")})
      */
+    #[ORM\JoinTable(name: 'netbs_core_dynamic_lists_shares')]
+    #[ORM\JoinColumn(name: 'dynamic_list_id', referencedColumnName: 'id')]
+    #[ORM\InverseJoinColumn(name: 'user_id', referencedColumnName: 'id')]
     protected $shares;
 
     /**
      * @var array
-     *
-     * @ORM\Column(name="items", type="array")
      */
+    #[ORM\Column(name: 'items', type: 'array')]
     protected $itemIds = [];
 
     /**
