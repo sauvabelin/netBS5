@@ -1,5 +1,7 @@
 security:
-    encoders:
+    enable_authenticator_manager: true
+
+    password_hashers:
         App\Entity\BSUser:
             algorithm: sha512
             iterations: 5000
@@ -16,45 +18,38 @@ security:
             security: false
 
         gettoken:
-            pattern:   ^/api/v1/netBS/gettoken
+            pattern: ^/api/v1/netBS/gettoken
             stateless: true
-            anonymous: true
             json_login:
                 check_path: /api/v1/netBS/gettoken
                 success_handler: lexik_jwt_authentication.handler.authentication_success
                 failure_handler: lexik_jwt_authentication.handler.authentication_failure
 
         api:
-            pattern:   ^/api/v1/netBS
+            pattern: ^/api/v1/netBS
             stateless: true
-            anonymous: false
             provider: database
-            guard:
-                authenticators:
-                    - lexik_jwt_authentication.jwt_token_authenticator
+            jwt: ~
 
         netbs:
-            anonymous:  true
+            pattern: ^/netBS
             switch_user: true
-            pattern:    ^/netBS
             form_login:
-                login_path:   netbs.secure.login.login
-                check_path:   netbs.secure.login.login
-                default_target_path:  netbs.core.home.dashboard
+                login_path: netbs.secure.login.login
+                check_path: netbs.secure.login.login
+                default_target_path: netbs.core.home.dashboard
             remember_me:
-                secret:   '%kernel.secret%'
+                secret: '%kernel.secret%'
                 lifetime: 604800
-                path:     /netBS
+                path: /netBS
             logout:
-                path:   netbs.secure.login.logout
+                path: netbs.secure.login.logout
                 target: netbs.secure.login.login
 
-    # Easy way to control access for large sections of your site
-    # Note: Only the *first* access control that matches will be used
     access_control:
-        - { path: ^/api/v1/netBS/gettoken,          roles: IS_AUTHENTICATED_ANONYMOUSLY }
-        - { path: ^/api/v1/netBS,                   roles: IS_AUTHENTICATED_FULLY }
-        - { path: ^/netBS/secure/login,             roles: [ IS_AUTHENTICATED_ANONYMOUSLY ] }
-        - { path: ^/netBS/secure/user/my-account,   roles: [ ROLE_USER ] }
-        - { path: ^/netBS/secure,                   roles: [ ROLE_ADMIN ] }
-        - { path: ^/netBS,                          roles: [ IS_AUTHENTICATED_FULLY, ROLE_USER ] }
+        - { path: ^/api/v1/netBS/gettoken, roles: PUBLIC_ACCESS }
+        - { path: ^/api/v1/netBS, roles: IS_AUTHENTICATED_FULLY }
+        - { path: ^/netBS/secure/login, roles: PUBLIC_ACCESS }
+        - { path: ^/netBS/secure/user/my-account, roles: ROLE_USER }
+        - { path: ^/netBS/secure, roles: ROLE_ADMIN }
+        - { path: ^/netBS, roles: [IS_AUTHENTICATED_FULLY, ROLE_USER] }
