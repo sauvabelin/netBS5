@@ -4,10 +4,8 @@ namespace App\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
 
-/**
- * @ORM\Table(name="sauvabelin_apmbs_reservation_logs")
- * @ORM\Entity()
- */
+#[ORM\Table(name: 'sauvabelin_apmbs_reservation_logs')]
+#[ORM\Entity]
 class ReservationLog {
 
     const MODIFY = 'modification';
@@ -21,48 +19,46 @@ class ReservationLog {
 
     /**
      * @var int
-     *
-     * @ORM\Column(name="id", type="integer")
-     * @ORM\Id
-     * @ORM\GeneratedValue(strategy="AUTO")
      */
+    #[ORM\Column(name: 'id', type: 'integer')]
+    #[ORM\Id]
+    #[ORM\GeneratedValue(strategy: 'AUTO')]
     protected $id;
 
     /**
      * @var APMBSReservation
-     * @ORM\ManyToOne(targetEntity="App\Entity\APMBSReservation", inversedBy="logs")
      */
+    #[ORM\ManyToOne(targetEntity: APMBSReservation::class, inversedBy: 'logs')]
     protected $reservation;
 
     /**
      * @var \DateTime
-     * @ORM\Column(name="created_at", type="datetime", options={"default": "CURRENT_TIMESTAMP"})
      */
+    #[ORM\Column(name: 'created_at', type: 'datetime', options: ['default' => 'CURRENT_TIMESTAMP'])]
     protected $createdAt;
 
     /**
      * @var string
-     *
-     * @ORM\Column(name="action", type="string", length=255)
      */
+    #[ORM\Column(name: 'action', type: 'string', length: 255)]
     protected $action;
 
     /**
      * @var string
-     * @ORM\Column(name="payload", type="text", nullable=true)
      */
+    #[ORM\Column(name: 'payload', type: 'text', nullable: true)]
     protected $payload;
 
     /**
      * @var string
-     * @ORM\Column(name="comment", type="text", nullable=true)
      */
+    #[ORM\Column(name: 'comment', type: 'text', nullable: true)]
     protected $comment;
 
     /**
      * @var string
-     * @ORM\Column(name="username", type="string", length=255)
      */
+    #[ORM\Column(name: 'username', type: 'string', length: 255)]
     protected $username;
 
     public function __construct() {

@@ -7,38 +7,34 @@ use Doctrine\ORM\Mapping as ORM;
 
 /**
  * Role
- * @ORM\MappedSuperclass()
  */
+#[ORM\MappedSuperclass]
 class BaseRole
 {
     /**
      * @var int
-     *
-     * @ORM\Column(name="id", type="integer")
-     * @ORM\Id
-     * @ORM\GeneratedValue(strategy="AUTO")
      */
+    #[ORM\Column(name: 'id', type: 'integer')]
+    #[ORM\Id]
+    #[ORM\GeneratedValue(strategy: 'AUTO')]
     protected $id;
 
     /**
      * @var string
-     *
-     * @ORM\Column(name="role", type="string", length=255)
      */
+    #[ORM\Column(name: 'role', type: 'string', length: 255)]
     protected $role;
 
     /**
      * @var int
-     *
-     * @ORM\Column(name="poids", type="integer")
      */
+    #[ORM\Column(name: 'poids', type: 'integer')]
     protected $poids;
 
     /**
      * @var string
-     *
-     * @ORM\Column(name="description", type="text")
      */
+    #[ORM\Column(name: 'description', type: 'text')]
     protected $description;
 
     /**

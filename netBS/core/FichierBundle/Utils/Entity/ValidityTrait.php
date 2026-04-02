@@ -8,9 +8,9 @@ use Symfony\Component\Validator\Constraints as Assert;
 trait ValidityTrait
 {
     /**
-     * @ORM\Column(type="string", length=255, nullable=false)
      * @Assert\NotBlank()
      */
+    #[ORM\Column(type: 'string', length: 255, nullable: false)]
     protected $validity;
 
     /**

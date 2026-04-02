@@ -12,8 +12,8 @@ use Symfony\Component\Serializer\Annotation\Groups;
 
 /**
  * Geniteur
- * @ORM\MappedSuperclass()
  */
+#[ORM\MappedSuperclass]
 abstract class BaseGeniteur extends Personne implements EqualInterface
 {
     const       MERE                = 'mere';
@@ -24,24 +24,24 @@ abstract class BaseGeniteur extends Personne implements EqualInterface
 
     /**
      * @var string
-     * @ORM\Column(name="nom", type="string", length=255, nullable=true)
      * @Groups({"default"})
      */
+    #[ORM\Column(name: 'nom', type: 'string', length: 255, nullable: true)]
     protected $nom;
 
     /**
      * @var string
      * @Groups({"details"})
-     * @ORM\Column(name="profession", type="string", length=255, nullable=true)
      */
+    #[ORM\Column(name: 'profession', type: 'string', length: 255, nullable: true)]
     protected $profession;
 
     /**
      * @var string
      * @Assert\NotBlank()
      * @Groups({"details"})
-     * @ORM\Column(name="statut", type="string", length=255)
      */
+    #[ORM\Column(name: 'statut', type: 'string', length: 255)]
     protected $statut;
 
     /**

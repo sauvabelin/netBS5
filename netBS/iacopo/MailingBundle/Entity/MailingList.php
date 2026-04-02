@@ -10,35 +10,32 @@ use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 use Iacopo\MailingBundle\Validator\UniqueMailingAddress;
 
 /**
- * @ORM\Entity(repositoryClass="Iacopo\MailingBundle\Repository\MailingListRepository")
- * @ORM\Table(name="mailing_list")
  * @UniqueEntity(
  *     fields={"baseAddress"},
  *     message="Cette adresse de base est déjà utilisée."
  * )
  * @UniqueMailingAddress
  */
+#[ORM\Entity(repositoryClass: \Iacopo\MailingBundle\Repository\MailingListRepository::class)]
+#[ORM\Table(name: 'mailing_list')]
 class MailingList
 {
-    /**
-     * @ORM\Id
-     * @ORM\GeneratedValue
-     * @ORM\Column(type="integer")
-     */
+    #[ORM\Id]
+    #[ORM\GeneratedValue]
+    #[ORM\Column(type: 'integer')]
     private $id;
 
     /**
-     * @ORM\Column(type="string", length=255)
      * @Assert\NotBlank(message="Le nom est requis.")
      * @Assert\Length(
      *     max=255,
      *     maxMessage="Le nom ne peut pas dépasser {{ limit }} caractères."
      * )
      */
+    #[ORM\Column(type: 'string', length: 255)]
     private $name;
 
     /**
-     * @ORM\Column(type="string", length=255, unique=true)
      * @Assert\NotBlank(message="L'adresse de base est requise.")
      * @Assert\Email(message="L'adresse de base doit être une adresse email valide.")
      * @Assert\Length(
@@ -46,40 +43,31 @@ class MailingList
      *     maxMessage="L'adresse de base ne peut pas dépasser {{ limit }} caractères."
      * )
      */
+    #[ORM\Column(type: 'string', length: 255, unique: true)]
     private $baseAddress;
 
     /**
-     * @ORM\Column(type="text", nullable=true)
      * @Assert\Length(
      *     max=2000,
      *     maxMessage="La description ne peut pas dépasser {{ limit }} caractères."
      * )
      */
+    #[ORM\Column(type: 'text', nullable: true)]
     private $description;
 
-    /**
-     * @ORM\OneToMany(targetEntity="MailingTarget", mappedBy="mailingList", cascade={"persist", "remove"}, orphanRemoval=true)
-     */
+    #[ORM\OneToMany(targetEntity: MailingTarget::class, mappedBy: 'mailingList', cascade: ['persist', 'remove'], orphanRemoval: true)]
     private $targets;
 
-    /**
-     * @ORM\OneToMany(targetEntity="MailingListAlias", mappedBy="mailingList", cascade={"persist", "remove"}, orphanRemoval=true)
-     */
+    #[ORM\OneToMany(targetEntity: MailingListAlias::class, mappedBy: 'mailingList', cascade: ['persist', 'remove'], orphanRemoval: true)]
     private $aliases;
 
-    /**
-     * @ORM\Column(type="datetime")
-     */
+    #[ORM\Column(type: 'datetime')]
     private $createdAt;
 
-    /**
-     * @ORM\Column(type="datetime", nullable=true)
-     */
+    #[ORM\Column(type: 'datetime', nullable: true)]
     private $updatedAt;
 
-    /**
-     * @ORM\Column(type="boolean")
-     */
+    #[ORM\Column(type: 'boolean')]
     private $active = true;
 
     public function __construct()

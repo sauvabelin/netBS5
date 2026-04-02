@@ -11,60 +11,53 @@ use Symfony\Component\Serializer\Annotation\Groups;
 
 /**
  * Paiement
- *
- * @ORM\Table(name="ovesco_facturation_paiements")
- * @ORM\Entity
  */
+#[ORM\Table(name: 'ovesco_facturation_paiements')]
+#[ORM\Entity]
 class Paiement
 {
     use TimestampableEntity, RemarqueTrait;
 
     /**
      * @var int
-     *
-     * @ORM\Column(name="id", type="integer")
-     * @ORM\Id
-     * @ORM\GeneratedValue(strategy="AUTO")
      */
+    #[ORM\Column(name: 'id', type: 'integer')]
+    #[ORM\Id]
+    #[ORM\GeneratedValue(strategy: 'AUTO')]
     protected $id;
 
     /**
      * @var float
-     *
-     * @ORM\Column(name="montant", type="float")
      * @Groups({"default"})
      */
+    #[ORM\Column(name: 'montant', type: 'float')]
     protected $montant;
 
     /**
      * @var \DateTime
-     *
-     * @ORM\Column(name="date", type="datetime")
      * @Groups({"default"})
      */
+    #[ORM\Column(name: 'date', type: 'datetime')]
     protected $date;
 
     /**
      * @var Facture
-     *
-     * @ORM\ManyToOne(targetEntity="Ovesco\FacturationBundle\Entity\Facture", inversedBy="paiements")
      * @Groups({"paiement_with_facture"})
      */
+    #[ORM\ManyToOne(targetEntity: Facture::class, inversedBy: 'paiements')]
     protected $facture;
 
     /**
      * @var Compte
-     *
-     * @ORM\ManyToOne(targetEntity="Ovesco\FacturationBundle\Entity\Compte")
      * @Groups({"paiement_with_compte"})
      */
+    #[ORM\ManyToOne(targetEntity: Compte::class)]
     protected $compte;
 
     /**
      * @var string
-     *
-     * @ORM\Column(name="transactionDetails", type="text", nullable=true)
      */
+    #[ORM\Column(name: 'transactionDetails', type: 'text', nullable: true)]
     protected $transactionDetails;
 
     public function __construct()

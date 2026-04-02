@@ -8,10 +8,9 @@ use NetBS\FichierBundle\Mapping\BaseTelephone;
 
 /**
  * Telephone
- *
- * @ORM\Table(name="netbs_fichier_telephones")
- * @ORM\Entity()
  */
+#[ORM\Table(name: 'netbs_fichier_telephones')]
+#[ORM\Entity]
 class Telephone extends BaseTelephone
 {
 }

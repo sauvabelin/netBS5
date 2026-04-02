@@ -11,38 +11,35 @@ use NetBS\CoreBundle\Validator\Constraints as BSAssert;
 
 /**
  * Attribution
- * @ORM\MappedSuperclass()
  * @BSAssert\User(rule="user.hasRole('ROLE_SG')")
  */
+#[ORM\MappedSuperclass]
 abstract class BaseAttribution
 {
     use RemarqueTrait, TimestampableEntity;
 
     /**
      * @var int
-     *
-     * @ORM\Column(name="id", type="integer")
-     * @ORM\Id
-     * @ORM\GeneratedValue(strategy="AUTO")
      * @Groups({"default"})
      */
+    #[ORM\Column(name: 'id', type: 'integer')]
+    #[ORM\Id]
+    #[ORM\GeneratedValue(strategy: 'AUTO')]
     protected $id;
 
     /**
      * @var \DateTime
-     *
-     * @ORM\Column(name="dateDebut", type="datetime")
      * @Groups({"default"})
      * @Assert\NotBlank()
      */
+    #[ORM\Column(name: 'dateDebut', type: 'datetime')]
     protected $dateDebut;
 
     /**
      * @var \DateTime
-     *
-     * @ORM\Column(name="dateFin", type="datetime", nullable=true)
      * @Groups({"default"})
      */
+    #[ORM\Column(name: 'dateFin', type: 'datetime', nullable: true)]
     protected $dateFin;
 
     /**

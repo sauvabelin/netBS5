@@ -10,29 +10,28 @@ use Symfony\Component\Serializer\Annotation\Groups;
 
 /**
  * Email
- * @ORM\MappedSuperclass()
  */
+#[ORM\MappedSuperclass]
 class BaseEmail
 {
     use RemarqueTrait, ExpediableTrait;
 
     /**
      * @var int
-     *
-     * @ORM\Column(name="id", type="integer")
-     * @ORM\Id
-     * @ORM\GeneratedValue(strategy="AUTO")
      * @Groups({"default"})
      */
+    #[ORM\Column(name: 'id', type: 'integer')]
+    #[ORM\Id]
+    #[ORM\GeneratedValue(strategy: 'AUTO')]
     protected $id;
 
     /**
      * @var string
      * @Assert\Email
      * @Assert\NotBlank()
-     * @ORM\Column(name="email", type="string", length=255)
      * @Groups({"default"})
      */
+    #[ORM\Column(name: 'email', type: 'string', length: 255)]
     protected $email;
 
     /**

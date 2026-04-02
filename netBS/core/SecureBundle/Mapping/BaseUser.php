@@ -12,9 +12,9 @@ use Symfony\Component\Security\Core\User\EquatableInterface;
 use Symfony\Component\Security\Core\User\UserInterface;
 
 /**
- * @ORM\MappedSuperclass()
  * @UniqueEntity(fields={"membre"})
  */
+#[ORM\MappedSuperclass]
 class BaseUser implements
     \Serializable,
     EquatableInterface,
@@ -22,39 +22,35 @@ class BaseUser implements
 {
     /**
      * @var int
-     *
-     * @ORM\Column(name="id", type="integer")
-     * @ORM\Id
-     * @ORM\GeneratedValue(strategy="AUTO")
      */
+    #[ORM\Column(name: 'id', type: 'integer')]
+    #[ORM\Id]
+    #[ORM\GeneratedValue(strategy: 'AUTO')]
     protected $id;
 
     /**
      * @var string
-     *
-     * @ORM\Column(name="username", type="string", length=255, unique=true)
      */
+    #[ORM\Column(name: 'username', type: 'string', length: 255, unique: true)]
     protected $username;
 
     /**
      * @var string
-     *
-     * @ORM\Column(name="password", type="string", length=255)
      */
+    #[ORM\Column(name: 'password', type: 'string', length: 255)]
     protected $password;
 
     /**
      * @var string
      * @Assert\Email
-     * @ORM\Column(name="email", type="string", length=255, nullable=true, unique=true)
      */
+    #[ORM\Column(name: 'email', type: 'string', length: 255, nullable: true, unique: true)]
     protected $email;
 
     /**
      * @var bool
-     *
-     * @ORM\Column(name="isActive", type="boolean")
      */
+    #[ORM\Column(name: 'isActive', type: 'boolean')]
     protected $isActive;
 
     /**
@@ -64,16 +60,14 @@ class BaseUser implements
 
     /**
      * @var \DateTime
-     *
-     * @ORM\Column(name="dateAdded", type="datetime")
      */
+    #[ORM\Column(name: 'dateAdded', type: 'datetime')]
     protected $dateAdded;
 
     /**
      * @var string
-     *
-     * @ORM\Column(name="salt", type="string", length=255, nullable=true)
      */
+    #[ORM\Column(name: 'salt', type: 'string', length: 255, nullable: true)]
     protected $salt;
 
     /**

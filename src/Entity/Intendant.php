@@ -6,56 +6,53 @@ use Doctrine\ORM\Mapping as ORM;
 use Doctrine\Common\Collections\ArrayCollection;
 use Symfony\Component\Validator\Constraints as Assert;
 
-/**
- * @ORM\Table(name="apmbs_intendant")
- * @ORM\Entity()
- */
+#[ORM\Table(name: 'apmbs_intendant')]
+#[ORM\Entity]
 class Intendant {
 
     /**
      * @var int
-     *
-     * @ORM\Column(name="id", type="integer")
-     * @ORM\Id
-     * @ORM\GeneratedValue(strategy="AUTO")
      */
+    #[ORM\Column(name: 'id', type: 'integer')]
+    #[ORM\Id]
+    #[ORM\GeneratedValue(strategy: 'AUTO')]
     protected $id;
 
     /**
      * @var string
      * @Assert\NotBlank()
-     * @ORM\Column(name="nom", type="string", length=255)
      */
+    #[ORM\Column(name: 'nom', type: 'string', length: 255)]
     protected $nom;
 
     /**
      * @var string
-     * @ORM\Column(name="email", type="string", length=255, nullable=true)
      */
+    #[ORM\Column(name: 'email', type: 'string', length: 255, nullable: true)]
     protected $email;
 
     /**
      * @var string
-     * @ORM\Column(name="phone", type="string", length=255, nullable=true)
      */
+    #[ORM\Column(name: 'phone', type: 'string', length: 255, nullable: true)]
     protected $phone;
 
     /**
      * @var BSUser
-     * @ORM\ManyToOne(targetEntity="App\Entity\BSUser")
      */
+    #[ORM\ManyToOne(targetEntity: BSUser::class)]
     protected $user;
 
     /**
      * @var ArrayCollection
-     * @ORM\ManyToMany(targetEntity="App\Entity\Cabane", mappedBy="intendants")
      */
+    #[ORM\ManyToMany(targetEntity: Cabane::class, mappedBy: 'intendants')]
     protected $cabanes;
 
     /**
      * @var ArrayCollection
-     * @ORM\ManyToMany(targetEntity="App\Entity\APMBSReservation", mappedBy="intendant")
      */
+    #[ORM\ManyToMany(targetEntity: APMBSReservation::class, mappedBy: 'intendant')]
     protected $reservations;
 
     public function __construct() {

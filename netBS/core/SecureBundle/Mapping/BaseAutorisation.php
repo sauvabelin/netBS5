@@ -7,18 +7,15 @@ use Doctrine\ORM\Mapping as ORM;
 use NetBS\FichierBundle\Mapping\BaseGroupe;
 use Symfony\Component\Security\Core\Role\Role;
 
-/**
- * @ORM\MappedSuperclass()
- */
+#[ORM\MappedSuperclass]
 class BaseAutorisation
 {
     /**
      * @var int
-     *
-     * @ORM\Column(name="id", type="integer")
-     * @ORM\Id
-     * @ORM\GeneratedValue(strategy="AUTO")
      */
+    #[ORM\Column(name: 'id', type: 'integer')]
+    #[ORM\Id]
+    #[ORM\GeneratedValue(strategy: 'AUTO')]
     protected $id;
 
     /**
@@ -33,10 +30,10 @@ class BaseAutorisation
 
     /**
      * @var BaseRole[]
-     * @ORM\JoinTable(name="netbs_autorisations_roles",
-     *     joinColumns={@ORM\JoinColumn(name="autorisation_id", referencedColumnName="id")},
-     *     inverseJoinColumns={@ORM\JoinColumn(name="role_id", referencedColumnName="id")})
      */
+    #[ORM\JoinTable(name: 'netbs_autorisations_roles')]
+    #[ORM\JoinColumn(name: 'autorisation_id', referencedColumnName: 'id')]
+    #[ORM\InverseJoinColumn(name: 'role_id', referencedColumnName: 'id')]
     protected $roles;
 
     public function __construct()

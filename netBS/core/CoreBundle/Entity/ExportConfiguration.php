@@ -7,40 +7,35 @@ use NetBS\SecureBundle\Mapping\BaseUser;
 
 /**
  * MailPreference
- *
- * @ORM\Table(name="netbs_core_export_configuration")
- * @ORM\Entity()
  */
+#[ORM\Table(name: 'netbs_core_export_configuration')]
+#[ORM\Entity]
 class ExportConfiguration
 {
     /**
      * @var int
-     *
-     * @ORM\Column(name="id", type="integer")
-     * @ORM\Id
-     * @ORM\GeneratedValue(strategy="AUTO")
      */
+    #[ORM\Column(name: 'id', type: 'integer')]
+    #[ORM\Id]
+    #[ORM\GeneratedValue(strategy: 'AUTO')]
     private $id;
 
     /**
      * @var string
-     *
-     * @ORM\Column(name="nom", type="string", length=255)
      */
+    #[ORM\Column(name: 'nom', type: 'string', length: 255)]
     protected $nom;
 
     /**
      * @var string
-     *
-     * @ORM\Column(name="exporter_alias", type="string", length=255)
      */
+    #[ORM\Column(name: 'exporter_alias', type: 'string', length: 255)]
     protected $exporterAlias;
 
     /**
      * @var object
-     *
-     * @ORM\Column(name="configuration", type="text")
      */
+    #[ORM\Column(name: 'configuration', type: 'text')]
     protected $configuration;
 
     /**

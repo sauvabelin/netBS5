@@ -9,9 +9,9 @@ use NetBS\SecureBundle\Mapping\BaseUser;
 /**
  * Class LoggedChange
  * @package NetBS\CoreBundle\Entity
- * @ORM\Table(name="netbs_core_logged_changes")
- * @ORM\Entity
  */
+#[ORM\Table(name: 'netbs_core_logged_changes')]
+#[ORM\Entity]
 class LoggedChange
 {
     use TimestampableEntity;
@@ -19,66 +19,67 @@ class LoggedChange
     const   WAITING     = 'waiting';
     const   APPROVED    = 'approved';
     const   REJECTED    = 'rejected';
+
     /**
      * @var int
-     * @ORM\Column(name="id", type="integer")
-     * @ORM\Id
-     * @ORM\GeneratedValue(strategy="AUTO")
      */
+    #[ORM\Column(name: 'id', type: 'integer')]
+    #[ORM\Id]
+    #[ORM\GeneratedValue(strategy: 'AUTO')]
     protected $id;
 
     /**
      * @var string
-     * @ORM\Column(name="action", type="string", length=255)
      */
+    #[ORM\Column(name: 'action', type: 'string', length: 255)]
     protected $action;
 
     /**
      * @var string
-     * @ORM\Column(name="display_name", type="string", length=255)
      */
+    #[ORM\Column(name: 'display_name', type: 'string', length: 255)]
     protected $displayName;
 
     /**
      * @var string
-     * @ORM\Column(name="representation", type="text")
      */
+    #[ORM\Column(name: 'representation', type: 'text')]
     protected $representation;
 
     /**
      * @var int
-     * @ORM\Column(name="object_id", type="integer", length=11)
      */
+    #[ORM\Column(name: 'object_id', type: 'integer', length: 11)]
     protected $objectId;
 
     /**
      * @var string
-     * @ORM\Column(name="object_class", type="string", length=255)
      */
+    #[ORM\Column(name: 'object_class', type: 'string', length: 255)]
     protected $objectClass;
 
     /**
      * @var string
-     * @ORM\Column(name="property", type="string", length=255, nullable=true)
      */
+    #[ORM\Column(name: 'property', type: 'string', length: 255, nullable: true)]
     protected $property;
 
     /**
      * @var string
-     * @ORM\Column(name="old_value", type="text", nullable=true)
      */
+    #[ORM\Column(name: 'old_value', type: 'text', nullable: true)]
     protected $oldValue;
 
     /**
      * @var string
-     * @ORM\Column(name="new_value", type="text", nullable=true)
      */
+    #[ORM\Column(name: 'new_value', type: 'text', nullable: true)]
     protected $newValue;
 
     /**
      * @var string
-     * @ORM\Column(name="status", type="string", length=255)
      */
+    #[ORM\Column(name: 'status', type: 'string', length: 255)]
     protected $status;
 
     /**

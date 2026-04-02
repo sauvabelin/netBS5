@@ -12,10 +12,9 @@ use Symfony\Component\Validator\Constraints as Assert;
 
 /**
  * Groupe
- *
- * @ORM\Table(name="fichier_groupes")
- * @ORM\Entity()
  */
+#[ORM\Table(name: 'fichier_groupes')]
+#[ORM\Entity]
 abstract class BaseGroupe implements ValidableInterface
 {
     use ValidityTrait, RemarqueTrait;
@@ -25,18 +24,17 @@ abstract class BaseGroupe implements ValidableInterface
 
     /**
      * @var int
-     *
-     * @ORM\Column(name="id", type="integer")
-     * @ORM\Id
-     * @ORM\GeneratedValue(strategy="AUTO")
      */
+    #[ORM\Column(name: 'id', type: 'integer')]
+    #[ORM\Id]
+    #[ORM\GeneratedValue(strategy: 'AUTO')]
     protected $id;
 
     /**
      * @var string
      * @Assert\NotBlank()
-     * @ORM\Column(name="nom", type="string", length=255)
      */
+    #[ORM\Column(name: 'nom', type: 'string', length: 255)]
     protected $nom;
 
     /**

@@ -8,9 +8,9 @@ use NetBS\SecureBundle\Mapping\BaseUser;
 
 /**
  * User
- * @ORM\Table(name="sauvabelin_netbs_users")
- * @ORM\Entity
  */
+#[ORM\Table(name: 'sauvabelin_netbs_users')]
+#[ORM\Entity]
 class BSUser extends BaseUser
 {
     const HAS_REDIRECT = 'has_a_mail_redirect';
@@ -19,46 +19,46 @@ class BSUser extends BaseUser
     //Nextcloud data
     /**
      * @var bool
-     * @ORM\Column(name="nextcloud_account", type="boolean")
      */
+    #[ORM\Column(name: 'nextcloud_account', type: 'boolean')]
     protected $nextcloudAccount = true;
 
     /**
      * @var bool
-     * @ORM\Column(name="nextcloud_admin", type="boolean")
      */
+    #[ORM\Column(name: 'nextcloud_admin', type: 'boolean')]
     protected $nextcloudAdmin   = false;
 
     /**
      * Stammbox quota per user, base 10MB
      * @var int
-     * @ORM\Column(name="nextcloud_quota", type="integer")
      */
+    #[ORM\Column(name: 'nextcloud_quota', type: 'integer')]
     protected $nextcloudQuota   = 10485760;
 
     //Wikimedia data
     /**
      * @var bool
-     * @ORM\Column(name="wiki_account", type="boolean")
      */
+    #[ORM\Column(name: 'wiki_account', type: 'boolean')]
     protected $wikiAccount  = true;
 
     /**
      * @var bool
-     * @ORM\Column(name="new_password_required", type="boolean")
      */
+    #[ORM\Column(name: 'new_password_required', type: 'boolean')]
     protected $newPasswordRequired  = false;
 
     /**
      * @var bool
-     * @ORM\Column(name="wiki_admin", type="boolean")
      */
+    #[ORM\Column(name: 'wiki_admin', type: 'boolean')]
     protected $wikiAdmin    = false;
 
     /**
      * @var string
-     * @ORM\Column(name="email_bs", type="string", length=255, nullable=true)
      */
+    #[ORM\Column(name: 'email_bs', type: 'string', length: 255, nullable: true)]
     protected $emailBS = null;
 
     public function getUserIdentifier() {
@@ -213,4 +213,3 @@ class BSUser extends BaseUser
         $this->nextcloudQuota = $nextcloudQuota;
     }
 }
-

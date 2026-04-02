@@ -6,40 +6,35 @@ use Doctrine\ORM\Mapping as ORM;
 
 /**
  * Parameter
- *
- * @ORM\Table(name="netbs_core_parameters")
- * @ORM\Entity()
  */
+#[ORM\Table(name: 'netbs_core_parameters')]
+#[ORM\Entity]
 class Parameter
 {
     /**
      * @var int
-     *
-     * @ORM\Column(name="id", type="integer")
-     * @ORM\Id
-     * @ORM\GeneratedValue(strategy="AUTO")
      */
+    #[ORM\Column(name: 'id', type: 'integer')]
+    #[ORM\Id]
+    #[ORM\GeneratedValue(strategy: 'AUTO')]
     private $id;
 
     /**
      * @var string
-     *
-     * @ORM\Column(name="namespace", type="string", length=255)
      */
+    #[ORM\Column(name: 'namespace', type: 'string', length: 255)]
     private $namespace;
 
     /**
      * @var string
-     *
-     * @ORM\Column(name="paramKey", type="string", length=255)
      */
+    #[ORM\Column(name: 'paramKey', type: 'string', length: 255)]
     private $paramKey;
 
     /**
      * @var string
-     *
-     * @ORM\Column(name="value", type="string", length=255)
      */
+    #[ORM\Column(name: 'value', type: 'string', length: 255)]
     private $value;
 
     public function __construct($namespace, $key, $value)

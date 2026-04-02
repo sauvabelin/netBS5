@@ -2,6 +2,7 @@
 
 namespace Ovesco\FacturationBundle\Util;
 
+use Doctrine\ORM\Mapping as ORM;
 use NetBS\FichierBundle\Mapping\BaseFamille;
 use NetBS\FichierBundle\Mapping\BaseMembre;
 use Ovesco\FacturationBundle\Subscriber\DoctrineDebiteurSubscriber;
@@ -11,10 +12,9 @@ trait DebiteurTrait
 {
     /**
      * @var string
-     *
-     * @ORM\Column(name="debiteur_id", type="string")
      * @Groups({"debiteur_id"})
      */
+    #[ORM\Column(name: 'debiteur_id', type: 'string')]
     protected $debiteurId;
 
     /**

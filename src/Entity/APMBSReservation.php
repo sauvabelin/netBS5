@@ -8,10 +8,8 @@ use Symfony\Component\Validator\Constraints as Assert;
 use Symfony\Component\ExpressionLanguage\ExpressionLanguage;
 
 
-/**
- * @ORM\Table(name="sauvabelin_apmbs_reservations")
- * @ORM\Entity()
- */
+#[ORM\Table(name: 'sauvabelin_apmbs_reservations')]
+#[ORM\Entity]
 class APMBSReservation {
 
     const PENDING = '1_pending';
@@ -25,166 +23,163 @@ class APMBSReservation {
 
     /**
      * @var int
-     *
-     * @ORM\Column(name="id", type="integer")
-     * @ORM\Id
-     * @ORM\GeneratedValue(strategy="AUTO")
      */
+    #[ORM\Column(name: 'id', type: 'integer')]
+    #[ORM\Id]
+    #[ORM\GeneratedValue(strategy: 'AUTO')]
     protected $id;
 
     /**
      * @var string
-     * @ORM\Column(name="gc_event_id", type="string", length=255, nullable=true)
      */
+    #[ORM\Column(name: 'gc_event_id', type: 'string', length: 255, nullable: true)]
     protected $gcEventId;
 
     /**
      * @var \DateTime
-     * @ORM\Column(name="created_at", type="datetime", options={"default": "CURRENT_TIMESTAMP"})
      */
+    #[ORM\Column(name: 'created_at', type: 'datetime', options: ['default' => 'CURRENT_TIMESTAMP'])]
     protected $createdAt;
 
     /**
      * @var Cabane
-     *
-     * @ORM\ManyToOne(targetEntity="App\Entity\Cabane", inversedBy="reservations")
      */
+    #[ORM\ManyToOne(targetEntity: Cabane::class, inversedBy: 'reservations')]
     protected $cabane;
 
     /**
      * @var ReservationLog[]
-     * @ORM\OneToMany(targetEntity="App\Entity\ReservationLog", mappedBy="reservation")
      */
+    #[ORM\OneToMany(targetEntity: ReservationLog::class, mappedBy: 'reservation')]
     protected $logs;
 
     /**
      * @var string
-     *
-     * @ORM\Column(name="status", type="string", length=255)
      */
+    #[ORM\Column(name: 'status', type: 'string', length: 255)]
     protected $status;
 
     /**
      * @var \DateTime
      * @Assert\NotBlank()
      * @Assert\Type("\DateTimeInterface")
-     * @ORM\Column(name="start", type="datetime")
      */
+    #[ORM\Column(name: 'start', type: 'datetime')]
     protected $start;
 
     /**
      * @var \DateTime
      * @Assert\NotBlank()
      * @Assert\Type("\DateTimeInterface")
-     * @ORM\Column(name="end", type="datetime")
      */
+    #[ORM\Column(name: 'end', type: 'datetime')]
     protected $end;
 
     /**
      * @var string
      * @Assert\NotBlank()
-     * @ORM\Column(name="prenom", type="string", length=255)
      */
+    #[ORM\Column(name: 'prenom', type: 'string', length: 255)]
     protected $prenom;
 
     /**
      * @var string
      * @Assert\NotBlank()
-     * @ORM\Column(name="nom", type="string", length=255)
      */
+    #[ORM\Column(name: 'nom', type: 'string', length: 255)]
     protected $nom;
 
     /**
      * @var string
      * @Assert\NotBlank()
-     * @ORM\Column(name="rue", type="string", length=255)
      */
+    #[ORM\Column(name: 'rue', type: 'string', length: 255)]
     protected $rue;
 
     /**
      * @var string
      * @Assert\NotBlank()
-     * @ORM\Column(name="npa", type="string", length=255)
      */
+    #[ORM\Column(name: 'npa', type: 'string', length: 255)]
     protected $npa;
 
     /**
      * @var string
      * @Assert\NotBlank()
-     * @ORM\Column(name="localite", type="string", length=255)
      */
+    #[ORM\Column(name: 'localite', type: 'string', length: 255)]
     protected $localite;
 
     /**
      * @var string
      * @Assert\Email
      * @Assert\NotBlank()
-     * @ORM\Column(name="email", type="string", length=255)
      */
+    #[ORM\Column(name: 'email', type: 'string', length: 255)]
     protected $email;
 
     /**
      * @var string
      * @Assert\NotBlank()
-     * @ORM\Column(name="phone", type="string", length=255)
      */
+    #[ORM\Column(name: 'phone', type: 'string', length: 255)]
     protected $phone;
 
     /**
      * @var string
      * @Assert\NotBlank()
-     * @ORM\Column(name="unite", type="string", length=255)
      */
+    #[ORM\Column(name: 'unite', type: 'string', length: 255)]
     protected $unite;
 
     /**
      * @var string
-     * @ORM\Column(name="description", type="text", nullable=true)
      */
+    #[ORM\Column(name: 'description', type: 'text', nullable: true)]
     protected $description;
 
     /**
      * @var string
-     * @ORM\Column(name="comment", type="text", nullable=true)
      */
+    #[ORM\Column(name: 'comment', type: 'text', nullable: true)]
     protected $comment;
 
     /**
      * @var ArrayCollection
-     * @ORM\ManyToOne(targetEntity="App\Entity\Intendant")
      */
+    #[ORM\ManyToOne(targetEntity: Intendant::class)]
     protected $intendantDebut;
 
     /**
      * @var ArrayCollection
-     * @ORM\ManyToOne(targetEntity="App\Entity\Intendant")
      */
+    #[ORM\ManyToOne(targetEntity: Intendant::class)]
     protected $intendantFin;
 
     /**
      * @var bool
-     * @ORM\Column(name="block_start_day", type="boolean")
      */
+    #[ORM\Column(name: 'block_start_day', type: 'boolean')]
     protected $blockStartDay = true;
 
     /**
      * @var bool
-     * @ORM\Column(name="block_end_day", type="boolean")
      */
+    #[ORM\Column(name: 'block_end_day', type: 'boolean')]
     protected $blockEndDay = true;
 
     /**
      * @var float
-     * @ORM\Column(name="estimated_price", type="float")
      */
+    #[ORM\Column(name: 'estimated_price', type: 'float')]
     protected $estimatedPrice = 0;
 
     /**
      * @var float
-     * @ORM\Column(name="final_price", type="float")
      */
+    #[ORM\Column(name: 'final_price', type: 'float')]
     protected $finalPrice = 0;
-    
+
     public function __construct() {
         $this->createdAt = new \DateTime();
         $this->status = self::PENDING;

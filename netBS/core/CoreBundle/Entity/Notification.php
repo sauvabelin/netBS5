@@ -6,33 +6,30 @@ use Doctrine\ORM\Mapping as ORM;
 use Gedmo\Timestampable\Traits\TimestampableEntity;
 use NetBS\SecureBundle\Mapping\BaseUser;
 
-/**
- * @ORM\Table(name="netbs_core_notifications")
- * @ORM\Entity()
- */
+#[ORM\Table(name: 'netbs_core_notifications')]
+#[ORM\Entity]
 class Notification
 {
     use TimestampableEntity;
 
     /**
      * @var int
-     *
-     * @ORM\Column(name="id", type="integer")
-     * @ORM\Id
-     * @ORM\GeneratedValue(strategy="AUTO")
      */
+    #[ORM\Column(name: 'id', type: 'integer')]
+    #[ORM\Id]
+    #[ORM\GeneratedValue(strategy: 'AUTO')]
     protected $id;
 
     /**
      * @var string
-     * @ORM\Column(name="message", type="text")
      */
+    #[ORM\Column(name: 'message', type: 'text')]
     protected $message;
 
     /**
      * @var string
-     * @ORM\Column(name="route", type="string", length=255)
      */
+    #[ORM\Column(name: 'route', type: 'string', length: 255)]
     protected $route;
 
     /**

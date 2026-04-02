@@ -7,10 +7,9 @@ use NetBS\FichierBundle\Mapping\BaseGroupe;
 
 /**
  * Groupe
- *
- * @ORM\Table(name="netbs_fichier_groupes")
- * @ORM\Entity()
  */
+#[ORM\Table(name: 'netbs_fichier_groupes')]
+#[ORM\Entity]
 class Groupe extends BaseGroupe
 {
 }

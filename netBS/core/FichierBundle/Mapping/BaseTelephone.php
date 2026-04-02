@@ -12,30 +12,27 @@ use Symfony\Component\Serializer\Annotation\Groups;
 
 /**
  * Telephone
- *
- * @ORM\MappedSuperclass()
  */
+#[ORM\MappedSuperclass]
 class BaseTelephone
 {
     use TimestampableEntity, RemarqueTrait, ExpediableTrait;
 
     /**
      * @var int
-     *
-     * @ORM\Column(name="id", type="integer")
-     * @ORM\Id
-     * @ORM\GeneratedValue(strategy="AUTO")
      * @Groups({"default"})
      */
+    #[ORM\Column(name: 'id', type: 'integer')]
+    #[ORM\Id]
+    #[ORM\GeneratedValue(strategy: 'AUTO')]
     protected $id;
 
     /**
      * @var string
-     *
-     * @ORM\Column(name="telephone", type="string", length=255)
      * @Groups({"default"})
      * @Assert\NotBlank()
      */
+    #[ORM\Column(name: 'telephone', type: 'string', length: 255)]
     protected $telephone;
 
     /**

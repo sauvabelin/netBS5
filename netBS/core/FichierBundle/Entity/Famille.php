@@ -7,10 +7,9 @@ use NetBS\FichierBundle\Mapping\BaseFamille;
 
 /**
  * Famille
- *
- * @ORM\Table(name="netbs_fichier_familles")
- * @ORM\Entity()
  */
+#[ORM\Table(name: 'netbs_fichier_familles')]
+#[ORM\Entity]
 class Famille extends BaseFamille
 {
 }

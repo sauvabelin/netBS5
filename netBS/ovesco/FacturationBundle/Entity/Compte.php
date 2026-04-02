@@ -7,66 +7,63 @@ use Gedmo\Timestampable\Traits\TimestampableEntity;
 use NetBS\FichierBundle\Utils\Entity\RemarqueTrait;
 use Symfony\Component\Serializer\Annotation\Groups;
 
-/**
- * @ORM\Table(name="ovesco_facturation_comptes")
- * @ORM\Entity
- */
+#[ORM\Table(name: 'ovesco_facturation_comptes')]
+#[ORM\Entity]
 class Compte
 {
     use TimestampableEntity, RemarqueTrait;
 
     /**
      * @var int
-     *
-     * @ORM\Column(name="id", type="integer")
-     * @ORM\Id
-     * @ORM\GeneratedValue(strategy="AUTO")
      */
+    #[ORM\Column(name: 'id', type: 'integer')]
+    #[ORM\Id]
+    #[ORM\GeneratedValue(strategy: 'AUTO')]
     protected $id;
 
     /**
      * @var string
-     * @ORM\Column(name="nom", type="string", length=255, nullable=false, unique=true)
      */
+    #[ORM\Column(name: 'nom', type: 'string', length: 255, nullable: false, unique: true)]
     protected $nom;
 
     /**
      * @var string
-     * @ORM\Column(name="qr_iban", type="string", length=255, nullable=false, unique=true)
      */
+    #[ORM\Column(name: 'qr_iban', type: 'string', length: 255, nullable: false, unique: true)]
     protected $qrIban;
-    
+
     /**
      * @var string
-     * @ORM\Column(name="iban", type="string", length=255, nullable=false, unique=true)
      */
+    #[ORM\Column(name: 'iban', type: 'string', length: 255, nullable: false, unique: true)]
     protected $iban;
 
     /**
      * @var string
-     * @ORM\Column(name="ccp", type="string", length=255, nullable=false, unique=true)
      */
+    #[ORM\Column(name: 'ccp', type: 'string', length: 255, nullable: false, unique: true)]
     protected $ccp;
 
     /**
      * @var string
-     * @ORM\Column(name="addresse1", type="string", length=255, nullable=true, unique=false)
      * @Groups({"default"})
      */
+    #[ORM\Column(name: 'addresse1', type: 'string', length: 255, nullable: true, unique: false)]
     protected $line1;
 
     /**
      * @var string
-     * @ORM\Column(name="addresse2", type="string", length=255, nullable=true, unique=false)
      * @Groups({"default"})
      */
+    #[ORM\Column(name: 'addresse2', type: 'string', length: 255, nullable: true, unique: false)]
     protected $line2;
 
     /**
      * @var string
-     * @ORM\Column(name="addresse3", type="string", length=255, nullable=true, unique=false)
      * @Groups({"default"})
      */
+    #[ORM\Column(name: 'addresse3', type: 'string', length: 255, nullable: true, unique: false)]
     protected $line3;
 
     public function __toString()
@@ -177,7 +174,7 @@ class Compte
     {
         $this->ccp = $ccp;
     }
-    
+
     /**
      * @return string
      */

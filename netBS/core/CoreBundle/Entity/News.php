@@ -9,35 +9,33 @@ use NetBS\SecureBundle\Mapping\BaseUser;
 
 /**
  * News
- *
- * @ORM\Table(name="netbs_core_news")
- * @ORM\Entity(repositoryClass="NetBS\CoreBundle\Repository\NewsRepository")
  */
+#[ORM\Table(name: 'netbs_core_news')]
+#[ORM\Entity(repositoryClass: \NetBS\CoreBundle\Repository\NewsRepository::class)]
 class News
 {
     use TimestampableEntity;
 
     /**
      * @var int
-     *
-     * @ORM\Column(name="id", type="integer")
-     * @ORM\Id
-     * @ORM\GeneratedValue(strategy="AUTO")
      */
+    #[ORM\Column(name: 'id', type: 'integer')]
+    #[ORM\Id]
+    #[ORM\GeneratedValue(strategy: 'AUTO')]
     protected $id;
 
     /**
      * @var string
      * @Assert\NotBlank()
-     * @ORM\Column(name="titre", type="string", length=255)
      */
+    #[ORM\Column(name: 'titre', type: 'string', length: 255)]
     protected $titre;
 
     /**
      * @var string
      * @Assert\NotBlank()
-     * @ORM\Column(name="contenu", type="text")
      */
+    #[ORM\Column(name: 'contenu', type: 'text')]
     protected $contenu;
 
     /**
@@ -47,16 +45,15 @@ class News
 
     /**
      * @var bool
-     *
-     * @ORM\Column(name="pinned", type="boolean")
      */
+    #[ORM\Column(name: 'pinned', type: 'boolean')]
     protected $pinned;
 
     /**
      * @var NewsChannel
      * @Assert\NotBlank()
-     * @ORM\ManyToOne(targetEntity="NewsChannel", inversedBy="news")
      */
+    #[ORM\ManyToOne(targetEntity: NewsChannel::class, inversedBy: 'news')]
     protected $channel;
 
     /**

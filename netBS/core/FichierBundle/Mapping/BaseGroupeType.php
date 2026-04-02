@@ -6,34 +6,30 @@ use Doctrine\ORM\Mapping as ORM;
 use NetBS\FichierBundle\Utils\Entity\RemarqueTrait;
 use Symfony\Component\Validator\Constraints as Assert;
 
-/**
- * @ORM\MappedSuperclass()
- */
+#[ORM\MappedSuperclass]
 class BaseGroupeType
 {
     use RemarqueTrait;
 
     /**
      * @var int
-     *
-     * @ORM\Column(name="id", type="integer")
-     * @ORM\Id
-     * @ORM\GeneratedValue(strategy="AUTO")
      */
+    #[ORM\Column(name: 'id', type: 'integer')]
+    #[ORM\Id]
+    #[ORM\GeneratedValue(strategy: 'AUTO')]
     protected $id;
 
     /**
      * @var string
      * @Assert\NotBlank
-     * @ORM\Column(name="nom", type="string", length=255)
      */
+    #[ORM\Column(name: 'nom', type: 'string', length: 255)]
     protected $nom;
 
     /**
      * @var bool
-     *
-     * @ORM\Column(name="affichageEffectifs", type="boolean")
      */
+    #[ORM\Column(name: 'affichageEffectifs', type: 'boolean')]
     protected $affichageEffectifs;
 
     /**

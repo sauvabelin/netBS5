@@ -10,16 +10,13 @@ use Symfony\Component\Serializer\Annotation\Groups;
 /**
  * Class ContactInformation
  * @package FichierBundle\Entity
- * @ORM\MappedSuperclass()
  */
+#[ORM\MappedSuperclass]
 class BaseContactInformation
 {
-    /**
-     * @var int
-     * @ORM\Column(name="id", type="integer")
-     * @ORM\Id
-     * @ORM\GeneratedValue(strategy="AUTO")
-     */
+    #[ORM\Column(name: 'id', type: 'integer')]
+    #[ORM\Id]
+    #[ORM\GeneratedValue(strategy: 'AUTO')]
     protected $id;
 
     /**

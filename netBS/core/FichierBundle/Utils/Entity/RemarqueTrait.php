@@ -7,10 +7,8 @@ use Gedmo\Mapping\Annotation as Gedmo;
 
 trait RemarqueTrait
 {
-    /**
-     * @Gedmo\Versioned
-     * @ORM\Column(type="text", nullable=true)
-     */
+    #[Gedmo\Versioned]
+    #[ORM\Column(type: 'text', nullable: true)]
     protected $remarques;
 
     /**

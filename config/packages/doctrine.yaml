@@ -18,30 +18,30 @@ doctrine:
         mappings:
             App:
                 is_bundle: false
-                type: annotation
+                type: attribute
                 dir: '%kernel.project_dir%/src/Entity'
                 prefix: 'App\Entity'
                 alias: App
             NetBSCoreBundle:
-                type: annotation
+                type: attribute
                 dir: 'Entity'
                 is_bundle: true
                 prefix: NetBS\CoreBundle\Entity
                 alias: NetBSCoreBundle
             NetBSFichierBundle:
-                type: annotation
+                type: attribute
                 dir: 'Entity'
                 is_bundle: true
                 prefix: NetBS\FichierBundle\Entity
                 alias: NetBSFichierBundle
             NetBSSecureBundle:
-                type: annotation
+                type: attribute
                 dir: 'Entity'
                 is_bundle: true
                 prefix: NetBS\SecureBundle\Entity
                 alias: NetBSSecureBundle
             OvescoFacturationBundle:
-                type: annotation
+                type: attribute
                 dir: 'Entity'
                 is_bundle: true
                 prefix: Ovesco\FacturationBundle\Entity

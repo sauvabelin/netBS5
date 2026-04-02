@@ -10,10 +10,10 @@ use Symfony\Component\Validator\Constraints as Assert;
 use Iacopo\MailingBundle\Validator\ValidMailingTarget;
 
 /**
- * @ORM\Entity(repositoryClass="Iacopo\MailingBundle\Repository\MailingTargetRepository")
- * @ORM\Table(name="mailing_target")
  * @ValidMailingTarget
  */
+#[ORM\Entity(repositoryClass: \Iacopo\MailingBundle\Repository\MailingTargetRepository::class)]
+#[ORM\Table(name: 'mailing_target')]
 class MailingTarget
 {
     const TYPE_EMAIL = 'email';
@@ -22,32 +22,29 @@ class MailingTarget
     const TYPE_ROLE = 'role';
     const TYPE_LIST = 'list';
 
-    /**
-     * @ORM\Id
-     * @ORM\GeneratedValue
-     * @ORM\Column(type="integer")
-     */
+    #[ORM\Id]
+    #[ORM\GeneratedValue]
+    #[ORM\Column(type: 'integer')]
     private $id;
 
     /**
-     * @ORM\ManyToOne(targetEntity="MailingList", inversedBy="targets")
-     * @ORM\JoinColumn(nullable=false, onDelete="CASCADE")
      * @Assert\NotNull(message="La liste de diffusion est requise.")
      */
+    #[ORM\ManyToOne(targetEntity: MailingList::class, inversedBy: 'targets')]
+    #[ORM\JoinColumn(nullable: false, onDelete: 'CASCADE')]
     private $mailingList;
 
     /**
-     * @ORM\Column(type="string", length=50)
      * @Assert\NotBlank(message="Le type est requis.")
      * @Assert\Choice(
      *     choices={"email", "user", "unite", "role", "list"},
      *     message="Type invalide."
      * )
      */
+    #[ORM\Column(type: 'string', length: 50)]
     private $type;
 
     /**
-     * @ORM\Column(type="string", length=255, nullable=true)
      * @Assert\Email(
      *     message="L'adresse email n'est pas valide.",
      *     groups={"email_type"}
@@ -57,35 +54,26 @@ class MailingTarget
      *     maxMessage="L'adresse email ne peut pas dépasser {{ limit }} caractères."
      * )
      */
+    #[ORM\Column(type: 'string', length: 255, nullable: true)]
     private $targetEmail;
 
-    /**
-     * @ORM\ManyToOne(targetEntity="App\Entity\BSUser")
-     * @ORM\JoinColumn(nullable=true, onDelete="CASCADE")
-     */
+    #[ORM\ManyToOne(targetEntity: BSUser::class)]
+    #[ORM\JoinColumn(nullable: true, onDelete: 'CASCADE')]
     private $targetUser;
 
-    /**
-     * @ORM\ManyToOne(targetEntity="App\Entity\BSGroupe")
-     * @ORM\JoinColumn(nullable=true, onDelete="CASCADE")
-     */
+    #[ORM\ManyToOne(targetEntity: BSGroupe::class)]
+    #[ORM\JoinColumn(nullable: true, onDelete: 'CASCADE')]
     private $targetGroup;
 
-    /**
-     * @ORM\ManyToOne(targetEntity="NetBS\FichierBundle\Entity\Fonction")
-     * @ORM\JoinColumn(nullable=true, onDelete="CASCADE")
-     */
+    #[ORM\ManyToOne(targetEntity: Fonction::class)]
+    #[ORM\JoinColumn(nullable: true, onDelete: 'CASCADE')]
     private $targetFonction;
 
-    /**
-     * @ORM\ManyToOne(targetEntity="Iacopo\MailingBundle\Entity\MailingList")
-     * @ORM\JoinColumn(nullable=true, onDelete="CASCADE")
-     */
+    #[ORM\ManyToOne(targetEntity: MailingList::class)]
+    #[ORM\JoinColumn(nullable: true, onDelete: 'CASCADE')]
     private $targetList;
 
-    /**
-     * @ORM\Column(type="datetime")
-     */
+    #[ORM\Column(type: 'datetime')]
     private $createdAt;
 
     public function __construct()

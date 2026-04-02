@@ -9,37 +9,33 @@ use Symfony\Component\Serializer\Annotation\Groups;
 
 /**
  * Rappel
- *
- * @ORM\Table(name="ovesco_facturation_rappels")
- * @ORM\Entity
  */
+#[ORM\Table(name: 'ovesco_facturation_rappels')]
+#[ORM\Entity]
 class Rappel
 {
     use RemarqueTrait, DateImpressionTrait;
 
     /**
      * @var int
-     *
-     * @ORM\Column(name="id", type="integer")
-     * @ORM\Id
-     * @ORM\GeneratedValue(strategy="AUTO")
      */
+    #[ORM\Column(name: 'id', type: 'integer')]
+    #[ORM\Id]
+    #[ORM\GeneratedValue(strategy: 'AUTO')]
     protected $id;
 
     /**
      * @var Facture
-     *
-     * @ORM\ManyToOne(targetEntity="Ovesco\FacturationBundle\Entity\Facture", inversedBy="rappels")
      * @Groups({"rappel_with_facture"})
      */
+    #[ORM\ManyToOne(targetEntity: Facture::class, inversedBy: 'rappels')]
     protected $facture;
 
     /**
      * @var \DateTime
-     *
-     * @ORM\Column(type="datetime", name="date")
      * @Groups({"default"})
      */
+    #[ORM\Column(type: 'datetime', name: 'date')]
     protected $date;
 
     public function __construct()

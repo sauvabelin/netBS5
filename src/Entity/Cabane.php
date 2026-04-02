@@ -6,134 +6,131 @@ use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Validator\Constraints as Assert;
 
-/**
- * @ORM\Table(name="apmbs_cabanes")
- * @ORM\Entity()
- */
+#[ORM\Table(name: 'apmbs_cabanes')]
+#[ORM\Entity]
 class Cabane {
 
     /**
      * @var int
-     *
-     * @ORM\Column(name="id", type="integer")
-     * @ORM\Id
-     * @ORM\GeneratedValue(strategy="AUTO")
      */
+    #[ORM\Column(name: 'id', type: 'integer')]
+    #[ORM\Id]
+    #[ORM\GeneratedValue(strategy: 'AUTO')]
     protected $id;
 
     /**
      * @var string
      * @Assert\NotBlank()
-     * @ORM\Column(name="nom", type="string", length=255)
      */
+    #[ORM\Column(name: 'nom', type: 'string', length: 255)]
     protected $nom;
 
     /**
      * @var string
      * @Assert\NotBlank()
-     * @ORM\Column(name="from_email", type="string", length=255)
      */
+    #[ORM\Column(name: 'from_email', type: 'string', length: 255)]
     protected $fromEmail;
 
     /**
      * @var string
      * @Assert\NotBlank()
-     * @ORM\Column(name="calendar_id", type="string", length=255)
      */
+    #[ORM\Column(name: 'calendar_id', type: 'string', length: 255)]
     protected $calendarId;
 
     /**
      * @var APMBSReservation[]
-     * @ORM\OneToMany(targetEntity="App\Entity\APMBSReservation", mappedBy="cabane")
      */
+    #[ORM\OneToMany(targetEntity: APMBSReservation::class, mappedBy: 'cabane')]
     protected $reservations;
 
     /**
      * @var ArrayCollection
-     * @ORM\ManyToMany(targetEntity="App\Entity\Intendant", inversedBy="cabanes")
-     * @ORM\JoinTable(name="apmbs_cabanes_intendants")
      */
+    #[ORM\ManyToMany(targetEntity: Intendant::class, inversedBy: 'cabanes')]
+    #[ORM\JoinTable(name: 'apmbs_cabanes_intendants')]
     protected $intendants;
 
     /**
      * @var ArrayCollection
-     * @ORM\ManyToMany(targetEntity="App\Entity\CabaneTimePeriod")
      */
+    #[ORM\ManyToMany(targetEntity: CabaneTimePeriod::class)]
     protected $timePeriods;
 
     /**
      * @var string
      * @Assert\NotBlank()
-     * @ORM\Column(name="availability_rule", type="text")
      */
+    #[ORM\Column(name: 'availability_rule', type: 'text')]
     protected $availabilityRule;
 
     /**
      * @var string
-     * @ORM\Column(name="disabled_dates", type="text", nullable=true)
      */
+    #[ORM\Column(name: 'disabled_dates', type: 'text', nullable: true)]
     protected $disabledDates;
 
     /**
      * @var string
-     * @ORM\Column(name="prices", type="text", nullable=true)
      */
+    #[ORM\Column(name: 'prices', type: 'text', nullable: true)]
     protected $prices;
 
     /**
      * @var string
-     * @ORM\Column(name="google_form_url", type="string", length=255, nullable=true)
      */
+    #[ORM\Column(name: 'google_form_url', type: 'string', length: 255, nullable: true)]
     protected $googleFormUrl;
 
     // EMAILS
 
     /**
      * @var string
-     * @ORM\Column(name="received_email", type="text", nullable=true)
      */
+    #[ORM\Column(name: 'received_email', type: 'text', nullable: true)]
     protected $receivedEmail;
 
     /**
      * @var string
-     * @ORM\Column(name="rejected_email", type="text", nullable=true)
      */
+    #[ORM\Column(name: 'rejected_email', type: 'text', nullable: true)]
     protected $rejectedEmail;
 
     /**
      * @var string
-     * @ORM\Column(name="correction_email", type="text", nullable=true)
      */
+    #[ORM\Column(name: 'correction_email', type: 'text', nullable: true)]
     protected $correctionEmail;
 
     /**
      * @var string
-     * @ORM\Column(name="confirmed_email", type="text", nullable=true)
      */
+    #[ORM\Column(name: 'confirmed_email', type: 'text', nullable: true)]
     protected $confirmedEmail;
 
     /**
      * @var string
-     * @ORM\Column(name="cancelled_email", type="text", nullable=true)
      */
+    #[ORM\Column(name: 'cancelled_email', type: 'text', nullable: true)]
     protected $cancelledEmail;
 
     /**
      * @var string
-     * @ORM\Column(name="invoice_email", type="text", nullable=true)
      */
+    #[ORM\Column(name: 'invoice_email', type: 'text', nullable: true)]
     protected $invoiceEmail;
 
     /**
      * @var string
-     * @ORM\Column(name="price_method", type="text", nullable=true)
      */
+    #[ORM\Column(name: 'price_method', type: 'text', nullable: true)]
     protected $priceMethod;
 
     /**
      * @var string
-     * @ORM\Column(name="conditions", type="text", nullable=true)
      */
+    #[ORM\Column(name: 'conditions', type: 'text', nullable: true)]
     protected $conditions;
 
     public function __construct() {
@@ -335,7 +332,7 @@ class Cabane {
         if (!$this->conditions) {
             return [];
         }
-        
+
         return explode("\n", $this->conditions);
     }
 

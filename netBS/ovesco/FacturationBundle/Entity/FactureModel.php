@@ -4,96 +4,82 @@ namespace Ovesco\FacturationBundle\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
 
-/**
- * @ORM\Table(name="ovesco_facturation_facture_models")
- * @ORM\Entity()
- */
+#[ORM\Table(name: 'ovesco_facturation_facture_models')]
+#[ORM\Entity]
 class FactureModel
 {
     /**
      * @var int
-     *
-     * @ORM\Column(name="id", type="integer")
-     * @ORM\Id
-     * @ORM\GeneratedValue(strategy="AUTO")
      */
+    #[ORM\Column(name: 'id', type: 'integer')]
+    #[ORM\Id]
+    #[ORM\GeneratedValue(strategy: 'AUTO')]
     protected $id;
 
     /**
      * @var string
-     *
-     * @ORM\Column(name="name", type="text", length=255)
      */
+    #[ORM\Column(name: 'name', type: 'text', length: 255)]
     protected $name;
 
     /**
      * @var string
-     *
-     * @ORM\Column(name="application_rule", type="text", length=255, nullable=true)
      */
+    #[ORM\Column(name: 'application_rule', type: 'text', length: 255, nullable: true)]
     protected $applicationRule;
 
     /**
      * @var string
-     *
-     * @ORM\Column(name="top_description", type="text")
      */
+    #[ORM\Column(name: 'top_description', type: 'text')]
     protected $topDescription;
 
     /**
      * @var string
-     *
-     * @ORM\Column(name="titre", type="text")
      */
+    #[ORM\Column(name: 'titre', type: 'text')]
     protected $titre;
 
     /**
      * @var string
-     *
-     * @ORM\Column(name="bottom_salutations", type="text")
      */
+    #[ORM\Column(name: 'bottom_salutations', type: 'text')]
     protected $bottomSalutations;
 
     /**
      * @var string
-     *
-     * @ORM\Column(name="signataire", type="string", length=255)
      */
+    #[ORM\Column(name: 'signataire', type: 'string', length: 255)]
     protected $signataire;
 
     /**
      * @var string
-     *
-     * @ORM\Column(name="group_name", type="string", length=255)
      */
+    #[ORM\Column(name: 'group_name', type: 'string', length: 255)]
     protected $groupName;
 
     /**
      * @var string
-     *
-     * @ORM\Column(name="rue", type="string", length=255)
      */
+    #[ORM\Column(name: 'rue', type: 'string', length: 255)]
     protected $rue;
 
     /**
      * @var string
-     *
-     * @ORM\Column(name="npa_ville", type="string", length=255)
      */
+    #[ORM\Column(name: 'npa_ville', type: 'string', length: 255)]
     protected $npaVille;
 
     /**
      * @var string
-     *
-     * @ORM\Column(name="city_from", type="string", length=255)
      */
+    #[ORM\Column(name: 'city_from', type: 'string', length: 255)]
     protected $cityFrom;
 
     /**
      * @var int
-     *
-     * @ORM\Column(name="poids", type="integer")
      */
+    #[ORM\Column(name: 'poids', type: 'integer')]
     protected $poids;
 
     public function __toString() {
