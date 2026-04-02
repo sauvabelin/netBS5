@@ -55,7 +55,7 @@ class NewsController extends AbstractController
     public function addNewsChannelModalAction(Request $request, $id, EntityManagerInterface $em) {
 
         $title      = $id ? "Modifier" : "Créer";
-        $channel    = $id ? $em->find('NetBSCoreBundle:NewsChannel', $id) : new NewsChannel();
+        $channel    = $id ? $em->find(NewsChannel::class, $id) : new NewsChannel();
 
         $form   = $this->createForm(NewsChannelType::class, $channel);
         $form->handleRequest($request);
@@ -88,7 +88,7 @@ class NewsController extends AbstractController
         $news   = new News();
 
         if($id)
-            $news = $em->find('NetBSCoreBundle:News', $id);
+            $news = $em->find(News::class, $id);
         else
             $news->setUser($this->getUser());
 

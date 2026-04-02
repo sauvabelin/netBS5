@@ -59,7 +59,7 @@ class ChangelogController extends AbstractController
     public function ajaxPreviewChangeAction(Request $request, EntityManagerInterface $em) {
 
         $id     = $request->get('logId');
-        $change = $em->find('NetBSCoreBundle:LoggedChange', $id);
+        $change = $em->find(LoggedChange::class, $id);
 
         if(!$change)
             throw $this->createNotFoundException();

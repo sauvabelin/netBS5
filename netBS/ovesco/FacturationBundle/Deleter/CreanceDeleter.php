@@ -16,7 +16,7 @@ class CreanceDeleter extends BaseDeleter
     public function remove($id)
     {
         $rmf = false;
-        $creance = $this->manager->find('OvescoFacturationBundle:Creance', $id);
+        $creance = $this->manager->find(Creance::class, $id);
         if (!$creance) throw new \Exception("Creance introuvable!");
         if ($creance->getFacture()) {
             $facture = $creance->getFacture();
