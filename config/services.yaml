@@ -147,13 +147,6 @@ services:
     tags:
       - { name: doctrine.event_listener, event: postLoad }
 
-  gedmo.listener.softdeleteable:
-    class: Gedmo\SoftDeleteable\SoftDeleteableListener
-    tags:
-      - { name: doctrine.event_subscriber, connection: default }
-    calls:
-      - [setAnnotationReader, ["@annotation_reader"]]
-
   App\Service\NextcloudApiCall:
     arguments:
       $ncUrl: "%env(NEXTCLOUD_BASE_URI)%"

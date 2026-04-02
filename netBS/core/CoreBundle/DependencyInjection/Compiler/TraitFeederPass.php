@@ -17,7 +17,7 @@ use NetBS\SecureBundle\Service\SecureConfig;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\Compiler\CompilerPassInterface;
 use Symfony\Component\DependencyInjection\Reference;
-use Symfony\Component\HttpFoundation\Session\SessionInterface;
+use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Component\Routing\RouterInterface;
 use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInterface;
 
@@ -42,7 +42,7 @@ class TraitFeederPass implements CompilerPassInterface
                 $definiton->addMethodCall('setEntityManager', [new Reference(EntityManagerInterface::class)]);
 
             if(in_array(SessionTrait::class, $traits))
-                $definiton->addMethodCall('setSession', [new Reference(SessionInterface::class)]);
+                $definiton->addMethodCall('setRequestStack', [new Reference(RequestStack::class)]);
 
             if(in_array(RouterTrait::class, $traits))
                 $definiton->addMethodCall('setRouter', [new Reference(RouterInterface::class)]);

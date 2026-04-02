@@ -29,7 +29,7 @@ class GroupeTypeController extends AbstractController
             'list'      => 'netbs.fichier.groupe_types',
             'title'     => "Types de groupe",
             'subtitle'  => 'Tous les types enregistrés',
-            'modalPath' => $this->get('router')->generate('netbs.fichier.groupe_type.modal_add')
+            'modalPath' => $this->generateUrl('netbs.fichier.groupe_type.modal_add')
         ));
     }
 

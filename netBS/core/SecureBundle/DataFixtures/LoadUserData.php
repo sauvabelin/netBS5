@@ -7,17 +7,17 @@ use Doctrine\Common\DataFixtures\AbstractFixture;
 use Doctrine\Common\DataFixtures\OrderedFixtureInterface;
 use Doctrine\Persistence\ObjectManager;
 use NetBS\SecureBundle\Service\SecureConfig;
-use Symfony\Component\Security\Core\Encoder\UserPasswordEncoderInterface;
+use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 
 class LoadUserData extends AbstractFixture implements OrderedFixtureInterface, FixtureGroupInterface
 {
     private $secureConfig;
 
-    private $encoder;
+    private $hasher;
 
-    public function __construct(SecureConfig $config, UserPasswordEncoderInterface $encoder) {
+    public function __construct(SecureConfig $config, UserPasswordHasherInterface $hasher) {
         $this->secureConfig = $config;
-        $this->encoder = $encoder;
+        $this->hasher = $hasher;
     }
 
     public function load(ObjectManager $manager): void
@@ -27,8 +27,7 @@ class LoadUserData extends AbstractFixture implements OrderedFixtureInterface, F
         $user       = new $userClass();
         $user->setUsername('admin');
 
-        $encoder    = $this->encoder;
-        $password   = $encoder->encodePassword($user, 'password');
+        $password   = $this->hasher->hashPassword($user, 'password');
         $user->setPassword($password);
 
         $user->addRole($this->getReference('ROLE_ADMIN'));

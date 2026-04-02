@@ -42,8 +42,8 @@ class CreanceController extends AbstractController
 
         $mass = new MassCreances();
         $mass->setItemsClass($request->request->get('itemsClass'));
-        if ($request->request->get('selectedIds'))
-            $mass->setSelectedIds(serialize($request->request->get('selectedIds')));
+        if ($request->request->all('selectedIds'))
+            $mass->setSelectedIds(serialize($request->request->all('selectedIds')));
 
         $form = $this->createForm(MassCreanceType::class, $mass);
         $form->handleRequest($request);
@@ -120,7 +120,7 @@ class CreanceController extends AbstractController
     public function mergeCreances(Request $request, EntityManagerInterface $em) {
 
         $merger = new MergeCreancesToFacture();
-        $merger->setCreanceIds(serialize($request->get('creanceIds')));
+        $merger->setCreanceIds(serialize($request->request->all('creanceIds')));
         $form = $this->createForm(MergeCreancesToFactureType::class, $merger);
         $form->handleRequest($request);
 

@@ -18,8 +18,7 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Annotation\Route;
-use Symfony\Component\Security\Core\Encoder\PasswordEncoderInterface;
-use Symfony\Component\Security\Core\Encoder\UserPasswordEncoderInterface;
+use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 
 /**
  * Class UserController
@@ -113,7 +112,7 @@ class UserController extends AbstractController
     }
 
     #[Route('/user/my-account', name: 'netbs.secure.user.account_page')]
-    public function accountPageAction(Request $request, UserManager $manager, LayoutManager $designer, EventDispatcherInterface $dispatcher, UserPasswordEncoderInterface $encoder) {
+    public function accountPageAction(Request $request, UserManager $manager, LayoutManager $designer, EventDispatcherInterface $dispatcher, UserPasswordHasherInterface $encoder) {
         /** @var BaseUser $user */
         $user               = $this->getUser();
         $userForm           = $this->createForm(UserType::class, $user);
@@ -125,7 +124,7 @@ class UserController extends AbstractController
         if($changePasswordForm->isSubmitted() && $changePasswordForm->isValid()) {
 
             $newPassword    = $changePassword->getNewPassword();
-            $password       = $encoder->encodePassword($user, $newPassword);
+            $password       = $encoder->hashPassword($user, $newPassword);
 
             $user->setPassword($password);
             $manager->updateUser($user);

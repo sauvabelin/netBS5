@@ -28,7 +28,7 @@ class RappelController extends AbstractController
     public function addModalAction(Request $request, EntityManagerInterface $em) {
 
         $mass = new MassRappel();
-        $mass->setSelectedIds(serialize($request->request->get('selectedIds')));
+        $mass->setSelectedIds(serialize($request->request->all('selectedIds')));
         $form = $this->createForm(MassRappelType::class, $mass);
         $form->handleRequest($request);
 

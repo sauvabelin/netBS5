@@ -7,15 +7,15 @@ use Symfony\Component\Form\Extension\Core\Type\FormType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\Form\FormEvent;
 use Symfony\Component\Form\FormEvents;
-use Symfony\Component\HttpFoundation\Session\SessionInterface;
+use Symfony\Component\HttpFoundation\RequestStack;
 
 class FormErrorExtension extends AbstractTypeExtension
 {
-    private $session;
+    private $requestStack;
 
-    public function __construct(SessionInterface $session)
+    public function __construct(RequestStack $requestStack)
     {
-        $this->session  = $session;
+        $this->requestStack  = $requestStack;
     }
 
     public function buildForm(FormBuilderInterface $builder, array $options)
@@ -24,7 +24,7 @@ class FormErrorExtension extends AbstractTypeExtension
 
         $builder->addEventListener(FormEvents::POST_SUBMIT, function(FormEvent $event) {
             if($event->getForm()->getErrors(true)->count() > 0)
-                $this->session->getFlashBag()->add('error',
+                $this->requestStack->getSession()->getFlashBag()->add('error',
                     "Une erreur s'est produite dans un formulaire, veuillez vérifier les données saisies");
         });
     }

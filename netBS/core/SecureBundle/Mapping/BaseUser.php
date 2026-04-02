@@ -10,15 +10,16 @@ use Symfony\Component\Validator\Constraints as Assert;
 use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 use Symfony\Component\Security\Core\User\EquatableInterface;
 use Symfony\Component\Security\Core\User\UserInterface;
+use Symfony\Component\Security\Core\User\LegacyPasswordAuthenticatedUserInterface;
 
 /**
  * @UniqueEntity(fields={"membre"})
  */
 #[ORM\MappedSuperclass]
 class BaseUser implements
-    \Serializable,
     EquatableInterface,
-    UserInterface
+    UserInterface,
+    LegacyPasswordAuthenticatedUserInterface
 {
     /**
      * @var int
@@ -98,7 +99,7 @@ class BaseUser implements
      * @param UserInterface $user
      * @return bool
      */
-    public function isEqualTo(UserInterface $user)
+    public function isEqualTo(UserInterface $user): bool
     {
         return $user instanceof BaseUser && $user->getId() === $this->getId();
     }
@@ -145,6 +146,11 @@ class BaseUser implements
         return $this->username;
     }
 
+    public function getUserIdentifier(): string
+    {
+        return $this->username;
+    }
+
     /**
      * Set password
      *
@@ -164,7 +170,7 @@ class BaseUser implements
      *
      * @return string
      */
-    public function getPassword()
+    public function getPassword(): ?string
     {
         return $this->password;
     }
@@ -287,7 +293,7 @@ class BaseUser implements
         return $roles;
     }
 
-    public function getRoles()
+    public function getRoles(): array
     {
         return $this->roles->toArray();
     }
@@ -339,31 +345,43 @@ class BaseUser implements
      *
      * @return string
      */
-    public function getSalt()
+    public function getSalt(): ?string
     {
         return $this->salt;
     }
 
-    public function eraseCredentials()
+    public function eraseCredentials(): void
     {
     }
 
-    public function serialize()
+    public function __serialize(): array
     {
-        return serialize(array(
+        return [
             $this->id,
             $this->username,
             $this->password
-        ));
+        ];
     }
 
-    public function unserialize($serialized)
+    public function __unserialize(array $data): void
     {
-        list (
+        [
             $this->id,
             $this->username,
             $this->password,
-            ) = unserialize($serialized);
+        ] = $data;
+    }
+
+    /** @deprecated */
+    public function serialize()
+    {
+        return serialize($this->__serialize());
+    }
+
+    /** @deprecated */
+    public function unserialize($serialized)
+    {
+        $this->__unserialize(unserialize($serialized));
     }
 
     public function isAccountNonExpired()
@@ -402,4 +420,3 @@ class BaseUser implements
         $this->autorisations->removeElement($autorisation);
     }
 }
-

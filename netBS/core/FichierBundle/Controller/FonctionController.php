@@ -33,7 +33,7 @@ class FonctionController extends AbstractController
             'list'      => 'netbs.fichier.fonctions',
             'title'     => "Fonctions",
             'subtitle'  => 'Fonctions existantes et enregistrées',
-            'modalPath' => $this->get('router')->generate('netbs.fichier.fonction.modal_add')
+            'modalPath' => $this->generateUrl('netbs.fichier.fonction.modal_add')
         ));
     }
 

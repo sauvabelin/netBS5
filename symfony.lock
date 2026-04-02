@@ -5,23 +5,8 @@
     "beberlei/doctrineextensions": {
         "version": "v1.3.0"
     },
-    "behat/transliterator": {
-        "version": "v1.3.0"
-    },
     "dasprid/enum": {
         "version": "1.0.3"
-    },
-    "doctrine/annotations": {
-        "version": "1.13",
-        "recipe": {
-            "repo": "github.com/symfony/recipes",
-            "branch": "master",
-            "version": "1.0",
-            "ref": "a2759dd6123694c8d901d0ec80006e044c2e6457"
-        },
-        "files": [
-            "./config/routes/annotations.yaml"
-        ]
     },
     "doctrine/cache": {
         "version": "2.1.1"
@@ -249,18 +234,6 @@
     "ralouphie/getallheaders": {
         "version": "3.0.3"
     },
-    "sensio/framework-extra-bundle": {
-        "version": "6.2",
-        "recipe": {
-            "repo": "github.com/symfony/recipes",
-            "branch": "master",
-            "version": "5.2",
-            "ref": "fb7e19da7f013d0d422fa9bce16f5c510e27609b"
-        },
-        "files": [
-            "./config/packages/sensio_framework_extra.yaml"
-        ]
-    },
     "setasign/fpdf": {
         "version": "1.8.4"
     },
@@ -278,9 +251,6 @@
         "files": [
             "./config/packages/stof_doctrine_extensions.yaml"
         ]
-    },
-    "symfony/amqp-messenger": {
-        "version": "v5.4.5"
     },
     "symfony/asset": {
         "version": "v5.4.3"
@@ -514,13 +484,7 @@
     "symfony/polyfill-php56": {
         "version": "v1.20.0"
     },
-    "symfony/polyfill-php73": {
-        "version": "v1.24.0"
-    },
     "symfony/polyfill-php80": {
-        "version": "v1.24.0"
-    },
-    "symfony/polyfill-php81": {
         "version": "v1.24.0"
     },
     "symfony/process": {
@@ -567,9 +531,6 @@
         "version": "v5.4.3"
     },
     "symfony/security-csrf": {
-        "version": "v5.4.3"
-    },
-    "symfony/security-guard": {
         "version": "v5.4.3"
     },
     "symfony/security-http": {

@@ -11,7 +11,7 @@ use NetBS\CoreBundle\Entity\NewsChannel;
 use NetBS\SecureBundle\Service\SecureConfig;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\ExpressionLanguage\ExpressionLanguage;
-use Symfony\Component\Cache\Adapter\AdapterInterface;
+use Psr\Cache\CacheItemPoolInterface as AdapterInterface;
 use Symfony\Component\Messenger\Attribute\AsMessageHandler;
 
 #[AsMessageHandler]

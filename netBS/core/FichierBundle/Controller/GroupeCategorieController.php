@@ -32,7 +32,7 @@ class GroupeCategorieController extends AbstractController
             'list'      => 'netbs.fichier.groupe_categories',
             'title'     => "Catégories d'unités",
             'subtitle'  => 'Toutes les catégories enregistrés',
-            'modalPath' => $this->get('router')->generate('netbs.fichier.groupe_categorie.modal_add')
+            'modalPath' => $this->generateUrl('netbs.fichier.groupe_categorie.modal_add')
         ));
     }
 

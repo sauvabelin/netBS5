@@ -145,7 +145,7 @@ class FactureController extends AbstractController
     #[Route('/modal-assign-model', name: 'ovesco.facturation.facture.assign_model_modal')]
     public function assignModelModalAction(Request $request, EntityManagerInterface $em) {
         $mass = new MassAssignModel();
-        $mass->setSelectedIds(serialize($request->request->get('selectedIds')));
+        $mass->setSelectedIds(serialize($request->request->all('selectedIds')));
         $form = $this->createForm(MassAssignModelType::class, $mass);
         $form->handleRequest($request);
 

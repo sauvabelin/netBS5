@@ -6,7 +6,7 @@ use Doctrine\ORM\EntityManager;
 use NetBS\SecureBundle\Exceptions\UserCreationException;
 use NetBS\SecureBundle\Mapping\BaseUser;
 use NetBS\SecureBundle\Model\BaseUserProvider;
-use Symfony\Component\Security\Core\Encoder\UserPasswordEncoderInterface;
+use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 use Symfony\Component\Security\Core\Exception\UnsupportedUserException;
 use Symfony\Component\Security\Core\Exception\UsernameNotFoundException;
 
@@ -16,13 +16,13 @@ class NetBSUserProvider extends BaseUserProvider
 
     protected $config;
 
-    protected $encoder;
+    protected $hasher;
 
-    public function __construct(EntityManager $manager, SecureConfig $config, UserPasswordEncoderInterface $encoder)
+    public function __construct(EntityManager $manager, SecureConfig $config, UserPasswordHasherInterface $hasher)
     {
         $this->manager  = $manager;
         $this->config   = $config;
-        $this->encoder  = $encoder;
+        $this->hasher   = $hasher;
     }
 
     public function loadUserByUsername($username)
@@ -41,7 +41,7 @@ class NetBSUserProvider extends BaseUserProvider
         $this->checkUsernameAndEmail($user);
 
         if($encodePassword)
-            $user->setPassword($this->encoder->encodePassword($user, $user->getPassword()));
+            $user->setPassword($this->hasher->hashPassword($user, $user->getPassword()));
 
         $this->manager->persist($user);
         $this->manager->flush();
@@ -52,7 +52,7 @@ class NetBSUserProvider extends BaseUserProvider
         $this->checkUsernameAndEmail($user);
 
         if($encodePassword)
-            $user->setPassword($this->encoder->encodePassword($user, $user->getPassword()));
+            $user->setPassword($this->hasher->hashPassword($user, $user->getPassword()));
 
         $this->manager->persist($user);
         $this->manager->flush();

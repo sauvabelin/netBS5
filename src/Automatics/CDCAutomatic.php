@@ -85,7 +85,7 @@ class CDCAutomatic extends BaseAutomatic implements ConfigurableAutomaticInterfa
         $amountAdressables = count($adressables);
 
         if ($data['sansAdresses'] && $amountAdressables !== $amountItems) {
-            $this->session->getFlashBag()->add('warning', $amountItems - $amountAdressables . " n'ont pas d'adresses !");
+            $this->getSession()->getFlashBag()->add('warning', $amountItems - $amountAdressables . " n'ont pas d'adresses !");
         }
 
         return $data['sansAdresses'] ? $items : $adressables;

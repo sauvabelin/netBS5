@@ -4,7 +4,7 @@ namespace App\Listener;
 
 use App\Entity\BSUser;
 use Symfony\Component\HttpFoundation\RedirectResponse;
-use Symfony\Component\HttpFoundation\Session\SessionInterface;
+use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Component\HttpKernel\Event\RequestEvent;
 use Symfony\Component\HttpKernel\Event\ResponseEvent;
 use Symfony\Component\Routing\RouterInterface;
@@ -16,13 +16,13 @@ class ForceNewPasswordListener
 
     private $storage;
 
-    private $session;
+    private $requestStack;
 
-    public function __construct(TokenStorageInterface $storage, RouterInterface $router, SessionInterface $session)
+    public function __construct(TokenStorageInterface $storage, RouterInterface $router, RequestStack $requestStack)
     {
         $this->storage  = $storage;
         $this->router   = $router;
-        $this->session  = $session;
+        $this->requestStack  = $requestStack;
     }
 
     public function verifyUser(RequestEvent $event) {
@@ -44,12 +44,12 @@ class ForceNewPasswordListener
             && $event->getRequestType() === 1) {
 
             if($user->hasRole("ROLE_ADMIN")) {
-                $this->session->getFlashBag()->add('warning',
+                $this->requestStack->getSession()->getFlashBag()->add('warning',
                     "T'es admin mais pense à changer de mot de passe!");
                 return;
             }
 
-            $this->session->getFlashBag()->add('info', "Avant de pouvoir continuer, veuillez changer de mot de passe.");
+            $this->requestStack->getSession()->getFlashBag()->add('info', "Avant de pouvoir continuer, veuillez changer de mot de passe.");
             $event->setResponse(new RedirectResponse($this->router->generate('netbs.secure.user.account_page')));
         }
     }

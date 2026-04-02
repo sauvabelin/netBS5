@@ -112,13 +112,12 @@ class FamilleController extends AbstractController
 
 
     #[Route('/remove/{id}', name: 'netbs.fichier.famille.remove')]
-    public function removeFamilleAction($id, EventDispatcherInterface $dispatcher) {
+    public function removeFamilleAction($id, EventDispatcherInterface $dispatcher, EntityManagerInterface $em) {
 
         if(!$this->isGranted('ROLE_SG'))
             throw $this->createAccessDeniedException("Opération refusée!");
 
-        $config = $this->get(FichierConfig::class);
-        $em = $this->getDoctrine()->getManager();
+        $config = $this->config;
         /** @var BaseFamille $famille */
         $famille = $em->find($config->getFamilleClass(), $id);
 

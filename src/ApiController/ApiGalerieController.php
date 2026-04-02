@@ -13,6 +13,7 @@ use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
+use Symfony\Component\Serializer\SerializerInterface;
 
 /**
  * Class GalerieAPIController
@@ -25,7 +26,7 @@ class ApiGalerieController extends AbstractController
      * @return Response
      */
     #[Route('/api/v1/public/netBS/galerie/root-pictures', name: 'ovesco.galerie.public_api.root-pictures')]
-    public function publicPicturesAction(GalerieConfig $config) {
+    public function publicPicturesAction(GalerieConfig $config, SerializerInterface $serializer) {
 
         $realPath       = $config->getFullMappedDirectory() . '/';
         $directory      = new Directory($realPath, $config);
@@ -33,7 +34,7 @@ class ApiGalerieController extends AbstractController
             return $directory->getThumbnail();
             }, $directory->getChildren());
 
-        return new JsonResponse($this->get('serializer')->serialize($images, 'json'), 200, [], true);
+        return new JsonResponse($serializer->serialize($images, 'json'), 200, [], true);
     }
 
     /**
@@ -99,7 +100,7 @@ class ApiGalerieController extends AbstractController
      * @return Response
      */
     #[Route('/api/v1/public/netBS/galerie/directory', name: 'ovesco.galerie.public_api.directory')]
-    public function publicAccessAction(Request $request, ParameterManager $manager, GalerieConfig $config) {
+    public function publicAccessAction(Request $request, ParameterManager $manager, GalerieConfig $config, SerializerInterface $serializer) {
 
         $token          = $request->headers->get('x-authorization');
         $token          = str_replace("Bearer ", "", $token);
@@ -107,7 +108,7 @@ class ApiGalerieController extends AbstractController
         if(!in_array($token, explode('|', $actualToken)))
             return new JsonResponse("access denied", 401);
 
-        return $this->generateDirectoryResponse($request, $config);
+        return $this->generateDirectoryResponse($request, $config, $serializer);
     }
 
     /**
@@ -115,15 +116,15 @@ class ApiGalerieController extends AbstractController
      * @return Response
      */
     #[Route('/api/v1/netBS/galerie/directory', name: 'ovesco.galerie.api.directory')]
-    public function getDirectoryAction(Request $request, GalerieConfig $config) {
-        return $this->generateDirectoryResponse($request, $config);
+    public function getDirectoryAction(Request $request, GalerieConfig $config, SerializerInterface $serializer) {
+        return $this->generateDirectoryResponse($request, $config, $serializer);
     }
 
     /**
      * @param Request $request
      * @return JsonResponse
      */
-    private function generateDirectoryResponse(Request $request, GalerieConfig $config) {
+    private function generateDirectoryResponse(Request $request, GalerieConfig $config, SerializerInterface $serializer) {
 
         $realPath       = $this->getRealPath($config, $request->get('path'));
 
@@ -143,7 +144,7 @@ class ApiGalerieController extends AbstractController
             'medias'        => $directory->getMedias()
         ];
 
-        return new JsonResponse($this->get('serializer')->serialize($data, 'json'), 200, [], true);
+        return new JsonResponse($serializer->serialize($data, 'json'), 200, [], true);
     }
 
     private function getRealPath(GalerieConfig $config, $hashPath) {

@@ -252,7 +252,7 @@ class CirculaireMembre implements GroupSequenceProviderInterface
         $this->famille  = $famille;
     }
 
-    public function getGroupSequence()
+    public function getGroupSequence(): \Symfony\Component\Validator\Constraints\GroupSequence|array
     {
         return [
             'default',

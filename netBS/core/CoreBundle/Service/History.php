@@ -5,7 +5,6 @@ namespace NetBS\CoreBundle\Service;
 use NetBS\CoreBundle\Model\RouteHistory;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\RequestStack;
-use Symfony\Component\HttpFoundation\Session\SessionInterface;
 use Symfony\Component\Routing\RouterInterface;
 
 class History
@@ -13,14 +12,9 @@ class History
     const SESSION_KEY   = 'netbs.history';
 
     /**
-     * @var null|\Symfony\Component\HttpFoundation\Request
+     * @var RequestStack
      */
-    protected $request;
-
-    /**
-     * @var SessionInterface
-     */
-    protected $session;
+    protected $requestStack;
 
     /**
      * @var RouterInterface
@@ -32,16 +26,15 @@ class History
      */
     protected $updated  = false;
 
-    public function __construct(SessionInterface $session, RequestStack $stack, RouterInterface $router)
+    public function __construct(RequestStack $requestStack, RouterInterface $router)
     {
-        $this->session  = $session;
+        $this->requestStack = $requestStack;
         $this->router   = $router;
-        $this->request  = $stack->getCurrentRequest();
     }
 
     public function getHistory() {
 
-        $data       = $this->session->get(self::SESSION_KEY);
+        $data       = $this->requestStack->getSession()->get(self::SESSION_KEY);
 
         if(is_null($data))
             return [];
@@ -51,15 +44,17 @@ class History
 
     public function update() {
 
-        if($this->request->get('_route') == '_wdt' || $this->request->isXmlHttpRequest() || $this->updated)
+        $request = $this->requestStack->getCurrentRequest();
+
+        if($request->get('_route') == '_wdt' || $request->isXmlHttpRequest() || $this->updated)
             return;
 
-        $route          = new RouteHistory($this->request->get('_route'), $this->request->attributes->get('_route_params'));
+        $route          = new RouteHistory($request->get('_route'), $request->attributes->get('_route_params'));
         $history        = $this->getHistory();
         $history[]      = $route;
         $this->updated  = true;
 
-        $this->session->set(self::SESSION_KEY, serialize($history));
+        $this->requestStack->getSession()->set(self::SESSION_KEY, serialize($history));
     }
 
     public function getPreviousRoute($previousness = 2) {

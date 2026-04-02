@@ -196,7 +196,7 @@ class BaseAdresse implements GroupSequenceProviderInterface, EqualInterface
      *
      * @return array An array of validation groups
      */
-    public function getGroupSequence()
+    public function getGroupSequence(): \Symfony\Component\Validator\Constraints\GroupSequence|array
     {
         return [
             $this->isEmpty() ? '' : 'checkable'

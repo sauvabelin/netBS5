@@ -61,7 +61,7 @@ class BSUser extends BaseUser
     #[ORM\Column(name: 'email_bs', type: 'string', length: 255, nullable: true)]
     protected $emailBS = null;
 
-    public function getUserIdentifier() {
+    public function getUserIdentifier(): string {
         return $this->username;
     }
 

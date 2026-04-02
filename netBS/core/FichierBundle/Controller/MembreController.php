@@ -120,12 +120,11 @@ class MembreController extends AbstractController
     }
 
     #[Route('/remove/{id}', name: 'netbs.fichier.membre.remove')]
-    public function removeMembreAction($id, EventDispatcherInterface $dispatcher) {
+    public function removeMembreAction($id, EventDispatcherInterface $dispatcher, EntityManagerInterface $em) {
 
         if(!$this->isGranted('ROLE_SG'))
             throw $this->createAccessDeniedException("Opération refusée!");
 
-        $em = $this->getDoctrine()->getManager();
         $membre = $em->find($this->config->getMembreClass(), $id);
 
         $dispatcher->dispatch(new RemoveMembreEvent($membre, $em), RemoveMembreEvent::NAME);
