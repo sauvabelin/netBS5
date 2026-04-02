@@ -22,16 +22,16 @@ class NewsChannel
 
     /**
      * @var string
-     * @Assert\NotBlank()
      */
     #[ORM\Column(name: 'nom', type: 'string', length: 255, unique: true)]
+    #[Assert\NotBlank]
     protected $nom;
 
     /**
      * @var string
-     * @Assert\NotBlank()
      */
     #[ORM\Column(name: 'color', type: 'string', length: 255, unique: true)]
+    #[Assert\NotBlank]
     protected $color;
 
     /**

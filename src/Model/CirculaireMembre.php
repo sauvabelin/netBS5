@@ -17,9 +17,7 @@ use App\Entity\BSMembre;
 use Symfony\Component\Validator\Constraints as Assert;
 use Symfony\Component\Validator\GroupSequenceProviderInterface;
 
-/**
- * @Assert\GroupSequenceProvider()
- */
+#[Assert\GroupSequenceProvider]
 class CirculaireMembre implements GroupSequenceProviderInterface
 {
     /**
@@ -29,26 +27,26 @@ class CirculaireMembre implements GroupSequenceProviderInterface
 
     /**
      * @var string
-     * @Assert\NotBlank(groups={"default"})
      */
+    #[Assert\NotBlank(groups: ['default'])]
     public $prenom;
 
     /**
      * @var int
-     * @Assert\NotBlank(groups={"default"})
      */
+    #[Assert\NotBlank(groups: ['default'])]
     public $numero;
 
     /**
      * @var string
-     * @Assert\Regex("/^(\d{3}).?(\d{4}).?(\d{4}).?(\d{2})$/", message="Numéro AVS au format 123.1234.1234.12")
      */
+    #[Assert\Regex(pattern: '/^(\d{3}).?(\d{4}).?(\d{4}).?(\d{2})$/', message: 'Numéro AVS au format 123.1234.1234.12')]
     public $numeroAvs;
 
     /**
      * @var string
-     * @Assert\NotBlank(groups={"default"})
      */
+    #[Assert\NotBlank(groups: ['default'])]
     public $nom;
 
     /**
@@ -58,33 +56,33 @@ class CirculaireMembre implements GroupSequenceProviderInterface
 
     /**
      * @var string
-     * @Assert\Choice({"homme", "femme"}, groups={"default"})
      */
+    #[Assert\Choice(choices: ['homme', 'femme'], groups: ['default'])]
     public $sexe;
 
     /**
      * @var \DateTime
-     * @Assert\NotBlank(groups={"default"})
      */
+    #[Assert\NotBlank(groups: ['default'])]
     public $naissance;
 
     /**
      * @var string
-     * @Assert\NotBlank(groups={"noFamily"})
      */
+    #[Assert\NotBlank(groups: ['noFamily'])]
     public $adresse;
 
     /**
      * @var int
-     * @Assert\NotBlank(groups={"noFamily"})
-     * @Assert\Range(min=1000, max=99999, groups={"noFamily"})
      */
+    #[Assert\NotBlank(groups: ['noFamily'])]
+    #[Assert\Range(min: 1000, max: 99999, groups: ['noFamily'])]
     public $npa;
 
     /**
      * @var string
-     * @Assert\NotBlank(groups={"noFamily"})
      */
+    #[Assert\NotBlank(groups: ['noFamily'])]
     public $localite;
 
     /**
@@ -93,9 +91,9 @@ class CirculaireMembre implements GroupSequenceProviderInterface
     public $pays = 'CH';
 
     /**
-     * @Assert\Email(groups={"noFamily"})
      * @var string
      */
+    #[Assert\Email(groups: ['noFamily'])]
     public $email;
 
     /**
@@ -109,27 +107,27 @@ class CirculaireMembre implements GroupSequenceProviderInterface
     public $natel;
 
     /**
-     * @Assert\NotNull(groups={"default"})
      * @var Fonction
      */
+    #[Assert\NotNull(groups: ['default'])]
     public $fonction;
 
     /**
-     * @Assert\NotNull(groups={"default"})
      * @var Groupe
      */
+    #[Assert\NotNull(groups: ['default'])]
     public $groupe;
 
     /**
      * @var string
-     * @Assert\NotBlank(groups={"geniteur1"})
      */
+    #[Assert\NotBlank(groups: ['geniteur1'])]
     public $r1statut = Geniteur::MERE;
 
     /**
      * @var string
-     * @Assert\NotBlank(groups={"geniteur1"})
      */
+    #[Assert\NotBlank(groups: ['geniteur1'])]
     public $r1sexe  = Personne::FEMME;
 
     /**
@@ -139,8 +137,8 @@ class CirculaireMembre implements GroupSequenceProviderInterface
 
     /**
      * @var string
-     * @Assert\NotBlank(groups={"geniteur1"})
      */
+    #[Assert\NotBlank(groups: ['geniteur1'])]
     public $r1prenom;
 
     /**
@@ -169,9 +167,9 @@ class CirculaireMembre implements GroupSequenceProviderInterface
     public $r1telephone;
 
     /**
-     * @Assert\Email(groups={"noFamily"})
      * @var string
      */
+    #[Assert\Email(groups: ['noFamily'])]
     public $r1email;
 
     /**
@@ -181,14 +179,14 @@ class CirculaireMembre implements GroupSequenceProviderInterface
 
     /**
      * @var string
-     * @Assert\NotBlank(groups={"geniteur2"})
      */
+    #[Assert\NotBlank(groups: ['geniteur2'])]
     public $r2statut = Geniteur::PERE;
 
     /**
      * @var string
-     * @Assert\NotBlank(groups={"geniteur2"})
      */
+    #[Assert\NotBlank(groups: ['geniteur2'])]
     public $r2sexe = Personne::HOMME;
 
     /**
@@ -198,8 +196,8 @@ class CirculaireMembre implements GroupSequenceProviderInterface
 
     /**
      * @var string
-     * @Assert\NotBlank(groups={"geniteur2"})
      */
+    #[Assert\NotBlank(groups: ['geniteur2'])]
     public $r2prenom;
 
     /**

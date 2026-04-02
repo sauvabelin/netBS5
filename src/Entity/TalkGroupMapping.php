@@ -19,16 +19,16 @@ class TalkGroupMapping {
 
     /**
      * @var string
-     * @Assert\NotBlank()
      */
     #[ORM\Column(name: 'username', type: 'string', length: 255)]
+    #[Assert\NotBlank]
     protected $username;
 
     /**
      * @var string
-     * @Assert\NotBlank()
      */
     #[ORM\Column(name: 'group_name', type: 'string', length: 255)]
+    #[Assert\NotBlank]
     protected $groupName;
 
     public function getId(): int

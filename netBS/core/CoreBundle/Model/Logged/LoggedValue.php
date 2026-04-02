@@ -2,7 +2,7 @@
 
 namespace NetBS\CoreBundle\Model\Logged;
 
-class LoggedValue implements \Serializable
+class LoggedValue
 {
     private $value;
 
@@ -11,14 +11,13 @@ class LoggedValue implements \Serializable
         $this->value    = $value;
     }
 
-    public function serialize()
+    public function __serialize(): array
     {
-        return serialize(['value' => $this->value]);
+        return ['value' => $this->value];
     }
 
-    public function unserialize($serialized)
+    public function __unserialize(array $data): void
     {
-        $data           = unserialize($serialized);
         $this->value    = $data['value'];
     }
 

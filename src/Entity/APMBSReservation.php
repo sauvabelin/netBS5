@@ -61,75 +61,75 @@ class APMBSReservation {
 
     /**
      * @var \DateTime
-     * @Assert\NotBlank()
-     * @Assert\Type("\DateTimeInterface")
      */
     #[ORM\Column(name: 'start', type: 'datetime')]
+    #[Assert\NotBlank]
+    #[Assert\Type("\DateTimeInterface")]
     protected $start;
 
     /**
      * @var \DateTime
-     * @Assert\NotBlank()
-     * @Assert\Type("\DateTimeInterface")
      */
     #[ORM\Column(name: 'end', type: 'datetime')]
+    #[Assert\NotBlank]
+    #[Assert\Type("\DateTimeInterface")]
     protected $end;
 
     /**
      * @var string
-     * @Assert\NotBlank()
      */
     #[ORM\Column(name: 'prenom', type: 'string', length: 255)]
+    #[Assert\NotBlank]
     protected $prenom;
 
     /**
      * @var string
-     * @Assert\NotBlank()
      */
     #[ORM\Column(name: 'nom', type: 'string', length: 255)]
+    #[Assert\NotBlank]
     protected $nom;
 
     /**
      * @var string
-     * @Assert\NotBlank()
      */
     #[ORM\Column(name: 'rue', type: 'string', length: 255)]
+    #[Assert\NotBlank]
     protected $rue;
 
     /**
      * @var string
-     * @Assert\NotBlank()
      */
     #[ORM\Column(name: 'npa', type: 'string', length: 255)]
+    #[Assert\NotBlank]
     protected $npa;
 
     /**
      * @var string
-     * @Assert\NotBlank()
      */
     #[ORM\Column(name: 'localite', type: 'string', length: 255)]
+    #[Assert\NotBlank]
     protected $localite;
 
     /**
      * @var string
-     * @Assert\Email
-     * @Assert\NotBlank()
      */
     #[ORM\Column(name: 'email', type: 'string', length: 255)]
+    #[Assert\Email]
+    #[Assert\NotBlank]
     protected $email;
 
     /**
      * @var string
-     * @Assert\NotBlank()
      */
     #[ORM\Column(name: 'phone', type: 'string', length: 255)]
+    #[Assert\NotBlank]
     protected $phone;
 
     /**
      * @var string
-     * @Assert\NotBlank()
      */
     #[ORM\Column(name: 'unite', type: 'string', length: 255)]
+    #[Assert\NotBlank]
     protected $unite;
 
     /**

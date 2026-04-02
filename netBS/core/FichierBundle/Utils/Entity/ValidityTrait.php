@@ -7,10 +7,8 @@ use Symfony\Component\Validator\Constraints as Assert;
 
 trait ValidityTrait
 {
-    /**
-     * @Assert\NotBlank()
-     */
     #[ORM\Column(type: 'string', length: 255, nullable: false)]
+    #[Assert\NotBlank]
     protected $validity;
 
     /**

@@ -21,23 +21,23 @@ class BaseContactInformation
 
     /**
      * @var BaseEmail[]
-     * @Assert\Valid()
      * @Groups({"emails"})
      */
+    #[Assert\Valid]
     protected $emails;
 
     /**
      * @var BaseTelephone[]
-     * @Assert\Valid()
      * @Groups({"telephones"})
      */
+    #[Assert\Valid]
     protected $telephones;
 
     /**
      * @var BaseAdresse[]
-     * @Assert\Valid()
      * @Groups({"adresses"})
      */
+    #[Assert\Valid]
     protected $adresses;
 
     public function __construct()

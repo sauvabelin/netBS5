@@ -25,9 +25,9 @@ abstract class BaseDistinction
 
     /**
      * @var string
-     * @Assert\NotBlank()
      */
     #[ORM\Column(name: 'nom', type: 'string', length: 255)]
+    #[Assert\NotBlank]
     protected $nom;
 
     public function __construct($nom = null)

@@ -8,8 +8,8 @@ class ChangePassword
 {
     /**
      * @var string
-     * @Assert\UserPassword(message = "Mot de passe incorrect")
      */
+    #[Assert\UserPassword(message: 'Mot de passe incorrect')]
     protected $oldPassword;
 
     /**

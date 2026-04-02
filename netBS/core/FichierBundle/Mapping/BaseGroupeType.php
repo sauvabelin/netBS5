@@ -21,9 +21,9 @@ class BaseGroupeType
 
     /**
      * @var string
-     * @Assert\NotBlank
      */
     #[ORM\Column(name: 'nom', type: 'string', length: 255)]
+    #[Assert\NotBlank]
     protected $nom;
 
     /**
@@ -34,8 +34,8 @@ class BaseGroupeType
 
     /**
      * @var BaseGroupeCategorie
-     * @Assert\NotBlank()
      */
+    #[Assert\NotBlank]
     protected $groupeCategorie;
 
     public function __construct()

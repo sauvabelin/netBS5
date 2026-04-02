@@ -32,9 +32,9 @@ abstract class BaseGroupe implements ValidableInterface
 
     /**
      * @var string
-     * @Assert\NotBlank()
      */
     #[ORM\Column(name: 'nom', type: 'string', length: 255)]
+    #[Assert\NotBlank]
     protected $nom;
 
     /**
@@ -49,8 +49,8 @@ abstract class BaseGroupe implements ValidableInterface
 
     /**
      * @var GroupeType
-     * @Assert\NotBlank()
      */
+    #[Assert\NotBlank]
     protected $groupeType;
 
     /**

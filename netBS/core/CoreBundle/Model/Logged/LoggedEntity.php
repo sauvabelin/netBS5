@@ -4,7 +4,7 @@ namespace NetBS\CoreBundle\Model\Logged;
 
 use Doctrine\Common\Util\ClassUtils;
 
-class LoggedEntity implements \Serializable
+class LoggedEntity
 {
     /**
      * @var string
@@ -22,17 +22,16 @@ class LoggedEntity implements \Serializable
         $this->class    = ClassUtils::getClass($object);
     }
 
-    public function serialize()
+    public function __serialize(): array
     {
-        return serialize([
+        return [
             'id'    => $this->id,
             'class' => $this->class
-        ]);
+        ];
     }
 
-    public function unserialize($serialized)
+    public function __unserialize(array $data): void
     {
-        $data           = unserialize($serialized);
         $this->id       = $data['id'];
         $this->class    = $data['class'];
     }

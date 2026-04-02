@@ -74,7 +74,6 @@ class UserManager
         $this->checkUsernameAndEmail($user);
 
         $this->em->persist($user);
-        dump('persisted', $user);
         $this->em->flush();
     }
 

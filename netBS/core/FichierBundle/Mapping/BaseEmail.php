@@ -27,11 +27,11 @@ class BaseEmail
 
     /**
      * @var string
-     * @Assert\Email
-     * @Assert\NotBlank()
      * @Groups({"default"})
      */
     #[ORM\Column(name: 'email', type: 'string', length: 255)]
+    #[Assert\Email]
+    #[Assert\NotBlank]
     protected $email;
 
     /**

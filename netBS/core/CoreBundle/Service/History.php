@@ -45,8 +45,13 @@ class History
     public function update() {
 
         $request = $this->requestStack->getCurrentRequest();
+        $route = $request->get('_route');
 
-        if($request->get('_route') == '_wdt' || $request->isXmlHttpRequest() || $this->updated)
+        if($route == '_wdt' || $request->isXmlHttpRequest() || $this->updated)
+            return;
+
+        // Skip AJAX, modal, and API routes from navigation history
+        if($route && (str_contains($route, 'ajax') || str_contains($route, 'modal') || str_starts_with($route, 'api')))
             return;
 
         $route          = new RouteHistory($request->get('_route'), $request->attributes->get('_route_params'));
@@ -60,6 +65,9 @@ class History
     public function getPreviousRoute($previousness = 2) {
 
         $route  = $this->goToHistory($previousness);
+        if ($route === null) {
+            return new RedirectResponse($this->router->generate('netbs.core.home.dashboard'));
+        }
         return new RedirectResponse($this->router->generate($route->getRouteName(), $route->getParams()));
     }
 

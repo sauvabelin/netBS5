@@ -30,9 +30,9 @@ class BaseTelephone
     /**
      * @var string
      * @Groups({"default"})
-     * @Assert\NotBlank()
      */
     #[ORM\Column(name: 'telephone', type: 'string', length: 255)]
+    #[Assert\NotBlank]
     protected $telephone;
 
     /**

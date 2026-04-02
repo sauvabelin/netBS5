@@ -20,23 +20,23 @@ class Cabane {
 
     /**
      * @var string
-     * @Assert\NotBlank()
      */
     #[ORM\Column(name: 'nom', type: 'string', length: 255)]
+    #[Assert\NotBlank]
     protected $nom;
 
     /**
      * @var string
-     * @Assert\NotBlank()
      */
     #[ORM\Column(name: 'from_email', type: 'string', length: 255)]
+    #[Assert\NotBlank]
     protected $fromEmail;
 
     /**
      * @var string
-     * @Assert\NotBlank()
      */
     #[ORM\Column(name: 'calendar_id', type: 'string', length: 255)]
+    #[Assert\NotBlank]
     protected $calendarId;
 
     /**
@@ -60,9 +60,9 @@ class Cabane {
 
     /**
      * @var string
-     * @Assert\NotBlank()
      */
     #[ORM\Column(name: 'availability_rule', type: 'text')]
+    #[Assert\NotBlank]
     protected $availabilityRule;
 
     /**

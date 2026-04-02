@@ -7,6 +7,7 @@ use Symfony\Component\Validator\Constraint;
 /**
  * @Annotation
  */
+#[\Attribute]
 class ValidMailingTarget extends Constraint
 {
     public $message = 'Le champ {{ field }} est requis pour le type "{{ type }}".';

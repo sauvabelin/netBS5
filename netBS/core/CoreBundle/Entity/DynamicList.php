@@ -24,9 +24,9 @@ class DynamicList
 
     /**
      * @var string
-     * @Assert\NotBlank(message="Le nom de la liste ne peut être vide")
      */
     #[ORM\Column(name: 'name', type: 'string', length: 255)]
+    #[Assert\NotBlank(message: 'Le nom de la liste ne peut être vide')]
     protected $name;
 
     /**

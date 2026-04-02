@@ -26,23 +26,23 @@ abstract class BaseFonction
 
     /**
      * @var string
-     * @Assert\NotBlank
      */
     #[ORM\Column(name: 'nom', type: 'string', length: 255)]
+    #[Assert\NotBlank]
     protected $nom;
 
     /**
      * @var string
-     * @Assert\NotBlank()
      */
     #[ORM\Column(name: 'abbreviation', type: 'string', length: 255)]
+    #[Assert\NotBlank]
     protected $abbreviation;
 
     /**
      * @var int
-     * @Assert\Type("integer")
      */
     #[ORM\Column(name: 'poids', type: 'integer', nullable: true)]
+    #[Assert\Type("integer")]
     protected $poids;
 
     /**

@@ -22,9 +22,9 @@ use NetBS\CoreBundle\Validator\Constraints as BSAssert;
 
 /**
  * Famille
- * @BSAssert\User(rule="user.hasRole('ROLE_SG')")
  */
 #[ORM\MappedSuperclass]
+#[BSAssert\User(rule: "user.hasRole('ROLE_SG')")]
 abstract class BaseFamille implements AdressableInterface, TelephonableInterface, EmailableInterface, ValidableInterface, EqualInterface
 {
     const   VALIDE      = 'valide';
@@ -44,10 +44,10 @@ abstract class BaseFamille implements AdressableInterface, TelephonableInterface
 
     /**
      * @var string
-     * @Assert\NotBlank()
      * @Groups({"default"})
      */
     #[ORM\Column(name: 'nom', type: 'string', length: 255)]
+    #[Assert\NotBlank]
     protected $nom;
 
     /**
@@ -59,15 +59,15 @@ abstract class BaseFamille implements AdressableInterface, TelephonableInterface
 
     /**
      * @var BaseGeniteur[]
-     * @Assert\Valid
      * @Groups({"familleGeniteurs"})
      */
+    #[Assert\Valid]
     protected $geniteurs;
 
     /**
      * @var BaseContactInformation
-     * @Assert\Valid()
      */
+    #[Assert\Valid]
     protected $contactInformation;
 
     public function __construct()

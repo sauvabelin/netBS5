@@ -19,24 +19,24 @@ class CabaneTimePeriod {
 
     /**
      * @var string
-     * @Assert\NotBlank()
      */
     #[ORM\Column(name: 'nom', type: 'string', length: 255)]
+    #[Assert\NotBlank]
     protected $nom;
 
 
     /**
      * @var \DateTime
-     * @Assert\NotBlank()
      */
     #[ORM\Column(name: 'time_start', type: 'time')]
+    #[Assert\NotBlank]
     protected $timeStart;
 
     /**
      * @var \DateTime
-     * @Assert\NotBlank()
      */
     #[ORM\Column(name: 'time_end', type: 'time')]
+    #[Assert\NotBlank]
     protected $timeEnd;
 
     public function getId() {

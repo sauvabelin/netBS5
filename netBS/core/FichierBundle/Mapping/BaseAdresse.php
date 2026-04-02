@@ -11,9 +11,7 @@ use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Validator\Constraints as Assert;
 use Symfony\Component\Validator\GroupSequenceProviderInterface;
 
-/**
- * @Assert\GroupSequenceProvider()
- */
+#[Assert\GroupSequenceProvider]
 #[ORM\MappedSuperclass]
 class BaseAdresse implements GroupSequenceProviderInterface, EqualInterface
 {
@@ -31,34 +29,34 @@ class BaseAdresse implements GroupSequenceProviderInterface, EqualInterface
     /**
      * @var string
      * @Groups({"default"})
-     * @Assert\NotBlank(groups={"checkable"})
      */
     #[ORM\Column(name: 'rue', type: 'string', length: 255)]
+    #[Assert\NotBlank(groups: ['checkable'])]
     protected $rue;
 
     /**
      * @var int
      * @Groups({"default"})
-     * @Assert\Range(min=1000, max=99999, groups={"checkable"})
-     * @Assert\NotBlank(groups={"checkable"})
      */
     #[ORM\Column(name: 'npa', type: 'integer')]
+    #[Assert\Range(min: 1000, max: 99999, groups: ['checkable'])]
+    #[Assert\NotBlank(groups: ['checkable'])]
     protected $npa;
 
     /**
      * @var string
      * @Groups({"default"})
-     * @Assert\NotBlank(groups={"checkable"})
      */
     #[ORM\Column(name: 'localite', type: 'string', length: 255)]
+    #[Assert\NotBlank(groups: ['checkable'])]
     protected $localite;
 
     /**
      * @var string
      * @Groups({"default"})
-     * @Assert\NotBlank(groups={"checkable"})
      */
     #[ORM\Column(name: 'pays', type: 'string', length: 255)]
+    #[Assert\NotBlank(groups: ['checkable'])]
     protected $pays = 'CH';
 
     /**

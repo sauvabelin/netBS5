@@ -38,17 +38,17 @@ abstract class BaseGeniteur extends Personne implements EqualInterface
 
     /**
      * @var string
-     * @Assert\NotBlank()
      * @Groups({"details"})
      */
     #[ORM\Column(name: 'statut', type: 'string', length: 255)]
+    #[Assert\NotBlank]
     protected $statut;
 
     /**
      * @var BaseFamille
-     * @Assert\NotBlank()
      * @Groups({"geniteurFamille"})
      */
+    #[Assert\NotBlank]
     protected $famille;
 
 

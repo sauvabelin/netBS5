@@ -34,10 +34,10 @@ abstract class Personne implements AdressableInterface, TelephonableInterface, E
 
     /**
      * @var string
-     * @Assert\NotBlank()
      * @Groups({"default"})
      */
     #[ORM\Column(name: 'prenom', type: 'string', length: 255)]
+    #[Assert\NotBlank]
     protected $prenom;
 
     /**
@@ -49,8 +49,8 @@ abstract class Personne implements AdressableInterface, TelephonableInterface, E
 
     /**
      * @var BaseContactInformation
-     * @Assert\Valid()
      */
+    #[Assert\Valid]
     protected $contactInformation;
 
     /**

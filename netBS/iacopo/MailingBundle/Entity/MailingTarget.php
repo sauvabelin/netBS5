@@ -9,11 +9,9 @@ use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Validator\Constraints as Assert;
 use Iacopo\MailingBundle\Validator\ValidMailingTarget;
 
-/**
- * @ValidMailingTarget
- */
 #[ORM\Entity(repositoryClass: \Iacopo\MailingBundle\Repository\MailingTargetRepository::class)]
 #[ORM\Table(name: 'mailing_target')]
+#[ValidMailingTarget]
 class MailingTarget
 {
     const TYPE_EMAIL = 'email';
@@ -27,34 +25,19 @@ class MailingTarget
     #[ORM\Column(type: 'integer')]
     private $id;
 
-    /**
-     * @Assert\NotNull(message="La liste de diffusion est requise.")
-     */
     #[ORM\ManyToOne(targetEntity: MailingList::class, inversedBy: 'targets')]
     #[ORM\JoinColumn(nullable: false, onDelete: 'CASCADE')]
+    #[Assert\NotNull(message: 'La liste de diffusion est requise.')]
     private $mailingList;
 
-    /**
-     * @Assert\NotBlank(message="Le type est requis.")
-     * @Assert\Choice(
-     *     choices={"email", "user", "unite", "role", "list"},
-     *     message="Type invalide."
-     * )
-     */
     #[ORM\Column(type: 'string', length: 50)]
+    #[Assert\NotBlank(message: 'Le type est requis.')]
+    #[Assert\Choice(choices: ['email', 'user', 'unite', 'role', 'list'], message: 'Type invalide.')]
     private $type;
 
-    /**
-     * @Assert\Email(
-     *     message="L'adresse email n'est pas valide.",
-     *     groups={"email_type"}
-     * )
-     * @Assert\Length(
-     *     max=255,
-     *     maxMessage="L'adresse email ne peut pas dépasser {{ limit }} caractères."
-     * )
-     */
     #[ORM\Column(type: 'string', length: 255, nullable: true)]
+    #[Assert\Email(message: "L'adresse email n'est pas valide.", groups: ['email_type'])]
+    #[Assert\Length(max: 255, maxMessage: "L'adresse email ne peut pas dépasser {{ limit }} caractères.")]
     private $targetEmail;
 
     #[ORM\ManyToOne(targetEntity: BSUser::class)]

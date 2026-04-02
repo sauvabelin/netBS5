@@ -10,9 +10,9 @@ use NetBS\CoreBundle\Validator\Constraints as BSAssert;
 
 /**
  * ObtentionDistinction
- * @BSAssert\User(rule="user.hasRole('ROLE_SG')")
  */
 #[ORM\MappedSuperclass]
+#[BSAssert\User(rule: "user.hasRole('ROLE_SG')")]
 abstract class BaseObtentionDistinction
 {
     use RemarqueTrait, TimestampableEntity;
@@ -27,22 +27,22 @@ abstract class BaseObtentionDistinction
 
     /**
      * @var \DateTime
-     * @Assert\NotBlank()
-     * @Assert\Type("\DateTimeInterface")
      */
     #[ORM\Column(name: 'date', type: 'datetime')]
+    #[Assert\NotBlank]
+    #[Assert\Type("\DateTimeInterface")]
     protected $date;
 
     /**
      * @var BaseDistinction
-     * @Assert\NotBlank()
      */
+    #[Assert\NotBlank]
     protected $distinction;
 
     /**
      * @var BaseMembre
-     * @Assert\NotBlank()
      */
+    #[Assert\NotBlank]
     protected $membre;
 
     public function __construct()

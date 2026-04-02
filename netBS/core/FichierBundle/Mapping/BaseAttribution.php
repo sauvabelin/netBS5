@@ -11,9 +11,9 @@ use NetBS\CoreBundle\Validator\Constraints as BSAssert;
 
 /**
  * Attribution
- * @BSAssert\User(rule="user.hasRole('ROLE_SG')")
  */
 #[ORM\MappedSuperclass]
+#[BSAssert\User(rule: "user.hasRole('ROLE_SG')")]
 abstract class BaseAttribution
 {
     use RemarqueTrait, TimestampableEntity;
@@ -30,9 +30,9 @@ abstract class BaseAttribution
     /**
      * @var \DateTime
      * @Groups({"default"})
-     * @Assert\NotBlank()
      */
     #[ORM\Column(name: 'dateDebut', type: 'datetime')]
+    #[Assert\NotBlank]
     protected $dateDebut;
 
     /**
@@ -44,23 +44,23 @@ abstract class BaseAttribution
 
     /**
      * @var BaseGroupe
-     * @Assert\NotBlank()
      * @Groups({"attributionWithGroupe"})
      */
+    #[Assert\NotBlank]
     protected $groupe;
 
     /**
      * @var BaseFonction
-     * @Assert\NotBlank()
      * @Groups({"attributionWithFonction"})
      */
+    #[Assert\NotBlank]
     protected $fonction;
 
     /**
      * @var BaseMembre
-     * @Assert\NotBlank()
      * @Groups({"attributionWithMembre"})
      */
+    #[Assert\NotBlank]
     protected $membre;
 
 

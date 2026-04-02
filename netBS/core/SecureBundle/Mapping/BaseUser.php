@@ -12,10 +12,8 @@ use Symfony\Component\Security\Core\User\EquatableInterface;
 use Symfony\Component\Security\Core\User\UserInterface;
 use Symfony\Component\Security\Core\User\LegacyPasswordAuthenticatedUserInterface;
 
-/**
- * @UniqueEntity(fields={"membre"})
- */
 #[ORM\MappedSuperclass]
+#[UniqueEntity(fields: ['membre'])]
 class BaseUser implements
     EquatableInterface,
     UserInterface,
@@ -43,9 +41,9 @@ class BaseUser implements
 
     /**
      * @var string
-     * @Assert\Email
      */
     #[ORM\Column(name: 'email', type: 'string', length: 255, nullable: true, unique: true)]
+    #[Assert\Email]
     protected $email;
 
     /**

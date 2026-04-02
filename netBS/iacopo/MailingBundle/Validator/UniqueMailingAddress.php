@@ -7,6 +7,7 @@ use Symfony\Component\Validator\Constraint;
 /**
  * @Annotation
  */
+#[\Attribute]
 class UniqueMailingAddress extends Constraint
 {
     public $message = 'Cette adresse est déjà utilisée dans le système.';

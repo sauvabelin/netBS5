@@ -26,16 +26,16 @@ class News
 
     /**
      * @var string
-     * @Assert\NotBlank()
      */
     #[ORM\Column(name: 'titre', type: 'string', length: 255)]
+    #[Assert\NotBlank]
     protected $titre;
 
     /**
      * @var string
-     * @Assert\NotBlank()
      */
     #[ORM\Column(name: 'contenu', type: 'text')]
+    #[Assert\NotBlank]
     protected $contenu;
 
     /**
@@ -51,9 +51,9 @@ class News
 
     /**
      * @var NewsChannel
-     * @Assert\NotBlank()
      */
     #[ORM\ManyToOne(targetEntity: NewsChannel::class, inversedBy: 'news')]
+    #[Assert\NotBlank]
     protected $channel;
 
     /**
