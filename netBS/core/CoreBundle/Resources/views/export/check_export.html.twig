@@ -57,9 +57,7 @@
             <div class="modal-content">
                 <div class="modal-header">
                     <h5 class="modal-title">Configuration de base</h5>
-                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                        <span aria-hidden="true">&times;</span>
-                    </button>
+                    <button type="button" data-bs-dismiss="modal" aria-label="Close" class="btn-close"></button>
                 </div>
                 <div class="modal-body">
                     <p>Choisissez une base pour cette configuration</p>
@@ -75,7 +73,7 @@
                     {% endfor %}
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Annuler</button>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
                     <button type="button" class="btn btn-primary">Valider</button>
                 </div>
             </div>
@@ -103,14 +101,14 @@
                         <tr {% if config.id == blob.configId %}style="background:#bfffab;"{% endif %}>
                             <td style="width:75%;">{{ xeditable(config, 'nom', 'Symfony\\Component\\Form\\Extension\\Core\\Type\\TextType')|raw }}</td>
                             <td style="width:25%;">
-                                <a data-toggle="tooltip" title="Utiliser" href="{{ path('netbs.core.export.switch_config', {blobKey: blob.key, configId: config.id}) }}"><i class="fas fa-check-circle fa-sm"></i></a>
-                                <a data-toggle="tooltip" title="Supprimer" href="{{ path('netbs.core.export.remove_config', {blobKey: blob.key, configId: config.id}) }}"><i class="fas fa-times fa-sm"></i></a>
+                                <a data-bs-toggle="tooltip" title="Utiliser" href="{{ path('netbs.core.export.switch_config', {blobKey: blob.key, configId: config.id}) }}"><i class="fas fa-check-circle fa-sm"></i></a>
+                                <a data-bs-toggle="tooltip" title="Supprimer" href="{{ path('netbs.core.export.remove_config', {blobKey: blob.key, configId: config.id}) }}"><i class="fas fa-times fa-sm"></i></a>
                             </td>
                         </tr>
                     {% endfor %}
                     <tr>
                         {% if exporter.basicConfig is iterable %}
-                            <td colspan="2"><a href="#" data-toggle="modal" data-target="#config-modal">Nouvelle configuration</a></td>
+                            <td colspan="2"><a href="#" data-bs-toggle="modal" data-bs-target="#config-modal">Nouvelle configuration</a></td>
                         {% else %}
                             <td colspan="2"><a href="{{ path('netbs.core.export.switch_config', {blobKey: blob.key, configId: 'new'}) }}">Nouvelle configuration</a></td>
                         {% endif %}

@@ -1,0 +1,16 @@
+.btn {
+  &.btn-xs {
+    padding: 0 0.5rem 0.2rem 0.5rem;
+  }
+}
+
+.btn-secondary {
+  --bs-btn-bg: #fff;
+  --bs-btn-border-color: #ced4da;
+  --bs-btn-color: #495057;
+  --bs-btn-hover-bg: #e9ecef;
+  --bs-btn-hover-border-color: #ced4da;
+  --bs-btn-hover-color: #212529;
+  --bs-btn-active-bg: #dee2e6;
+  --bs-btn-active-border-color: #ced4da;
+}

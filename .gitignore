@@ -26,5 +26,8 @@
 
 /docker/
 
+frontend/node_modules/
+
 CLAUDE.md
-docs/superpowers
+docs
+.superpowers

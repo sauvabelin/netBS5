@@ -55,7 +55,7 @@
                                     <tr>
                                         <td>{{ user }}</td>
                                         <td>
-                                            <a href="{{ path('netbs.core.dynamics_list.remove_share', { id: list.id }) }}?userid={{ user.id }}" class="btn btn-xs btn-danger" data-toggle="tooltip" title="Retirer le partage"><i class="fas fa-sm fa-times" aria-hidden="true"></i></a>
+                                            <a href="{{ path('netbs.core.dynamics_list.remove_share', { id: list.id }) }}?userid={{ user.id }}" class="btn btn-xs btn-danger" data-bs-toggle="tooltip" title="Retirer le partage"><i class="fas fa-sm fa-times" aria-hidden="true"></i></a>
                                         </td>
                                     </tr>
                                 {% endfor %}

@@ -1,0 +1,21 @@
+// Custom variables (must come before Bootstrap import)
+@import "variables";
+
+// Bootstrap 5
+@import "~bootstrap/scss/bootstrap";
+
+// Layout
+@import "layout/menu";
+@import "layout/header";
+@import "layout/global";
+
+// Plugin overrides
+@import "plugin/datetimepicker";
+@import "plugin/datatables";
+@import "plugin/select2";
+
+// Bootstrap component overrides
+@import "bootstrap/cards";
+@import "bootstrap/buttons";
+@import "bootstrap/tabs";
+@import "bootstrap/form";

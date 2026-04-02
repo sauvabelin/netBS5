@@ -1,0 +1,25 @@
+.dataTables_wrapper
+{
+    padding:0;
+
+    .dataTables_length, .dataTables_filter, .dataTables_info, .dataTables_paginate {
+
+        padding:1rem 1.5rem;
+    }
+
+    table {
+
+        border-collapse: collapse !important;
+        border-top:1px solid $gray-200;
+        border-bottom:1px solid $gray-200;
+
+        tr.active td {
+            background:$gray-200;
+        }
+    }
+}
+
+// Remove BS5 default row borders from all renderers
+.table > :not(caption) > * > * {
+    border-bottom-color: transparent;
+}

@@ -7,7 +7,7 @@
         <ul class="nav nav-tabs card-header-tabs">
             {% for tab in tabs %}
                 <li class="nav-item">
-                    <a class="nav-link{% if loop.index0 == 0 %} active{% endif %}" href="#{{ loop.index0 }}-{{ uniq }}" data-toggle="tab">{{ tab.title }}</a>
+                    <a class="nav-link{% if loop.index0 == 0 %} active{% endif %}" href="#{{ loop.index0 }}-{{ uniq }}" data-bs-toggle="tab">{{ tab.title }}</a>
                 </li>
             {% endfor %}
         </ul>

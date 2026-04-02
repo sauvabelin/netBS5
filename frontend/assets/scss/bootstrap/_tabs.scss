@@ -1,0 +1,81 @@
+.nav-tabs {
+  margin-top: -10px;
+  background-color: white;
+  margin-left: 0;
+
+  > li.nav-item {
+    margin-bottom: -4px;
+
+    a.nav-link {
+      padding: 11px 20px;
+      margin-right: 0;
+      min-width: 60px;
+      text-align: center;
+      border-radius: 0;
+      color: $body-color;
+      border-width: 0;
+      outline: none;
+
+      .icon {
+        font-size: 1.538rem;
+        vertical-align: middle;
+        margin-right: 6px;
+        line-height: 17px;
+      }
+
+      &:hover {
+        background: transparent;
+        color: $primary;
+      }
+
+      &:active {
+        background-color: transparent;
+      }
+
+      &.active {
+        background: transparent;
+        border-bottom: 1px solid $primary;
+
+        .icon {
+          color: #555;
+        }
+
+        &:hover, &:focus {
+          color: $body-color;
+        }
+      }
+    }
+  }
+}
+
+.tab-content {
+  background: white;
+  padding: 20px;
+  margin-bottom: 40px;
+  border-radius: 0 0 3px 3px;
+
+  .tab-pane {
+    h1, h2, h3, h4, h5, h6 {
+      &:first-child {
+        margin-top: 5px;
+      }
+    }
+  }
+}
+
+@mixin tabs-color($color) {
+  > li.nav-item {
+    a.nav-link {
+      &:hover, &:focus {
+        color: $color;
+      }
+      &.active {
+        border-bottom: 2px solid $color;
+      }
+    }
+  }
+}
+
+.nav-tabs-success { @include tabs-color($success); }
+.nav-tabs-warning { @include tabs-color($warning); }
+.nav-tabs-danger  { @include tabs-color($danger); }

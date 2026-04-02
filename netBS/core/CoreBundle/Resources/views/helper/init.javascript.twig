@@ -14,14 +14,14 @@
                 $.post("{{ path('netbs.core.helper.get_help') }}", {"class": bclass, id: id}).done(function(response) {
 
                     if ($(elem).data('_show_helper')) {
-                        $(elem).popover({
+                        elem.popover('dispose');
+                        elem.popover({
                             html: true,
                             placement: pos === null ? "top" : pos,
                             container: 'body',
+                            title: response.title,
+                            content: response.content
                         });
-
-                        elem.attr("data-original-title", response.title);
-                        elem.attr("data-content", response.content);
                         elem.popover("show");
                     }
                 });
