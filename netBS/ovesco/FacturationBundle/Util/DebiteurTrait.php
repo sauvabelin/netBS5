@@ -12,15 +12,15 @@ trait DebiteurTrait
 {
     /**
      * @var string
-     * @Groups({"debiteur_id"})
      */
+    #[Groups(['debiteur_id'])]
     #[ORM\Column(name: 'debiteur_id', type: 'string')]
     protected $debiteurId;
 
     /**
      * @var BaseMembre|BaseFamille
-     * @Groups({"with_debiteur"})
      */
+    #[Groups(['with_debiteur'])]
     private $debiteur;
 
     /**

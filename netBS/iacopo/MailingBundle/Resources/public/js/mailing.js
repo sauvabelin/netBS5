@@ -17,7 +17,7 @@
         .then(function(data) {
             if (data.success) {
                 label.textContent = data.active ? 'Active' : 'Inactive';
-                label.className = 'badge ' + (data.active ? 'badge-success' : 'badge-secondary');
+                label.className = 'badge ' + (data.active ? 'text-bg-success' : 'text-bg-secondary');
             } else {
                 checkbox.checked = !checkbox.checked;
                 alert('Erreur lors de la mise à jour');
@@ -43,9 +43,9 @@
 
         $.get(window.mailingRoutes.recipients.replace('__ID__', listId))
             .done(function(data) {
-                var badge = data.count > 0 ? 'badge-info' : 'badge-warning';
+                var badge = data.count > 0 ? 'text-bg-info' : 'text-bg-warning';
                 $el.find('.badge')
-                   .removeClass('badge-secondary')
+                   .removeClass('text-bg-secondary')
                    .addClass(badge)
                    .text(data.count + ' adresse(s)');
 
@@ -56,8 +56,8 @@
             })
             .fail(function() {
                 $el.find('.badge')
-                   .removeClass('badge-secondary')
-                   .addClass('badge-danger')
+                   .removeClass('text-bg-secondary')
+                   .addClass('text-bg-danger')
                    .text('Erreur');
                 $el.attr('title', 'Erreur de chargement');
                 $el.tooltip('dispose').tooltip();
@@ -97,7 +97,7 @@
     // Initialize on DOM ready
     $(document).ready(function() {
         // Initialize Bootstrap tooltips
-        $('[data-toggle="tooltip"]').tooltip({
+        $('[data-bs-toggle="tooltip"]').tooltip({
             html: true,
             trigger: 'hover',
             container: 'body'

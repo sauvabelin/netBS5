@@ -4,8 +4,8 @@
 #}
 {% set docId = doc|replace({'@': '', '/': '-', '.': '-', '_': '-'}) %}
 <div class="card mb-3 border-info">
-    <div class="card-header bg-white d-flex justify-content-between align-items-center py-2"
-         data-toggle="collapse" data-target="#doc-{{ docId }}" style="cursor:pointer;" aria-expanded="false">
+    <div class="card-header d-flex justify-content-between align-items-center py-2"
+         data-bs-toggle="collapse" data-bs-target="#doc-{{ docId }}" style="cursor:pointer;" aria-expanded="false">
         <small class="text-info"><i class="fas fa-question-circle"></i> Aide</small>
         <i class="fas fa-chevron-down text-muted small"></i>
     </div>

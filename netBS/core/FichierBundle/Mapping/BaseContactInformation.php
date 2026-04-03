@@ -21,22 +21,22 @@ class BaseContactInformation
 
     /**
      * @var BaseEmail[]
-     * @Groups({"emails"})
      */
+    #[Groups(['emails'])]
     #[Assert\Valid]
     protected $emails;
 
     /**
      * @var BaseTelephone[]
-     * @Groups({"telephones"})
      */
+    #[Groups(['telephones'])]
     #[Assert\Valid]
     protected $telephones;
 
     /**
      * @var BaseAdresse[]
-     * @Groups({"adresses"})
      */
+    #[Groups(['adresses'])]
     #[Assert\Valid]
     protected $adresses;
 

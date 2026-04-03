@@ -19,8 +19,8 @@ class BaseAdresse implements GroupSequenceProviderInterface, EqualInterface
 
     /**
      * @var int
-     * @Groups({"default"})
      */
+    #[Groups(['default'])]
     #[ORM\Column(name: 'id', type: 'integer')]
     #[ORM\Id]
     #[ORM\GeneratedValue(strategy: 'AUTO')]
@@ -28,16 +28,16 @@ class BaseAdresse implements GroupSequenceProviderInterface, EqualInterface
 
     /**
      * @var string
-     * @Groups({"default"})
      */
+    #[Groups(['default'])]
     #[ORM\Column(name: 'rue', type: 'string', length: 255)]
     #[Assert\NotBlank(groups: ['checkable'])]
     protected $rue;
 
     /**
      * @var int
-     * @Groups({"default"})
      */
+    #[Groups(['default'])]
     #[ORM\Column(name: 'npa', type: 'integer')]
     #[Assert\Range(min: 1000, max: 99999, groups: ['checkable'])]
     #[Assert\NotBlank(groups: ['checkable'])]
@@ -45,16 +45,16 @@ class BaseAdresse implements GroupSequenceProviderInterface, EqualInterface
 
     /**
      * @var string
-     * @Groups({"default"})
      */
+    #[Groups(['default'])]
     #[ORM\Column(name: 'localite', type: 'string', length: 255)]
     #[Assert\NotBlank(groups: ['checkable'])]
     protected $localite;
 
     /**
      * @var string
-     * @Groups({"default"})
      */
+    #[Groups(['default'])]
     #[ORM\Column(name: 'pays', type: 'string', length: 255)]
     #[Assert\NotBlank(groups: ['checkable'])]
     protected $pays = 'CH';

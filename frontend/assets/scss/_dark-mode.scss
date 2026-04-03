@@ -1,0 +1,165 @@
+// Dark mode — theme color palette and edge cases.
+// All custom SCSS uses var(--bs-*) properties that adapt automatically.
+//
+// Dark mode color philosophy (Material Design 3):
+// - Filled surfaces (bg-*, badges) use dark desaturated "container" tones
+// - Buttons use mid-tones — dark enough to not pop, light enough for white text contrast
+// - Text/links use lighter tints (handled by BS5 defaults via --bs-link-color)
+
+@media (prefers-color-scheme: dark) {
+
+  // Dark theme color palette for filled surfaces (bg-*, badges, alerts, cards).
+  // These are dark, desaturated "container" tones — ~30-40% brightness of light-mode colors.
+  :root {
+    --bs-primary:     #1a4a8a;
+    --bs-primary-rgb: 26, 74, 138;
+    --bs-success:     #1a5c32;
+    --bs-success-rgb: 26, 92, 50;
+    --bs-info:        #14626e;
+    --bs-info-rgb:    20, 98, 110;
+    --bs-warning:     #7a5e00;
+    --bs-warning-rgb: 122, 94, 0;
+    --bs-danger:      #8b2029;
+    --bs-danger-rgb:  139, 32, 41;
+  }
+
+  // Button dark palette — mid-tones between container and light-mode colors.
+  // Dark enough to feel muted, light enough for white text to maintain 4.5:1 contrast.
+  .btn-primary {
+    --bs-btn-color: #fff;
+    --bs-btn-bg: #1a5cb8;
+    --bs-btn-border-color: #1a5cb8;
+    --bs-btn-hover-bg: #1752a8;
+    --bs-btn-hover-border-color: #14499a;
+    --bs-btn-active-bg: #14499a;
+    --bs-btn-active-border-color: #12408c;
+    --bs-btn-disabled-bg: #1a5cb8;
+    --bs-btn-disabled-border-color: #1a5cb8;
+  }
+
+  .btn-success {
+    --bs-btn-color: #fff;
+    --bs-btn-bg: #1e7335;
+    --bs-btn-border-color: #1e7335;
+    --bs-btn-hover-bg: #1a662f;
+    --bs-btn-hover-border-color: #175a29;
+    --bs-btn-active-bg: #175a29;
+    --bs-btn-active-border-color: #144e24;
+    --bs-btn-disabled-bg: #1e7335;
+    --bs-btn-disabled-border-color: #1e7335;
+  }
+
+  .btn-danger {
+    --bs-btn-color: #fff;
+    --bs-btn-bg: #a12734;
+    --bs-btn-border-color: #a12734;
+    --bs-btn-hover-bg: #91232e;
+    --bs-btn-hover-border-color: #821f2a;
+    --bs-btn-active-bg: #821f2a;
+    --bs-btn-active-border-color: #741b25;
+    --bs-btn-disabled-bg: #a12734;
+    --bs-btn-disabled-border-color: #a12734;
+  }
+
+  .btn-info {
+    --bs-btn-color: #fff;
+    --bs-btn-bg: #157b8a;
+    --bs-btn-border-color: #157b8a;
+    --bs-btn-hover-bg: #126e7c;
+    --bs-btn-hover-border-color: #10626e;
+    --bs-btn-active-bg: #10626e;
+    --bs-btn-active-border-color: #0e5661;
+    --bs-btn-disabled-bg: #157b8a;
+    --bs-btn-disabled-border-color: #157b8a;
+  }
+
+  .btn-warning {
+    --bs-btn-color: #fff;
+    --bs-btn-bg: #9a7600;
+    --bs-btn-border-color: #9a7600;
+    --bs-btn-hover-bg: #8a6a00;
+    --bs-btn-hover-border-color: #7a5e00;
+    --bs-btn-active-bg: #7a5e00;
+    --bs-btn-active-border-color: #6b5200;
+    --bs-btn-disabled-bg: #9a7600;
+    --bs-btn-disabled-border-color: #9a7600;
+  }
+
+  // Toggle switches — darker track and thumb for dark mode
+  .bs-switch .slider {
+    background-color: #495057;
+  }
+
+  .bs-switch .slider:before {
+    background-color: #adb5bd;
+  }
+
+  .bs-switch input:checked + .slider {
+    background-color: var(--bs-primary);
+  }
+
+  .bs-switch input:checked + .slider:before {
+    background-color: #fff;
+  }
+
+  .bs-switch input:focus + .slider {
+    box-shadow: 0 0 1px var(--bs-primary);
+  }
+
+  // Logo — invert black monochrome logo to white
+  .menu-logo img {
+    filter: invert(1);
+  }
+
+  // Google Calendar iframe — invert colors since we can't style iframe content
+  iframe[src*="calendar.google.com"] {
+    filter: invert(0.85) hue-rotate(180deg);
+    border-radius: 4px;
+  }
+
+  // Override inline border:#eee from renderers and tables
+  [style*="border:1px solid #eee"],
+  [style*="border: 1px solid #eee"] {
+    border-color: var(--bs-border-color) !important;
+  }
+
+  // Override inline white/light backgrounds from Twig templates and
+  // WYSIWYG-generated content (stored in database with inline styles)
+  [style*="background: white"],
+  [style*="background:white"],
+  [style*="background-color: white"],
+  [style*="background-color:white"],
+  [style*="background-color: rgb(255, 255, 255)"],
+  [style*="background-color: rgb(255,255,255)"],
+  [style*="background-color:#fff"],
+  [style*="background-color: #fff"],
+  [style*="background-color:#ffffff"],
+  [style*="background-color: #ffffff"] {
+    background-color: transparent !important;
+  }
+
+  [style*="background:#eeeeee"],
+  [style*="background: #eeeeee"],
+  [style*="background:#eee"] {
+    background: var(--bs-tertiary-bg) !important;
+  }
+
+  [style*="background:#fcf8e3"] {
+    background: var(--bs-warning-bg-subtle) !important;
+  }
+
+  // Strip white/black text colors from WYSIWYG content that conflict with dark mode
+  [style*="color: rgb(0, 0, 0)"],
+  [style*="color:rgb(0,0,0)"],
+  [style*="color:#000"],
+  [style*="color: #000"],
+  [style*="color:#000000"],
+  [style*="color: #000000"] {
+    color: var(--bs-body-color) !important;
+  }
+
+  // News channel badges — database-driven colors we can't control via variables
+  .channel {
+    filter: brightness(0.65) saturate(0.7);
+  }
+}

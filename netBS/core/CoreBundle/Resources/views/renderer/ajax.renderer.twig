@@ -46,7 +46,7 @@
                 {% if table.model.searchTerms|length > 0 %}
                     <div class="dataTables_filter">
                         <label class="d-flex align-items-center">Search:
-                            <input type="search" class="ml-1 form-control form-control-sm" placeholder="" v-model="search">
+                            <input type="search" class="ms-1 form-control form-control-sm" placeholder="" v-model="search">
                         </label>
                     </div>
                 {% endif %}
@@ -56,9 +56,9 @@
             <thead>
             <tr>
                 <th data-orderDataType="checkbox" style="width:30px;">
-                    <div class="custom-control custom-checkbox" style="position:relative;bottom:14px;">
-                        <input id="{{ mainCheckboxId }}" class="custom-control-input" type="checkbox" @click="toggleAll">
-                        <label class="custom-control-label" for="{{ mainCheckboxId }}"></label>
+                    <div class="form-check">
+                        <input id="{{ mainCheckboxId }}" class="form-check-input" type="checkbox" @click="toggleAll">
+                        <label class="form-check-label" for="{{ mainCheckboxId }}"></label>
                     </div>
                 </th>
 
@@ -70,9 +70,9 @@
             <tbody>
                 <tr v-for="item in items" :key="item[0]">
                     <td>
-                        <div class="custom-control custom-checkbox" style="position:relative;bottom:14px;">
-                            <input :id="'{{ tableId }}' + item.id" class="{{ checkboxClass }} custom-control-input" :checked="selectedIds.includes(item.id)" type="checkbox" @click="toggleSelected(item.id)">
-                            <label class="custom-control-label" :for="'{{ tableId }}' + item.id"></label>
+                        <div class="form-check">
+                            <input :id="'{{ tableId }}' + item.id" class="{{ checkboxClass }} form-check-input" :checked="selectedIds.includes(item.id)" type="checkbox" @click="toggleSelected(item.id)">
+                            <label class="form-check-label" :for="'{{ tableId }}' + item.id"></label>
                         </div>
                     </td>
                     <td v-for="(val, kv) in item.row" v-html="val" :key="kv"></td>

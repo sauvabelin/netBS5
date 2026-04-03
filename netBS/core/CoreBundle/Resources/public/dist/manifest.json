@@ -1,4 +1,4 @@
 {
-  "dist/app.css": "/dist/app.css",
-  "dist/app.js": "/dist/app.js"
+  "dist/app.css": "/bundles/netbscore/dist/app.css",
+  "dist/app.js": "/bundles/netbscore/dist/app.js"
 }

@@ -7,7 +7,7 @@
             {% if title %}
                 <div class="modal-header">
                     <h5 class="modal-title">{{ title }}</h5>
-                    <button type="button" data-dismiss="modal" aria-hidden="true" class="close"><span class="fas fa-times"></span></button>
+                    <button type="button" data-bs-dismiss="modal" aria-label="Close" class="btn-close"></button>
                 </div>
             {% endif %}
 
@@ -17,7 +17,7 @@
 
             <div class="modal-footer">
                 {% block footer %}
-                    <button type="button" data-dismiss="modal" class="btn btn-secondary">Fermer</button>
+                    <button type="button" data-bs-dismiss="modal" class="btn btn-secondary">Fermer</button>
                     <button type="button" data-modal-validate id="validate-modal-btn" class="btn btn-primary">Valider</button>
                 {% endblock %}
             </div>

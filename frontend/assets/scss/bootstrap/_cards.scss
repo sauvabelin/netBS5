@@ -1,0 +1,48 @@
+.card {
+    background-color: var(--bs-body-bg);
+    margin-bottom: 1rem;
+    box-shadow: var(--bs-box-shadow-sm);
+    border: none;
+    border-radius: $border-radius;
+    display: block;
+
+    &.bg-success, &.bg-primary, &.bg-info, &.bg-danger, &.bg-warning {
+        .card-title, .card-subtitle {
+            color: white;
+        }
+    }
+}
+
+a.card:hover {
+    text-decoration: none;
+}
+
+.card-table .card-body {
+    padding: 0;
+
+    .netbs-renderer, .basic-renderer, th {
+        border: none !important;
+    }
+}
+
+.card-header {
+    padding: 1.5rem 0 1rem 0;
+    margin: 0 1.5rem;
+    background: transparent;
+
+    &.no-divider {
+        border-bottom: none;
+    }
+
+    .card-title {
+        font-size: 1.25rem;
+        color: var(--bs-body-color);
+        margin: 0;
+    }
+
+    .card-subtitle {
+        color: var(--bs-secondary-color);
+        font-size: 0.9rem;
+        margin-top: 0.75rem;
+    }
+}

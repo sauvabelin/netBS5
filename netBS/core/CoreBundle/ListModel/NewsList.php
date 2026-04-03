@@ -67,7 +67,7 @@ class NewsList extends BaseListModel
                 }
             ])
             ->addColumn("Epinglée", function(News $news) {
-                return $news->isPinned() ? "<span class='badge badge-success'>Oui</span>" : "Non";
+                return $news->isPinned() ? "<span class='badge text-bg-success'>Oui</span>" : "Non";
             }, SimpleColumn::class)
             ->addColumn("Date", "createdAt", DateTimeColumn::class)
             ->addColumn("Publiée par", "user", HelperColumn::class)

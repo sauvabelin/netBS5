@@ -82,9 +82,9 @@ class FactureModelsList extends BaseListModel
             ->addColumn('Règle', null, ClosureColumn::class, [
                 ClosureColumn::CLOSURE => function(FactureModel $model) {
                     $rule = $model->getApplicationRule();
-                    if (!$rule) return '<span class="badge badge-secondary">Aucune</span>';
+                    if (!$rule) return '<span class="badge text-bg-secondary">Aucune</span>';
                     $escaped = htmlspecialchars($rule, ENT_QUOTES, 'UTF-8');
-                    return "<span class='badge badge-warning' data-toggle='tooltip' data-placement='top' title='{$escaped}' style='cursor:help;'>Active</span>";
+                    return "<span class='badge text-bg-warning' data-bs-toggle='tooltip' data-placement='top' title='{$escaped}' style='cursor:help;'>Active</span>";
                 }
             ])
             ->addColumn('Poids', null, XEditableColumn::class, [

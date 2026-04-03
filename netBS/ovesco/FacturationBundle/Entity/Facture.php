@@ -25,8 +25,8 @@ class Facture
 
     /**
      * @var int
-     * @Groups({"default"})
      */
+    #[Groups(['default'])]
     #[ORM\Column(name: 'id', type: 'integer')]
     #[ORM\Id]
     #[ORM\GeneratedValue(strategy: 'AUTO')]
@@ -34,57 +34,57 @@ class Facture
 
     /**
      * @var int
-     * @Groups({"default"})
      */
+    #[Groups(['default'])]
     #[ORM\Column(name: 'old_fichier_id', type: 'integer')]
     protected $oldFichierId = -1;
 
     /**
      * @var string
-     * @Groups({"default"})
      */
+    #[Groups(['default'])]
     #[ORM\Column(name: 'statut', type: 'string', length: 255)]
     protected $statut = self::OUVERTE;
 
     /**
      * @var \DateTime
-     * @Groups({"default"})
      */
+    #[Groups(['default'])]
     #[ORM\Column(name: 'date', type: 'datetime')]
     protected $date;
 
     /**
      * @var Creance[]
-     * @Groups({"facture_with_creances"})
      */
+    #[Groups(['facture_with_creances'])]
     #[ORM\OneToMany(targetEntity: Creance::class, mappedBy: 'facture', fetch: 'EAGER', cascade: ['persist', 'remove'])]
     protected $creances;
 
     /**
      * @var Rappel[]
-     * @Groups({"default"})
      */
+    #[Groups(['default'])]
     #[ORM\OneToMany(targetEntity: Rappel::class, mappedBy: 'facture', cascade: ['persist', 'remove'], fetch: 'EAGER')]
     protected $rappels;
 
     /**
      * @var Paiement[]
-     * @Groups({"facture_with_paiements"})
      */
+    #[Groups(['facture_with_paiements'])]
     #[ORM\OneToMany(targetEntity: Paiement::class, mappedBy: 'facture', cascade: ['persist', 'remove'], fetch: 'EAGER')]
     protected $paiements;
 
     /**
      * @var Compte
-     * @Groups({"default"})
      */
+    #[Groups(['default'])]
     #[ORM\ManyToOne(targetEntity: Compte::class)]
     protected $compteToUse;
 
     /**
      * @var FactureModel|null
-     * @Groups({"default"})
      */
+    #[Groups(['default'])]
     #[ORM\ManyToOne(targetEntity: FactureModel::class)]
     protected $factureModel;
 

@@ -68,7 +68,7 @@ class MailingListModel extends BaseListModel
                 ClosureColumn::CLOSURE => function(MailingList $list) {
                     $checked = $list->isActive() ? 'checked' : '';
                     $label = htmlspecialchars($list->isActive() ? 'Active' : 'Inactive', ENT_QUOTES, 'UTF-8');
-                    $badgeClass = $list->isActive() ? 'badge-success' : 'badge-secondary';
+                    $badgeClass = $list->isActive() ? 'text-bg-success' : 'text-bg-secondary';
                     $id = (int)$list->getId(); // Ensure ID is an integer
                     return "
                         <div class='custom-control custom-switch' onclick='event.stopPropagation()'>
@@ -90,8 +90,8 @@ class MailingListModel extends BaseListModel
                     $targetCount = (int)$list->getTargets()->count();
 
                     // Render placeholder badge - actual count loaded via AJAX on hover
-                    return "<span class='recipient-count' data-list-id='{$id}' data-toggle='tooltip' title='Survolez pour charger...'>"
-                         . "<span class='badge badge-secondary'>{$targetCount} cible(s)</span>"
+                    return "<span class='recipient-count' data-list-id='{$id}' data-bs-toggle='tooltip' title='Survolez pour charger...'>"
+                         . "<span class='badge text-bg-secondary'>{$targetCount} cible(s)</span>"
                          . "</span>";
                 }
             ])

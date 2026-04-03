@@ -24,30 +24,30 @@ abstract class BaseGeniteur extends Personne implements EqualInterface
 
     /**
      * @var string
-     * @Groups({"default"})
      */
+    #[Groups(['default'])]
     #[ORM\Column(name: 'nom', type: 'string', length: 255, nullable: true)]
     protected $nom;
 
     /**
      * @var string
-     * @Groups({"details"})
      */
+    #[Groups(['details'])]
     #[ORM\Column(name: 'profession', type: 'string', length: 255, nullable: true)]
     protected $profession;
 
     /**
      * @var string
-     * @Groups({"details"})
      */
+    #[Groups(['details'])]
     #[ORM\Column(name: 'statut', type: 'string', length: 255)]
     #[Assert\NotBlank]
     protected $statut;
 
     /**
      * @var BaseFamille
-     * @Groups({"geniteurFamille"})
      */
+    #[Groups(['geniteurFamille'])]
     #[Assert\NotBlank]
     protected $famille;
 

@@ -33,7 +33,7 @@
 
             flex:1;
             position:relative;
-            background:white;
+            background:var(--bs-body-bg);
         }
 
         .news-item-right .bg {
@@ -61,7 +61,7 @@
             <div>
                 <div class="d-flex">
                     {% if item.isPinned %}
-                        <div class="channel mr-1" style="background:#b6b62d">Important</div>
+                        <div class="channel me-1" style="background:#b6b62d">Important</div>
                     {% endif %}
                     <div class="channel" style="background:{{ item.channel.color }}">{{ item.channel.nom }}</div>
                 </div>
@@ -92,7 +92,7 @@
 
 <hr/>
 <div class="d-flex justify-content-end">
-    <a class="btn btn-secondary mr-2" href="{{ path('netbs.core.news.read_news') }}">Lire toutes les news</a>
+    <a class="btn btn-secondary me-2" href="{{ path('netbs.core.news.read_news') }}">Lire toutes les news</a>
     {% if channels|length > 0 %}
     <button class="btn btn-primary" data-modal data-modal-url="{{ path('netbs.core.news.modal_edit_news') }}">Ajouter une news</button>
     {% endif %}

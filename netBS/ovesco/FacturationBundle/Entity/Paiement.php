@@ -28,29 +28,29 @@ class Paiement
 
     /**
      * @var float
-     * @Groups({"default"})
      */
+    #[Groups(['default'])]
     #[ORM\Column(name: 'montant', type: 'float')]
     protected $montant;
 
     /**
      * @var \DateTime
-     * @Groups({"default"})
      */
+    #[Groups(['default'])]
     #[ORM\Column(name: 'date', type: 'datetime')]
     protected $date;
 
     /**
      * @var Facture
-     * @Groups({"paiement_with_facture"})
      */
+    #[Groups(['paiement_with_facture'])]
     #[ORM\ManyToOne(targetEntity: Facture::class, inversedBy: 'paiements')]
     protected $facture;
 
     /**
      * @var Compte
-     * @Groups({"paiement_with_compte"})
      */
+    #[Groups(['paiement_with_compte'])]
     #[ORM\ManyToOne(targetEntity: Compte::class)]
     protected $compte;
 

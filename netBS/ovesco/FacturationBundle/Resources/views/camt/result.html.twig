@@ -17,14 +17,14 @@
             <div class="card card-table">
                 <div class="card-header" id="headingOne">
                     <h2 class="mb-0">
-                        <button class="btn btn-link text-left" type="button" data-toggle="collapse" data-target="#collapseOne">
+                        <button class="btn btn-link text-start" type="button" data-bs-toggle="collapse" data-bs-target="#collapseOne">
                             <h3 class="card-title">Factures payées et fermées</h3>
                             <h5 class="card-subtitle">{{ result.factures|length }} facture(s)</h5>
                         </button>
                     </h2>
                 </div>
 
-                <div id="collapseOne" class="collapse" data-parent="#accordionExample">
+                <div id="collapseOne" class="collapse" data-bs-parent="#accordionExample">
                     <div class="card-body">
                         {{ render_list('ovesco.facturation.given_factures', 'netbs', { factures: result.factures }) }}
                     </div>
@@ -36,13 +36,13 @@
             <div class="card card-table">
                 <div class="card-header" id="headingTwo">
                     <h2 class="mb-0">
-                        <button class="btn btn-link text-left" type="button" data-toggle="collapse" data-target="#collapseTwo">
+                        <button class="btn btn-link text-start" type="button" data-bs-toggle="collapse" data-bs-target="#collapseTwo">
                             <h3 class="card-title"><i class="fas fa-exclamation-triangle text-warning"></i> Factures partiellement payées</h3>
                             <h5 class="card-subtitle">{{ result.notEnough|length }} facture(s), ces factures ont reçu un paiement mais celui-ci n'était pas suffisant.</h5>
                         </button>
                     </h2>
                 </div>
-                <div id="collapseTwo" class="collapse" data-parent="#accordionExample">
+                <div id="collapseTwo" class="collapse" data-bs-parent="#accordionExample">
                     <div class="card-body">
                         {{ render_list('ovesco.facturation.given_factures', 'netbs', { factures: result.notEnough }) }}
                     </div>
@@ -54,13 +54,13 @@
             <div class="card card-table">
                 <div class="card-header" id="headingThree">
                     <h2 class="mb-0">
-                        <button class="btn btn-link text-left" type="button" data-toggle="collapse" data-target="#collapseThree">
+                        <button class="btn btn-link text-start" type="button" data-bs-toggle="collapse" data-bs-target="#collapseThree">
                             <h3 class="card-title"><i class="fas fa-exclamation-triangle text-warning"></i> Paiements à double</h3>
                             <h5 class="card-subtitle">{{ result.doublePaiements|length }} factures concernées par des paiements à double! Ceux-ci ont été comptabilisés, veuillez les supprimer à la main sinon</h5>
                         </button>
                     </h2>
                 </div>
-                <div id="collapseThree" class="collapse" data-parent="#accordionExample">
+                <div id="collapseThree" class="collapse" data-bs-parent="#accordionExample">
                     <div class="card-body">
                         {{ render_list('ovesco.facturation.given_factures', 'netbs', { factures: result.doublePaiements }) }}
                     </div>
@@ -72,13 +72,13 @@
                 <div class="card card-table">
                     <div class="card-header" id="headingThree">
                         <h2 class="mb-0">
-                            <button class="btn btn-link text-left" type="button" data-toggle="collapse" data-target="#alreadyPaid">
+                            <button class="btn btn-link text-start" type="button" data-bs-toggle="collapse" data-bs-target="#alreadyPaid">
                                 <h3 class="card-title"><i class="fas fa-exclamation-triangle text-warning"></i> Facture déjà payée</h3>
                                 <h5 class="card-subtitle">{{ result.alreadyPaid|length }} factures étaient déjà payées et ont reçu un nouveau paiement</h5>
                             </button>
                         </h2>
                     </div>
-                    <div id="alreadyPaid" class="collapse" data-parent="#accordionExample">
+                    <div id="alreadyPaid" class="collapse" data-bs-parent="#accordionExample">
                         <div class="card-body">
                             {{ render_list('ovesco.facturation.given_factures', 'netbs', { factures: result.alreadyPaid }) }}
                         </div>

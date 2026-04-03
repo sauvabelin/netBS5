@@ -20,8 +20,8 @@ class BaseTelephone
 
     /**
      * @var int
-     * @Groups({"default"})
      */
+    #[Groups(['default'])]
     #[ORM\Column(name: 'id', type: 'integer')]
     #[ORM\Id]
     #[ORM\GeneratedValue(strategy: 'AUTO')]
@@ -29,8 +29,8 @@ class BaseTelephone
 
     /**
      * @var string
-     * @Groups({"default"})
      */
+    #[Groups(['default'])]
     #[ORM\Column(name: 'telephone', type: 'string', length: 255)]
     #[Assert\NotBlank]
     protected $telephone;
