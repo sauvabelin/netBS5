@@ -26,15 +26,15 @@ class Rappel
 
     /**
      * @var Facture
-     * @Groups({"rappel_with_facture"})
      */
+    #[Groups(['rappel_with_facture'])]
     #[ORM\ManyToOne(targetEntity: Facture::class, inversedBy: 'rappels')]
     protected $facture;
 
     /**
      * @var \DateTime
-     * @Groups({"default"})
      */
+    #[Groups(['default'])]
     #[ORM\Column(type: 'datetime', name: 'date')]
     protected $date;
 

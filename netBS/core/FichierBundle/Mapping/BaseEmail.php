@@ -18,8 +18,8 @@ class BaseEmail
 
     /**
      * @var int
-     * @Groups({"default"})
      */
+    #[Groups(['default'])]
     #[ORM\Column(name: 'id', type: 'integer')]
     #[ORM\Id]
     #[ORM\GeneratedValue(strategy: 'AUTO')]
@@ -27,8 +27,8 @@ class BaseEmail
 
     /**
      * @var string
-     * @Groups({"default"})
      */
+    #[Groups(['default'])]
     #[ORM\Column(name: 'email', type: 'string', length: 255)]
     #[Assert\Email]
     #[Assert\NotBlank]

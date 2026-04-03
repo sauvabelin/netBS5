@@ -19,8 +19,8 @@ trait DebiteurTrait
 
     /**
      * @var BaseMembre|BaseFamille
-     * @Groups({"with_debiteur"})
      */
+    #[Groups(['with_debiteur'])]
     private $debiteur;
 
     /**
