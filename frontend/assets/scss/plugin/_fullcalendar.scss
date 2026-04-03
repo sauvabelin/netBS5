@@ -1,0 +1,80 @@
+// FullCalendar theme integration with Bootstrap 5 CSS variables.
+// Makes FullCalendar adapt to both light and dark mode automatically.
+
+// Light mode defaults — match our app's light theme
+:root {
+  --fc-border-color: var(--bs-border-color);
+  --fc-page-bg-color: var(--bs-body-bg);
+  --fc-neutral-bg-color: var(--bs-tertiary-bg);
+  --fc-neutral-text-color: var(--bs-secondary-color);
+  --fc-today-bg-color: rgba(var(--bs-primary-rgb), 0.08);
+  --fc-list-event-hover-bg-color: var(--bs-tertiary-bg);
+  --fc-button-bg-color: var(--bs-primary);
+  --fc-button-border-color: var(--bs-primary);
+  --fc-button-hover-bg-color: #0069d9;
+  --fc-button-hover-border-color: #0062cc;
+  --fc-button-active-bg-color: #0062cc;
+  --fc-button-active-border-color: #005cbf;
+}
+
+// FullCalendar element overrides using BS variables
+.fc {
+  // Text color
+  color: var(--bs-body-color);
+
+  // Toolbar buttons — use BS5 button styling
+  .fc-button-primary {
+    font-weight: 700;
+    border-radius: 2px;
+  }
+
+  // Day headers
+  .fc-col-header-cell {
+    background: var(--bs-tertiary-bg);
+  }
+
+  // Event text
+  .fc-event {
+    font-size: 0.85em;
+  }
+
+  // Day numbers
+  .fc-daygrid-day-number {
+    color: var(--bs-body-color);
+    text-decoration: none;
+  }
+
+  // "More" link
+  .fc-daygrid-more-link {
+    color: var(--bs-body-color);
+  }
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --fc-button-bg-color: #1a5cb8;
+    --fc-button-border-color: #1a5cb8;
+    --fc-button-hover-bg-color: #1752a8;
+    --fc-button-hover-border-color: #14499a;
+    --fc-button-active-bg-color: #14499a;
+    --fc-button-active-border-color: #12408c;
+    --fc-today-bg-color: rgba(var(--bs-primary-rgb), 0.15);
+  }
+
+  .fc {
+    // Non-current month days
+    .fc-day-other .fc-daygrid-day-number {
+      color: var(--bs-tertiary-color);
+    }
+
+    // Popover (more events)
+    .fc-popover {
+      background: var(--bs-body-bg);
+      border-color: var(--bs-border-color);
+    }
+
+    .fc-popover-header {
+      background: var(--bs-secondary-bg);
+    }
+  }
+}

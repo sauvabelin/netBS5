@@ -88,6 +88,30 @@ class GoogleCalendarManager {
         }
     }
 
+    public function listCalendarEvents(string $calendarId, \DateTimeInterface $start, \DateTimeInterface $end): array {
+        $events = $this->service->events->listEvents($calendarId, [
+            'maxResults' => 2500,
+            'singleEvents' => true,
+            'orderBy' => 'startTime',
+            'timeMin' => $start->format('c'),
+            'timeMax' => $end->format('c'),
+        ]);
+
+        $result = [];
+        foreach ($events->getItems() as $event) {
+            $eventStart = $event->getStart()->getDateTime() ?: $event->getStart()->getDate();
+            $eventEnd = $event->getEnd()->getDateTime() ?: $event->getEnd()->getDate();
+
+            $result[] = [
+                'title' => $event->getSummary(),
+                'start' => $eventStart,
+                'end' => $eventEnd,
+            ];
+        }
+
+        return $result;
+    }
+
     public function listReservations(Cabane $cabane, $start = null, $end = null) {
         $month = intval(date('m'));
         $year = date('Y');

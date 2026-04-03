@@ -111,12 +111,6 @@
     filter: invert(1);
   }
 
-  // Google Calendar iframe — invert colors since we can't style iframe content
-  iframe[src*="calendar.google.com"] {
-    filter: invert(0.85) hue-rotate(180deg);
-    border-radius: 4px;
-  }
-
   // Override inline border:#eee from renderers and tables
   [style*="border:1px solid #eee"],
   [style*="border: 1px solid #eee"] {

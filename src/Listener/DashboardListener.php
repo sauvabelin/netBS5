@@ -53,7 +53,7 @@ class DashboardListener
         $row->addColumn(1, 8, 7, 12)->setBlock(CardBlock::class, array(
             'title'     => 'Calendrier BS',
             'subtitle'  => 'Calendriers internes et publiques',
-            'template'  => 'block/calendrier.block.twig'
+            'template'  => 'block/calendrier.block.twig',
         ));
     }
 }
