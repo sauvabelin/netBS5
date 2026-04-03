@@ -20,8 +20,8 @@ class Creance
 
     /**
      * @var int
-     * @Groups({"default"})
      */
+    #[Groups(['default'])]
     #[ORM\Column(name: 'id', type: 'integer')]
     #[ORM\Id]
     #[ORM\GeneratedValue(strategy: 'AUTO')]
@@ -29,43 +29,43 @@ class Creance
 
     /**
      * @var string
-     * @Groups({"default"})
      */
+    #[Groups(['default'])]
     #[ORM\Column(name: 'titre', type: 'string', length: 255)]
     protected $titre;
 
     /**
      * @var \DateTime
-     * @Groups({"default"})
      */
+    #[Groups(['default'])]
     #[ORM\Column(name: 'date', type: 'datetime')]
     protected $date;
 
     /**
      * @var float
-     * @Groups({"default"})
      */
+    #[Groups(['default'])]
     #[ORM\Column(name: 'montant', type: 'float')]
     protected $montant;
 
     /**
      * @var float
-     * @Groups({"default"})
      */
+    #[Groups(['default'])]
     #[ORM\Column(name: 'rabais', type: 'float')]
     protected $rabais = 0;
 
     /**
      * @var float
-     * @Groups({"default"})
      */
+    #[Groups(['default'])]
     #[ORM\Column(name: 'rabais_if_in_famille', type: 'float')]
     protected $rabaisIfInFamille = 0;
 
     /**
      * @var Facture
-     * @Groups({"creance_with_facture"})
      */
+    #[Groups(['creance_with_facture'])]
     #[ORM\ManyToOne(targetEntity: Facture::class, inversedBy: 'creances')]
     protected $facture;
 

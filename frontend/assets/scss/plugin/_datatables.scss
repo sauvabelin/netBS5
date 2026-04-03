@@ -1,20 +1,17 @@
-.dataTables_wrapper
-{
-    padding:0;
+.dataTables_wrapper {
+    padding: 0;
 
     .dataTables_length, .dataTables_filter, .dataTables_info, .dataTables_paginate {
-
-        padding:1rem 1.5rem;
+        padding: 1rem 1.5rem;
     }
 
     table {
-
         border-collapse: collapse !important;
-        border-top:1px solid $gray-200;
-        border-bottom:1px solid $gray-200;
+        border-top: 1px solid var(--bs-border-color);
+        border-bottom: 1px solid var(--bs-border-color);
 
         tr.active td {
-            background:$gray-200;
+            background: var(--bs-secondary-bg);
         }
     }
 }

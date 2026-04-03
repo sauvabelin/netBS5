@@ -1,6 +1,6 @@
 .nav-tabs {
   margin-top: -10px;
-  background-color: white;
+  background-color: var(--bs-body-bg);
   margin-left: 0;
 
   > li.nav-item {
@@ -12,7 +12,7 @@
       min-width: 60px;
       text-align: center;
       border-radius: 0;
-      color: $body-color;
+      color: var(--bs-body-color);
       border-width: 0;
       outline: none;
 
@@ -37,11 +37,11 @@
         border-bottom: 1px solid $primary;
 
         .icon {
-          color: #555;
+          color: var(--bs-secondary-color);
         }
 
         &:hover, &:focus {
-          color: $body-color;
+          color: var(--bs-body-color);
         }
       }
     }
@@ -49,7 +49,7 @@
 }
 
 .tab-content {
-  background: white;
+  background: var(--bs-body-bg);
   padding: 20px;
   margin-bottom: 40px;
   border-radius: 0 0 3px 3px;

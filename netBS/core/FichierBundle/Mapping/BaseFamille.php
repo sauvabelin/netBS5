@@ -35,33 +35,32 @@ abstract class BaseFamille implements AdressableInterface, TelephonableInterface
 
     /**
      * @var int
-     * @Groups({"default"})
      */
     #[ORM\Column(name: 'id', type: 'integer')]
     #[ORM\Id]
     #[ORM\GeneratedValue(strategy: 'AUTO')]
+    #[Groups(['default'])]
     protected $id;
 
     /**
      * @var string
-     * @Groups({"default"})
      */
     #[ORM\Column(name: 'nom', type: 'string', length: 255)]
     #[Assert\NotBlank]
+    #[Groups(['default'])]
     protected $nom;
 
     /**
      * @var BaseMembre[]
-     *
-     * @Groups({"familleMembres"})
      */
+    #[Groups(['familleMembres'])]
     protected $membres;
 
     /**
      * @var BaseGeniteur[]
-     * @Groups({"familleGeniteurs"})
      */
     #[Assert\Valid]
+    #[Groups(['familleGeniteurs'])]
     protected $geniteurs;
 
     /**
@@ -197,8 +196,8 @@ abstract class BaseFamille implements AdressableInterface, TelephonableInterface
 
     /**
      * @return OwnableAdresse|null
-     * @Groups({"familleAdresse"})
      */
+    #[Groups(['familleAdresse'])]
     public function getSendableAdresse() {
 
         foreach($this->getAdresses() as $adresse)
@@ -229,8 +228,8 @@ abstract class BaseFamille implements AdressableInterface, TelephonableInterface
 
     /**
      * @return OwnableTelephone
-     * @Groups({"familleTelephone"})
      */
+    #[Groups(['familleTelephone'])]
     public function getSendableTelephone()
     {
         foreach($this->getTelephones() as $telephone)
@@ -261,8 +260,8 @@ abstract class BaseFamille implements AdressableInterface, TelephonableInterface
 
     /**
      * @return OwnableEmail
-     * @Groups({"familleEmail", "details"})
      */
+    #[Groups(['familleEmail', 'details'])]
     public function getSendableEmail()
     {
         foreach($this->getEmails() as $email)

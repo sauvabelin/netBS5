@@ -103,15 +103,15 @@
                         <h6 class="card-subtitle">Ajouter ce nouveau membre à une famille existante</h6>
                     </div>
 
-                    <div class="panel-body">
+                    <div class="card-body">
                         <div class="list-group">
                             <a href="#" v-on:click="selectFamily(family)" class="list-group-item" v-for="family in familyChoices" v-bind:class="{active: family.id == id}">
                                 <h4 style="margin:0 0 5px 0;">Famille {{ family.nom }}</h4>
-                                <div v-if="family.geniteurs.length > 0">
+                                <div v-if="family.geniteurs && family.geniteurs.length > 0">
                                     <strong>Parents/Représentants légaux</strong>
                                     <div v-for="geniteur in family.geniteurs">{{ geniteur.prenom }} {{ geniteur.nom }}</div>
                                 </div>
-                                <div v-if="family.membres.length > 0">
+                                <div v-if="family.membres && family.membres.length > 0">
                                     <strong>Membres actuels</strong>
                                     <div v-for="membre in family.membres">{{ membre.fullName }} <span v-if="membre.activeAttribution">: {{ membre.activeAttribution.representation }}</span></div>
                                 </div>

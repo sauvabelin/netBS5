@@ -34,6 +34,9 @@ $border-radius-sm:  2px;
 $enable-shadows:    false;
 $enable-gradients:  false;
 
+// Dark mode — use media query so it follows browser/OS preference automatically
+$color-mode-type: media-query;
+
 // Buttons
 $btn-font-weight: 700;
 
@@ -41,14 +44,5 @@ $btn-font-weight: 700;
 $input-padding-y: 0.5625rem;
 $input-padding-x: 0.5rem;
 
-// Inputs — override BS5 CSS-variable-based defaults with concrete values
-// (needed because our SCSS partials use lighten()/darken() on these)
-$input-border-color: #dee2e6;  // $gray-300
-$input-color: #495057;         // $gray-700
-
 // Tables — BS5 defaults to visible row borders; match BS4's lighter look
 $table-border-color: transparent;
-
-// Cards
-$card-cap-bg: #fff;
-$card-bg: #fff;

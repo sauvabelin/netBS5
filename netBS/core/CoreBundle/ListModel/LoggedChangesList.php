@@ -83,11 +83,11 @@ class LoggedChangesList extends BaseListModel
 
         switch($str) {
             case CRUD::UPDATE:
-                return "<span class='badge badge-primary'>Modification</span>";
+                return "<span class='badge text-bg-primary'>Modification</span>";
             case CRUD::CREATE:
-                return "<span class='badge badge-success'>Insertion</span>";
+                return "<span class='badge text-bg-success'>Insertion</span>";
             case CRUD::DELETE:
-                return "<span class='badge badge-danger'>Suppression</span>";
+                return "<span class='badge text-bg-danger'>Suppression</span>";
         }
     }
 }

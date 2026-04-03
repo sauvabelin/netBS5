@@ -12,8 +12,8 @@ trait DebiteurTrait
 {
     /**
      * @var string
-     * @Groups({"debiteur_id"})
      */
+    #[Groups(['debiteur_id'])]
     #[ORM\Column(name: 'debiteur_id', type: 'string')]
     protected $debiteurId;
 

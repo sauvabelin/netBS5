@@ -61,17 +61,17 @@ class MailingTargetListModel extends BaseListModel
                 ClosureColumn::CLOSURE => function(MailingTarget $target) {
                     switch ($target->getType()) {
                         case MailingTarget::TYPE_EMAIL:
-                            return "<span class='badge badge-info'>Email</span>";
+                            return "<span class='badge text-bg-info'>Email</span>";
                         case MailingTarget::TYPE_USER:
-                            return "<span class='badge badge-primary'>Utilisateur</span>";
+                            return "<span class='badge text-bg-primary'>Utilisateur</span>";
                         case MailingTarget::TYPE_UNITE:
-                            return "<span class='badge badge-success'>Unité</span>";
+                            return "<span class='badge text-bg-success'>Unité</span>";
                         case MailingTarget::TYPE_ROLE:
-                            return "<span class='badge badge-warning'>Rôle</span>";
+                            return "<span class='badge text-bg-warning'>Rôle</span>";
                         case MailingTarget::TYPE_LIST:
-                            return "<span class='badge badge-dark'>Liste</span>";
+                            return "<span class='badge text-bg-dark'>Liste</span>";
                         default:
-                            return "<span class='badge badge-secondary'>Inconnu</span>";
+                            return "<span class='badge text-bg-secondary'>Inconnu</span>";
                     }
                 }
             ])
@@ -86,12 +86,12 @@ class MailingTargetListModel extends BaseListModel
                     $emailsList = implode("\n", $emails);
 
                     $countBadge = $count > 0
-                        ? "<span class='badge badge-secondary ml-2'>{$count} adresses</span>"
-                        : "<span class='badge badge-warning ml-2'>0 adresses</span>";
+                        ? "<span class='badge text-bg-secondary ms-2'>{$count} adresses</span>"
+                        : "<span class='badge text-bg-warning ms-2'>0 adresses</span>";
 
                     if ($count > 0) {
                         $title = htmlspecialchars($emailsList, ENT_QUOTES, 'UTF-8');
-                        return "<span title='{$title}' style='cursor: help;' data-toggle='tooltip' data-placement='right'>{$display}{$countBadge}</span>";
+                        return "<span title='{$title}' style='cursor: help;' data-bs-toggle='tooltip' data-placement='right'>{$display}{$countBadge}</span>";
                     }
 
                     return "{$display}{$countBadge}";

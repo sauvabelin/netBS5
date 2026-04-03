@@ -27,27 +27,27 @@ abstract class BaseMembre extends Personne implements EqualInterface
 
     /**
      * @var BaseFamille
-     * @Groups({"withFamille"})
      */
+    #[Groups(['withFamille'])]
     #[Assert\NotBlank]
     protected $famille;
 
     /**
      * @var BaseAttribution[]
-     * @Groups({"withAttributions", "details"})
      */
+    #[Groups(['withAttributions', 'details'])]
     protected $attributions;
 
     /**
      * @var BaseObtentionDistinction[]
-     * @Groups({"withDistinctions", "details"})
      */
+    #[Groups(['withDistinctions', 'details'])]
     protected $obtentionsDistinction;
 
     /**
      * @var \DateTime
-     * @Groups({"default"})
      */
+    #[Groups(['default'])]
     #[ORM\Column(name: 'naissance', type: 'datetime')]
     #[Assert\Type("\DateTimeInterface")]
     #[Assert\NotBlank]
@@ -55,8 +55,8 @@ abstract class BaseMembre extends Personne implements EqualInterface
 
     /**
      * @var \DateTime
-     * @Groups({"default"})
      */
+    #[Groups(['default'])]
     #[ORM\Column(name: 'inscription', type: 'datetime')]
     #[Assert\Type("\DateTimeInterface")]
     #[Assert\NotBlank]
@@ -64,16 +64,16 @@ abstract class BaseMembre extends Personne implements EqualInterface
 
     /**
      * @var \DateTime
-     * @Groups({"default"})
      */
+    #[Groups(['default'])]
     #[ORM\Column(name: 'desinscription', type: 'datetime', nullable: true)]
     #[Assert\Type("\DateTimeInterface")]
     protected $desinscription;
 
     /**
      * @var string
-     * @Groups({"default"})
      */
+    #[Groups(['default'])]
     #[ORM\Column(name: 'statut', type: 'string', length: 255)]
     #[Assert\NotBlank]
     protected $statut;
@@ -188,8 +188,8 @@ abstract class BaseMembre extends Personne implements EqualInterface
     /**
      * Used for elastica mapping
      * @return string
-     * @Groups({"default"})
      */
+    #[Groups(['default'])]
     public function getFullName() {
 
         return $this->prenom . " " . $this->nom;
@@ -254,8 +254,8 @@ abstract class BaseMembre extends Personne implements EqualInterface
     /**
      * Retournes la première attribution active trouvée
      * @return BaseAttribution|null
-     * @Groups({"default"})
      */
+    #[Groups(['default'])]
     public function getActiveAttribution() {
 
         $attributions   = $this->getActivesAttributions();
@@ -455,9 +455,9 @@ abstract class BaseMembre extends Personne implements EqualInterface
     }
 
     /**
-     * @Groups({"membreAdresse"})
      * @return OwnableAdresse|null
      */
+    #[Groups(['membreAdresse'])]
     public function getSendableAdresse() {
 
         foreach($this->getAdresses() as $adresse)
@@ -485,9 +485,9 @@ abstract class BaseMembre extends Personne implements EqualInterface
     }
 
     /**
-     * @Groups({"membreTelephone"})
      * @return OwnableTelephone
      */
+    #[Groups(['membreTelephone'])]
     public function getSendableTelephone() {
 
         foreach($this->getTelephones() as $telephone)
@@ -515,9 +515,9 @@ abstract class BaseMembre extends Personne implements EqualInterface
     }
 
     /**
-     * @Groups({"membreEmail"})
      * @return OwnableEmail
      */
+    #[Groups(['membreEmail'])]
     public function getSendableEmail() {
 
         foreach($this->getEmails() as $email)

@@ -47,22 +47,22 @@ class Compte
 
     /**
      * @var string
-     * @Groups({"default"})
      */
+    #[Groups(['default'])]
     #[ORM\Column(name: 'addresse1', type: 'string', length: 255, nullable: true, unique: false)]
     protected $line1;
 
     /**
      * @var string
-     * @Groups({"default"})
      */
+    #[Groups(['default'])]
     #[ORM\Column(name: 'addresse2', type: 'string', length: 255, nullable: true, unique: false)]
     protected $line2;
 
     /**
      * @var string
-     * @Groups({"default"})
      */
+    #[Groups(['default'])]
     #[ORM\Column(name: 'addresse3', type: 'string', length: 255, nullable: true, unique: false)]
     protected $line3;
 

@@ -20,8 +20,8 @@ abstract class BaseAttribution
 
     /**
      * @var int
-     * @Groups({"default"})
      */
+    #[Groups(['default'])]
     #[ORM\Column(name: 'id', type: 'integer')]
     #[ORM\Id]
     #[ORM\GeneratedValue(strategy: 'AUTO')]
@@ -29,37 +29,37 @@ abstract class BaseAttribution
 
     /**
      * @var \DateTime
-     * @Groups({"default"})
      */
+    #[Groups(['default'])]
     #[ORM\Column(name: 'dateDebut', type: 'datetime')]
     #[Assert\NotBlank]
     protected $dateDebut;
 
     /**
      * @var \DateTime
-     * @Groups({"default"})
      */
+    #[Groups(['default'])]
     #[ORM\Column(name: 'dateFin', type: 'datetime', nullable: true)]
     protected $dateFin;
 
     /**
      * @var BaseGroupe
-     * @Groups({"attributionWithGroupe"})
      */
+    #[Groups(['attributionWithGroupe'])]
     #[Assert\NotBlank]
     protected $groupe;
 
     /**
      * @var BaseFonction
-     * @Groups({"attributionWithFonction"})
      */
+    #[Groups(['attributionWithFonction'])]
     #[Assert\NotBlank]
     protected $fonction;
 
     /**
      * @var BaseMembre
-     * @Groups({"attributionWithMembre"})
      */
+    #[Groups(['attributionWithMembre'])]
     #[Assert\NotBlank]
     protected $membre;
 
@@ -239,8 +239,8 @@ abstract class BaseAttribution
 
     /**
      * @return int
-     * @Groups({"default"})
      */
+    #[Groups(['default'])]
     public function getFonctionId() {
 
         return $this->fonction->getId();
@@ -248,8 +248,8 @@ abstract class BaseAttribution
 
     /**
      * @return int
-     * @Groups({"default"})
      */
+    #[Groups(['default'])]
     public function getGroupeId() {
 
         return $this->groupe->getId();
@@ -257,8 +257,8 @@ abstract class BaseAttribution
 
     /**
      * @return int
-     * @Groups({"default"})
      */
+    #[Groups(['default'])]
     public function getMembreId() {
 
         return $this->membre->getId();
@@ -266,8 +266,8 @@ abstract class BaseAttribution
 
     /**
      * @return string
-     * @Groups({"default"})
      */
+    #[Groups(['default'])]
     public function getRepresentation() {
 
         return $this->__toString();

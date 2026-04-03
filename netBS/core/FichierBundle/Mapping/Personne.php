@@ -25,8 +25,8 @@ abstract class Personne implements AdressableInterface, TelephonableInterface, E
 
     /**
      * @var int
-     * @Groups({"default"})
      */
+    #[Groups(['default'])]
     #[ORM\Column(name: 'id', type: 'integer')]
     #[ORM\Id]
     #[ORM\GeneratedValue(strategy: 'AUTO')]
@@ -34,16 +34,16 @@ abstract class Personne implements AdressableInterface, TelephonableInterface, E
 
     /**
      * @var string
-     * @Groups({"default"})
      */
+    #[Groups(['default'])]
     #[ORM\Column(name: 'prenom', type: 'string', length: 255)]
     #[Assert\NotBlank]
     protected $prenom;
 
     /**
      * @var string
-     * @Groups({"default"})
      */
+    #[Groups(['default'])]
     #[ORM\Column(name: 'sexe', type: 'string', length: 255)]
     protected $sexe;
 
