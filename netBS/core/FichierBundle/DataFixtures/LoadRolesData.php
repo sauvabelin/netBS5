@@ -6,6 +6,7 @@ use Doctrine\Bundle\FixturesBundle\FixtureGroupInterface;
 use Doctrine\Common\DataFixtures\AbstractFixture;
 use Doctrine\Common\DataFixtures\OrderedFixtureInterface;
 use Doctrine\Persistence\ObjectManager;
+use NetBS\SecureBundle\Entity\Role;
 use NetBS\SecureBundle\Service\SecureConfig;
 use Symfony\Component\Yaml\Yaml;
 
@@ -24,7 +25,7 @@ class LoadRolesData extends AbstractFixture implements OrderedFixtureInterface, 
 
         foreach($roles as $role) {
 
-            $role->setParent($this->getReference('ROLE_ADMIN'));
+            $role->setParent($this->getReference('ROLE_ADMIN', Role::class));
             $manager->persist($role);
         }
 

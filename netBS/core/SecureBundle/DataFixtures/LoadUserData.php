@@ -6,6 +6,7 @@ use Doctrine\Bundle\FixturesBundle\FixtureGroupInterface;
 use Doctrine\Common\DataFixtures\AbstractFixture;
 use Doctrine\Common\DataFixtures\OrderedFixtureInterface;
 use Doctrine\Persistence\ObjectManager;
+use NetBS\SecureBundle\Entity\Role;
 use NetBS\SecureBundle\Service\SecureConfig;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 
@@ -30,7 +31,7 @@ class LoadUserData extends AbstractFixture implements OrderedFixtureInterface, F
         $password   = $this->hasher->hashPassword($user, 'password');
         $user->setPassword($password);
 
-        $user->addRole($this->getReference('ROLE_ADMIN'));
+        $user->addRole($this->getReference('ROLE_ADMIN', Role::class));
 
         $manager->persist($user);
         $manager->flush();

@@ -6,6 +6,10 @@ use Doctrine\Bundle\FixturesBundle\FixtureGroupInterface;
 use Doctrine\Common\DataFixtures\AbstractFixture;
 use Doctrine\Common\DataFixtures\OrderedFixtureInterface;
 use Doctrine\Persistence\ObjectManager;
+use NetBS\FichierBundle\Entity\Distinction;
+use NetBS\FichierBundle\Entity\Famille;
+use NetBS\FichierBundle\Entity\Fonction;
+use NetBS\FichierBundle\Entity\Groupe;
 use NetBS\FichierBundle\Mapping\BaseMembre;
 use NetBS\FichierBundle\Mapping\Personne;
 use NetBS\FichierBundle\Service\FichierConfig;
@@ -29,14 +33,14 @@ class LoadMembreData extends AbstractFixture implements OrderedFixtureInterface,
         $config             = $this->fichierConfig;
 
         $data   = [
-            ['Alphonse', Personne::HOMME, $this->getReference('p1'), $this->getReference('CP'), $this->getReference('d1')],
-            ['Marc', Personne::HOMME, $this->getReference('p1'), $this->getReference('gars')],
-            ['André', Personne::HOMME, $this->getReference('p1'), $this->getReference('gars'), $this->getReference('d2')],
-            ['Jean', Personne::HOMME, $this->getReference('troupe'), $this->getReference('CT')],
-            ['Romain', Personne::HOMME, $this->getReference('p2'), $this->getReference('CP')],
-            ['Charles', Personne::HOMME, $this->getReference('p2'), $this->getReference('gars')],
-            ['Anthony', Personne::HOMME, $this->getReference('p2'), $this->getReference('gars')],
-            ['Joe', Personne::HOMME, $this->getReference('p2'), $this->getReference('gars')],
+            ['Alphonse', Personne::HOMME, $this->getReference('p1', Groupe::class), $this->getReference('CP', Fonction::class), $this->getReference('d1', Distinction::class)],
+            ['Marc', Personne::HOMME, $this->getReference('p1', Groupe::class), $this->getReference('gars', Fonction::class)],
+            ['André', Personne::HOMME, $this->getReference('p1', Groupe::class), $this->getReference('gars', Fonction::class), $this->getReference('d2', Distinction::class)],
+            ['Jean', Personne::HOMME, $this->getReference('troupe', Groupe::class), $this->getReference('CT', Fonction::class)],
+            ['Romain', Personne::HOMME, $this->getReference('p2', Groupe::class), $this->getReference('CP', Fonction::class)],
+            ['Charles', Personne::HOMME, $this->getReference('p2', Groupe::class), $this->getReference('gars', Fonction::class)],
+            ['Anthony', Personne::HOMME, $this->getReference('p2', Groupe::class), $this->getReference('gars', Fonction::class)],
+            ['Joe', Personne::HOMME, $this->getReference('p2', Groupe::class), $this->getReference('gars', Fonction::class)],
         ];
 
         foreach($data as $md) {
@@ -56,7 +60,7 @@ class LoadMembreData extends AbstractFixture implements OrderedFixtureInterface,
 
             $membre = $config->createMembre();
             $membre->setStatut(BaseMembre::INSCRIT)->addAttribution($attr)->setNaissance($naissance)->setPrenom($md[0])->setSexe($md[1]);
-            $membre->setFamille($this->getReference('famille' . (mt_rand(1,10) > 5 ? 1 : 2) ));
+            $membre->setFamille($this->getReference('famille' . (mt_rand(1,10) > 5 ? 1 : 2), Famille::class));
 
             if(isset($md[4])) {
 
