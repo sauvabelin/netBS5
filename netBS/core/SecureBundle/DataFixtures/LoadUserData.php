@@ -26,9 +26,10 @@ class LoadUserData extends AbstractFixture implements OrderedFixtureInterface, F
         $userClass  = $this->secureConfig->getUserClass();
 
         $user       = new $userClass();
-        $user->setUsername('admin');
+        $user->setUsername($_ENV['NETBS_ADMIN_USERNAME'] ?? 'admin');
 
-        $password   = $this->hasher->hashPassword($user, 'password');
+        $plainPassword = $_ENV['NETBS_ADMIN_PASSWORD'] ?? 'password';
+        $password   = $this->hasher->hashPassword($user, $plainPassword);
         $user->setPassword($password);
 
         $user->addRole($this->getReference('ROLE_ADMIN', Role::class));
