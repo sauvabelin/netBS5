@@ -89,6 +89,8 @@ class InstallCommand extends Command
 
         $io->writeln("clearing cache");
         $this->getApplication()->find('cache:clear')->run(new ArrayInput([]), $output);
+
+        return Command::SUCCESS;
     }
 
     protected function getBoolValue($val) {
