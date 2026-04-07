@@ -6,10 +6,10 @@ use Doctrine\Bundle\FixturesBundle\FixtureGroupInterface;
 use Doctrine\Common\DataFixtures\AbstractFixture;
 use Doctrine\Common\DataFixtures\OrderedFixtureInterface;
 use Doctrine\Persistence\ObjectManager;
+use App\Entity\BSGroupe;
 use NetBS\FichierBundle\Entity\Distinction;
 use NetBS\FichierBundle\Entity\Famille;
 use NetBS\FichierBundle\Entity\Fonction;
-use NetBS\FichierBundle\Entity\Groupe;
 use NetBS\FichierBundle\Mapping\BaseMembre;
 use NetBS\FichierBundle\Mapping\Personne;
 use NetBS\FichierBundle\Service\FichierConfig;
@@ -89,7 +89,7 @@ class LoadMembreData extends AbstractFixture implements OrderedFixtureInterface,
 
             $attr = $c->createAttribution();
             $attr->setFonction($this->getReference($fonctionRef, Fonction::class))
-                 ->setGroupe($this->getReference($groupeRef, Groupe::class))
+                 ->setGroupe($this->getReference($groupeRef, BSGroupe::class))
                  ->setDateDebut($debut);
 
             $membre = $c->createMembre();
