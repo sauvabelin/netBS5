@@ -4773,20 +4773,35 @@ Editableform based on Twitter Bootstrap 3
 (function ($) {
     "use strict";
 
+    // Resolve popover defaults, compatible with Bootstrap 4 and 5.
+    // In BS5, $.fn.popover may only be registered after DOMContentLoaded,
+    // so we provide a safe fallback to avoid breaking script execution.
+    var popoverDefaults = null;
+    try {
+        if ($.fn.popover && $.fn.popover.Constructor) {
+            popoverDefaults = $.fn.popover.Constructor.DEFAULTS || $.fn.popover.Constructor.Default;
+        }
+    } catch(e) {}
+
     //extend methods
     $.extend($.fn.editableContainer.Popup.prototype, {
         containerName: 'popover',
         containerDataName: 'bs.popover',
         innerCss: '.popover-body',
-        defaults: $.fn.popover.Constructor.DEFAULTS,
+        defaults: popoverDefaults,
 
         initContainer: function(){
+
+            // Lazy-resolve popover defaults for BS5 (registered after DOMContentLoaded)
+            if (!this.defaults && $.fn.popover && $.fn.popover.Constructor) {
+                this.defaults = $.fn.popover.Constructor.DEFAULTS || $.fn.popover.Constructor.Default;
+            }
 
             $.extend(this.containerOptions, {
                 trigger: 'manual',
                 placement: 'auto',
                 content: ' ',
-                template: this.defaults.template
+                template: this.defaults ? this.defaults.template : undefined
             });
 
             //as template property is used in inputs, hide it from popover

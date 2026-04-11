@@ -44,9 +44,9 @@
 
     {% elseif type in DATES %}
 
-        {{ registerJs(asset('bundles/netbscore/js/xeditable_hochet_datepicker.js')) }}
         {{ registerCss(asset('bundles/netbscore/lib/datetimepicker/bootstrap-datetimepicker.min.css')) }}
         {{ registerJs(asset('bundles/netbscore/lib/datetimepicker/bootstrap-datetimepicker.min.js')) }}
+        {{ registerJs(asset('bundles/netbscore/js/xeditable_hochet_datepicker.js')) }}
 
         data-type="hochetdatepicker"
         data-format="dd.mm.yyyy"
