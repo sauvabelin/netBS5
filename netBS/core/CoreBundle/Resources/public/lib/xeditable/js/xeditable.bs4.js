@@ -1297,7 +1297,8 @@
          @method activate()
          **/
         activate: function() {
-            if(this.tip && this.tip().is(':visible') && this.$form) {
+            var tip = this.tip && this.tip();
+            if(tip && tip.is(':visible') && this.$form) {
                 this.$form.data('editableform').input.activate();
             }
         }
@@ -1802,7 +1803,7 @@
                 //listen `save` event
                 this.$element.on("save.internal", $.proxy(this.save, this));
                 this.container = this.$element.data('editableContainer');
-            } else if(this.container.tip().is(':visible')) {
+            } else if(this.container && this.container.tip() && this.container.tip().is(':visible')) {
                 return;
             }
 
