@@ -1826,7 +1826,8 @@
          @param {boolean} closeAll Whether to close all other editable containers when showing this one. Default true.
          **/
         toggle: function(closeAll) {
-            if(this.container && this.container.tip().is(':visible')) {
+            var tip = this.container && this.container.tip();
+            if(tip && tip.is(':visible')) {
                 this.hide();
             } else {
                 this.show(closeAll);
@@ -4786,19 +4787,31 @@ Editableform based on Twitter Bootstrap 3
         '<h3 class="popover-header"></h3>' +
         '<div class="popover-body"></div></div>';
 
-    // Resolve popover defaults from BS4 or BS5
+    // Return a minimal defaults object for splitOptions().
+    // We intentionally do NOT use the full bootstrap.Popover.Default here —
+    // splitOptions() uses this.defaults keys to decide which options go to the
+    // popover vs the form. Using the full BS5 defaults routes too many options
+    // (with incompatible types) to the popover constructor, which strict
+    // type-checks them and throws. Only include keys we actually control.
     function resolvePopoverDefaults() {
+        var tpl = BS5_DEFAULT_TEMPLATE;
         try {
-            // BS5 native global
             if (typeof bootstrap !== 'undefined' && bootstrap.Popover && bootstrap.Popover.Default) {
-                return bootstrap.Popover.Default;
-            }
-            // BS4/BS5 jQuery shim
-            if ($.fn.popover && $.fn.popover.Constructor) {
-                return $.fn.popover.Constructor.DEFAULTS || $.fn.popover.Constructor.Default;
+                tpl = bootstrap.Popover.Default.template || tpl;
+            } else if ($.fn.popover && $.fn.popover.Constructor) {
+                var src = $.fn.popover.Constructor.DEFAULTS || $.fn.popover.Constructor.Default;
+                if (src) tpl = src.template || tpl;
             }
         } catch(e) {}
-        return { template: BS5_DEFAULT_TEMPLATE };
+        return {
+            trigger: 'manual',
+            placement: 'auto',
+            content: '',
+            html: true,
+            sanitize: false,
+            template: tpl,
+            container: false
+        };
     }
 
     // Get popover instance from element, trying BS5 then BS4 patterns
@@ -5125,9 +5138,9 @@ Editableform based on Twitter Bootstrap 3
                         // Clicked outside the datepicker, hide it
                         if (!(
                                 this.element.is(e.target) ||
-                                this.element.find(e.target).size() ||
+                                this.element.find(e.target).length ||
                                 this.picker.is(e.target) ||
-                                this.picker.find(e.target).size()
+                                this.picker.find(e.target).length
                             )) {
                             this.hide();
                         }
