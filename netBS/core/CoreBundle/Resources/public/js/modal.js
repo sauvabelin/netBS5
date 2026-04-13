@@ -22,32 +22,33 @@ var BSModal = function(path, params) {
                 toastr[data.type](data.message);
 
             else {
-                var modal = mdl.generate(data);
+                var html = mdl.generate(data);
 
-                $(document.body).append(modal);
-                var $modal      = $('#' + mdl.id);
+                $(document.body).append(html);
+                var el = document.getElementById(mdl.id);
+                var bsModal = new bootstrap.Modal(el);
+                bsModal.show();
 
-                $modal.modal();
-
-                $modal.on('hidden.bs.modal', function() {
-                    $modal.remove();
+                el.addEventListener('hidden.bs.modal', function() {
+                    bsModal.dispose();
+                    el.remove();
                 });
 
                 mdl.attachButtonEvents();
             }
 
         }).fail(function(err) {
-            var modal       = mdl.generate(err.responseText);
+            var html = mdl.generate(err.responseText);
 
-            $(document.body).append(modal);
-            var $modal      = $('#' + mdl.id);
-
-            $modal.modal();
+            $(document.body).append(html);
+            var el = document.getElementById(mdl.id);
+            var bsModal = new bootstrap.Modal(el);
+            bsModal.show();
         });
     };
 
     this.generate       = function (content) {
-        return '<div id="' + this.id + '" class="modal fade netbs-modal" data-dynamic tabindex="-1" role="dialog" aria-hidden="true">' + content + '</div>';
+        return '<div id="' + this.id + '" class="modal fade netbs-modal" tabindex="-1" aria-hidden="true">' + content + '</div>';
     };
 
     this.attachButtonEvents = function() {
@@ -85,6 +86,8 @@ var BSModal = function(path, params) {
     };
 
     this.remove = function() {
-        $('#' + this.id).modal('hide');
+        var el = document.getElementById(this.id);
+        var instance = bootstrap.Modal.getInstance(el);
+        if (instance) instance.hide();
     }
 };
