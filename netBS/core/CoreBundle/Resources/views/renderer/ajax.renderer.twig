@@ -337,7 +337,7 @@
                     pageButtons() {
                         if (this.pages < 5) {
                             const res = [];
-                            for (let i = 0; i < this.pages; i++) {
+                            for (let i = 0; i <= this.pages; i++) {
                                 res.push({ id: i, text: i+1, active: true});
                             }
                             return res;
