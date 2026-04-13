@@ -4770,39 +4770,77 @@ Editableform based on Twitter Bootstrap 3
  * ---------------------
  * requires bootstrap-popover.js
  */
+/**
+ * Editable Popover — Bootstrap 4/5 compatible bridge
+ * ---------------------
+ * BS5 changed the popover API: Constructor.DEFAULTS → Constructor.Default,
+ * instance.options → instance._config, and instance access via
+ * bootstrap.Popover.getInstance() instead of $.data('bs.popover').
+ * The jQuery shim ($(el).popover('show')) still works when jQuery is present.
+ */
 (function ($) {
     "use strict";
 
-    // Resolve popover defaults, compatible with Bootstrap 4 and 5.
-    // In BS5, $.fn.popover may not yet be registered when this IIFE runs
-    // if Bootstrap is loaded after this file. Fall back to an empty object
-    // so that for...in loops over this.defaults remain safe.
-    var popoverDefaults = {};
-    try {
-        if ($.fn.popover && $.fn.popover.Constructor) {
-            popoverDefaults = $.fn.popover.Constructor.DEFAULTS || $.fn.popover.Constructor.Default || {};
+    var BS5_DEFAULT_TEMPLATE = '<div class="popover" role="tooltip">' +
+        '<div class="popover-arrow"></div>' +
+        '<h3 class="popover-header"></h3>' +
+        '<div class="popover-body"></div></div>';
+
+    // Resolve popover defaults from BS4 or BS5
+    function resolvePopoverDefaults() {
+        try {
+            // BS5 native global
+            if (typeof bootstrap !== 'undefined' && bootstrap.Popover && bootstrap.Popover.Default) {
+                return bootstrap.Popover.Default;
+            }
+            // BS4/BS5 jQuery shim
+            if ($.fn.popover && $.fn.popover.Constructor) {
+                return $.fn.popover.Constructor.DEFAULTS || $.fn.popover.Constructor.Default;
+            }
+        } catch(e) {}
+        return { template: BS5_DEFAULT_TEMPLATE };
+    }
+
+    // Get popover instance from element, trying BS5 then BS4 patterns
+    function getPopoverInstance(el) {
+        var raw = el instanceof $ ? el[0] : el;
+        // BS5 native
+        if (typeof bootstrap !== 'undefined' && bootstrap.Popover && bootstrap.Popover.getInstance) {
+            var instance = bootstrap.Popover.getInstance(raw);
+            if (instance) return instance;
         }
-    } catch(e) {}
+        // BS4 jQuery data
+        var $el = $(raw);
+        return $el.data('bs.popover') || $el.data('popover') || null;
+    }
 
     //extend methods
     $.extend($.fn.editableContainer.Popup.prototype, {
         containerName: 'popover',
         containerDataName: 'bs.popover',
         innerCss: '.popover-body',
-        defaults: popoverDefaults,
+        defaults: resolvePopoverDefaults(),
+
+        containerClass: 'editable-container editable-popup',
+
+        // Override container() to use BS5 instance access
+        container: function() {
+            return getPopoverInstance(this.$element);
+        },
 
         initContainer: function(){
-
-            // Lazy-resolve popover defaults for BS5 (registered after DOMContentLoaded)
-            if (!this.defaults.template && $.fn.popover && $.fn.popover.Constructor) {
-                this.defaults = $.fn.popover.Constructor.DEFAULTS || $.fn.popover.Constructor.Default || {};
+            // Lazy-resolve defaults if they weren't available at load time
+            if (!this.defaults || !this.defaults.template) {
+                this.defaults = resolvePopoverDefaults();
             }
 
             $.extend(this.containerOptions, {
                 trigger: 'manual',
                 placement: 'auto',
                 content: ' ',
-                template: this.defaults.template
+                html: true,
+                sanitize: false,
+                template: this.defaults.template || BS5_DEFAULT_TEMPLATE
             });
 
             //as template property is used in inputs, hide it from popover
@@ -4836,15 +4874,28 @@ Editableform based on Twitter Bootstrap 3
         },
 
         setContainerOption: function(key, value) {
-            this.container().options[key] = value;
+            var c = this.container();
+            if (c) {
+                // BS5 uses _config, BS4 uses options
+                if (c._config) c._config[key] = value;
+                else if (c.options) c.options[key] = value;
+            }
         },
 
         setPosition: function () {
-            (function() {}).call(this.container());
+            var c = this.container();
+            if (c && c.update) {
+                c.update();
+            }
         },
 
         tip: function() {
-            return this.container() ? $(this.container().tip) : null;
+            var c = this.container();
+            if (!c) return null;
+            // BS5: tip is a getter returning DOM element
+            // BS4: tip or $tip
+            var tipEl = c.tip || c.$tip;
+            return tipEl ? $(tipEl) : null;
         }
     });
 
