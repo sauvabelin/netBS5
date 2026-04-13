@@ -1803,8 +1803,11 @@
                 //listen `save` event
                 this.$element.on("save.internal", $.proxy(this.save, this));
                 this.container = this.$element.data('editableContainer');
-            } else if(this.container && this.container.tip() && this.container.tip().is(':visible')) {
-                return;
+            } else {
+                var tip = this.container && this.container.tip();
+                if(tip && tip.is(':visible')) {
+                    return;
+                }
             }
 
             //show container
