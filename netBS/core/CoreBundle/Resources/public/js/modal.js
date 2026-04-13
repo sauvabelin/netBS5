@@ -12,6 +12,19 @@ var BSModal = function(path, params) {
     this.path           = path;
     this.id             = 'dn_modal_' + Math.floor(Math.random() * 99999);
 
+    this.showModal      = function(content) {
+        var html = this.generate(content);
+        $(document.body).append(html);
+        var el = document.getElementById(this.id);
+        var bsModal = new bootstrap.Modal(el);
+        bsModal.show();
+
+        el.addEventListener('hidden.bs.modal', function() {
+            bsModal.dispose();
+            el.remove();
+        });
+    };
+
     this.launch         = function() {
 
         var mdl = this;
@@ -22,32 +35,17 @@ var BSModal = function(path, params) {
                 toastr[data.type](data.message);
 
             else {
-                var modal = mdl.generate(data);
-
-                $(document.body).append(modal);
-                var $modal      = $('#' + mdl.id);
-
-                $modal.modal();
-
-                $modal.on('hidden.bs.modal', function() {
-                    $modal.remove();
-                });
-
+                mdl.showModal(data);
                 mdl.attachButtonEvents();
             }
 
         }).fail(function(err) {
-            var modal       = mdl.generate(err.responseText);
-
-            $(document.body).append(modal);
-            var $modal      = $('#' + mdl.id);
-
-            $modal.modal();
+            mdl.showModal(err.responseText);
         });
     };
 
     this.generate       = function (content) {
-        return '<div id="' + this.id + '" class="modal fade netbs-modal" data-dynamic tabindex="-1" role="dialog" aria-hidden="true">' + content + '</div>';
+        return '<div id="' + this.id + '" class="modal fade netbs-modal" tabindex="-1" aria-hidden="true">' + content + '</div>';
     };
 
     this.attachButtonEvents = function() {
@@ -85,6 +83,8 @@ var BSModal = function(path, params) {
     };
 
     this.remove = function() {
-        $('#' + this.id).modal('hide');
+        var el = document.getElementById(this.id);
+        var instance = bootstrap.Modal.getInstance(el);
+        if (instance) instance.hide();
     }
 };
