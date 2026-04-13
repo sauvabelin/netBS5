@@ -4843,6 +4843,14 @@ Editableform based on Twitter Bootstrap 3
                 template: this.defaults.template || BS5_DEFAULT_TEMPLATE
             });
 
+            // BS5 strictly type-checks options — remove null/undefined values
+            // that were routed here by splitOptions() so BS5 uses its own defaults
+            for (var k in this.containerOptions) {
+                if (this.containerOptions[k] === null || this.containerOptions[k] === undefined) {
+                    delete this.containerOptions[k];
+                }
+            }
+
             //as template property is used in inputs, hide it from popover
             var t;
             if(this.$element.data('template')) {
