@@ -3,8 +3,6 @@
 {% block body %}
 
     {{ registerCss(asset('bundles/netbscore/css/quickfix.css')) }}
-    {{ registerCss('https://unpkg.com/nprogress@0.2.0/nprogress.css') }}
-    {{ registerJs('https://unpkg.com/nprogress@0.2.0/nprogress.js') }}
 
     <div class="app">
 
@@ -19,7 +17,7 @@
             <!-- END Header -->
 
             <!-- Main Container -->
-            <div class="main-content">
+            <div class="main-content" data-controller="tooltip">
                 {% block main %}{% endblock %}
             </div>
             <!-- END Main Container -->
@@ -35,22 +33,6 @@
 
     {% include 'partial/_toasts.html.twig' %}
 
-    {% set _ajax_loader_script %}
-    <script>
-        $(document).bind("ajaxSend", function(){
-            NProgress.start();
-        }).bind("ajaxComplete", function(){
-            NProgress.done();
-        });
-    </script>
-    {% endset %}
-
-    {{ registerScript(_ajax_loader_script) }}
-
     {% include '@NetBSCore/helper/init.javascript.twig' %}
 
-    {% set _tooltip_init %}
-    <script>$(function(){ $('[data-bs-toggle="tooltip"]').tooltip({html:true, trigger:'hover', container:'body'}); });</script>
-    {% endset %}
-    {{ registerScript(_tooltip_init) }}
 {% endblock %}
