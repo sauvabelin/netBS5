@@ -28,4 +28,4 @@
 {% endif %}
 
 <button class="btn btn-space btn-primary"
-        data-modal data-modal-url="{{ path('netbs.fichier.email.modal_creation', {ownerId: item.id, ownerType: get_class(item)|toBase64}) }}">Nouvel E-mail</button>
+        data-controller="modal" data-modal-url-value="{{ path('netbs.fichier.email.modal_creation', {ownerId: item.id, ownerType: get_class(item)|toBase64}) }}" data-action="click->modal#open">Nouvel E-mail</button>

@@ -2,10 +2,10 @@
 
 {% set title = "Gestion des news" %}
 
-{% set addChannelAction %}<button class='btn btn-primary' data-modal data-modal-url='{{ path('netbs.core.news.modal_add_channel') }}'>
+{% set addChannelAction %}<button class='btn btn-primary' data-controller="modal" data-modal-url-value='{{ path('netbs.core.news.modal_add_channel') }}' data-action="click->modal#open">
     Ajouter une channel</button>{% endset %}
 
-{% set addNewsAction %}<button class='btn btn-success' data-modal data-modal-url='{{ path('netbs.core.news.modal_edit_news') }}'>
+{% set addNewsAction %}<button class='btn btn-success' data-controller="modal" data-modal-url-value='{{ path('netbs.core.news.modal_edit_news') }}' data-action="click->modal#open">
         Nouvelle news</button>{% endset %}
 
 {% block main %}

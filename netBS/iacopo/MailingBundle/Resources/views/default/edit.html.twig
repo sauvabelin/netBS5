@@ -4,7 +4,6 @@
 
 {% block main %}
     {{ registerJs(asset('bundles/netbscore/js/modal.js')) }}
-    {{ registerJs(asset('bundles/iacopomailing/js/mailing.js')) }}
 
     <div class="container-fluid">
         <div class="mb-3">
@@ -97,26 +96,31 @@
                     </div>
                 </div>
 
-                <div class="card">
+                <div class="card" data-controller="mailing">
                     <div class="card-header">
                         <h5 class="card-title mb-0">Ajouter un destinataire</h5>
                     </div>
                     <div class="card-body">
                         {{ form_start(targetForm) }}
-                        {{ form_row(targetForm.type) }}
-                        <div id="email-field">
+                        {{ form_row(targetForm.type, {
+                            attr: {
+                                'data-mailing-target': 'typeSelect',
+                                'data-action': 'change->mailing#updateTargetFields'
+                            }
+                        }) }}
+                        <div data-mailing-target="field" data-field-type="email">
                             {{ form_row(targetForm.targetEmail) }}
                         </div>
-                        <div id="user-field" style="display:none">
+                        <div data-mailing-target="field" data-field-type="user" style="display:none">
                             {{ form_row(targetForm.targetUser) }}
                         </div>
-                        <div id="group-field" style="display:none">
+                        <div data-mailing-target="field" data-field-type="unite" style="display:none">
                             {{ form_row(targetForm.targetGroup) }}
                         </div>
-                        <div id="fonction-field" style="display:none">
+                        <div data-mailing-target="field" data-field-type="role" style="display:none">
                             {{ form_row(targetForm.targetFonction) }}
                         </div>
-                        <div id="list-field" style="display:none">
+                        <div data-mailing-target="field" data-field-type="list" style="display:none">
                             {{ form_row(targetForm.targetList) }}
                         </div>
                         <button type="submit" class="btn btn-primary w-100">

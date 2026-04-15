@@ -4,7 +4,7 @@
 
     {{ registerCss(asset('bundles/netbscore/css/quickfix.css')) }}
 
-    <div class="app">
+    <div class="app" data-controller="mobile">
 
         <!-- Sidebar -->
         {{ render(controller('NetBS\\CoreBundle\\Controller\\MenuController::renderMainMenuAction')) }}
@@ -24,9 +24,6 @@
 
         </div>
     </div>
-
-    {{ registerJs(asset('bundles/netbscore/js/menu.js')) }}
-    {{ registerJs(asset('bundles/netbscore/js/mobile.js')) }}
 
     {{ registerCss(asset('bundles/netbscore/lib/toastr/toastr.min.css')) }}
     {{ registerJs(asset('bundles/netbscore/lib/toastr/toastr.min.js')) }}

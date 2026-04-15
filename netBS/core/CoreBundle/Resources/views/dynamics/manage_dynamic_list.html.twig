@@ -64,7 +64,7 @@
                         </div>
                         <div class="card-footer">
                             <div role="group" class="btn-group btn-group-justified">
-                                <button class="btn btn-secondary" data-modal data-modal-url="{{ path('netbs.core.dynamic_list.modal_add_share', {id: list.id}) }}">Partager avec quelqu'un</button>
+                                <button class="btn btn-secondary" data-controller="modal" data-modal-url-value="{{ path('netbs.core.dynamic_list.modal_add_share', {id: list.id}) }}" data-action="click->modal#open">Partager avec quelqu'un</button>
                             </div>
                         </div>
                     </div>

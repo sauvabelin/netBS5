@@ -4,7 +4,7 @@
 
     {{ registerJs('https://cdn.jsdelivr.net/npm/vue@2.5.17/dist/vue.js') }}
     {{ registerJs(asset('bundles/netbscore/js/modal.js')) }}
-    {% set newGroupeBtn %}<button data-modal data-modal-url="{{ path("netbs.fichier.groupe.modal_add") }}" class="btn btn-primary">Nouvelle unité</button>{% endset %}
+    {% set newGroupeBtn %}<button data-controller="modal" data-modal-url-value="{{ path("netbs.fichier.groupe.modal_add") }}" data-action="click->modal#open" class="btn btn-primary">Nouvelle unité</button>{% endset %}
 
     <div class="container-fluid">
 

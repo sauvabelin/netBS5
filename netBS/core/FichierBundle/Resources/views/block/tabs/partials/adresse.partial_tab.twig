@@ -21,7 +21,7 @@
                     <strong>Attention</strong> Cette famille ne possède aucune adresse!
                 </div>
             </div>
-            <button data-modal data-modal-url="{{ path('netbs.fichier.adresse.modal_creation', {ownerType: get_class(item)|toBase64, ownerId: item.id}) }}" class="btn btn-secondary">Définir une adresse pour {{ item }}</button>
+            <button data-controller="modal" data-modal-url-value="{{ path('netbs.fichier.adresse.modal_creation', {ownerType: get_class(item)|toBase64, ownerId: item.id}) }}" data-action="click->modal#open" class="btn btn-secondary">Définir une adresse pour {{ item }}</button>
         {% endif %}
     </div>
 
@@ -34,7 +34,7 @@
                 {% include '@NetBSFichier/adresse/adresse.editable.twig' with {adresse: form.adresse, well: true} %}
             {% else %}
                 <p class="text-muted">Aucune adresse définie.</p>
-                <button data-modal data-modal-url="{{ path('netbs.fichier.adresse.modal_creation', {ownerType: get_class(item)|toBase64, ownerId: item.id}) }}" class="btn btn-secondary">Définir une adresse</button>
+                <button data-controller="modal" data-modal-url-value="{{ path('netbs.fichier.adresse.modal_creation', {ownerType: get_class(item)|toBase64, ownerId: item.id}) }}" data-action="click->modal#open" class="btn btn-secondary">Définir une adresse</button>
             {% endif %}
         </div>
     {% endif %}

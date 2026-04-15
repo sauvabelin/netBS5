@@ -30,7 +30,7 @@
                         <h5 class="card-title">Actions</h5>
                     </div>
                     <div class="card-body">
-                        <button data-modal data-modal-url="{{ modalPath }}" class="btn btn-primary">Nouveau</button>
+                        <button data-controller="modal" data-modal-url-value="{{ modalPath }}" data-action="click->modal#open" class="btn btn-primary">Nouveau</button>
                     </div>
                 </div>
             </div>

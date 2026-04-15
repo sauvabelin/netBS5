@@ -69,16 +69,17 @@ class MailingListModel extends BaseListModel
                     $checked = $list->isActive() ? 'checked' : '';
                     $label = htmlspecialchars($list->isActive() ? 'Active' : 'Inactive', ENT_QUOTES, 'UTF-8');
                     $badgeClass = $list->isActive() ? 'text-bg-success' : 'text-bg-secondary';
-                    $id = (int)$list->getId(); // Ensure ID is an integer
+                    $id = (int)$list->getId();
                     return "
                         <div class='custom-control custom-switch' onclick='event.stopPropagation()'>
                             <input type='checkbox'
                                    class='custom-control-input'
                                    id='toggle-{$id}'
-                                   {$checked}
-                                   onchange='toggleListActive({$id})'>
+                                   data-list-id='{$id}'
+                                   data-action='change->mailing#toggleActive'
+                                   {$checked}>
                             <label class='custom-control-label' for='toggle-{$id}'>
-                                <span class='badge {$badgeClass}' id='label-{$id}'>{$label}</span>
+                                <span class='badge {$badgeClass}' data-label-id='{$id}'>{$label}</span>
                             </label>
                         </div>
                     ";
@@ -90,7 +91,7 @@ class MailingListModel extends BaseListModel
                     $targetCount = (int)$list->getTargets()->count();
 
                     // Render placeholder badge - actual count loaded via AJAX on hover
-                    return "<span class='recipient-count' data-list-id='{$id}' data-bs-toggle='tooltip' title='Survolez pour charger...'>"
+                    return "<span class='recipient-count' data-list-id='{$id}' data-bs-toggle='tooltip' title='Survolez pour charger...' data-action='mouseenter->mailing#loadRecipients'>"
                          . "<span class='badge text-bg-secondary'>{$targetCount} cible(s)</span>"
                          . "</span>";
                 }

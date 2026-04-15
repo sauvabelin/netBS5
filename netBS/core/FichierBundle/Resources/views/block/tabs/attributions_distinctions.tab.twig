@@ -5,7 +5,7 @@
         {{ render_list('netbs.fichier.membre.attributions', 'basic', {membreId: membre.id}) }}
 
         {% if app.user.hasRole('ROLE_SG') %}
-        <button class="btn btn-primary btn-space" data-modal data-modal-url="{{ path('netbs.fichier.attribution.modal_creation', {membreId: membre.id}) }}">Nouvelle attribution</button>
+        <button class="btn btn-primary btn-space" data-controller="modal" data-modal-url-value="{{ path('netbs.fichier.attribution.modal_creation', {membreId: membre.id}) }}" data-action="click->modal#open">Nouvelle attribution</button>
         {% endif %}
     </div>
 
@@ -14,7 +14,7 @@
         {{ render_list('netbs.fichier.membre.obtentions_distinction', 'basic', {membreId: membre.id}) }}
 
         {% if app.user.hasRole('ROLE_SG') %}
-        <button class="btn btn-primary btn-space" data-modal data-modal-url="{{ path('netbs.fichier.obtention_distinction.modal_creation', {membreId: membre.id}) }}">Ajouter une distinction</button>
+        <button class="btn btn-primary btn-space" data-controller="modal" data-modal-url-value="{{ path('netbs.fichier.obtention_distinction.modal_creation', {membreId: membre.id}) }}" data-action="click->modal#open">Ajouter une distinction</button>
         {% endif %}
     </div>
 </div>
