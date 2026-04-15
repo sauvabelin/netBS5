@@ -46,6 +46,27 @@ abstract class AjaxModel extends BaseListModel
         return array_map(fn ($item) => $item->getId(), $data);
     }
 
+    /**
+     * Counts the total number of items matching the current search filter.
+     * Used for server-side pagination.
+     */
+    public function countFilteredItems(): int {
+        $queryBuilder = $this->ajaxQueryBuilder("x");
+        if ($this->search && count($this->searchTerms()) > 0) {
+            $orTerms = [];
+            foreach ($this->searchTerms() as $term) {
+                $orTerms[] = $queryBuilder->expr()->like("x." . $term, ":s");
+            }
+            $queryBuilder->andWhere(...$orTerms)
+                ->setParameter('s', '%' . $this->search . '%');
+        }
+
+        return (int) $queryBuilder
+            ->select('COUNT(x)')
+            ->getQuery()
+            ->getSingleScalarResult();
+    }
+
     abstract public function ajaxQueryBuilder(string $alias): QueryBuilder;
 
     abstract public function searchTerms(): array;

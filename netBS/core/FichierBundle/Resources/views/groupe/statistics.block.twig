@@ -100,7 +100,7 @@
   };
 
   function refresh() {
-     NProgress.start();
+     if (typeof NProgress !== 'undefined') NProgress.start();
       const pathPart = 'begin=' + statsState.begin + '&end=' + statsState.end + '&steps=' + statsState.steps;
       fetch('{{ path('netbs.fichier.groupe.statistics_effectifs', { id: groupe.id }) }}?' + pathPart).then(r => r.json()).then((data) => {
 
@@ -118,7 +118,7 @@
         });
 
         toggleSeries();
-        NProgress.done();
+        if (typeof NProgress !== 'undefined') NProgress.done();
       });
   }
 

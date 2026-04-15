@@ -4,7 +4,9 @@
 
 {% block main %}
 
-    <div class="container-fluid" id="vueapp">
+    <div class="container-fluid"
+         data-controller="family-search"
+         data-family-search-search-url-value="{{ path('sauvabelin.famille.search') }}">
 
         <div class="page-head">
             <h2>Nouveau membre</h2>
@@ -21,7 +23,7 @@
                     <div class="card-body">
                         {{ form_start(form) }}
                         <div class="row">
-                            <div class="col-12 col-md-6">{{ form_row(form.nom, {attr: {"v-model": "nom", "autocomplete": "off"}}) }}</div>
+                            <div class="col-12 col-md-6">{{ form_row(form.nom, {attr: {"data-family-search-target": "nom", "data-action": "input->family-search#onNomInput", "autocomplete": "off"}}) }}</div>
                             <div class="col-12 col-md-6">{{ form_row(form.prenom) }}</div>
                         </div>
 
@@ -31,12 +33,12 @@
                             <div class="col-12 col-md-3">{{ form_row(form.numeroAvs) }}</div>
                         </div>
 
-                        <div class="row" v-if="id == null">
+                        <div class="row" data-show-without-family>
                             <div class="col-md-7">{{ form_row(form.adresse) }}</div>
                             <div class="col-md-5">{{ form_row(form.email) }}</div>
                         </div>
 
-                        <div class="row" v-if="id == null">
+                        <div class="row" data-show-without-family>
                             <div class="col-md-2">{{ form_row(form.npa) }}</div>
                             <div class="col-md-4">{{ form_row(form.localite) }}</div>
                             <div class="col-md-3">{{ form_row(form.pays) }}</div>
@@ -54,7 +56,7 @@
                             <div class="col-md-6">{{ form_row(form.fonction) }}</div>
                         </div>
 
-                        <div class="row" v-if="id == null">
+                        <div class="row" data-show-without-family>
                             <div class="col-md-6">
                                 {{ form_row(form.r1statut) }}
                                 {{ form_row(form.r1sexe) }}
@@ -86,7 +88,7 @@
 
                         <button type="submit" class="btn btn-primary">Valider</button>
 
-                        {{ form_row(form.familleId, {attr: {"v-model": "id"}}) }}
+                        {{ form_row(form.familleId, {attr: {"data-family-search-target": "familleId"}}) }}
                         {{ form_end(form) }}
                     </div>
 
@@ -95,101 +97,19 @@
 
             </div>
 
-            {% verbatim %}
             <div class="col-md-4">
                 <div class="card">
                     <div class="card-header">
                         <h5 class="card-title">Famille</h5>
                         <h6 class="card-subtitle">Ajouter ce nouveau membre à une famille existante</h6>
                     </div>
-
                     <div class="card-body">
-                        <div class="list-group">
-                            <a href="#" v-on:click="selectFamily(family)" class="list-group-item" v-for="family in familyChoices" v-bind:class="{active: family.id == id}">
-                                <h4 style="margin:0 0 5px 0;">Famille {{ family.nom }}</h4>
-                                <div v-if="family.geniteurs && family.geniteurs.length > 0">
-                                    <strong>Parents/Représentants légaux</strong>
-                                    <div v-for="geniteur in family.geniteurs">{{ geniteur.prenom }} {{ geniteur.nom }}</div>
-                                </div>
-                                <div v-if="family.membres && family.membres.length > 0">
-                                    <strong>Membres actuels</strong>
-                                    <div v-for="membre in family.membres">{{ membre.fullName }} <span v-if="membre.activeAttribution">: {{ membre.activeAttribution.representation }}</span></div>
-                                </div>
-                                <address v-if="family.sendingAdresse" style="margin:0;">
-                                    <strong>Adresse</strong><br/>
-                                    {{ family.sendingAdresse.rue }}<br/>
-                                    {{ family.sendingAdresse.npa }} - {{ family.sendingAdresse.localite }}
-                                </address>
-                            </a>
-                        </div>
+                        <div class="list-group" data-family-search-target="results"></div>
                     </div>
                 </div>
             </div>
-            {% endverbatim %}
 
         </div>
     </div>
-
-    {{ registerJs('https://unpkg.com/vue@2.5.8/dist/vue.min.js') }}
-
-    {% set familleSearchJS %}
-        <script type="text/javascript">
-
-            var app = new Vue({
-                el: '#vueapp',
-                data: {
-                    id: {{ form.familleId.vars.value is empty ? 'null' : form.familleId.vars.value }},
-                    nom: "{{ form.nom.vars.value }}",
-                    actualNom: "{{ form.nom.vars.value }}",
-                    timeout: null,
-                    familyChoices: []
-                },
-
-                watch: {
-
-                    nom: function(val) {
-
-                        if(val === this.actualNom)
-                            return;
-
-                        if(val !== this.actualNom && this.id !== null)
-                            this.clearSelectedFamily();
-
-                        var $this = this;
-                        clearTimeout(this.timeout);
-
-                        this.timeout = setTimeout(function() {
-                            $.get("{{ path('sauvabelin.famille.search') }}", {term: val}, function(response) {
-
-                                $this.familyChoices.splice(0, $this.familyChoices.length);
-
-                                for(var i = 0; i < response.length; i++)
-                                    $this.familyChoices.push(response[i]);
-                            });
-                        }, 700);
-                    }
-                },
-
-                methods: {
-
-                    selectFamily: function(family) {
-
-                        this.id         = family.id;
-                        this.actualNom  = family.nom;
-                        this.nom        = family.nom;
-                    },
-
-                    clearSelectedFamily: function() {
-
-                        this.id         = null;
-                        this.actualNom  = null;
-                    }
-                }
-
-            });
-        </script>
-    {% endset %}
-
-    {{ registerScript(familleSearchJS) }}
 
 {% endblock %}

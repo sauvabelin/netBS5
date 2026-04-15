@@ -14,6 +14,7 @@ use Symfony\Component\Routing\Annotation\Route;
 class AjaxListController extends AbstractController
 {
     /**
+     * Legacy JSON endpoint — kept for backward compatibility during transition.
      * @return Response
      */
     #[Route('/ajax-list/query/{listId}', name: 'netbs.core.ajax_list_query')]
@@ -55,6 +56,67 @@ class AjaxListController extends AbstractController
         }
 
         return new JsonResponse($res);
+    }
+
+    /**
+     * HTML endpoint for Turbo Frame — returns server-rendered table rows + pagination.
+     */
+    #[Route('/ajax-list/html/{listId}', name: 'netbs.core.ajax_list_html')]
+    public function htmlAction($listId, Request $request, ListManager $listManager, ListEngine $engine): Response {
+
+        $model = $listManager->getModelByAlias($listId);
+        if (!$model instanceof AjaxModel) {
+            throw new \Exception("Model $listId must extend the AjaxModel class");
+        }
+
+        $amount = intval($this->getOrDefault($request->query->get('amount'), 10));
+        $page = intval($this->getOrDefault($request->query->get('page'), 0));
+        $search = $this->getOrDefault($request->query->get('search'), null);
+        $search = empty($search) ? null : $search;
+        $tableId = $this->getOrDefault($request->query->get('tableId'), 'list');
+
+        // Decode model parameters from query string
+        $paramsJson = $request->query->get('params');
+        $params = $paramsJson ? json_decode($paramsJson, true) : [];
+
+        foreach ($params as $key => $value) {
+            $model->setParameter($key, $value);
+        }
+
+        $model->_setAjaxParams($page, $amount, $search);
+
+        // Count total items matching the search filter (before pagination)
+        $totalItems = $model->countFilteredItems();
+
+        $snapshot = $engine->generateSnaphot($model);
+
+        // Build row data with IDs
+        $rows = [];
+        for ($i = 0; $i < count($snapshot->getData()); $i++) {
+            $row = $snapshot->getData()[$i];
+            $item = $model->getElements()[$i];
+            $rows[] = [
+                'id' => $item->getId(),
+                'cells' => $row,
+            ];
+        }
+
+        // All IDs (unfiltered) for the checkbox-select controller
+        $allIds = $model->retrieveAllIds();
+
+        return $this->render('@NetBSCore/renderer/ajax.frame.twig', [
+            'rows' => $rows,
+            'headers' => $snapshot->getHeaders(),
+            'tableId' => $tableId,
+            'page' => $page,
+            'amount' => $amount,
+            'search' => $search ?? '',
+            'totalItems' => $totalItems,
+            'allIds' => $allIds,
+            'listId' => $listId,
+            'params' => $params,
+            'hasSearch' => count($model->searchTerms()) > 0,
+        ]);
     }
 
     private function getOrDefault($value, $default) {
