@@ -23,6 +23,7 @@
         "sprain/swiss-qr-bill": "^4.0",
         "stof/doctrine-extensions-bundle": "^1.7",
         "symfony/asset": "6.4.*",
+        "symfony/asset-mapper": "6.4.*",
         "symfony/console": "6.4.*",
         "symfony/doctrine-messenger": "6.4.*",
         "symfony/dotenv": "6.4.*",
@@ -44,12 +45,18 @@
         "symfony/runtime": "6.4.*",
         "symfony/security-bundle": "6.4.*",
         "symfony/serializer": "6.4.*",
+        "symfony/stimulus-bundle": "^2.35",
         "symfony/string": "6.4.*",
         "symfony/twig-bundle": "6.4.*",
+        "symfony/ux-autocomplete": "^2.35",
+        "symfony/ux-live-component": "^2.35",
+        "symfony/ux-turbo": "^2.35",
         "symfony/validator": "6.4.*",
         "symfony/web-link": "6.4.*",
         "symfony/yaml": "6.4.*",
+        "symfonycasts/sass-bundle": "^0.9.0",
         "tecnickcom/tcpdf": "^6.4",
+        "twbs/bootstrap": "^5.3",
         "twig/extra-bundle": "^3.3",
         "twig/twig": "^3.3"
     },
@@ -89,7 +96,8 @@
         "pre-autoload-dump": "Google\\Task\\Composer::cleanup",
         "auto-scripts": {
             "cache:clear": "symfony-cmd",
-            "assets:install %PUBLIC_DIR%": "symfony-cmd"
+            "assets:install %PUBLIC_DIR%": "symfony-cmd",
+            "importmap:install": "symfony-cmd"
         },
         "post-install-cmd": [
             "@auto-scripts"

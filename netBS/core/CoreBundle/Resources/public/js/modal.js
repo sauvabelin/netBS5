@@ -19,6 +19,13 @@ var BSModal = function(path, params) {
         var bsModal = new bootstrap.Modal(el);
         bsModal.show();
 
+        // Initialize Select2 widgets inside the modal
+        var $modal = $(el);
+        if (typeof Select2Triggerer !== 'undefined') {
+            Select2Triggerer.triggerSelect2($modal.find('[data-type="select2"]'));
+            Select2Triggerer.triggerAjaxSelect2($modal.find('[data-type="ajax-select2"]'));
+        }
+
         el.addEventListener('hidden.bs.modal', function() {
             bsModal.dispose();
             el.remove();
