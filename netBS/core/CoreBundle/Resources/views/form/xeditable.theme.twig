@@ -69,80 +69,8 @@
 
     {% elseif type in AJAX %}
 
-        {{ registerCss(asset('bundles/netbscore/lib/select2/css/select2.min.css')) }}
-        {{ registerCss(asset('bundles/netbscore/lib/select2/css/select2.bs4.min.css')) }}
-        {{ registerJs(asset('bundles/netbscore/lib/select2/js/select2.full.min.js')) }}
-
-        {% set ajaxSelect2EditableInit %}
-            <script type="text/javascript">
-                $('.ajax-editable').each(function() {
-
-                    var $elem       = $(this);
-                    var multiple    = $elem.attr("data-multiple") === "1";
-                    var ajaxClass   = $elem.attr("data-ajax-class");
-                    var nullOption  = $elem.attr("data-null-option");
-                    var source      = $elem.attr("data-original-source");
-
-                    $elem.editable({
-
-                        tpl: '<select style="width:300px;">',
-                        type: 'select2',
-                        placement: 'bottom',
-
-                        source: function() {
-                            return JSON.parse(source);
-                        },
-
-                        error: function(response) {
-
-                            if(response.status === 500) {
-                                toastr.error('Erreur interne, veuillez contacter le chef comm');
-
-                            } else {
-
-                                var txt = response.responseText;
-                                if(response.responseJSON.hasOwnProperty('message'))
-                                    txt = response.responseJSON.message;
-                                toastr.warning(txt);
-                            }
-                        },
-
-                        success: function() {
-                            var t = toastr.success('Valeur modifiée avec succès, cliquez ici pour actualiser');
-                            $(t).click(function() {
-                                location.reload();
-                            });
-                        },
-
-                        select2: {
-                            multiple: multiple,
-                            dropdownParent: $(this),
-                            ajax: {
-
-                                dataType: 'json',
-                                url: "{{ path('netbs.core.select2.results') }}",
-                                delay: 350,
-
-                                data: function (params) {
-                                    return {
-                                        ajaxClass:  ajaxClass,
-                                        nullOption: nullOption,
-                                        query:      params.term
-                                    };
-                                }
-                            }
-                        }
-                    });
-                });
-            </script>
-
-            <script type="text/javascript">
-                $('.ajax-editable').on('click', '.select2-container', function(e) {
-                    e.stopPropagation();
-                });
-            </script>
-        {% endset %}
-        {{ registerScript(ajaxSelect2EditableInit) }}
+        data-type="select2"
+        data-editable-select2-url-value="{{ path('netbs.core.select2.results') }}"
 
         {% if form.vars.multiple %}
             {% set dataValue    = [] %}
@@ -216,12 +144,13 @@
 
         {% if is_granted('update', form.parent.vars.data) and editProperty(item, key) %}
 
-            {{ block('webAssets') }}
-            <a href="#" {{ block('xeditable') }}></a>
+            <a href="#" data-controller="editable" data-action="click->editable#open:prevent"
+               style="border-bottom: dashed 1px #0088cc; color: #0088cc; cursor: pointer;"
+               {{ block('xeditable') }}>{% apply spaceless %}{% set v = attribute(item, key) %}{% if v is null %}Rien{% elseif v is same as(true) %}Oui{% elseif v is same as(false) %}Non{% elseif v.timestamp is defined %}{{ v|date('d.m.Y') }}{% else %}{{ v|default('Rien') }}{% endif %}{% endapply %}</a>
 
         {% elseif is_granted('read', form.parent.vars.data) %}
-            {{ block('webAssets') }}
-            <a href="#" data-disabled style="color:#686868;border-bottom:none;cursor:default" {{ block('xeditable') }}></a>
+            <a href="#" style="color:#686868;border-bottom:none;cursor:default"
+               {{ block('xeditable') }}>{% apply spaceless %}{% set v = attribute(item, key) %}{% if v is null %}Rien{% elseif v.timestamp is defined %}{{ v|date('d.m.Y') }}{% else %}{{ v|default('Rien') }}{% endif %}{% endapply %}</a>
         {% else %}
             <span style="color:red">You shall not pass!</span>
         {% endif %}
@@ -281,52 +210,5 @@
 {% endblock %}
 
 {% block webAssets %}
-
-    {# include once xeditable assets and initialization #}
-    {{ registerCss(asset('bundles/netbscore/lib/xeditable/css/bootstrap-editable.css')) }}
-    {{ registerJs(asset('bundles/netbscore/lib/xeditable/js/xeditable.bs4.js')) }}
-
-    {# initialize xeditable #}
-    {% set initialization %}
-        <script type="text/javascript">
-            $.fn.editable.defaults.emptytext      = 'Rien';
-            $.fn.editable.defaults.success        = function(response, newValue) {
-                return {newValue: response.newValue};
-            };
-
-            $.fn.editableform.template = '{% include '@NetBSCore/xeditable/template.xeditable.twig' %}';
-            $.fn.editableform.buttons  = '{% include '@NetBSCore/xeditable/buttons.xeditable.twig' %}';
-
-            $('.editable').editable({
-                select2: {width: 250},
-                error: function(response) {
-
-                    if(response.status === 500) {
-                        toastr['error']('Erreur interne, veuillez contacter le chef comm');
-
-                    } else {
-
-                        var txt = response.responseText;
-                        if(response.responseJSON.hasOwnProperty('message'))
-                            txt = response.responseJSON.message;
-                        toastr["warning"](txt);
-                    }
-                },
-                success: function() {
-                    toastr['success']('Valeur modifiée avec succès');
-                }
-            });
-        </script>
-    {% endset %}
-
-    {{ registerScript(initialization) }}
-
-    {% set unclick %}
-        <script type="text/javascript">
-            $('[data-disabled]').off('click');
-        </script>
-    {% endset %}
-
-    {{ registerScript(unclick, 100) }}
-
+    {# Editable fields are now handled by the Stimulus editable_controller.js #}
 {% endblock %}
