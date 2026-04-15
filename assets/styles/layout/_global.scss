@@ -49,6 +49,31 @@ body {
     padding: 2rem 0;
 }
 
+// Editable popover (Stimulus editable_controller.js)
+.editable-popover {
+    max-width: none;
+    min-width: 300px;
+}
+
+// Inline editable fields
+.editable-link {
+    border-bottom: dashed 1px #0088cc;
+    color: #0088cc;
+    cursor: pointer;
+    text-decoration: none;
+
+    &:hover {
+        color: #005580;
+    }
+}
+
+.editable-link-readonly {
+    color: var(--bs-secondary-color);
+    border-bottom: none;
+    cursor: default;
+    text-decoration: none;
+}
+
 @media (max-width: 768px) {
     .main {
         width: 100% !important;

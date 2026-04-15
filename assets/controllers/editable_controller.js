@@ -45,25 +45,17 @@ export default class extends Controller {
         });
         this._popover.show();
 
-        // Ensure popover is wide enough for input + buttons
-        this._popover.tip.style.maxWidth = 'none';
-        this._popover.tip.style.minWidth = '300px';
-
-        // Wire up buttons after popover is shown
         const tip = this._popover.tip;
         tip.querySelector('.editable-save').addEventListener('click', () => this._save(tip));
         tip.querySelector('.editable-cancel').addEventListener('click', () => this._destroyPopover());
 
-        // Wire AJAX search for entity fields
         if (tip.querySelector('.editable-search-input')) {
             this._wireAjaxSearch(tip);
         }
 
-        // Focus the input
         const input = tip.querySelector('input:not([type="hidden"]), textarea, select');
         if (input) input.focus();
 
-        // Close on click outside
         setTimeout(() => {
             this._outsideClickHandler = (e) => {
                 if (!tip.contains(e.target) && !this.element.contains(e.target)) {
