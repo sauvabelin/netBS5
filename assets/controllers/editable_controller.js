@@ -185,14 +185,20 @@ export default class extends Controller {
             formData.append('value', newValue);
         }
 
-        fetch(this.element.dataset.url, { method: 'POST', body: formData })
+        fetch(this.element.dataset.url, {
+            method: 'POST',
+            body: formData,
+            headers: { 'Accept': 'application/json' },
+        })
             .then((response) => {
-                if (!response.ok) {
-                    return response.json().then((data) => {
-                        throw new Error(data.message || 'Erreur');
-                    });
+                const ct = response.headers.get('content-type') || '';
+                if (!ct.includes('application/json')) {
+                    throw new Error('Erreur serveur (' + response.status + ')');
                 }
-                return response.json();
+                return response.json().then((data) => {
+                    if (!response.ok) throw new Error(data.message || 'Erreur');
+                    return data;
+                });
             })
             .then((data) => {
                 this._updateDisplayValue(type, newValue, data);
@@ -214,7 +220,9 @@ export default class extends Controller {
         } else if (type === 'select' || type === 'select2') {
             const source = this._parseSource();
             const match = source.find((o) => String(o.value ?? o.id) === String(sentValue));
-            this.element.textContent = match ? (match.text || match.label) : (sentValue || emptyText);
+            const label = (match ? (match.text || match.label) : null)
+                || responseData.newLabel || sentValue || emptyText;
+            this.element.textContent = label;
             this.element.dataset.value = sentValue || '';
         } else if (type === 'hochetdatepicker') {
             this.element.textContent = sentValue || emptyText;

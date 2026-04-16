@@ -23,56 +23,59 @@ class XEditableController extends AbstractController
     #[Route('/utils/xeditable', name: 'netbs.core.xeditable.endpoint')]
     public function endpointAction(Request $request, EntityManagerInterface $em, PropertyAccessorInterface $accessor, FormTypesRegistrer $registrer)
     {
-        $xeditable  = new XEditable($request);
-        $item       = $em->find(base64_decode($xeditable->getData('itemClass')), $xeditable->getId());
-        $typeClass  = $this->findType($xeditable->getData('type'), $registrer);
+        try {
+            $xeditable  = new XEditable($request);
+            $item       = $em->find(base64_decode($xeditable->getData('itemClass')), $xeditable->getId());
+            $typeClass  = $this->findType($xeditable->getData('type'), $registrer);
 
-        if(!$this->isGranted(CRUD::UPDATE, $item))
-            throw $this->createAccessDeniedException("Vous n'avez pas le droit de modifier cet élément.");
-        $form       = $this->createFormBuilder($item, array('csrf_protection' => false))
-            ->add($xeditable->getField(), $typeClass, $xeditable->getTypeOptions())
-            ->getForm();
+            if(!$this->isGranted(CRUD::UPDATE, $item))
+                return new JsonResponse(['message' => "Vous n'avez pas le droit de modifier cet élément."], 403);
 
-        $form->submit(array($xeditable->getField() => $xeditable->getFinalValue()));
-        if($form->isValid()) {
+            $form       = $this->createFormBuilder($item, array('csrf_protection' => false))
+                ->add($xeditable->getField(), $typeClass, $xeditable->getTypeOptions())
+                ->getForm();
 
-            $item = $form->getData();
+            $form->submit(array($xeditable->getField() => $xeditable->getFinalValue()));
+            if($form->isValid()) {
 
-            try {
-                $em->persist($item);
-                $em->flush();
-            } catch(UserConstraintException $exception) {
-                return new JsonResponse(['message' => $exception->getMessage()], 400);
+                $item = $form->getData();
+
+                try {
+                    $em->persist($item);
+                    $em->flush();
+                } catch(UserConstraintException $exception) {
+                    return new JsonResponse(['message' => $exception->getMessage()], 400);
+                }
+
+                $value  = $accessor->getValue($item, $xeditable->getField());
+
+                if(is_object($value) && method_exists($value, '__toString'))
+                    $value = $value->__toString();
+
+                elseif(is_array($value) || $value instanceof Collection) {
+
+                    $rv    = [];
+                    foreach($value as $item)
+                        if(is_object($item))
+                            $rv[] = $item->getId();
+
+                    $value = implode(',', $rv);
+                }
+
+                return $this->json(['newValue' => $xeditable->getFinalValue(), 'newLabel' => $value]);
             }
 
-            $value  = $accessor->getValue($item, $xeditable->getField());
+            else {
 
-            if(is_object($value) && method_exists($value, '__toString'))
-                $value = $value->__toString();
+                $str = "";
+                foreach($this->getErrorMessages($form) as $message)
+                    $str .= is_array($message) ? $message[0] : $message;
 
-            elseif(is_array($value) || $value instanceof Collection) {
-
-                $rv    = [];
-                foreach($value as $item)
-                    if(is_object($item))
-                        $rv[] = $item->getId();
-
-                $value = implode(',', $rv);
+                return new JsonResponse(['message' => $str], 400);
             }
-
-            return $this->json(['newValue' => $xeditable->getFinalValue(), 'newLabel' => $value]);
+        } catch (\Throwable $e) {
+            return new JsonResponse(['message' => $e->getMessage() ?: 'Erreur interne'], 500);
         }
-
-        else {
-
-            //return new JsonResponse($this->getErrorMessages($form), 400);
-            $str = "";
-            foreach($this->getErrorMessages($form) as $message)
-                $str .= $message[0];
-
-            return new JsonResponse(['message' => $str], 400);
-        }
-
     }
 
     /**

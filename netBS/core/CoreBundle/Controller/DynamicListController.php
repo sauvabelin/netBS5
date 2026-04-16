@@ -161,7 +161,7 @@ class DynamicListController extends AbstractController
     public function addItemsToList(Request $request, DynamicListManager $dynamics, EntityManagerInterface $em) {
 
         $listId     = $request->get('listId');
-        $listItems  = $request->query->all('selectedIds');
+        $listItems  = $request->request->all('selectedIds');
         $itemsClass = base64_decode($request->get('itemsClass'));
 
         return $this->successResponse($this->performListAddage($listId, $listItems, $itemsClass, $em, $dynamics));
