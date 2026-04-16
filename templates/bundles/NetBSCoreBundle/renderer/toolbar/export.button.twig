@@ -16,7 +16,13 @@
                 {% if exporter.alias starts with 'mailing.' %}
                     <a class="dropdown-item" style="cursor:pointer;" data-mailing="{{ exporter.alias == 'mailing.parents' ? 'parents' : 'chefs' }}">{{ exporter.name }}</a>
                 {% else %}
-                    <a class="dropdown-item" style="cursor:pointer;" data-exporter="{{ exporter.alias }}">{{ exporter.name }}</a>
+                    <a class="dropdown-item" style="cursor:pointer;"
+                       data-controller="post-link"
+                       data-post-link-url-value="{{ path('netbs.core.export.export_selected') }}"
+                       data-post-link-ids-source-value="{{ tableId }}"
+                       data-post-link-extra-data-value='{{ {"itemsClass": table.itemClass|toBase64}|json_encode }}'
+                       data-action="click->post-link#submit"
+                       data-exporter="{{ exporter.alias }}">{{ exporter.name }}</a>
                 {% endif %}
             {% endfor %}
         {% endfor %}
@@ -25,17 +31,7 @@
 
 {% set exportScript %}
     <script type="text/javascript">
-        $('[data-exporter]').click(function() {
-
-            var data = {
-                itemsClass:     "{{ table.itemClass|toBase64 }}",
-                exporterAlias:  $(this).attr("data-exporter"),
-                selectedIds:    {{ tableId }}.getSelectedIds()
-            };
-            PostLink("{{ path('netbs.core.export.export_selected') }}", data);
-        });
-
-        $('[data-mailing]').click(function() {
+        $('[data-mailing]').off('click.mailing').on('click.mailing', function() {
             var modal = new BSModal("{{ path('netbs.mailing_list.emails') }}", {
                 itemsClass: "{{ table.itemClass|toBase64 }}",
                 selectedIds: {{ tableId }}.getSelectedIds(),
@@ -48,5 +44,4 @@
 
 {{ registerScript(exportScript) }}
 
-{{ registerJs(asset('bundles/netbscore/js/post_link.js')) }}
 {{ registerJs(asset('bundles/netbscore/js/modal.js')) }}

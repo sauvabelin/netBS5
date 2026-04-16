@@ -31,7 +31,13 @@
             </button>
             <div role="menu" class="dropdown-menu">
                 {% for exporter in exporters %}
-                    <a href="#" class="dropdown-item membre-exporter" data-exporter-alias="{{ exporter.alias }}">{{ exporter.name }}</a>
+                    <a href="#" class="dropdown-item"
+                       data-controller="post-link"
+                       data-post-link-url-value="{{ path('netbs.core.export.export_selected') }}"
+                       data-post-link-static-ids-value="{{ [membre.id]|json_encode }}"
+                       data-post-link-extra-data-value='{{ {"itemsClass": exportClass}|json_encode }}'
+                       data-action="click->post-link#submit"
+                       data-exporter-alias="{{ exporter.alias }}">{{ exporter.name }}</a>
                 {% endfor %}
             </div>
         </div>
@@ -64,16 +70,6 @@
             });
         });
 
-        $('.membre-exporter').on('click', function() {
-
-            var data = {
-                itemsClass:     "{{ exportClass }}",
-                exporterAlias:  $(this).attr('data-exporter-alias'),
-                selectedIds:    [{{ membre.id }}]
-            };
-
-            PostLink("{{ path('netbs.core.export.export_selected') }}", data);
-        });
     </script>
 {% endset %}
 

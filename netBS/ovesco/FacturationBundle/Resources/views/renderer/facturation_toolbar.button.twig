@@ -25,7 +25,12 @@
         {% if addCreances %}<a class="dropdown-item" style="cursor:pointer;" id="add-creances-{{ tableId }}">Ajouter des créances</a>{% endif %}
         {% if addRappels %}<a class="dropdown-item" style="cursor:pointer;" id="add-rappels-{{ tableId }}">Ajouter des rappels</a>{% endif %}
         {% if generate %}<a class="dropdown-item" style="cursor:pointer;" id="generate-factures-{{ tableId }}">Fusionner en facture</a>{% endif %}
-        {% if generate %}<a class="dropdown-item" style="cursor:pointer;" id="check-factures-{{ tableId }}">Prévisualiser la fusion</a>{% endif %}
+        {% if generate %}<a class="dropdown-item" style="cursor:pointer;"
+           data-controller="post-link"
+           data-post-link-url-value="{{ path('ovesco.facturation.creance.check_merge') }}"
+           data-post-link-ids-source-value="{{ tableId }}"
+           data-post-link-id-field-value="creanceIds"
+           data-action="click->post-link#submit">Prévisualiser la fusion</a>{% endif %}
     </div>
 </div>
 
@@ -64,12 +69,6 @@
                     creanceIds: {{ tableId }}.getSelectedIds(),
                 });
                 modal.launch();
-            });
-
-            $('#check-factures-{{ tableId }}').click(function() {
-                PostLink("{{ path('ovesco.facturation.creance.check_merge') }}", {
-                    creanceIds: {{ tableId }}.getSelectedIds(),
-                });
             });
 
             $(document).on('mouseenter', '.facture-model-auto', function() {
@@ -128,5 +127,4 @@
 
 {{ registerScript(facturationScript) }}
 
-{{ registerJs(asset('bundles/netbscore/js/post_link.js')) }}
 {{ registerJs(asset('bundles/netbscore/js/modal.js')) }}
