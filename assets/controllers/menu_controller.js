@@ -2,90 +2,107 @@ import { Controller } from '@hotwired/stimulus';
 
 /*
  * Collapsible sidebar menu with accordion behavior.
- * Submenus start collapsed, active path is opened.
- * With Turbo Drive enabled, the sidebar has data-turbo-permanent
- * so it persists across navigations without re-initializing.
+ * Uses 'open' class for expanded state (JS-controlled),
+ * separate from 'active' class for current-page highlight (server-set).
  */
 export default class extends Controller {
 
-    // --- Lifecycle ---
-
     connect() {
-        this.topLis = this.element.querySelectorAll(':scope > ul > li:not(.menu-category)');
-        this.initAccordion();
-        this.restoreActiveItem();
+        this._topLis = new Set(this.element.querySelectorAll(':scope > ul > li:not(.menu-category)'));
+        this._handleClick = this._onClick.bind(this);
+        this.element.addEventListener('click', this._handleClick);
+
+        // Suppress transition during initial setup so the active section appears instantly
+        this._submenus = this.element.querySelectorAll('li > ul');
+        this._submenus.forEach((ul) => { ul.style.transition = 'none'; });
+        this._collapseAll();
+        this._openActivePath();
+        // Force a reflow so the browser applies the no-transition styles,
+        // then restore transitions on the next frame
+        this.element.offsetHeight; // eslint-disable-line no-unused-expressions
+        this._submenus.forEach((ul) => { ul.style.transition = ''; });
     }
 
-    // --- Setup ---
-
-    initAccordion() {
-        this.topLis.forEach((topLi) => {
-            this.prepareSubmenu(topLi);
-        });
+    disconnect() {
+        this.element.removeEventListener('click', this._handleClick);
     }
 
-    prepareSubmenu(li) {
-        const submenu = li.querySelector(':scope > ul');
-        if (!submenu) return;
+    _onClick(event) {
+        const a = event.target.closest('a');
+        if (!a || a.hasAttribute('href')) return;
+        event.preventDefault();
 
-        // On reconnect (Turbo Drive permanent element), submenus are already
-        // collapsed so offsetHeight would be 0. Use scrollHeight which returns
-        // the natural content height even when collapsed, or keep the existing value.
-        if (!submenu.dataset.originalHeight || submenu.dataset.originalHeight === '0px') {
-            const h = submenu.scrollHeight;
-            if (h > 0) submenu.dataset.originalHeight = h + 'px';
-        }
-        submenu.style.height = '0px';
+        const li = a.closest('li');
+        if (!li) return;
 
-        // Toggle handler on the <a> only (not <li>), so leaf link clicks
-        // bubble to Turbo's document listener for SPA navigation.
-        const toggle = li.querySelector(':scope > a');
-        if (toggle) {
-            toggle.addEventListener('click', (event) => {
-                event.preventDefault();
-                // Close sibling top-level sections if this is a top-level item
-                if (Array.from(this.topLis).includes(li)) {
-                    this.closeAllExcept(li);
-                }
-                this.toggle(li);
-            });
-        }
-
-        submenu.querySelectorAll(':scope > li').forEach((childLi) => {
-            this.prepareSubmenu(childLi);
-        });
+        if (this._topLis.has(li)) this._closeAllExcept(li);
+        this._toggle(li);
     }
 
-    restoreActiveItem() {
+    _collapseAll() {
+        this._submenus.forEach((ul) => { ul.style.height = '0px'; });
+    }
+
+    _openActivePath() {
         let item = this.element.querySelector('li.active');
         while (item && item !== this.element) {
-            if (item.tagName === 'LI') this.open(item);
+            if (item.tagName === 'LI' && item.querySelector(':scope > ul')) {
+                this._open(item);
+            }
             item = item.parentElement;
         }
     }
 
-    // --- Primitives ---
-
-    closeAllExcept(keep) {
-        this.topLis.forEach((li) => {
-            if (li !== keep) this.close(li);
+    _closeAllExcept(keep) {
+        this._topLis.forEach((li) => {
+            if (li !== keep) this._close(li);
         });
     }
 
-    toggle(li) {
-        li.classList.contains('active') ? this.close(li) : this.open(li);
+    _toggle(li) {
+        li.classList.contains('open') ? this._close(li) : this._open(li);
     }
 
-    open(li) {
-        li.classList.add('active');
-        const submenu = li.querySelector(':scope > ul');
-        if (submenu) submenu.style.height = submenu.dataset.originalHeight;
+    _open(li) {
+        li.classList.add('open');
+        const sub = li.querySelector(':scope > ul');
+        if (!sub) return;
+
+        // Collect ancestors that need resizing
+        const targets = [sub];
+        let el = li.parentElement;
+        while (el && el !== this.element) {
+            if (el.tagName === 'UL' && el.style.height && el.style.height !== '0px') {
+                targets.push(el);
+            }
+            el = el.parentElement;
+        }
+
+        // Batch reads then writes to avoid layout thrashing
+        const heights = targets.map((t) => t.scrollHeight);
+        targets.forEach((t, i) => { t.style.height = heights[i] + 'px'; });
     }
 
-    close(li) {
-        li.classList.remove('active');
-        const submenu = li.querySelector(':scope > ul');
-        if (submenu) submenu.style.height = '0px';
-        li.querySelectorAll('li').forEach((child) => this.close(child));
+    _close(li) {
+        li.classList.remove('open');
+        const sub = li.querySelector(':scope > ul');
+        if (sub) sub.style.height = '0px';
+        li.querySelectorAll('li.open').forEach((child) => {
+            child.classList.remove('open');
+            const childSub = child.querySelector(':scope > ul');
+            if (childSub) childSub.style.height = '0px';
+        });
+
+        // Batch-resize ancestors after children are collapsed
+        const ancestors = [];
+        let el = li.parentElement;
+        while (el && el !== this.element) {
+            if (el.tagName === 'UL' && el.style.height && el.style.height !== '0px') {
+                ancestors.push(el);
+            }
+            el = el.parentElement;
+        }
+        const heights = ancestors.map((t) => t.scrollHeight);
+        ancestors.forEach((t, i) => { t.style.height = heights[i] + 'px'; });
     }
 }

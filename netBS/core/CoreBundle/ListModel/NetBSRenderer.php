@@ -47,18 +47,17 @@ class NetBSRenderer implements RendererInterface
         $this->dispatcher->dispatch($event, NetbsRendererToolbarEvent::NAME);
 
         // Build row data from the pre-built snapshot (all items)
-        $allRows = [];
         $elements = $table->getItems();
+        $elements = is_array($elements) ? array_values($elements) : iterator_to_array($elements, false);
         $data = $table->getData();
-        for ($i = 0; $i < count($data); $i++) {
-            $allRows[] = [
-                'id' => $elements[$i]->getId(),
-                'cells' => $data[$i],
-            ];
+        $allRows = [];
+        $allIds = [];
+        $n = count($data);
+        for ($i = 0; $i < $n; $i++) {
+            $id = $elements[$i]->getId();
+            $allRows[] = ['id' => $id, 'cells' => $data[$i]];
+            $allIds[] = $id;
         }
-
-        $elements = is_array($elements) ? $elements : iterator_to_array($elements);
-        $allIds = array_map(fn($el) => $el->getId(), $elements);
 
         // Paginate to first page
         $initialAmount = 10;

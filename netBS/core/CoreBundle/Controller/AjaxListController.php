@@ -148,7 +148,7 @@ class AjaxListController extends AbstractController
         // Build full rows array with IDs
         $allRows = [];
         $elements = $model->getElements();
-        $elements = is_array($elements) ? $elements : iterator_to_array($elements);
+        $elements = is_array($elements) ? array_values($elements) : iterator_to_array($elements, false);
         $data = $snapshot->getData();
         for ($i = 0; $i < count($data); $i++) {
             $allRows[] = [

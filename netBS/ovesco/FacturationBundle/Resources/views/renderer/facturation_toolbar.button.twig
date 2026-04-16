@@ -43,8 +43,8 @@
            data-modal-url-value="{{ path('ovesco.facturation.creance.merge') }}"
            data-modal-ids-source-value="{{ tableId }}"
            data-modal-id-field-value="creanceIds"
-           data-action="click->modal#open">Fusionner en facture</a>{% endif %}
-        {% if generate %}<a class="dropdown-item" style="cursor:pointer;"
+           data-action="click->modal#open">Fusionner en facture</a>
+        <a class="dropdown-item" style="cursor:pointer;"
            data-controller="post-link"
            data-post-link-url-value="{{ path('ovesco.facturation.creance.check_merge') }}"
            data-post-link-ids-source-value="{{ tableId }}"
@@ -54,40 +54,44 @@
 </div>
 
 <script>
-    document.addEventListener('mouseenter', function(e) {
-        if (!e.target.closest) return;
-        var badge = e.target.closest('.facture-model-auto');
-        if (!badge || badge.dataset.loaded) return;
-        badge.dataset.loaded = 'true';
-        var factureId = badge.dataset.factureId;
-        fetch("{{ path('ovesco.facturation.facture.resolve_model', {id: '__ID__'}) }}".replace('__ID__', factureId))
-            .then(function(r) { return r.json(); })
-            .then(function(data) { badge.textContent = data.model; });
-    }, true);
+    if (!window._factureModelAutoListener) {
+        window._factureModelAutoListener = true;
+        document.addEventListener('mouseenter', function(e) {
+            if (!e.target.closest) return;
+            var badge = e.target.closest('.facture-model-auto');
+            if (!badge || badge.dataset.loaded) return;
+            badge.dataset.loaded = 'true';
+            var factureId = badge.dataset.factureId;
+            fetch("{{ path('ovesco.facturation.facture.resolve_model', {id: '__ID__'}) }}".replace('__ID__', factureId))
+                .then(function(r) { return r.json(); })
+                .then(function(data) { badge.textContent = data.model; });
+        }, true);
+    }
 
-    document.getElementById('mark-printed-{{ tableId }}').addEventListener('click', function() {
-        var ids = {{ tableId }}.getSelectedIds();
+    function markPrintedAction(ids, url, confirmMsg, successMsg) {
         if (ids.length === 0) { alert('Veuillez sélectionner des factures'); return; }
-        if (!confirm('Marquer ' + ids.length + ' facture(s) comme imprimée(s) ?')) return;
-        fetch("{{ path('ovesco.facturation.facture.mark_printed') }}", {
+        if (!confirm(confirmMsg)) return;
+        fetch(url, {
             method: 'POST',
             headers: {'Content-Type': 'application/x-www-form-urlencoded'},
             body: 'ids=' + encodeURIComponent(JSON.stringify(ids))
         }).then(function(r) { return r.json(); })
-          .then(function(data) { alert(data.count + ' facture(s) marquée(s) comme imprimée(s)'); location.reload(); })
+          .then(function(data) { alert(data.count + ' ' + successMsg); location.reload(); })
           .catch(function() { alert('Erreur lors de la mise à jour'); });
+    }
+
+    var markBtn = document.getElementById('mark-printed-{{ tableId }}');
+    var unmarkBtn = document.getElementById('unmark-printed-{{ tableId }}');
+    if (markBtn) markBtn.addEventListener('click', function() {
+        var ids = {{ tableId }}.getSelectedIds();
+        markPrintedAction(ids, "{{ path('ovesco.facturation.facture.mark_printed') }}",
+            'Marquer ' + ids.length + ' facture(s) comme imprimée(s) ?',
+            'facture(s) marquée(s) comme imprimée(s)');
     });
-
-    document.getElementById('unmark-printed-{{ tableId }}').addEventListener('click', function() {
+    if (unmarkBtn) unmarkBtn.addEventListener('click', function() {
         var ids = {{ tableId }}.getSelectedIds();
-        if (ids.length === 0) { alert('Veuillez sélectionner des factures'); return; }
-        if (!confirm('Marquer ' + ids.length + ' facture(s) comme non-imprimée(s) ?')) return;
-        fetch("{{ path('ovesco.facturation.facture.unmark_printed') }}", {
-            method: 'POST',
-            headers: {'Content-Type': 'application/x-www-form-urlencoded'},
-            body: 'ids=' + encodeURIComponent(JSON.stringify(ids))
-        }).then(function(r) { return r.json(); })
-          .then(function(data) { alert(data.count + ' facture(s) marquée(s) comme non-imprimée(s)'); location.reload(); })
-          .catch(function() { alert('Erreur lors de la mise à jour'); });
+        markPrintedAction(ids, "{{ path('ovesco.facturation.facture.unmark_printed') }}",
+            'Marquer ' + ids.length + ' facture(s) comme non-imprimée(s) ?',
+            'facture(s) marquée(s) comme non-imprimée(s)');
     });
 </script>

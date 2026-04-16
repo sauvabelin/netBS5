@@ -63,15 +63,16 @@ $icon-width: 2.5rem;
             overflow: hidden;
         }
 
-        li.active {
-            a {
-                background: rgba(var(--bs-emphasis-color-rgb), 0.025);
-            }
+        li.active > a {
+            background: rgba(var(--bs-emphasis-color-rgb), 0.025);
+            color: $primary;
+            opacity: 1;
+        }
 
-            > a, > a > .icon, > a > .caret {
-                color: $primary;
-                opacity: 1;
-            }
+        li.open > a > .icon,
+        li.open > a > .caret {
+            color: $primary;
+            opacity: 1;
         }
 
         a {
@@ -116,11 +117,11 @@ $icon-width: 2.5rem;
             a .caret-down { display: block; }
             a .caret-up { display: none; }
 
-            &.active {
+            &.open {
                 a .caret-down { display: none; }
                 a .caret-up { display: block; }
 
-                ul {
+                > ul {
                     border-top: 1px solid var(--bs-border-color);
                     border-bottom: 1px solid var(--bs-border-color);
                 }

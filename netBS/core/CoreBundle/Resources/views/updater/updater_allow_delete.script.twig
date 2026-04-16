@@ -1,5 +1,4 @@
 <script type="text/javascript">
-
     function triggerMassDeleteListener(id) {
         document.querySelectorAll('[data-delete-element-' + id + ']').forEach(function(btn) {
             btn.addEventListener('click', function() {
@@ -8,10 +7,5 @@
         });
     }
 
-</script>
-
-<script type="text/javascript">
-    document.addEventListener('DOMContentLoaded', function() {
-        triggerMassDeleteListener('{{ _updater_id }}');
-    });
+    triggerMassDeleteListener('{{ _updater_id }}');
 </script>

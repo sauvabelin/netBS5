@@ -140,8 +140,9 @@ export default class extends Controller {
     }
 
     _selectOption(select, id, text) {
-        Array.from(select.options).forEach((opt) => { opt.selected = false; });
-        let option = Array.from(select.options).find((opt) => String(opt.value) === String(id));
+        const opts = Array.from(select.options);
+        opts.forEach((opt) => { opt.selected = false; });
+        let option = opts.find((opt) => String(opt.value) === String(id));
         if (!option) {
             option = new Option(text, id, true, true);
             select.appendChild(option);
@@ -158,6 +159,6 @@ export default class extends Controller {
 
     _esc(str) {
         if (!str) return '';
-        return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+        return String(str).replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
     }
 }
