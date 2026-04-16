@@ -16,9 +16,9 @@
                 <td>{{ form_widget(telephone.expediable) }}</td>
                 <td>{{ form_widget(telephone.remarques) }}</td>
                 <td>
-                    <a onclick="return confirm('Etes-vous sûr de supprimer ce numéro ?');"
-                       class="btn btn-danger btn-xs"
-                       href="{{ path('netbs.fichier.telephone.delete', {ownerId: item.id, ownerType: get_class(item)|toBase64, telephoneId: telephone.vars.data.id}) }}"><i class="fas fa-times fa-sm"></i></a>
+                    <a class="btn btn-danger btn-xs"
+                       href="{{ path('netbs.fichier.telephone.delete', {ownerId: item.id, ownerType: get_class(item)|toBase64, telephoneId: telephone.vars.data.id}) }}"
+                       data-turbo-confirm="Etes-vous sûr de supprimer ce numéro ?"><i class="fas fa-times fa-sm"></i></a>
                 </td>
             </tr>
         {% endfor %}

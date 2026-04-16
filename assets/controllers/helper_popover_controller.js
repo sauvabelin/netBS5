@@ -48,6 +48,7 @@ export default class extends Controller {
     // --- Internals ---
 
     fetchAndShow() {
+        if (!this.classValue || !this.idValue) return;
         fetch(this.urlValue, {
             method: 'POST',
             headers: { 'Content-Type': 'application/x-www-form-urlencoded' },

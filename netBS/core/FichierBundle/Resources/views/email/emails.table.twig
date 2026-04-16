@@ -15,9 +15,9 @@
                 <td>{{ form_widget(email.expediable) }}</td>
                 <td>{{ form_widget(email.remarques) }}</td>
                 <td>
-                    <a onclick="return confirm('Etes-vous sûr de supprimer cette adresse e-mail ?');"
-                       class="btn btn-danger btn-xs"
-                       href="{{ path('netbs.fichier.email.delete', {ownerId: item.id, ownerType: get_class(item)|toBase64, emailId: email.vars.data.id}) }}"><i class="fas fa-times fa-sm"></i></a>
+                    <a class="btn btn-danger btn-xs"
+                       href="{{ path('netbs.fichier.email.delete', {ownerId: item.id, ownerType: get_class(item)|toBase64, emailId: email.vars.data.id}) }}"
+                       data-turbo-confirm="Etes-vous sûr de supprimer cette adresse e-mail ?"><i class="fas fa-times fa-sm"></i></a>
                 </td>
             </tr>
         {% endfor %}

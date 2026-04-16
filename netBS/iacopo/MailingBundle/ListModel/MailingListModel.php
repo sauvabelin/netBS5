@@ -112,7 +112,7 @@ class MailingListModel extends BaseListModel
                         LinkAction::TITLE => 'Supprimer',
                         LinkAction::THEME => 'danger',
                         LinkAction::SIZE => 'btn-sm',
-                        LinkAction::ATTRS => 'onclick="return confirm(\'Êtes-vous sûr de vouloir supprimer cette liste ?\')"',
+                        LinkAction::ATTRS => 'data-turbo-confirm="Êtes-vous sûr de vouloir supprimer cette liste ?"',
                         LinkAction::ROUTE => function(MailingList $list) {
                             return htmlspecialchars($this->router->generate('iacopo.mailing.delete', ['id' => $list->getId()]), ENT_QUOTES, 'UTF-8');
                         }

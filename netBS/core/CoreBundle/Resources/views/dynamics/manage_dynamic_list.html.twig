@@ -28,7 +28,7 @@
                         </div>
                         <div class="card-footer">
                             <div role="group" class="btn-group btn-group-justified">
-                                <a onclick="return confirm('Etes-vous sur de vouloir supprimer cette liste ? C\'est IRREVERSIBLE!');" href="{{ path('netbs.core.dynamics_list.remove_list', {id: list.id}) }}" class="btn btn-secondary">Supprimer cette liste</a>
+                                <a href="{{ path('netbs.core.dynamics_list.remove_list', {id: list.id}) }}" class="btn btn-secondary" data-turbo-confirm="Etes-vous sûr de vouloir supprimer cette liste ? C'est IRREVERSIBLE!">Supprimer cette liste</a>
                             </div>
                         </div>
                     {% endif %}

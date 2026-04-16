@@ -54,6 +54,6 @@
 </div>
 
 {% if app.user.hasRole('ROLE_SG') %}
-    <a href="{{ path('netbs.fichier.membre.remove', { id: membre.id}) }}" class="btn btn-outline-danger w-100 mt-2" onclick="return confirm('Etes-vous VRAIMENT sûr? Toutes les données liées (compte utilisateur, factures, créances) seront supprimées et peuvent entraîner des erreurs de données.');">Supprimer ce membre</a>
+    <a href="{{ path('netbs.fichier.membre.remove', { id: membre.id}) }}" class="btn btn-outline-danger w-100 mt-2" data-turbo-confirm="Etes-vous VRAIMENT sûr? Toutes les données liées (compte utilisateur, factures, créances) seront supprimées et peuvent entraîner des erreurs de données.">Supprimer ce membre</a>
 {% endif %}
 

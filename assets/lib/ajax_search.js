@@ -4,6 +4,7 @@
  */
 
 export function fetchResults(url, ajaxClass, query, nullOption) {
+    if (!ajaxClass) return Promise.resolve([]);
     const params = new URLSearchParams({ ajaxClass, nullOption: nullOption || '0', query: query || '' });
     return fetch(`${url}?${params}`)
         .then((r) => r.json())
