@@ -78,24 +78,21 @@
         {% for item in form.vars.data %}
             {% set dataCheck = dataCheck|merge([item.id]) %}
         {% endfor %}
-    {% elseif  form.vars.data %}
+    {% elseif form.vars.data %}
         {% set dataCheck = [form.vars.data.id] %}
     {% endif %}
 
-    <select style="width:100%;" {{ block('widget_attributes') }} {% if form.vars.multiple %}multiple="multiple"{% endif %}>
-        {% for option in form.vars.base_choices %}
-            <option {% if option.value in dataCheck %}selected{% endif %} value="{{ option.value }}">{{ option.label }}</option>
-        {% endfor %}
-    </select>
-
-    {{ registerCss(asset('bundles/netbscore/lib/select2/css/select2.min.css')) }}
-    {{ registerCss(asset('bundles/netbscore/lib/select2/css/select2.bs4.min.css')) }}
-    {{ registerJs(asset('bundles/netbscore/lib/select2/js/select2.full.min.js')) }}
-    {% include '@NetBSCore/javascript/select2_init.script.twig' %}
-
-
-    {% set attr = attr|merge({style: "min-width:200px;width:100%;"}) %}
-
+    <div data-controller="select2"
+         data-select2-ajax-class-value="{{ form.vars.attr['data-ajax-class'] }}"
+         data-select2-null-option-value="{{ form.vars.attr['data-null-option']|default('0') }}"
+         data-select2-url-value="{{ path('netbs.core.select2.results') }}"
+         style="min-width:200px;width:100%;">
+        <select {{ block('widget_attributes') }} {% if form.vars.multiple %}multiple="multiple"{% endif %} style="width:100%;">
+            {% for option in form.vars.base_choices %}
+                <option {% if option.value in dataCheck %}selected{% endif %} value="{{ option.value }}">{{ option.label }}</option>
+            {% endfor %}
+        </select>
+    </div>
 
 {% endblock %}
 
@@ -104,20 +101,11 @@
 {% endblock %}
 
 {% block select2_widget %}
-
-    {% include '@NetBSCore/javascript/select2_init.script.twig' %}
     {{ block('select2') }}
 {% endblock %}
 
 {% block select2 %}
-
-    {{ registerCss(asset('bundles/netbscore/lib/select2/css/select2.min.css')) }}
-    {{ registerCss(asset('bundles/netbscore/lib/select2/css/select2.bs4.min.css')) }}
-    {{ registerJs(asset('bundles/netbscore/lib/select2/js/select2.full.min.js')) }}
-
-    {% set attr = attr|merge({style: "min-width:200px;width:100%;"}) %}
-
-    <div>
+    <div data-controller="select2" style="min-width:200px;width:100%;">
         {{ block('choice_widget') }}
     </div>
 {% endblock %}

@@ -1,7 +1,7 @@
 {#
-    Turbo Frame partial for ajax list pagination/search.
-    Rendered by AjaxListController::htmlAction() and also included inline
-    by ajax.renderer.twig for the initial server-side render.
+    Turbo Frame partial for list pagination/search.
+    Used by both ajax and netbs renderers. The caller passes `baseUrl`
+    to select the correct controller endpoint.
 
     Variables:
       - rows: array of {id, cells} — the current page of data
@@ -15,6 +15,7 @@
       - listId: the model alias
       - params: model parameters (associative array)
       - hasSearch: whether the model supports search
+      - baseUrl: (optional) the endpoint URL for Turbo Frame navigation
 #}
 
 {% set frameId = 'list-frame-' ~ tableId %}
@@ -25,8 +26,8 @@
 {% set lastItem = totalItems == 0 ? 0 : lastItem %}
 {% set firstItem = totalItems == 0 ? 0 : firstItem %}
 
-{# Build base URL for frame navigation #}
-{% set baseUrl = path('netbs.core.ajax_list_html', { listId: listId }) %}
+{# Use passed baseUrl, or default to ajax endpoint #}
+{% set baseUrl = baseUrl|default(path('netbs.core.ajax_list_html', { listId: listId })) %}
 
 <turbo-frame id="{{ frameId }}"
     data-controller="checkbox-select ajax-list"

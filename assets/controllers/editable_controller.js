@@ -1,5 +1,6 @@
 import { Controller } from '@hotwired/stimulus';
 import { showToast } from '../lib/toast.js';
+import { fetchResults, renderDropdownItems, wireSearchInput } from '../lib/ajax_search.js';
 
 /**
  * Replaces jQuery x-editable with a Bootstrap Popover-based inline editor.
@@ -233,34 +234,11 @@ export default class extends Controller {
         const ajaxClass = this.element.dataset.ajaxClass;
         const nullOption = this.element.dataset.nullOption || '0';
         const url = this.element.dataset.editableSelect2UrlValue || '/netBS/netbs/select2/results';
-        let timer = null;
 
-        // Load all results on focus
-        searchInput.addEventListener('focus', () => {
-            doSearch(searchInput.value.trim());
-        });
-
-        const doSearch = (query) => {
-            clearTimeout(timer);
-            timer = setTimeout(() => {
-                const params = new URLSearchParams({ ajaxClass, nullOption, query });
-                fetch(`${url}?${params}`)
-                    .then((r) => r.json())
-                    .then((data) => {
-                        const items = data.results || data;
-                        results.innerHTML = items.map((item) =>
-                            `<a href="#" class="list-group-item list-group-item-action py-1 px-2"
-                                data-id="${this._esc(item.id)}" data-text="${this._esc(item.text)}">
-                                ${this._esc(item.text)}
-                            </a>`
-                        ).join('') || '<span class="list-group-item py-1 px-2 text-muted">Aucun résultat</span>';
-                        results.style.display = 'block';
-                    });
-            }, 300);
-        };
-
-        searchInput.addEventListener('input', () => {
-            doSearch(searchInput.value.trim());
+        wireSearchInput(searchInput, results, (query) => {
+            fetchResults(url, ajaxClass, query, nullOption).then((items) => {
+                renderDropdownItems(items, results);
+            });
         });
 
         results.addEventListener('click', (e) => {

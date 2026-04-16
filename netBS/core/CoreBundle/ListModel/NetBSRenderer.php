@@ -38,17 +38,47 @@ class NetBSRenderer implements RendererInterface
      */
     public function render(SnapshotTable $table, $params = [])
     {
+        $model = $table->getModel();
+
         $toolbar    = new Toolbar();
         $tableId    = uniqid("__dt_");
         $event      = new NetbsRendererToolbarEvent($toolbar, $table, $tableId);
 
         $this->dispatcher->dispatch($event, NetbsRendererToolbarEvent::NAME);
 
+        // Build row data from the pre-built snapshot (all items)
+        $allRows = [];
+        $elements = $table->getItems();
+        $data = $table->getData();
+        for ($i = 0; $i < count($data); $i++) {
+            $allRows[] = [
+                'id' => $elements[$i]->getId(),
+                'cells' => $data[$i],
+            ];
+        }
+
+        $allIds = array_map(fn($el) => $el->getId(), $elements);
+
+        // Paginate to first page
+        $initialAmount = 10;
+        $totalItems = count($allRows);
+        $rows = array_slice($allRows, 0, $initialAmount);
+
         return $this->engine->render('@NetBSCore/renderer/netbs.renderer.twig', array(
-            'table'     => $table,
-            'tableId'   => $tableId,
-            'toolbar'   => $toolbar,
-            'params'    => $params,
+            'table'       => $table,
+            'tableId'     => $tableId,
+            'toolbar'     => $toolbar,
+            'params'      => $params,
+            'rows'        => $rows,
+            'headers'     => $table->getHeaders(),
+            'page'        => 0,
+            'amount'      => $initialAmount,
+            'search'      => '',
+            'totalItems'  => $totalItems,
+            'allIds'      => $allIds,
+            'listId'      => $model->getAlias(),
+            'modelParams' => $model->getParameters(),
+            'hasSearch'   => true,
         ));
     }
 }
