@@ -19,7 +19,8 @@ class MaskType extends AbstractType
 
     public function buildView(FormView $view, FormInterface $form, array $options)
     {
-        $view->vars['attr']['data-inputmask'] = $options['mask'];
+        $view->vars['attr']['data-controller'] = 'input-mask';
+        $view->vars['attr']['data-input-mask-pattern-value'] = $options['mask'];
     }
 
     public function getParent()
