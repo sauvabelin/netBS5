@@ -3,8 +3,6 @@
 {% set title %}Listes de diffusion{% endset %}
 
 {% block main %}
-    {{ registerJs(asset('bundles/netbscore/js/modal.js')) }}
-
     <div class="container-fluid"
          data-controller="mailing"
          data-mailing-toggle-url-value="{{ path('iacopo.mailing.toggle_active', {id: '__ID__'}) }}"

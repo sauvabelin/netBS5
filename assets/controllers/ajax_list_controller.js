@@ -227,13 +227,5 @@ export default class extends Controller {
             },
         });
 
-        // Modal click handlers
-        $table.find('[data-modal]').click(function () {
-            const path = $(this).attr('data-modal-url');
-            const modal = new BSModal(path, {});
-            modal.launch();
-        });
-
-        $table.find('[data-disabled]').off('click');
     }
 }

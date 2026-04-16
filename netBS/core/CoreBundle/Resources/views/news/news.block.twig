@@ -76,7 +76,6 @@
 {% import _self as swag %}
 
 {{ registerStyle(newsStyle) }}
-{{ registerJs(asset('bundles/netbscore/js/modal.js')) }}
 
 <div class="news-container">
     {% for item in news | filter(it => it.isPinned) %}

@@ -2,7 +2,6 @@
 
 {% block main %}
 
-    {{ registerJs(asset('bundles/netbscore/js/modal.js')) }}
     {% set newGroupeBtn %}<button data-controller="modal" data-modal-url-value="{{ path("netbs.fichier.groupe.modal_add") }}" data-action="click->modal#open" class="btn btn-primary">Nouvelle unité</button>{% endset %}
 
     <div class="container-fluid">

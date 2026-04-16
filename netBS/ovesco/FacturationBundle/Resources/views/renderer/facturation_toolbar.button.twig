@@ -6,7 +6,11 @@
     </button>
 
     <div role="menu" class="dropdown-menu dropdown-menu-right">
-        {% if assignModel %}<a class="dropdown-item" style="cursor:pointer;" id="assign-model-{{ tableId }}">Assigner un modèle de facture</a>{% endif %}
+        {% if assignModel %}<a class="dropdown-item" style="cursor:pointer;"
+           data-controller="modal"
+           data-modal-url-value="{{ path('ovesco.facturation.facture.assign_model_modal') }}"
+           data-modal-ids-source-value="{{ tableId }}"
+           data-action="click->modal#open">Assigner un modèle de facture</a>{% endif %}
         {% if markPrint %}
         <a class="dropdown-item" style="cursor:pointer;" id="mark-printed-{{ tableId }}">Marquer comme imprimé</a>
         <a class="dropdown-item" style="cursor:pointer;" id="unmark-printed-{{ tableId }}">Marquer comme non-imprimé</a>
@@ -22,9 +26,24 @@
     </button>
 
     <div role="menu" class="dropdown-menu dropdown-menu-right">
-        {% if addCreances %}<a class="dropdown-item" style="cursor:pointer;" id="add-creances-{{ tableId }}">Ajouter des créances</a>{% endif %}
-        {% if addRappels %}<a class="dropdown-item" style="cursor:pointer;" id="add-rappels-{{ tableId }}">Ajouter des rappels</a>{% endif %}
-        {% if generate %}<a class="dropdown-item" style="cursor:pointer;" id="generate-factures-{{ tableId }}">Fusionner en facture</a>{% endif %}
+        {% if addCreances %}<a class="dropdown-item" style="cursor:pointer;"
+           data-controller="modal"
+           data-modal-url-value="{{ path('ovesco.facturation.creance.modal_add_many') }}"
+           data-modal-params-value='{{ {"itemsClass": table.itemClass|toBase64}|json_encode }}'
+           data-modal-ids-source-value="{{ tableId }}"
+           data-action="click->modal#open">Ajouter des créances</a>{% endif %}
+        {% if addRappels %}<a class="dropdown-item" style="cursor:pointer;"
+           data-controller="modal"
+           data-modal-url-value="{{ path('ovesco.facturation.rappel.add_modal') }}"
+           data-modal-params-value='{{ {"itemsClass": table.itemClass|toBase64}|json_encode }}'
+           data-modal-ids-source-value="{{ tableId }}"
+           data-action="click->modal#open">Ajouter des rappels</a>{% endif %}
+        {% if generate %}<a class="dropdown-item" style="cursor:pointer;"
+           data-controller="modal"
+           data-modal-url-value="{{ path('ovesco.facturation.creance.merge') }}"
+           data-modal-ids-source-value="{{ tableId }}"
+           data-modal-id-field-value="creanceIds"
+           data-action="click->modal#open">Fusionner en facture</a>{% endif %}
         {% if generate %}<a class="dropdown-item" style="cursor:pointer;"
            data-controller="post-link"
            data-post-link-url-value="{{ path('ovesco.facturation.creance.check_merge') }}"
@@ -38,38 +57,6 @@
 
     <script>
         (function() {
-
-            $('#add-creances-{{ tableId }}').click(function() {
-
-                var modal = new BSModal("{{ path('ovesco.facturation.creance.modal_add_many') }}", {
-                    selectedIds: {{ tableId }}.getSelectedIds(),
-                    itemsClass:  "{{ table.itemClass|toBase64 }}"
-                });
-                modal.launch();
-            });
-
-            $('#add-rappels-{{ tableId }}').click(function() {
-
-                var modal = new BSModal("{{ path('ovesco.facturation.rappel.add_modal') }}", {
-                        selectedIds: {{ tableId }}.getSelectedIds(),
-                    itemsClass:  "{{ table.itemClass|toBase64 }}"
-                });
-                modal.launch();
-            });
-
-            $('#assign-model-{{ tableId }}').click(function() {
-                var modal = new BSModal("{{ path('ovesco.facturation.facture.assign_model_modal') }}", {
-                    selectedIds: {{ tableId }}.getSelectedIds(),
-                });
-                modal.launch();
-            });
-
-            $('#generate-factures-{{ tableId }}').click(function() {
-                var modal = new BSModal("{{ path('ovesco.facturation.creance.merge') }}", {
-                    creanceIds: {{ tableId }}.getSelectedIds(),
-                });
-                modal.launch();
-            });
 
             $(document).on('mouseenter', '.facture-model-auto', function() {
                 var $badge = $(this);
@@ -126,5 +113,3 @@
 
 
 {{ registerScript(facturationScript) }}
-
-{{ registerJs(asset('bundles/netbscore/js/modal.js')) }}

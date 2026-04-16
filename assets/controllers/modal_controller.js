@@ -4,40 +4,69 @@ import { submitForm } from '../lib/modal_form.js';
 import { showToast } from '../lib/toast.js';
 
 export default class extends Controller {
-    static values = { url: String };
+    static values = {
+        url: String,
+        params: { type: Object, default: {} },
+        idsSource: { type: String, default: '' },
+        idField: { type: String, default: 'selectedIds' },
+        reloadOnSuccess: { type: Boolean, default: false },
+    };
 
     open(event) {
         event.preventDefault();
         const url = this.urlValue || this.element.dataset.modalUrl;
+        const body = this._buildFormData();
 
-        fetch(url, { method: 'POST' })
-            .then((response) => this.handleOpenResponse(response, url))
+        fetch(url, { method: 'POST', body })
+            .then((response) => this._handleOpenResponse(response, url))
             .catch((err) => createModal(err.message || 'An error occurred'));
     }
 
-    handleOpenResponse(response, url) {
+    _buildFormData() {
+        const formData = new FormData();
+        const params = { ...this.paramsValue };
+
+        if (this.idsSourceValue) {
+            const source = window[this.idsSourceValue];
+            if (source && typeof source.getSelectedIds === 'function') {
+                params[this.idFieldValue] = source.getSelectedIds();
+            }
+        }
+
+        for (const [key, value] of Object.entries(params)) {
+            if (Array.isArray(value)) {
+                value.forEach((v) => formData.append(key + '[]', v));
+            } else {
+                formData.append(key, value);
+            }
+        }
+
+        return formData;
+    }
+
+    _handleOpenResponse(response, url) {
         if (response.status === 202) {
             return response.json().then((data) => showToast(data.type, data.message));
         }
         return response.text().then((html) => {
             const modalEl = createModal(html);
-            this.attachFormHandler(modalEl, url);
+            this._attachFormHandler(modalEl, url);
         });
     }
 
-    attachFormHandler(modalEl, url) {
+    _attachFormHandler(modalEl, url) {
         const confirmBtn = modalEl.querySelector('[data-modal-validate]');
         const form = modalEl.querySelector('form');
         if (!confirmBtn || !form) return;
 
         confirmBtn.addEventListener('click', () => {
             submitForm(url, form).then((result) => {
-                this.handleSubmitResult(result, modalEl, url);
+                this._handleSubmitResult(result, modalEl, url);
             });
         });
     }
 
-    handleSubmitResult(result, modalEl, url) {
+    _handleSubmitResult(result, modalEl, url) {
         if (result.action === 'redirect') {
             window.location.href = result.location;
         } else if (result.action === 'reload') {
@@ -45,9 +74,11 @@ export default class extends Controller {
         } else if (result.action === 'toast') {
             showToast(result.type, result.message);
             closeModal(modalEl);
+            this.element.dispatchEvent(new CustomEvent('modal:submit-success', { detail: result, bubbles: true }));
+            if (this.reloadOnSuccessValue) location.reload();
         } else if (result.action === 'validation_error') {
             modalEl.innerHTML = result.html;
-            this.attachFormHandler(modalEl, url);
+            this._attachFormHandler(modalEl, url);
         }
     }
 }
