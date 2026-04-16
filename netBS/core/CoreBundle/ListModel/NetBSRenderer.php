@@ -57,6 +57,7 @@ class NetBSRenderer implements RendererInterface
             ];
         }
 
+        $elements = is_array($elements) ? $elements : iterator_to_array($elements);
         $allIds = array_map(fn($el) => $el->getId(), $elements);
 
         // Paginate to first page

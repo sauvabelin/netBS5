@@ -29,7 +29,7 @@
 {# Use passed baseUrl, or default to ajax endpoint #}
 {% set baseUrl = baseUrl|default(path('netbs.core.ajax_list_html', { listId: listId })) %}
 
-<turbo-frame id="{{ frameId }}"
+<turbo-frame id="{{ frameId }}" target="_top"
     data-controller="checkbox-select ajax-list"
     data-checkbox-select-all-ids-value="{{ allIds|json_encode }}"
     data-ajax-list-base-url-value="{{ baseUrl }}"

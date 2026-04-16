@@ -55,6 +55,7 @@
 
 <script>
     document.addEventListener('mouseenter', function(e) {
+        if (!e.target.closest) return;
         var badge = e.target.closest('.facture-model-auto');
         if (!badge || badge.dataset.loaded) return;
         badge.dataset.loaded = 'true';
