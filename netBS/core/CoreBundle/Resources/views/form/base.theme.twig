@@ -126,11 +126,6 @@
 
 {# datepicker #}
 {% block datepicker_widget %}
-
-    {{ registerCss(asset('bundles/netbscore/lib/datetimepicker/bootstrap-datetimepicker.min.css')) }}
-    {{ registerJs(asset('bundles/netbscore/lib/datetimepicker/bootstrap-datetimepicker.min.js')) }}
-    {% include '@NetBSCore/javascript/datepicker_init.script.twig' %}
-
     {{ block('form_widget_simple') }}
 {% endblock %}
 
@@ -138,7 +133,7 @@
 {# daterange #}
 {% block daterange_widget %}
     <div>
-        <div class="input-daterange input-group d-flex align-items-center" data-date-format="dd.mm.yyyy">
+        <div class="input-daterange input-group d-flex align-items-center">
             <div class="flex-grow-1">
                 {{ form_row(form.biggerThan) }}
             </div>

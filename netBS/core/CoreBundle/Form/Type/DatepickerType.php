@@ -2,7 +2,6 @@
 
 namespace NetBS\CoreBundle\Form\Type;
 
-use NetBS\CoreBundle\Service\NetBS;
 use NetBS\CoreBundle\Service\ParameterManager;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\CallbackTransformer;
@@ -18,40 +17,42 @@ class DatepickerType extends AbstractType
 
     public function __construct(ParameterManager $parameterManager)
     {
-        $this->params   = $parameterManager;
+        $this->params = $parameterManager;
     }
 
     public function configureOptions(OptionsResolver $resolver)
     {
-        $resolver->setDefaults(array(
-            'format'  => $this->params->getValue('format', 'js_date')
-        ));
+        $resolver->setDefaults([]);
     }
 
     public function buildForm(FormBuilderInterface $builder, array $options)
     {
+        $phpFormat = $this->params->getValue('format', 'php_date');
+
         $builder->addViewTransformer(new CallbackTransformer(
-
-                function($date) {
-                    if($date instanceof \DateTime)
-                        return $date->format($this->params->getValue('format', 'php_date'));
-                },
-                function($string) {
-                    if($string === '' || is_null($string))
-                        return null;
-
-                    return \DateTime::createFromFormat(($this->params->getValue('format', 'php_date')), $string);
+            function ($date) use ($phpFormat) {
+                if ($date instanceof \DateTime) {
+                    return $date->format($phpFormat);
                 }
-            )
-        );
+                return null;
+            },
+            function ($string) use ($phpFormat) {
+                if ($string === '' || $string === null) {
+                    return null;
+                }
+                return \DateTime::createFromFormat($phpFormat, $string) ?: null;
+            }
+        ));
     }
 
     public function buildView(FormView $view, FormInterface $form, array $options)
     {
-        $view->vars['attr']['data-type']        = 'datetimepicker';
-        $view->vars['attr']['data-date-format'] = $options['format'];
-        $view->vars['attr']['data-min-view']    = 2;
-        $view->vars['attr']['placeholder']      = $options['format'];
+        $mask = $this->params->getValue('format', 'php_date');
+        $mask = preg_replace('/[a-zA-Z]/', '9', (new \DateTime())->format($mask));
+
+        $view->vars['attr']['data-controller'] = 'input-mask';
+        $view->vars['attr']['data-input-mask-pattern-value'] = "'mask' : '$mask'";
+        $view->vars['attr']['placeholder'] = $this->params->getValue('format', 'js_date');
     }
 
     public function getParent()
