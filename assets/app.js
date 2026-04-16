@@ -1,11 +1,15 @@
-// Bootstrap JS is loaded via <script> tag (needed as global for x-editable).
-// Move to importmap import here once x-editable is removed (Phase 6/7).
 import * as Turbo from '@hotwired/turbo';
+import * as bootstrap from 'bootstrap';
 import './bootstrap.js';
 import { showToast } from './lib/toast.js';
+
+// Bootstrap needs to be global for dropdowns/modals/tooltips in server-rendered HTML
+window.bootstrap = bootstrap;
+
+// showToast is used by inline scripts (toolbar buttons, updaters)
 window.showToast = showToast;
 
-// Disable Turbo Drive — body scripts from dumpJs()/dumpScript() break during
-// Turbo body swap (jQuery plugins not loaded in time). Re-enable once jQuery
-// plugins are removed (Phase 5/6). Turbo Frames still work.
+// Turbo Drive disabled — dumpJs()/dumpScript() pattern still in use.
+// External scripts loaded dynamically by Turbo race with inline scripts.
+// Re-enable once registerJs/registerScript are fully eliminated.
 Turbo.session.drive = false;

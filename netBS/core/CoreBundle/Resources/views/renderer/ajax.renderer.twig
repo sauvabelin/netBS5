@@ -44,7 +44,6 @@
                 var frameEl = document.getElementById('list-frame-{{ tableId }}');
                 if (!frameEl) return {{ allIds|json_encode }};
 
-                // Access the Stimulus checkbox-select controller
                 var app = window.Stimulus;
                 if (app) {
                     var controller = app.getControllerForElementAndIdentifier(frameEl, 'checkbox-select');
@@ -53,21 +52,11 @@
                     }
                 }
 
-                // Fallback: read checked checkboxes manually
                 var checked = frameEl.querySelectorAll('[data-checkbox-select-target="checkbox"]:checked');
                 if (checked.length === 0) return {{ allIds|json_encode }};
                 return Array.from(checked).map(function(cb) { return parseInt(cb.value, 10); });
             }
         };
-
-        // x-editable defaults
-        $.fn.editable.defaults.emptytext      = 'Rien';
-        $.fn.editable.defaults.success        = function(response, newValue) {
-            return {newValue: response.newValue};
-        };
-
-        $.fn.editableform.template = '{% include '@NetBSCore/xeditable/template.xeditable.twig' %}';
-        $.fn.editableform.buttons  = '{% include '@NetBSCore/xeditable/buttons.xeditable.twig' %}';
     </script>
 {% endset %}
 
