@@ -22,8 +22,11 @@ export default class extends Controller {
     }
 
     disconnect() {
+        if (this._outsideClickHandler) {
+            document.removeEventListener('click', this._outsideClickHandler, true);
+            this._outsideClickHandler = null;
+        }
         if (this._wrapper) {
-            // Move select back out before removing wrapper
             if (this._wrapper.parentNode && this._select) {
                 this._wrapper.parentNode.insertBefore(this._select, this._wrapper);
             }
@@ -121,11 +124,12 @@ export default class extends Controller {
             this._doAjaxSearch(query, results);
         });
 
-        document.addEventListener('click', (e) => {
-            if (!this._wrapper.contains(e.target)) {
+        this._outsideClickHandler = (e) => {
+            if (this._wrapper && !this._wrapper.contains(e.target)) {
                 dropdown.style.display = 'none';
             }
-        }, true);
+        };
+        document.addEventListener('click', this._outsideClickHandler, true);
     }
 
     _doAjaxSearch(query, resultsEl) {

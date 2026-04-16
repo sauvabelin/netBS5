@@ -1,6 +1,4 @@
 {% form_theme statsForm '@NetBSCore/form/base.theme.twig' %}
-{{ registerJs(asset('bundles/netbscore/lib/jquery/jquery.min.js')) }}
-{{ registerJs('https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.8.0/Chart.min.js') }}
 {{ registerCss('https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.8.0/Chart.min.css') }}
 
 <div class="d-flex justify-content-between">
@@ -19,10 +17,10 @@
 <canvas id="groupe-effectifs"></canvas>
 <div id="groupe-effectifs"></div>
 
-{% set chartScript %}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.8.0/Chart.min.js"></script>
 <script>
 
-  const chart = new Chart($('#groupe-effectifs'), {
+  var chart = new Chart(document.getElementById('groupe-effectifs'), {
     type: 'line',
     data: {
       labels: [],
@@ -67,8 +65,8 @@
       scales: {
         xAxes: [{
           ticks: {
-            callback: (d) => {
-              const pad0 = (v) => v < 10 ? '0' + v : v;
+            callback: function(d) {
+              var pad0 = function(v) { return v < 10 ? '0' + v : v; };
               return pad0(d.getDate()) + '.' + pad0(d.getMonth() + 1) + '.' + d.getFullYear();
             },
           }
@@ -86,39 +84,36 @@
     }
   });
 
-  const statsState = {
-    begin: $('.stats-control [data-val="begin"]').val(),
-    steps: $('.stats-control [data-val="steps"]').val(),
-    end: $('.stats-control [data-val="end"]').val(),
+  var statsState = {
+    begin: document.querySelector('.stats-control [data-val="begin"]').value,
+    steps: document.querySelector('.stats-control [data-val="steps"]').value,
+    end: document.querySelector('.stats-control [data-val="end"]').value,
   };
 
-  const serieState = {
-    total: $('.series-control [data-val="total"]').is(':checked'),
-    hommes: $('.series-control [data-val="hommes"]').is(':checked'),
-    femmes: $('.series-control [data-val="femmes"]').is(':checked'),
+  var serieState = {
+    total: document.querySelector('.series-control [data-val="total"]').checked,
+    hommes: document.querySelector('.series-control [data-val="hommes"]').checked,
+    femmes: document.querySelector('.series-control [data-val="femmes"]').checked,
   };
 
   function refresh() {
-     if (typeof NProgress !== 'undefined') NProgress.start();
-      const pathPart = 'begin=' + statsState.begin + '&end=' + statsState.end + '&steps=' + statsState.steps;
-      fetch('{{ path('netbs.fichier.groupe.statistics_effectifs', { id: groupe.id }) }}?' + pathPart).then(r => r.json()).then((data) => {
+    var pathPart = 'begin=' + statsState.begin + '&end=' + statsState.end + '&steps=' + statsState.steps;
+    fetch('{{ path('netbs.fichier.groupe.statistics_effectifs', { id: groupe.id }) }}?' + pathPart).then(function(r) { return r.json(); }).then(function(data) {
 
-        chart.data.labels.splice(0);
-        chart.data.datasets[0].data.splice(0);
-        chart.data.datasets[1].data.splice(0);
-        chart.data.datasets[2].data.splice(0);
+      chart.data.labels.splice(0);
+      chart.data.datasets[0].data.splice(0);
+      chart.data.datasets[1].data.splice(0);
+      chart.data.datasets[2].data.splice(0);
 
-        data.forEach((it) => {
-          chart.data.labels.push(new Date(it.pallier.date));
-          chart.data.datasets[0].data.push(it.countAll);
-          chart.data.datasets[1].data.push(it.countHomme);
-          chart.data.datasets[2].data.push(it.countAll - it.countHomme);
-          console.log(it);
-        });
-
-        toggleSeries();
-        if (typeof NProgress !== 'undefined') NProgress.done();
+      data.forEach(function(it) {
+        chart.data.labels.push(new Date(it.pallier.date));
+        chart.data.datasets[0].data.push(it.countAll);
+        chart.data.datasets[1].data.push(it.countHomme);
+        chart.data.datasets[2].data.push(it.countAll - it.countHomme);
       });
+
+      toggleSeries();
+    });
   }
 
   function toggleSeries() {
@@ -127,52 +122,36 @@
     chart.data.datasets[1].hidden = false;
     chart.data.datasets[2].hidden = false;
 
-    let totalMin = Infinity;
-    let totalMax = 0;
-    let minHommes = Infinity;
-    let minFemmes = Infinity;
-    let maxHommes = 0;
-    let maxFemmes = 0;
+    var totalMin = Infinity, totalMax = 0;
+    var minHommes = Infinity, maxHommes = 0;
+    var minFemmes = Infinity, maxFemmes = 0;
 
     if (serieState.total) {
-      chart.data.datasets[0].data.forEach((countAll) => {
-        if (totalMin > countAll) totalMin = countAll;
-        if (totalMax < countAll) totalMax = countAll;
-      });
+      chart.data.datasets[0].data.forEach(function(v) { if (totalMin > v) totalMin = v; if (totalMax < v) totalMax = v; });
     }
-
     if (serieState.hommes) {
-      chart.data.datasets[1].data.forEach((countHommes) => {
-        if (minHommes > countHommes) minHommes = countHommes;
-        if (maxHommes < countHommes) maxHommes = countHommes;
-      });
+      chart.data.datasets[1].data.forEach(function(v) { if (minHommes > v) minHommes = v; if (maxHommes < v) maxHommes = v; });
     }
-
     if (serieState.femmes) {
-      chart.data.datasets[2].data.forEach((countFemmes) => {
-        if (minFemmes > countFemmes) minFemmes = countFemmes;
-        if (maxFemmes < countFemmes) maxFemmes = countFemmes;
-      });
+      chart.data.datasets[2].data.forEach(function(v) { if (minFemmes > v) minFemmes = v; if (maxFemmes < v) maxFemmes = v; });
     }
 
-    const max = Math.max(
-      (serieState.total ? totalMax : 0),
-      (serieState.hommes ? maxHommes : 0),
-      (serieState.femmes ? maxFemmes : 0),
+    var max = Math.max(
+      serieState.total ? totalMax : 0,
+      serieState.hommes ? maxHommes : 0,
+      serieState.femmes ? maxFemmes : 0
+    );
+    var min = Math.min(
+      serieState.total ? totalMin : Infinity,
+      serieState.hommes ? minHommes : Infinity,
+      serieState.femmes ? minFemmes : Infinity
     );
 
-    const min = Math.min(
-      (serieState.total ? totalMin : Infinity),
-      (serieState.hommes ? minHommes : Infinity),
-      (serieState.femmes ? minFemmes : Infinity),
-    );
-
-    const diff = Math.ceil((max - min) / 20);
-    const minSupp = min - diff;
+    var diff = Math.ceil((max - min) / 20);
+    var minSupp = min - diff;
     chart.options.scales.yAxes[0].ticks.suggestedMin = minSupp > 0 ? minSupp : 0;
     chart.options.scales.yAxes[0].ticks.suggestedMax = max + diff;
     chart.update();
-
 
     chart.data.datasets[0].hidden = !serieState.total;
     chart.data.datasets[1].hidden = !serieState.hommes;
@@ -180,18 +159,19 @@
     chart.update();
   }
 
-  $('.stats-control input').change(function() {
-    statsState[$(this).attr('data-val')] = $(this).val();
-    refresh();
+  document.querySelectorAll('.stats-control input').forEach(function(el) {
+    el.addEventListener('change', function() {
+      statsState[this.dataset.val] = this.value;
+      refresh();
+    });
   });
 
-  $('.series-control input').change(function() {
-    serieState[$(this).attr('data-val')] = $(this).is(':checked');
-    toggleSeries();
+  document.querySelectorAll('.series-control input').forEach(function(el) {
+    el.addEventListener('change', function() {
+      serieState[this.dataset.val] = this.checked;
+      toggleSeries();
+    });
   });
 
   refresh();
 </script>
-{% endset %}
-
-{{ registerScript(chartScript) }}

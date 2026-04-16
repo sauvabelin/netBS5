@@ -3,15 +3,12 @@
 namespace NetBS\CoreBundle\Twig\Extension;
 
 use Twig\Extension\AbstractExtension;
-use Twig\Markup;
 use Twig\TwigFunction;
 
 class AssetsExtension extends AbstractExtension
 {
     protected $styles   = [];
     protected $css      = [];
-    protected $js       = [];
-    protected $scripts  = [];
     protected $html     = [];
     protected $sorter   = null;
 
@@ -31,13 +28,9 @@ class AssetsExtension extends AbstractExtension
 
             new TwigFunction('registerStyle', array($this, 'registerStyle')),
             new TwigFunction('registerCss', array($this, 'registerCss')),
-            new TwigFunction('registerJs', array($this, 'registerJs')),
-            new TwigFunction('registerScript', array($this, 'registerScript')),
             new TwigFunction('registerHtml', array($this, 'registerHtml')),
             new TwigFunction('dumpStyle', array($this, 'dumpStyle'), array('is_safe' => array('html'))),
             new TwigFunction('dumpCss', array($this, 'dumpCss'), array('is_safe' => array('html'))),
-            new TwigFunction('dumpJs', array($this, 'dumpJs'), array('is_safe' => array('html'))),
-            new TwigFunction('dumpScript', array($this, 'dumpScript'), array('is_safe' => array('html'))),
             new TwigFunction('dumpHtml', array($this, 'dumpHtml'), array('is_safe' => array('html')))
         ];
     }
@@ -58,23 +51,6 @@ class AssetsExtension extends AbstractExtension
                 return;
 
         $this->css[] = ['css' => $css, 'weight' => $weight];
-    }
-
-    public function registerJs($js, $weight = 0) {
-
-        foreach($this->js as $script)
-            if($script['js'] === $js)
-                return;
-
-        $this->js[] = ['js' => $js, 'weight' => $weight];
-    }
-
-    public function registerScript(Markup $script, $weight = 0) {
-        foreach($this->scripts as $scr)
-            if($scr['script']->jsonSerialize() === $script->jsonSerialize())
-                return;
-
-        $this->scripts[]    = ['script' => $script, 'weight' => $weight];
     }
 
     public function registerHtml($html, $weight = 0) {
@@ -109,29 +85,6 @@ class AssetsExtension extends AbstractExtension
             $css .= '<link rel="stylesheet" type="text/css" href="' . $style['css'] . '">' . "\n";
 
         return $css;
-    }
-
-    public function dumpJs() {
-
-        $js         = '';
-        $scripts    = $this->js;
-        usort($scripts, $this->sorter);
-
-        foreach($scripts as $script)
-            $js .= '<script type="text/javascript" src="' . $script['js'] . '"></script>' . "\n";
-
-        return $js;
-    }
-
-    public function dumpScript() {
-
-        $scripting  = '';
-        $scripts    = $this->scripts;
-        usort($scripts, $this->sorter);
-        foreach($scripts as $script)
-            $scripting .= $script['script'];
-
-        return $scripting;
     }
 
     public function dumpHtml() {

@@ -53,61 +53,40 @@
     </div>
 </div>
 
-{% set facturationScript %}
+<script>
+    document.addEventListener('mouseenter', function(e) {
+        var badge = e.target.closest('.facture-model-auto');
+        if (!badge || badge.dataset.loaded) return;
+        badge.dataset.loaded = 'true';
+        var factureId = badge.dataset.factureId;
+        fetch("{{ path('ovesco.facturation.facture.resolve_model', {id: '__ID__'}) }}".replace('__ID__', factureId))
+            .then(function(r) { return r.json(); })
+            .then(function(data) { badge.textContent = data.model; });
+    }, true);
 
-    <script>
-        document.addEventListener('mouseenter', function(e) {
-            var badge = e.target.closest('.facture-model-auto');
-            if (!badge || badge.dataset.loaded) return;
-            badge.dataset.loaded = 'true';
-            var factureId = badge.dataset.factureId;
-            fetch("{{ path('ovesco.facturation.facture.resolve_model', {id: '__ID__'}) }}".replace('__ID__', factureId))
-                .then(function(r) { return r.json(); })
-                .then(function(data) { badge.textContent = data.model; });
-        }, true);
+    document.getElementById('mark-printed-{{ tableId }}').addEventListener('click', function() {
+        var ids = {{ tableId }}.getSelectedIds();
+        if (ids.length === 0) { alert('Veuillez sélectionner des factures'); return; }
+        if (!confirm('Marquer ' + ids.length + ' facture(s) comme imprimée(s) ?')) return;
+        fetch("{{ path('ovesco.facturation.facture.mark_printed') }}", {
+            method: 'POST',
+            headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+            body: 'ids=' + encodeURIComponent(JSON.stringify(ids))
+        }).then(function(r) { return r.json(); })
+          .then(function(data) { alert(data.count + ' facture(s) marquée(s) comme imprimée(s)'); location.reload(); })
+          .catch(function() { alert('Erreur lors de la mise à jour'); });
+    });
 
-        document.getElementById('mark-printed-{{ tableId }}').addEventListener('click', function() {
-            var ids = {{ tableId }}.getSelectedIds();
-            if (ids.length === 0) { alert('Veuillez sélectionner des factures'); return; }
-            if (!confirm('Marquer ' + ids.length + ' facture(s) comme imprimée(s) ?')) return;
-            fetch("{{ path('ovesco.facturation.facture.mark_printed') }}", {
-                method: 'POST',
-                headers: {'Content-Type': 'application/x-www-form-urlencoded'},
-                body: 'ids=' + encodeURIComponent(JSON.stringify(ids))
-            }).then(function(r) { return r.json(); })
-              .then(function(data) { alert(data.count + ' facture(s) marquée(s) comme imprimée(s)'); location.reload(); })
-              .catch(function() { alert('Erreur lors de la mise à jour'); });
-        });
-
-        document.getElementById('unmark-printed-{{ tableId }}').addEventListener('click', function() {
-            var ids = {{ tableId }}.getSelectedIds();
-            if (ids.length === 0) { alert('Veuillez sélectionner des factures'); return; }
-            if (!confirm('Marquer ' + ids.length + ' facture(s) comme non-imprimée(s) ?')) return;
-            fetch("{{ path('ovesco.facturation.facture.unmark_printed') }}", {
-                method: 'POST',
-                headers: {'Content-Type': 'application/x-www-form-urlencoded'},
-                body: 'ids=' + encodeURIComponent(JSON.stringify(ids))
-            }).then(function(r) { return r.json(); })
-              .then(function(data) { alert(data.count + ' facture(s) marquée(s) comme non-imprimée(s)'); location.reload(); })
-              .catch(function() { alert('Erreur lors de la mise à jour'); });
-        });
-    </script>
-    {#
-    <script>
-        $('#generate-factures-{{ tableId }}').click(function() {
-            PostLink("{{ path() }}", generateData{{ tableId }}())
-        });
-
-        function generateData{{ tableId }}() {
-
-            return {
-                modelAlias: "{{ table.model.alias }}",
-                selectedIds: {{ tableId }}.getSelectedIds()
-            }
-        }
-    </script>
-    #}
-{% endset %}
-
-
-{{ registerScript(facturationScript) }}
+    document.getElementById('unmark-printed-{{ tableId }}').addEventListener('click', function() {
+        var ids = {{ tableId }}.getSelectedIds();
+        if (ids.length === 0) { alert('Veuillez sélectionner des factures'); return; }
+        if (!confirm('Marquer ' + ids.length + ' facture(s) comme non-imprimée(s) ?')) return;
+        fetch("{{ path('ovesco.facturation.facture.unmark_printed') }}", {
+            method: 'POST',
+            headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+            body: 'ids=' + encodeURIComponent(JSON.stringify(ids))
+        }).then(function(r) { return r.json(); })
+          .then(function(data) { alert(data.count + ' facture(s) marquée(s) comme non-imprimée(s)'); location.reload(); })
+          .catch(function() { alert('Erreur lors de la mise à jour'); });
+    });
+</script>

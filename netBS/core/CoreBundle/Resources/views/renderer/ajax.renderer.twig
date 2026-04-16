@@ -35,29 +35,19 @@
 
 </div>
 
-{% set tableJs %}
-    <script type="text/javascript">
-        // Global bridge: toolbar buttons use {{ tableId }}.getSelectedIds()
-        // This delegates to the checkbox-select Stimulus controller on the turbo-frame.
-        var {{ tableId }} = {
-            getSelectedIds: function() {
-                var frameEl = document.getElementById('list-frame-{{ tableId }}');
-                if (!frameEl) return {{ allIds|json_encode }};
-
-                var app = window.Stimulus;
-                if (app) {
-                    var controller = app.getControllerForElementAndIdentifier(frameEl, 'checkbox-select');
-                    if (controller) {
-                        return controller.getSelectedIds();
-                    }
-                }
-
-                var checked = frameEl.querySelectorAll('[data-checkbox-select-target="checkbox"]:checked');
-                if (checked.length === 0) return {{ allIds|json_encode }};
-                return Array.from(checked).map(function(cb) { return parseInt(cb.value, 10); });
+<script type="text/javascript">
+    var {{ tableId }} = {
+        getSelectedIds: function() {
+            var frameEl = document.getElementById('list-frame-{{ tableId }}');
+            if (!frameEl) return {{ allIds|json_encode }};
+            var app = window.Stimulus;
+            if (app) {
+                var controller = app.getControllerForElementAndIdentifier(frameEl, 'checkbox-select');
+                if (controller) return controller.getSelectedIds();
             }
-        };
-    </script>
-{% endset %}
-
-{{ registerScript(tableJs) }}
+            var checked = frameEl.querySelectorAll('[data-checkbox-select-target="checkbox"]:checked');
+            if (checked.length === 0) return {{ allIds|json_encode }};
+            return Array.from(checked).map(function(cb) { return parseInt(cb.value, 10); });
+        }
+    };
+</script>

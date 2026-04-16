@@ -18,55 +18,45 @@
 
 {{ registerHtml(newItemPrototype) }}
 
-{% set updaterAddScript %}
-    <script type="text/javascript">
+<script type="text/javascript">
 
-        function onAddClick(id, allowDelete) {
+    function onAddClick(id, allowDelete) {
 
-            var tbody = document.getElementById('mass-items-table-' + id).querySelector('tbody');
-            var row   = document.getElementById('mass-prototype-' + id).querySelector('tr').cloneNode(true);
-            var count = tbody.querySelectorAll('tr').length;
+        var tbody = document.getElementById('mass-items-table-' + id).querySelector('tbody');
+        var row   = document.getElementById('mass-prototype-' + id).querySelector('tr').cloneNode(true);
+        var count = tbody.querySelectorAll('tr').length;
 
-            row.querySelectorAll('td').forEach(function(td) {
+        row.querySelectorAll('td').forEach(function(td) {
 
-                var sub  = td.querySelector('input, select, textarea');
-                if (!sub) return;
-                var subId   = sub.getAttribute('id'),
-                    subName = sub.getAttribute('name');
+            var sub  = td.querySelector('input, select, textarea');
+            if (!sub) return;
+            var subId   = sub.getAttribute('id'),
+                subName = sub.getAttribute('name');
 
-                if (subId) {
-                    sub.setAttribute('id', subId.replace('__name__', count + 1));
-                }
+            if (subId) {
+                sub.setAttribute('id', subId.replace('__name__', count + 1));
+            }
 
-                if (subName) {
-                    sub.setAttribute('name', subName.replace('__name__', count + 1));
-                }
-            });
-
-            tbody.appendChild(row);
-
-            if (allowDelete)
-                triggerMassDeleteListener(id);
-        }
-
-    </script>
-{% endset %}
-
-{{ registerScript(updaterAddScript) }}
-
-{% set allowAddScript %}
-
-    <script type="text/javascript">
-        document.addEventListener('DOMContentLoaded', function() {
-            var addBtn = document.querySelector('[data-mass-add-{{ _updater_id }}]');
-            if (addBtn) {
-                addBtn.addEventListener('click', function() {
-                    onAddClick('{{ _updater_id }}', {{ allowDelete }});
-                });
+            if (subName) {
+                sub.setAttribute('name', subName.replace('__name__', count + 1));
             }
         });
-    </script>
 
-{% endset %}
+        tbody.appendChild(row);
 
-{{ registerScript(allowAddScript) }}
+        if (allowDelete)
+            triggerMassDeleteListener(id);
+    }
+
+</script>
+
+<script type="text/javascript">
+    document.addEventListener('DOMContentLoaded', function() {
+        var addBtn = document.querySelector('[data-mass-add-{{ _updater_id }}]');
+        if (addBtn) {
+            addBtn.addEventListener('click', function() {
+                onAddClick('{{ _updater_id }}', {{ allowDelete }});
+            });
+        }
+    });
+</script>

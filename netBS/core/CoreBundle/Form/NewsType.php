@@ -6,7 +6,7 @@ use NetBS\CoreBundle\Entity\News;
 use NetBS\CoreBundle\Entity\NewsChannel;
 use NetBS\CoreBundle\Form\Type\Select2DocumentType;
 use NetBS\CoreBundle\Form\Type\SwitchType;
-use NetBS\CoreBundle\Form\Type\TrumbowygType;
+use NetBS\CoreBundle\Form\Type\QuillType;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\Form\FormBuilderInterface;
@@ -26,7 +26,7 @@ class NewsType extends AbstractType
             ])
             ->add('pinned', SwitchType::class, ['label' => "Epinglée"])
             ->add("titre", TextType::class, ['label' => "Titre"])
-            ->add("contenu",TrumbowygType::class, ['label' => "Contenu"])
+            ->add("contenu", QuillType::class, ['label' => "Contenu"])
         ;
     }
 

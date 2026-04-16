@@ -28,7 +28,13 @@ export default class extends Controller {
         const submenu = li.querySelector(':scope > ul');
         if (!submenu) return;
 
-        submenu.dataset.originalHeight = submenu.offsetHeight + 'px';
+        // On reconnect (Turbo Drive permanent element), submenus are already
+        // collapsed so offsetHeight would be 0. Use scrollHeight which returns
+        // the natural content height even when collapsed, or keep the existing value.
+        if (!submenu.dataset.originalHeight || submenu.dataset.originalHeight === '0px') {
+            const h = submenu.scrollHeight;
+            if (h > 0) submenu.dataset.originalHeight = h + 'px';
+        }
         submenu.style.height = '0px';
 
         // Toggle handler on the <a> only (not <li>), so leaf link clicks

@@ -8,8 +8,3 @@ window.bootstrap = bootstrap;
 
 // showToast is used by inline scripts (toolbar buttons, updaters)
 window.showToast = showToast;
-
-// Turbo Drive disabled — dumpJs()/dumpScript() pattern still in use.
-// External scripts loaded dynamically by Turbo race with inline scripts.
-// Re-enable once registerJs/registerScript are fully eliminated.
-Turbo.session.drive = false;

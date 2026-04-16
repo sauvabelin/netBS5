@@ -20,21 +20,17 @@
     </div>
 </div>
 
-{% set exportScript %}
-    <script type="text/javascript">
-        document.querySelectorAll('#{{ event.tableId }} td').forEach(function(td) {
-            td.addEventListener('click', function(e) {
-                if (e.target.tagName === 'LABEL' || e.target.tagName === 'INPUT') return;
-                var tr = this.parentElement;
-                var id = tr.getAttribute('data-id');
-                document.querySelectorAll('#{{ event.tableId }} tr').forEach(function(r) { r.classList.remove('active'); });
-                tr.classList.add('active');
-                fetch('{{ path('netbs.core.changelog.preview_change') }}?logId=' + id)
-                    .then(function(r) { return r.text(); })
-                    .then(function(html) { document.getElementById('_modif_details').innerHTML = html; });
-            });
+<script type="text/javascript">
+    document.querySelectorAll('#{{ event.tableId }} td').forEach(function(td) {
+        td.addEventListener('click', function(e) {
+            if (e.target.tagName === 'LABEL' || e.target.tagName === 'INPUT') return;
+            var tr = this.parentElement;
+            var id = tr.getAttribute('data-id');
+            document.querySelectorAll('#{{ event.tableId }} tr').forEach(function(r) { r.classList.remove('active'); });
+            tr.classList.add('active');
+            fetch('{{ path('netbs.core.changelog.preview_change') }}?logId=' + id)
+                .then(function(r) { return r.text(); })
+                .then(function(html) { document.getElementById('_modif_details').innerHTML = html; });
         });
-    </script>
-{% endset %}
-
-{{ registerScript(exportScript) }}
+    });
+</script>

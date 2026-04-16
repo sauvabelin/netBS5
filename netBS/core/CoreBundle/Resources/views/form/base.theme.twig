@@ -33,41 +33,18 @@
 {% block quill_widget %}
 
     {{ registerCss(asset('bundles/netbscore/lib/quill/quill.snow.css')) }}
-    {{ registerJs(asset('bundles/netbscore/lib/quill/quill.min.js')) }}
-    {% set quillJs %}
+
+    {{ block('textarea_widget') }}
+
+    <script src="{{ asset('bundles/netbscore/lib/quill/quill.min.js') }}"></script>
     <script type="text/javascript">
         new Quill('#{{ form.vars.id }}', {
-            theme: 'snow',
-            debug: 'info'
+            theme: 'snow'
         });
     </script>
-    {% endset %}
-
-    {{ registerScript(quillJs) }}
-
-    {{ block('textarea_widget') }}
 
 {% endblock %}
 
-{% block trumbowyg_widget %}
-
-    {{ registerJs(asset('bundles/netbscore/lib/jquery/jquery.min.js')) }}
-    {{ registerCss(asset('bundles/netbscore/lib/trumbowyg/ui/trumbowyg.min.css')) }}
-    {{ registerJs(asset('bundles/netbscore/lib/trumbowyg/trumbowyg.min.js')) }}
-
-    {% set script %}
-        <script type="text/javascript">
-            $('#{{ form.vars.id }}').trumbowyg({
-                btns: [['bold', 'italic'], ['link'], ['viewHTML']]
-            });
-        </script>
-    {% endset %}
-
-    {{ registerScript(script) }}
-
-    {{ block('textarea_widget') }}
-
-{% endblock %}
 
 
 {# select 2 stuff #}
