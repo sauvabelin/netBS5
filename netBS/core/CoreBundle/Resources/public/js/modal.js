@@ -39,7 +39,7 @@ var BSModal = function(path, params) {
         $.post(path, params).done(function(data, status, response) {
 
             if (parseInt(response.status) === 202)
-                toastr[data.type](data.message);
+                showToast(data.type, data.message);
 
             else {
                 mdl.showModal(data);
@@ -85,7 +85,7 @@ var BSModal = function(path, params) {
         if(code === 201)
             location.reload();
         if(code === 202)
-            toastr[data.type](data.message);
+            showToast(data.type, data.message);
         this.remove();
     };
 

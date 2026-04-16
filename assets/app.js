@@ -2,6 +2,8 @@
 // Move to importmap import here once x-editable is removed (Phase 6/7).
 import * as Turbo from '@hotwired/turbo';
 import './bootstrap.js';
+import { showToast } from './lib/toast.js';
+window.showToast = showToast;
 
 // Disable Turbo Drive — body scripts from dumpJs()/dumpScript() break during
 // Turbo body swap (jQuery plugins not loaded in time). Re-enable once jQuery

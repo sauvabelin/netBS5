@@ -12,7 +12,7 @@ services:
       - .:/var/www/html
   
   db:
-    image: mariadb
+    image: mariadb:11.8.3
     restart: always
     environment:
       MARIADB_ROOT_PASSWORD: netbs
@@ -26,7 +26,7 @@ services:
       - 3306:3306
   
   phpmyadmin:
-    image: phpmyadmin
+    image: phpmyadmin:5.2.2
     restart: always
     ports:
       - 8080:80

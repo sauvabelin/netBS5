@@ -1,4 +1,5 @@
 import { Controller } from '@hotwired/stimulus';
+import { showToast } from '../lib/toast.js';
 
 /**
  * Drives ajax-list pagination, search, and amount changes via Turbo Frames.
@@ -144,6 +145,8 @@ export default class extends Controller {
      * Called after initial render and after each Turbo Frame content replacement.
      */
     _initPlugins() {
+        if (typeof $ === 'undefined' || !$.fn || !$.fn.editable) return;
+
         const tableId = this.tableIdValue;
         const select2Url = this.select2UrlValue;
         const $table = $(`#${tableId}`);
@@ -166,7 +169,7 @@ export default class extends Controller {
                 },
                 error: function (response) {
                     if (response.status === 500) {
-                        toastr.error(
+                        showToast('error',
                             'Erreur interne, veuillez contacter le chef comm'
                         );
                     } else {
@@ -176,16 +179,11 @@ export default class extends Controller {
                             response.responseJSON.hasOwnProperty('message')
                         )
                             txt = response.responseJSON.message;
-                        toastr.warning(txt);
+                        showToast('warning', txt);
                     }
                 },
                 success: function () {
-                    const t = toastr.success(
-                        'Valeur modifiee avec succes, cliquez ici pour actualiser'
-                    );
-                    $(t).click(function () {
-                        location.reload();
-                    });
+                    showToast('success', 'Valeur modifi\u00e9e avec succ\u00e8s. <a href="#" onclick="location.reload(); return false;" class="text-white text-decoration-underline">Actualiser</a>');
                 },
                 select2: {
                     multiple: multiple,
@@ -211,7 +209,7 @@ export default class extends Controller {
             select2: { width: 250 },
             error: function (response) {
                 if (response.status === 500) {
-                    toastr.error(
+                    showToast('error',
                         'Erreur interne, veuillez contacter le chef comm'
                     );
                 } else {
@@ -221,11 +219,11 @@ export default class extends Controller {
                         response.responseJSON.hasOwnProperty('message')
                     )
                         txt = response.responseJSON.message;
-                    toastr.warning(txt);
+                    showToast('warning', txt);
                 }
             },
             success: function () {
-                toastr.success('Valeur modifiee avec succes');
+                showToast('success', 'Valeur modifiee avec succes');
             },
         });
 

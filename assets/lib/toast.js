@@ -9,7 +9,7 @@ export function showToast(type, text) {
     let container = document.querySelector('.toast-container');
     if (!container) {
         container = document.createElement('div');
-        container.className = 'toast-container position-fixed top-0 end-0 p-3';
+        container.className = 'toast-container position-fixed top-0 end-0 p-3 d-flex flex-column gap-2';
         container.style.zIndex = '1090';
         document.body.appendChild(container);
     }
