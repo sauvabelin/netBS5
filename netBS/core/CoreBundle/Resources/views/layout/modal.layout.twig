@@ -33,12 +33,12 @@
 {{ _modal }}
 
 <script type="text/javascript">
-    $('[data-type="select2"]').css('width', '100%');
-    $('[data-type="ajax-select2"]').css('width', '100%');
-
-    $('.modal-dialog form').submit(function(e) {
-        e.preventDefault();
-        $('#validate-modal-btn').trigger('click');
+    document.querySelectorAll('.modal-dialog form').forEach(function(form) {
+        form.addEventListener('submit', function(e) {
+            e.preventDefault();
+            var btn = document.getElementById('validate-modal-btn');
+            if (btn) btn.click();
+        });
     });
 </script>
 {{ dumpScript() }}

@@ -19,13 +19,11 @@
 {% endblock %}
 
 {% block switch_widget %}
-    {{ registerCss(asset('bundles/netbscore/css/switchery.css')) }}
     <div>
-        <label class="bs-switch">
-            <input type="checkbox" {{ block('widget_attributes') }}{% if value is defined %} value="{{ value }}"{% endif %}{% if checked %} checked="checked"{% endif %} />            <span class="slider round"></span>
-        </label>
+        <div class="form-check form-switch">
+            <input type="checkbox" class="form-check-input" {{ block('widget_attributes') }}{% if value is defined %} value="{{ value }}"{% endif %}{% if checked %} checked="checked"{% endif %} />
+        </div>
     </div>
-
 {% endblock %}
 
 {% block mask_widget %}

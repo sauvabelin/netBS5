@@ -23,55 +23,30 @@
 
         function onAddClick(id, allowDelete) {
 
-            var $tbody  = $('#mass-items-table-' + id).find('tbody');
-            var $row    = $('#mass-prototype-' + id).find('tr').clone();
-            var count   = $tbody.find('tr').length;
+            var tbody = document.getElementById('mass-items-table-' + id).querySelector('tbody');
+            var row   = document.getElementById('mass-prototype-' + id).querySelector('tr').cloneNode(true);
+            var count = tbody.querySelectorAll('tr').length;
 
-            $.each($row.children('td'), function(key, td) {
+            row.querySelectorAll('td').forEach(function(td) {
 
-                var $sub    = $(td).find(':input');
-                var id      = $sub.attr("id"),
-                    name    = $sub.attr("name");
+                var sub  = td.querySelector('input, select, textarea');
+                if (!sub) return;
+                var subId   = sub.getAttribute('id'),
+                    subName = sub.getAttribute('name');
 
-                if(id !== undefined) {
-                    id = id.replace('__name__', count + 1);
-                    $sub.attr("id", id);
+                if (subId) {
+                    sub.setAttribute('id', subId.replace('__name__', count + 1));
                 }
 
-                if(name !== undefined) {
-                    name = name.replace('__name__', count + 1);
-                    $sub.attr("name", name);
+                if (subName) {
+                    sub.setAttribute('name', subName.replace('__name__', count + 1));
                 }
             });
 
-            $tbody.append($row);
+            tbody.appendChild(row);
 
-            if(allowDelete)
+            if (allowDelete)
                 triggerMassDeleteListener(id);
-
-            $.each($row.children(), function(k, td) {
-
-                var elem = $(td).find(':input');
-
-                if($(elem).is('[data-type="select2"]')) {
-                    $(elem).next().remove();
-                    Select2Triggerer.triggerSelect2($(elem));
-                }
-
-                if($(elem).is('[data-type="ajax-select2"]')) {
-
-                    $(elem).next().remove();
-                    Select2Triggerer.triggerAjaxSelect2($(elem));
-                }
-
-                if($(elem).is('[data-type="datetimepicker"]'))
-                    DatepickerTriggerer.triggerDatepicker($(elem));
-
-                if($(elem).is('[data-type="switch"]')) {
-                    $(elem).next().remove();
-                    SwitchTriggerer.triggerSwitch($(elem));
-                }
-            });
         }
 
     </script>
@@ -82,10 +57,13 @@
 {% set allowAddScript %}
 
     <script type="text/javascript">
-        $(document).ready(function() {
-            $('[data-mass-add-{{ _updater_id }}]').click(function() {
-                onAddClick('{{ _updater_id }}', {{ allowDelete }});
-            });
+        document.addEventListener('DOMContentLoaded', function() {
+            var addBtn = document.querySelector('[data-mass-add-{{ _updater_id }}]');
+            if (addBtn) {
+                addBtn.addEventListener('click', function() {
+                    onAddClick('{{ _updater_id }}', {{ allowDelete }});
+                });
+            }
         });
     </script>
 

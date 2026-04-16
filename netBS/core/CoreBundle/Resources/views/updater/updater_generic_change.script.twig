@@ -1,7 +1,7 @@
 {% set massScript %}
 
     <script type="text/javascript">
-        $(document).ready(function() {
+        document.addEventListener('DOMContentLoaded', function() {
 
             {# generic form handling #}
             {% for genericItem in generic.children %}
@@ -10,33 +10,40 @@
                 {% set name     = genericItem.vars.name %}
 
 
-                $('#{{ genericItem.vars.id }}').change(function() {
+                document.getElementById('{{ genericItem.vars.id }}').addEventListener('change', function() {
 
                     {# AJAX SELECT2 #}
                     {% if 'ajax_select2_document' in prefix %}
 
-                    $('[name$="][{{ name }}]"]').empty();
-                    var data = $(this).select2('data');
-
-                    for(var i = 0; i < data.length; i++) {
-
-                        var newState = new Option(data[i].text, data[i].id, true, true);
-                        $('[name$="][{{ name }}]"]').append(newState);
-                    }
-
-                    $('[name$="][{{ name }}]"]').val($(this).val()).trigger('change');
+                    var selectedValues = Array.from(this.selectedOptions).map(function(opt) { return opt.value; });
+                    document.querySelectorAll('[name$="][{{ name }}]"]').forEach(function(el) {
+                        el.innerHTML = '';
+                        Array.from(this.selectedOptions).forEach(function(opt) {
+                            var newOpt = new Option(opt.text, opt.value, true, true);
+                            el.appendChild(newOpt);
+                        });
+                        el.value = this.value;
+                        el.dispatchEvent(new Event('change'));
+                    }.bind(this));
 
                     {# SELECT2 #}
                     {% elseif 'select2_document' in prefix %}
-                    $('[name$="][{{ name }}]"]').val($(this).val()).trigger('change');
+                    document.querySelectorAll('[name$="][{{ name }}]"]').forEach(function(el) {
+                        el.value = this.value;
+                        el.dispatchEvent(new Event('change'));
+                    }.bind(this));
 
                     {# DATEPICKER #}
                     {% elseif 'datepicker' in prefix %}
-                    $('[name$="][{{ name }}]"]').datetimepicker("update", $(this).val());
+                    document.querySelectorAll('[name$="][{{ name }}]"]').forEach(function(el) {
+                        el.value = this.value;
+                    }.bind(this));
 
                     {# OTHER #}
                     {% else %}
-                    $('[name$="][{{ name }}]"]').val($(this).val());
+                    document.querySelectorAll('[name$="][{{ name }}]"]').forEach(function(el) {
+                        el.value = this.value;
+                    }.bind(this));
                     {% endif %}
 
                 });

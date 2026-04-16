@@ -3,8 +3,10 @@
     <script type="text/javascript">
 
         function triggerMassDeleteListener(id) {
-            $('[data-delete-element-' + id +']').click(function() {
-                $(this).parent().parent().remove();
+            document.querySelectorAll('[data-delete-element-' + id + ']').forEach(function(btn) {
+                btn.addEventListener('click', function() {
+                    this.closest('tr').remove();
+                });
             });
         }
 
@@ -16,7 +18,7 @@
 
 {% set allowDeleteImmediateScript %}
     <script type="text/javascript">
-        $(document).ready(function() {
+        document.addEventListener('DOMContentLoaded', function() {
             triggerMassDeleteListener('{{ _updater_id }}');
         });
     </script>

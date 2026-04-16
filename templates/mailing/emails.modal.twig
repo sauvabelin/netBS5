@@ -12,18 +12,15 @@
 {% block footer %}
     <button type="button" data-bs-dismiss="modal" class="btn btn-secondary">Fermer</button>
     <button type="button" class="btn btn-primary" id="mailing-copy-btn" onclick="
-        var btn = $(this);
-        var text = $('#mailing-emails-textarea').val();
+        var text = document.getElementById('mailing-emails-textarea').value;
         if (navigator.clipboard) {
+            var btn = this;
             navigator.clipboard.writeText(text).then(function() {
-                btn.text('Copié !').addClass('btn-success').removeClass('btn-primary');
-                setTimeout(function() { btn.text('Copier').addClass('btn-primary').removeClass('btn-success'); }, 2000);
+                btn.textContent = 'Copié !';
+                btn.classList.add('btn-success');
+                btn.classList.remove('btn-primary');
+                setTimeout(function() { btn.textContent = 'Copier'; btn.classList.add('btn-primary'); btn.classList.remove('btn-success'); }, 2000);
             });
-        } else {
-            var ta = $('#mailing-emails-textarea');
-            ta.prop('readonly', false).select();
-            document.execCommand('copy');
-            ta.prop('readonly', true);
         }
     ">Copier</button>
 {% endblock %}

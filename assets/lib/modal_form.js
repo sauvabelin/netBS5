@@ -12,7 +12,7 @@ export function parseResponse(response) {
     return response.text().then((text) => {
         if (code === 202) {
             const data = JSON.parse(text);
-            return { action: 'toast', type: data.type, message: data.message };
+            return { action: 'toast', ...data };
         }
         if (code === 201) {
             return { action: 'reload' };

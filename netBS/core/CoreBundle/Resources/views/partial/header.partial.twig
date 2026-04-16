@@ -1,10 +1,14 @@
 <header class="main-header">
     <div class="header-sections">
 
-        <div class="header-section header-search">
+        <div class="header-section header-search"
+             data-controller="global-search"
+             data-global-search-url-value="{{ path('netbs.core.ui.global_search') }}">
             <div class="input-group">
                 <span class="input-group-text"><i class="fas fa-search"></i></span>
-                <input id="_quick_search_input" type="text" class="form-control" placeholder="Rechercher parmi vos unités">
+                <input type="text" class="form-control" placeholder="Rechercher parmi vos unités"
+                       data-global-search-target="input"
+                       data-action="input->global-search#search focus->global-search#focusInput">
             </div>
         </div>
 
@@ -26,81 +30,8 @@
         <div class="header-section mobile-menu-section d-md-none">
             <button id="mobile-menu-btn" class="btn btn-secondary" data-action="click->mobile#toggle">
                 <i class="fas fa-bars"></i>
-
             </button>
         </div>
 
     </div>
 </header>
-
-{% set __quickSearch %}
-    <script type="text/javascript">
-        $(function() {
-
-            let popover = null,
-                elem = $('#_quick_search_input'),
-                timeout = null;
-
-            elem.focus(function() {
-                if(elem.val() !== null && elem.val() !== "")
-                    request(elem.val());
-            });
-
-            function request(value) {
-                $.get("{{ path('netbs.core.ui.global_search') }}", {query: value}).done(function(response) {
-
-                    let content = "<div class='qs-content'>";
-                    for(let i = 0; i < response.length; i++) {
-                        content += "<a class='qs-entry' href='" + response[i].path + "'>" +
-                            "<p class='qs-name'>" + response[i].name + "</p>" +
-                            "<p class='qs-description'>" + response[i].description + "</p></a>";
-                    }
-
-                    if(response.length === 0) {
-                        content += "<p class='m-0 p-3'>Aucun résultat</p>";
-                    }
-
-                    content += "</div>";
-
-                    elem.popover('dispose');
-                    popover = $(elem).popover({
-                        html: true,
-                        placement: 'bottom',
-                        content: content,
-                        template: '<div class="popover" role="tooltip"><div class="popover-arrow"></div><h3 class="popover-header"></h3><div class="popover-body qs-popover"></div></div>'
-                    });
-
-                    elem.popover("show");
-                    timeout = null;
-                });
-            }
-
-            elem.on('input', function() {
-                if(timeout !== null) {
-                    clearTimeout(timeout);
-                    timeout = null;
-                }
-
-                if(elem.val() !== "") {
-                    timeout = setTimeout(function() {
-                        request(elem.val());
-                    }, 300);
-                }
-            });
-
-            $(document).on('click', function(event) {
-
-                if(!popover)
-                    return;
-
-                if(event.target === popover || event.target === document.querySelector('#_quick_search_input'))
-                    return;
-
-                popover.popover('dispose');
-                timeout = null;
-            });
-        });
-    </script>
-{% endset %}
-
-{{ registerScript(__quickSearch) }}
