@@ -1,5 +1,5 @@
 import { Controller } from '@hotwired/stimulus';
-import { fetchResults, renderDropdownItems, wireSearchInput } from '../lib/ajax_search.js';
+import { fetchResults, renderDropdownItems, wireSearchInput, esc } from '../lib/ajax_search.js';
 
 export default class extends Controller {
     static values = {
@@ -158,7 +158,6 @@ export default class extends Controller {
     }
 
     _esc(str) {
-        if (!str) return '';
-        return String(str).replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+        return esc(str);
     }
 }

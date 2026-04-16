@@ -12,15 +12,13 @@ export default class extends Controller {
         this._handleClick = this._onClick.bind(this);
         this.element.addEventListener('click', this._handleClick);
 
-        // Suppress transition during initial setup so the active section appears instantly
-        this._submenus = this.element.querySelectorAll('li > ul');
-        this._submenus.forEach((ul) => { ul.style.transition = 'none'; });
-        this._collapseAll();
+        // Suppress transitions so the active section appears instantly
+        const submenus = this.element.querySelectorAll('li > ul');
+        submenus.forEach((ul) => { ul.style.transition = 'none'; });
+        this._collapseAll(submenus);
         this._openActivePath();
-        // Force a reflow so the browser applies the no-transition styles,
-        // then restore transitions on the next frame
-        this.element.offsetHeight; // eslint-disable-line no-unused-expressions
-        this._submenus.forEach((ul) => { ul.style.transition = ''; });
+        void this.element.offsetHeight; // flush styles before restoring transitions
+        submenus.forEach((ul) => { ul.style.transition = ''; });
     }
 
     disconnect() {
@@ -39,8 +37,8 @@ export default class extends Controller {
         this._toggle(li);
     }
 
-    _collapseAll() {
-        this._submenus.forEach((ul) => { ul.style.height = '0px'; });
+    _collapseAll(submenus) {
+        submenus.forEach((ul) => { ul.style.height = '0px'; });
     }
 
     _openActivePath() {
@@ -67,20 +65,7 @@ export default class extends Controller {
         li.classList.add('open');
         const sub = li.querySelector(':scope > ul');
         if (!sub) return;
-
-        // Collect ancestors that need resizing
-        const targets = [sub];
-        let el = li.parentElement;
-        while (el && el !== this.element) {
-            if (el.tagName === 'UL' && el.style.height && el.style.height !== '0px') {
-                targets.push(el);
-            }
-            el = el.parentElement;
-        }
-
-        // Batch reads then writes to avoid layout thrashing
-        const heights = targets.map((t) => t.scrollHeight);
-        targets.forEach((t, i) => { t.style.height = heights[i] + 'px'; });
+        this._resizeAncestors(li, [sub]);
     }
 
     _close(li) {
@@ -92,17 +77,20 @@ export default class extends Controller {
             const childSub = child.querySelector(':scope > ul');
             if (childSub) childSub.style.height = '0px';
         });
+        this._resizeAncestors(li);
+    }
 
-        // Batch-resize ancestors after children are collapsed
-        const ancestors = [];
+    // Batch-read scrollHeights then batch-write to avoid layout thrashing
+    _resizeAncestors(li, extra = []) {
+        const targets = [...extra];
         let el = li.parentElement;
         while (el && el !== this.element) {
             if (el.tagName === 'UL' && el.style.height && el.style.height !== '0px') {
-                ancestors.push(el);
+                targets.push(el);
             }
             el = el.parentElement;
         }
-        const heights = ancestors.map((t) => t.scrollHeight);
-        ancestors.forEach((t, i) => { t.style.height = heights[i] + 'px'; });
+        const heights = targets.map((t) => t.scrollHeight);
+        targets.forEach((t, i) => { t.style.height = heights[i] + 'px'; });
     }
 }

@@ -1,6 +1,6 @@
 import { Controller } from '@hotwired/stimulus';
 import { showToast } from '../lib/toast.js';
-import { fetchResults, renderDropdownItems, wireSearchInput } from '../lib/ajax_search.js';
+import { fetchResults, renderDropdownItems, wireSearchInput, esc } from '../lib/ajax_search.js';
 
 /**
  * Replaces jQuery x-editable with a Bootstrap Popover-based inline editor.
@@ -132,7 +132,7 @@ export default class extends Controller {
     _buildAjaxSearchHtml(currentValue) {
         const source = this._parseSource();
         const current = source.find((o) => String(o.id) === String(currentValue));
-        const displayText = current ? current.text : 'Rien';
+        const displayText = current ? current.text : (this.element.dataset.emptytext || 'Rien');
 
         return `<div class="editable-ajax-search" style="min-width:250px;position:relative;">
             <div class="mb-1 text-muted small">Actuel: <strong>${this._esc(displayText)}</strong></div>
@@ -278,8 +278,7 @@ export default class extends Controller {
     }
 
     _esc(str) {
-        if (str === null || str === undefined) return '';
-        return String(str).replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+        return esc(str);
     }
 
     _ddmmyyyyToIso(val) {

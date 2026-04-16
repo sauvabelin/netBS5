@@ -1,4 +1,5 @@
 import { Controller } from '@hotwired/stimulus';
+import { esc } from '../lib/ajax_search.js';
 
 export default class extends Controller {
     static values = { url: String };
@@ -83,7 +84,6 @@ export default class extends Controller {
     }
 
     _esc(str) {
-        if (!str) return '';
-        return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+        return esc(str);
     }
 }
