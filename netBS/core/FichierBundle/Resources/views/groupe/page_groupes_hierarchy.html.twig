@@ -2,9 +2,7 @@
 
 {% block main %}
 
-    {{ registerJs('https://cdn.jsdelivr.net/npm/vue@2.5.17/dist/vue.js') }}
-    {{ registerJs(asset('bundles/netbscore/js/modal.js')) }}
-    {% set newGroupeBtn %}<button data-modal data-modal-url="{{ path("netbs.fichier.groupe.modal_add") }}" class="btn btn-primary">Nouvelle unité</button>{% endset %}
+    {% set newGroupeBtn %}<button data-controller="modal" data-modal-url-value="{{ path("netbs.fichier.groupe.modal_add") }}" data-action="click->modal#open" class="btn btn-primary">Nouvelle unité</button>{% endset %}
 
     <div class="container-fluid">
 
@@ -16,15 +14,17 @@
             ]
         } %}
 
-        <div id="groupes-app">
-            {% verbatim %}
+        <div id="groupes-app" data-controller="group-filter">
+
             <div class="row">
                 <div class="col-sm-1 col-12">
                     Par nom
                 </div>
                 <div class="col-lg-2 col-md-3 col-sm-6 col-12">
                     <div class="input-group mb-3">
-                        <input type="text" class="form-control" placeholder="Rechercher par nom" v-model="searchNom" />
+                        <input type="text" class="form-control" placeholder="Rechercher par nom"
+                               data-group-filter-target="searchInput"
+                               data-action="input->group-filter#search" />
                     </div>
                 </div>
 
@@ -37,7 +37,11 @@
 
                 <div class="col-sm-11 col-12">
                     <div class="btn-group" role="group">
-                        <button type="button" v-for="categorie in categories" class="btn btn-secondary" @click="toggleCategorie(categorie)" v-bind:class="{active: selectedCategories.indexOf(categorie) !== -1}">{{ categorie }}</button>
+                        {% for categorie in categories %}
+                            <button type="button" class="btn btn-secondary"
+                                    data-action="click->group-filter#toggleCategory"
+                                    data-group-filter-category-param="{{ categorie.nom }}">{{ categorie.nom }}</button>
+                        {% endfor %}
                     </div>
                 </div>
 
@@ -51,7 +55,13 @@
                 </div>
                 <div class="col-sm-11 col-12">
                     <div class="btn-group" role="group">
-                        <button type="button" v-for="type in types" v-if="categories.indexOf(type) === -1" class="btn btn-secondary"  @click="toggleType(type)" v-bind:class="{active: selectedTypes.indexOf(type) !== -1}">{{ type }}</button>
+                        {% for type in types %}
+                            {% if type.nom not in categories|map(c => c.nom) %}
+                                <button type="button" class="btn btn-secondary"
+                                        data-action="click->group-filter#toggleType"
+                                        data-group-filter-type-param="{{ type.nom }}">{{ type.nom }}</button>
+                            {% endif %}
+                        {% endfor %}
                     </div>
                 </div>
 
@@ -60,95 +70,24 @@
             <hr/>
 
             <div class="row">
-                <div class="col-lg-3 col-md-4 col-sm-4 col-6" v-for="groupe in filteredGroupes">
-                    <a class="card" v-bind:href="groupe.path">
-                        <div class="card-header">
-                            <h3 class="card-title">{{ groupe.nom }}</h3>
-                            <h5 class="card-subtitle">{{ groupe.type }} <span v-if="categories.indexOf(groupe.type) === -1"> - {{ groupe.categorie }}</span></h5>
-                        </div>
-                    </a>
-                </div>
+                {% for groupe in groupes %}
+                    <div class="col-lg-3 col-md-4 col-sm-4 col-6"
+                         data-group-filter-target="group"
+                         data-group-name="{{ groupe.nom }}{% if groupe.groupeType.affichageEffectifs and groupe.parent %} ({{ groupe.parent.nom }}){% endif %}"
+                         data-group-type="{{ groupe.groupeType.nom }}"
+                         data-group-category="{{ groupe.groupeType.groupeCategorie.nom }}">
+                        <a class="card" href="{{ path('netbs.fichier.groupe.page_groupe', {id: groupe.id}) }}">
+                            <div class="card-header">
+                                <h3 class="card-title">{{ groupe.nom }}{% if groupe.groupeType.affichageEffectifs and groupe.parent %} ({{ groupe.parent.nom }}){% endif %}</h3>
+                                <h5 class="card-subtitle">{{ groupe.groupeType.nom }}{% if groupe.groupeType.nom not in categories|map(c => c.nom) %} - {{ groupe.groupeType.groupeCategorie.nom }}{% endif %}</h5>
+                            </div>
+                        </a>
+                    </div>
+                {% endfor %}
             </div>
 
-            {% endverbatim %}
         </div>
 
     </div>
 
-    {% set groupeJs %}
-        <script type="text/javascript">
-            new Vue({
-                el: '#groupes-app',
-                data: function() {
-                    return {
-
-                        selectedTypes: [],
-                        selectedCategories: [],
-                        searchNom: "",
-
-                        types: [{% for type in types %}"{{ type.nom }}"{% if not loop.last %},{% endif %}{% endfor %}],
-                        categories: [{% for categorie in categories %}"{{ categorie.nom }}"{% if not loop.last %},{% endif %}{% endfor %}],
-                        groupes: [
-                            {% for groupe in groupes %}
-                            {
-                                nom: "{{ groupe.nom|raw }}{% if groupe.groupeType.affichageEffectifs and groupe.parent %} ({{ groupe.parent.nom|raw }}){% endif %}",
-                                type: "{{ groupe.groupeType.nom }}",
-                                categorie: "{{ groupe.groupeType.groupeCategorie.nom }}",
-                                path: "{{ path('netbs.fichier.groupe.page_groupe', {id: groupe.id}) }}"
-                            }{% if not loop.last %},{% endif %}
-                            {% endfor %}
-                        ]
-                    }
-                },
-
-                methods: {
-                    toggleType(type) {
-
-                        var index = this.selectedTypes.indexOf(type);
-
-                        if(index === -1)
-                            this.selectedTypes.push(type);
-                        else
-                            this.selectedTypes.splice(index, 1);
-                    },
-
-                    toggleCategorie(categorie) {
-
-                        var index = this.selectedCategories.indexOf(categorie);
-
-                        if(index === -1)
-                            this.selectedCategories.push(categorie);
-                        else
-                            this.selectedCategories.splice(index, 1);
-                    }
-                },
-
-                computed: {
-
-                    filteredGroupes: function() {
-
-                        var result1 = [];
-                        var result2 = [];
-                        var result3 = [];
-
-                        for (var i = 0; i < this.groupes.length; i++)
-                            if (this.searchNom === "" || this.groupes[i].nom.toLowerCase().indexOf(this.searchNom.toLowerCase()) !== -1)
-                                result1.push(this.groupes[i]);
-
-                        for(var i = 0; i < result1.length; i++)
-                            if(this.selectedCategories.length === 0 || this.selectedCategories.indexOf(result1[i].categorie) !== -1)
-                                result2.push(result1[i]);
-
-                        for(var i = 0; i < result2.length; i++)
-                            if(this.selectedTypes.length === 0 || this.selectedTypes.indexOf(result2[i].type) !== -1)
-                                result3.push(result2[i]);
-
-                        return result3;
-                    }
-                }
-            });
-        </script>
-    {% endset %}
-
-    {{ registerScript(groupeJs) }}
 {% endblock %}

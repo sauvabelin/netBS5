@@ -17,7 +17,7 @@
             ]
         } %}
 
-        {{ registerJs('https://cdn.jsdelivr.net/npm/fullcalendar@6.1.15/index.global.min.js') }}
+        <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.15/index.global.min.js"></script>
 
         <div class="g-0">
             <div class="row">
@@ -49,7 +49,10 @@
                 <div class="col-12 col-md-8">
                     <div class="card">
                         <div class="card-body">
-                            <div id="calendar"></div>
+                            <div id="calendar"
+                             data-controller="calendar"
+                             data-calendar-events-url-value="{{ path('sauvabelin.apmbs.full_calendar_cabane_reservations', { id: cabane.id }) }}">
+                        </div>
                         </div>
                     </div>
                 </div>
@@ -57,26 +60,4 @@
         </div>
     </div>
 
-    {% set calendarScript %}
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            const calendarEl = document.querySelector('#calendar');
-            const calendar = new FullCalendar.Calendar(calendarEl, {
-                locale: 'fr',
-                initialView: 'dayGridMonth',
-                firstDay: 1,
-                events: "{{ path('sauvabelin.apmbs.full_calendar_cabane_reservations', { id: cabane.id }) }}",
-                headerToolbar: {
-                    left: 'prev,next',
-                    center: 'title',
-                    right: 'dayGridMonth,timeGridWeek,timeGridDay'
-                },
-            });
-
-            calendar.render();
-        });
-    </script>
-    {% endset %}
-
-    {{ registerScript(calendarScript) }}
 {% endblock %}

@@ -39,7 +39,7 @@ class RemoveAction extends IconAction
             'itemClass' => base64_encode(ClassUtils::getRealClass(get_class($item)))
         ]);
 
-        $params[LinkAction::ATTRS]  = $params[LinkAction::ATTRS] . ' onclick="return confirm(\'Etes-vous sûr de vouloir supprimer cet élément?\');"';
+        $params[LinkAction::ATTRS]  = $params[LinkAction::ATTRS] . ' data-turbo-confirm="Etes-vous sûr de vouloir supprimer cet élément?" data-turbo-method="post"';
 
         return parent::render($item, $params);
     }

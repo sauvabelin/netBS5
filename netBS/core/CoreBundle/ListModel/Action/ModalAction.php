@@ -22,15 +22,13 @@ class ModalAction extends IconAction
 
     public function render($item, $params = [])
     {
-        $this->registrer->registerJs($this->assets->getAssetUrl('bundles/netbscore/js/modal.js'));
-
         $route  = is_string($params[LinkColumn::ROUTE])
             ? $params[LinkColumn::ROUTE]
             : ($params[LinkColumn::ROUTE])($item);
 
         $params[LinkAction::ROUTE]  = "#";
         $params[LinkAction::TAG]    = 'btn';
-        $params[LinkAction::ATTRS]  = $params[LinkAction::ATTRS] . " data-modal data-modal-url='$route'";
+        $params[LinkAction::ATTRS]  = $params[LinkAction::ATTRS] . " data-controller='modal' data-modal-url-value='$route' data-action='click->modal#open'";
 
         return parent::render($item, $params);
     }

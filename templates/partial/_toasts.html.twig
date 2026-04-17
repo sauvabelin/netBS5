@@ -1,0 +1,22 @@
+{# Renders flash messages as Bootstrap 5 toasts. Include once in base layout. #}
+{% set colorMap = { success: 'text-bg-success', error: 'text-bg-danger', warning: 'text-bg-warning', info: 'text-bg-info' } %}
+
+{% set flashes = app.flashes() %}
+{% if flashes|length > 0 %}
+<div class="toast-container position-fixed top-0 end-0 p-3" style="z-index:1090"
+     data-controller="toast" data-turbo-temporary>
+    {# Position: top-0 end-0 = top-right (matches Toastr default) #}
+    {% for type, messages in flashes %}
+        {% for message in messages %}
+            <div class="toast align-items-center {{ colorMap[type]|default('text-bg-secondary') }} border-0"
+                 role="alert" aria-live="assertive" aria-atomic="true"
+                 data-toast-target="item">
+                <div class="d-flex">
+                    <div class="toast-body">{{ message }}</div>
+                    <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+                </div>
+            </div>
+        {% endfor %}
+    {% endfor %}
+</div>
+{% endif %}

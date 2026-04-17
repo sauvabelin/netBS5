@@ -6,8 +6,7 @@
 
 {% block main %}
 
-    {{ registerJs(asset('bundles/netbscore/js/modal.js')) }}
-    {{ registerJs('https://cdn.jsdelivr.net/npm/fullcalendar@6.1.15/index.global.min.js') }}
+    <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.15/index.global.min.js"></script>
 
     <div class="container-fluid">
         {% include '@NetBSCore/includes/header.include.twig' with {
@@ -40,21 +39,21 @@
                     </div>
                     <div class="row mt-2">
                         <div class="col-3">
-                            <button class='btn btn-secondary w-100' data-modal data-modal-url='{{ path('sauvabelin.apmbs.reservation.modify', {id: reservation.id}) }}'>Modifier</button>
+                            <button class='btn btn-secondary w-100' data-controller="modal" data-modal-url-value='{{ path('sauvabelin.apmbs.reservation.modify', {id: reservation.id}) }}' data-action="click->modal#open">Modifier</button>
                         </div>
                         <div class="col-3">
-                            <button class='btn btn-secondary w-100' data-modal data-modal-url='{{ path('sauvabelin.apmbs.reservation.accept', {id: reservation.id}) }}'>Valider</button>
+                            <button class='btn btn-secondary w-100' data-controller="modal" data-modal-url-value='{{ path('sauvabelin.apmbs.reservation.accept', {id: reservation.id}) }}' data-action="click->modal#open">Valider</button>
                         </div>
                         <div class="col-3">
-                            <button class='btn btn-secondary w-100' data-modal data-modal-url='{{ path('sauvabelin.apmbs.reservation.refuse', {id: reservation.id}) }}'>Refuser</button>
+                            <button class='btn btn-secondary w-100' data-controller="modal" data-modal-url-value='{{ path('sauvabelin.apmbs.reservation.refuse', {id: reservation.id}) }}' data-action="click->modal#open">Refuser</button>
                         </div>
                         <div class="col-3">
-                            <button class='btn btn-secondary w-100' data-modal data-modal-url='{{ path('sauvabelin.apmbs.reservation.cancel', {id: reservation.id}) }}'>Annuler</button>
+                            <button class='btn btn-secondary w-100' data-controller="modal" data-modal-url-value='{{ path('sauvabelin.apmbs.reservation.cancel', {id: reservation.id}) }}' data-action="click->modal#open">Annuler</button>
                         </div>
                     </div>
                     <div class="row mt-2">
                         <div class="col-6">
-                            <button class='btn btn-secondary w-100' data-modal data-modal-url='{{ path('sauvabelin.apmbs.reservation.send-invoice', {id: reservation.id}) }}'>Envoyer la facture</button>
+                            <button class='btn btn-secondary w-100' data-controller="modal" data-modal-url-value='{{ path('sauvabelin.apmbs.reservation.send-invoice', {id: reservation.id}) }}' data-action="click->modal#open">Envoyer la facture</button>
                         </div>
                         <div class="col-6">
                             <a class='btn btn-secondary w-100' href='{{ path('sauvabelin.apmbs.reservation.close', {id: reservation.id}) }}'>Marquer comme payée</a>
@@ -189,7 +188,12 @@
                 <div class="col-12 col-md-8">
                     <div class="card">
                         <div class="card-body">
-                            <div id="calendar"></div>
+                            <div id="calendar"
+                                 data-controller="calendar"
+                                 data-calendar-initial-view-value="timeGridWeek"
+                                 data-calendar-initial-date-value="{{ reservation.start|date('c') }}"
+                                 data-calendar-event-sources-value="{{ [{ url: path('sauvabelin.apmbs.full_calendar_cabane_reservations', { id: reservation.cabane.id }), extraParams: { reservationId: reservation.id } }]|json_encode|e('html_attr') }}">
+                            </div>
                         </div>
                     </div>
                     <div class="card card-table">
@@ -205,34 +209,4 @@
         </div>
     </div>
 
-    {% set calendarScript %}
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            const calendarEl = document.querySelector('#calendar');
-            const calendar = new FullCalendar.Calendar(calendarEl, {
-                locale: 'fr',
-                initialView: 'timeGridWeek',
-                firstDay: 1,
-                initialDate: '{{ reservation.start|date('c') }}',
-                headerToolbar: {
-                    left: 'prev,next',
-                    center: 'title',
-                    right: 'dayGridMonth,timeGridWeek,timeGridDay'
-                },
-                eventSources: [
-                    {
-                        url: "{{ path('sauvabelin.apmbs.full_calendar_cabane_reservations', { id: reservation.cabane.id }) }}",
-                        extraParams: {
-                            reservationId: {{ reservation.id }}
-                        }
-                    }
-                ],
-            });
-
-            calendar.render();
-        });
-    </script>
-    {% endset %}
-
-    {{ registerScript(calendarScript) }}
 {% endblock %}

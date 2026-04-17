@@ -76,7 +76,6 @@
 {% import _self as swag %}
 
 {{ registerStyle(newsStyle) }}
-{{ registerJs(asset('bundles/netbscore/js/modal.js')) }}
 
 <div class="news-container">
     {% for item in news | filter(it => it.isPinned) %}
@@ -94,6 +93,6 @@
 <div class="d-flex justify-content-end">
     <a class="btn btn-secondary me-2" href="{{ path('netbs.core.news.read_news') }}">Lire toutes les news</a>
     {% if channels|length > 0 %}
-    <button class="btn btn-primary" data-modal data-modal-url="{{ path('netbs.core.news.modal_edit_news') }}">Ajouter une news</button>
+    <button class="btn btn-primary" data-controller="modal" data-modal-url-value="{{ path('netbs.core.news.modal_edit_news') }}" data-action="click->modal#open">Ajouter une news</button>
     {% endif %}
 </div>

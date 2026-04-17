@@ -13,7 +13,9 @@
                         <h6 class="card-subtitle">Actions réalisées en attente de révision</h6>
                     </div>
 
-                    <div class="card-body">
+                    <div class="card-body" data-controller="changelog-preview"
+                         data-changelog-preview-preview-url-value="{{ path('netbs.core.changelog.preview_change') }}"
+                         data-action="click->changelog-preview#showChange">
                         {{ render_list('netbs.core.logged_changes', 'netbs', {status: 'waiting'}) }}
                     </div>
                 </div>

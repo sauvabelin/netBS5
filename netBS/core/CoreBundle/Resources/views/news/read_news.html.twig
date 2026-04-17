@@ -17,6 +17,16 @@
                 font-size:1em;
                 float:right;
             }
+
+            .channel {
+                background: color-mix(in srgb, var(--channel-color) 50%, white);
+            }
+
+            @media (prefers-color-scheme: dark) {
+                .channel {
+                    background: color-mix(in srgb, var(--channel-color) 30%, #1a1d20);
+                }
+            }
         </style>
     {% endset %}
     {{ registerStyle(newsStyle) }}
@@ -27,105 +37,46 @@
             subHeader: "Les news triées selon les channels"
         } %}
 
-        <div id="news">
-            <div class="row">
-                <div class="col-12 col-sm-6 col-md-4 col-lg-3" v-for="channel in channels">
-                    <div class="channel" v-bind:style="{background: lighten(channel.color)}">
-                        <h3 class="pt-2 pb-3">{% verbatim %}{{ channel.nom }}{% endverbatim %}</h3>
-                        <div class="card" v-for="(item, k) in channel.news" :key="k" v-if="k >= (channel.page-1)*amount && k < channel.page*amount">
-                            <div class="card">
-                                <div class="card-header">
-                                    <h3 class="card-title">{% verbatim %}{{ item.titre }}{% endverbatim %}</h3>
-                                    <h5 class="card-subtitle">{% verbatim %}{{ item.date }} - {{ item.user }}{% endverbatim %}
-                                        <span v-if="item.pinned" class="badge text-white" v-bind:style="{backgroundColor: channel.color}">pinned</span></h5>
-                                </div>
-                                <div class="card-body" v-html="item.contenu"></div>
-                            </div>
-                        </div>
+        <div class="row">
+            {% for channel in channels %}
+            <div class="col-12 col-sm-6 col-md-4 col-lg-3">
+                <div class="channel" style="--channel-color: {{ channel.color }};"
+                     data-controller="news-channel"
+                     data-news-channel-total-value="{{ channel.news|length }}"
+                     data-news-channel-per-page-value="1">
+                    <h3 class="pt-2 pb-3">{{ channel.nom }}</h3>
 
-                        <nav aria-label="Page navigation example mb-0" v-if="channelPages(channel) > 1">
-                            <ul class="pagination mb-0">
-                                <li class="page-item" v-bind:class="{disabled: channel.page === 1}" @click="previousPage(channel)"><button class="page-link">Précédente</button></li>
-                                <li class="page-item" v-bind:class="{active: p === channel.page}" v-for="p in channelPages(channel)" @click="channel.page = p"><button class="page-link">{% verbatim %}{{ p }}{% endverbatim %}</button></li>
-                                <li class="page-item" v-bind:class="{disabled: channel.page === channelPages(channel)}" @click="nextPage(channel)"><button class="page-link">Suivante</button></li>
-                            </ul>
-                        </nav>
-                    </div>
+                    {% for item in channel.news %}
+                        <div class="card" data-news-channel-target="item"{% if not loop.first %} style="display:none"{% endif %}>
+                            <div class="card-header">
+                                <h3 class="card-title">{{ item.titre }}</h3>
+                                <h5 class="card-subtitle">{{ item.createdAt|date('d/m/Y') }} - {{ item.user }}
+                                    {% if item.pinned %}<span class="badge text-white" style="background-color: {{ channel.color }}">pinned</span>{% endif %}
+                                </h5>
+                            </div>
+                            <div class="card-body">{{ item.contenu|raw }}</div>
+                        </div>
+                    {% endfor %}
+
+                    {% if channel.news|length > 1 %}
+                    <nav>
+                        <ul class="pagination mb-0">
+                            <li class="page-item"><button class="page-link" data-action="click->news-channel#previous">Précédente</button></li>
+                            {% for p in 1..channel.news|length %}
+                                <li class="page-item{% if p == 1 %} active{% endif %}">
+                                    <button class="page-link"
+                                            data-news-channel-target="pageButton"
+                                            data-action="click->news-channel#goToPage"
+                                            data-news-channel-page-param="{{ p }}">{{ p }}</button>
+                                </li>
+                            {% endfor %}
+                            <li class="page-item"><button class="page-link" data-action="click->news-channel#next">Suivante</button></li>
+                        </ul>
+                    </nav>
+                    {% endif %}
                 </div>
             </div>
+            {% endfor %}
         </div>
     </div>
-
-    {{ registerJs(asset('bundles/netbscore/js/vue.min.js')) }}
-    {% set newsscript %}
-    <script type="text/javascript">
-        new Vue({
-            el: '#news',
-            data: function() {
-                return {
-                    amount: 1,
-                    channels: [
-                        {% for channel in channels %}
-                        {
-                            nom: "{{ channel.nom }}",
-                            color: "{{ channel.color }}",
-                            page: 1,
-                            news: [
-                                {% for item in channel.news %}
-                                {
-                                    titre: `{{ item.titre }}`,
-                                    contenu: `{{ item.contenu|raw }}`,
-                                    pinned: {{ item.pinned ? 'true' : 'false' }},
-                                    user: "{{ item.user }}",
-                                    date: "{{ item.createdAt|date('d/m/Y') }}",
-                                    timestamp: {{ item.createdAt.timestamp }}
-                                },
-                                {% endfor %}
-                            ]
-                        },
-                        {% endfor %}
-                    ],
-                }
-            },
-
-            methods: {
-                nextPage: function(channel) {
-                    if(channel.page < this.channelPages(channel))
-                        channel.page++;
-                },
-
-                previousPage: function(channel) {
-                    if(channel.page > 1)
-                        channel.page--;
-                },
-
-                channelPages: function(channel) {
-                    return Math.ceil(channel.news.length / this.amount);
-                },
-
-                lighten: function(origin) {
-                    // Blend channel color toward white (light mode) or dark gray (dark mode)
-                    var isDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-                    var target = isDark ? '#1a1d20' : '#FFFFFF';
-                    var p = isDark ? 0.7 : 0.5;
-
-                    var i = parseInt, r = Math.round;
-                    // Parse hex color to RGB
-                    function parseColor(c) {
-                        if (typeof c !== 'string' || c[0] !== '#') return null;
-                        if (c.length === 4) c = '#' + c[1]+c[1] + c[2]+c[2] + c[3]+c[3];
-                        var n = i(c.slice(1), 16);
-                        return [n >> 16 & 255, n >> 8 & 255, n & 255];
-                    }
-                    var f = parseColor(origin), t = parseColor(target);
-                    if (!f || !t) return origin;
-                    return '#' + [0,1,2].map(function(i) {
-                        return ('0' + r(f[i] + (t[i] - f[i]) * p).toString(16)).slice(-2);
-                    }).join('');
-                }
-            }
-        });
-    </script>
-    {% endset %}
-    {{ registerScript(newsscript) }}
 {% endblock %}

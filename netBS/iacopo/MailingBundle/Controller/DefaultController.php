@@ -354,7 +354,7 @@ class DefaultController extends AbstractController
         ]);
     }
 
-    #[Route('/delete/{id}', name: 'iacopo.mailing.delete')]
+    #[Route('/delete/{id}', name: 'iacopo.mailing.delete', methods: ['POST'])]
     public function deleteAction(int $id): Response
     {
         $list = $this->em->getRepository(MailingList::class)->find($id);

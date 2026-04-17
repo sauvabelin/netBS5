@@ -38,6 +38,10 @@ class ObtentionDistinctionMassUpdater extends BaseMassUpdater
         return $this->config->getObtentionDistinctionClass();
     }
 
+    public function getSkipFields(): array {
+        return ['membre'];
+    }
+
     public function getItemForm()
     {
         return ObtentionDistinctionType::class;

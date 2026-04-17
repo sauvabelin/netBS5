@@ -16,9 +16,9 @@
                 <td>{{ form_widget(telephone.expediable) }}</td>
                 <td>{{ form_widget(telephone.remarques) }}</td>
                 <td>
-                    <a onclick="return confirm('Etes-vous sûr de supprimer ce numéro ?');"
-                       class="btn btn-danger btn-xs"
-                       href="{{ path('netbs.fichier.telephone.delete', {ownerId: item.id, ownerType: get_class(item)|toBase64, telephoneId: telephone.vars.data.id}) }}"><i class="fas fa-times fa-sm"></i></a>
+                    <a class="btn btn-danger btn-xs"
+                       href="{{ path('netbs.fichier.telephone.delete', {ownerId: item.id, ownerType: get_class(item)|toBase64, telephoneId: telephone.vars.data.id}) }}"
+                       data-turbo-confirm="Etes-vous sûr de supprimer ce numéro ?" data-turbo-method="post"><i class="fas fa-times fa-sm"></i></a>
                 </td>
             </tr>
         {% endfor %}
@@ -29,4 +29,4 @@
 {% endif %}
 
 <button class="btn btn-space btn-primary"
-        data-modal data-modal-url="{{ path('netbs.fichier.telephone.modal_creation', {ownerId: item.id, ownerType: get_class(item)|toBase64}) }}">Nouveau numéro</button>
+        data-controller="modal" data-modal-url-value="{{ path('netbs.fichier.telephone.modal_creation', {ownerId: item.id, ownerType: get_class(item)|toBase64}) }}" data-action="click->modal#open">Nouveau numéro</button>

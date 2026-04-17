@@ -32,7 +32,7 @@ class EmailController extends AbstractController
      * @param $emailId
      * @return Response
      */
-    #[Route('/delete/{ownerType}/{ownerId}/{emailId}', name: 'netbs.fichier.email.delete')]
+    #[Route('/delete/{ownerType}/{ownerId}/{emailId}', name: 'netbs.fichier.email.delete', methods: ['POST'])]
     public function deleteEmailAction($ownerType, $ownerId, $emailId, EntityManagerInterface $em, History $history) {
 
         $class  = $this->config->getEmailClass();

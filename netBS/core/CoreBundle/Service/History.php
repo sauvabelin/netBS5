@@ -50,8 +50,15 @@ class History
         if($route == '_wdt' || $request->isXmlHttpRequest() || $this->updated)
             return;
 
-        // Skip AJAX, modal, and API routes from navigation history
-        if($route && (str_contains($route, 'ajax') || str_contains($route, 'modal') || str_starts_with($route, 'api')))
+        // Skip AJAX, modal, API, and data-fetching routes from navigation history
+        if($route && (str_contains($route, 'ajax') || str_contains($route, 'modal')
+            || str_starts_with($route, 'api') || str_contains($route, 'select2')
+            || str_contains($route, 'search') || str_contains($route, 'xeditable')
+            || str_contains($route, 'helper') || str_contains($route, 'preview')))
+            return;
+
+        // Skip fetch()-based AJAX calls that explicitly request JSON
+        if($request->headers->get('Accept') === 'application/json')
             return;
 
         $route          = new RouteHistory($request->get('_route'), $request->attributes->get('_route_params'));

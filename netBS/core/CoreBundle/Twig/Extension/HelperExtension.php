@@ -3,11 +3,16 @@
 namespace NetBS\CoreBundle\Twig\Extension;
 
 use Doctrine\Common\Util\ClassUtils;
+use Symfony\Component\Routing\RouterInterface;
 use Twig\Extension\AbstractExtension;
 use Twig\TwigFunction;
 
 class HelperExtension extends AbstractExtension
 {
+    public function __construct(private RouterInterface $router)
+    {
+    }
+
     public function getName()
     {
         return 'helper';
@@ -35,7 +40,13 @@ class HelperExtension extends AbstractExtension
 
         $class  = base64_encode($class);
         $id     = $object->getId();
+        $url    = $this->router->generate('netbs.core.helper.get_help');
 
-        return "data-helper data-helper-class='$class' data-helper-id=$id data-helper-placement='$placement'";
+        return "data-controller=\"helper-popover\" "
+            . "data-helper-popover-id-value=\"$id\" "
+            . "data-helper-popover-class-value=\"$class\" "
+            . "data-helper-popover-url-value=\"$url\" "
+            . "data-helper-popover-placement-value=\"$placement\" "
+            . "data-action=\"mouseenter->helper-popover#mouseenter mouseleave->helper-popover#mouseleave\"";
     }
 }

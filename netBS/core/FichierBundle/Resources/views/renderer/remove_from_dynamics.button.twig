@@ -1,16 +1,8 @@
-{{ registerJs(asset('bundles/netbscore/js/post_link.js')) }}
 {% set btnId = 'btn_remove_' ~ listId %}
 
-<button id="{{ btnId }}" class="btn btn-danger ms-1">Retirer la sélection</button>
-
-{% set removeScript %}
-<script type="text/javascript">
-    document.getElementById("{{ btnId }}").addEventListener('click', function() {
-        PostLink("{{ path('netbs.core.dynamics_list.remove_items', {id: listId}) }}", {
-            removed_ids: {{ event.tableId }}.getSelectedIds()
-        });
-    });
-</script>
-{% endset %}
-
-{{ registerScript(removeScript) }}
+<button id="{{ btnId }}" class="btn btn-danger ms-1"
+        data-controller="post-link"
+        data-post-link-url-value="{{ path('netbs.core.dynamics_list.remove_items', {id: listId}) }}"
+        data-post-link-ids-source-value="{{ event.tableId }}"
+        data-post-link-id-field-value="removed_ids"
+        data-action="click->post-link#submit">Retirer la sélection</button>

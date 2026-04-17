@@ -2,8 +2,6 @@
 
 {% block main %}
 
-    {{ registerJs(asset('bundles/netbscore/js/modal.js')) }}
-
     <div class="container-fluid">
         <div class="row">
             <div class="col-9">
@@ -27,7 +25,7 @@
                         <h5 class="card-title">Actions</h5>
                     </div>
                     <div class="card-body">
-                        <button data-modal data-modal-url="{{ path('sauvabelin.news_channel_bot.add_modal') }}" class="btn btn-primary">Ajouter un bot</button>
+                        <button data-controller="modal" data-modal-url-value="{{ path('sauvabelin.news_channel_bot.add_modal') }}" data-action="click->modal#open" class="btn btn-primary">Ajouter un bot</button>
                     </div>
                 </div>
             </div>

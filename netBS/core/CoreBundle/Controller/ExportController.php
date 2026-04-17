@@ -96,7 +96,7 @@ class ExportController extends AbstractController
      * @param $configId
      * @return \Symfony\Component\HttpFoundation\RedirectResponse
      */
-    #[Route('/remove-config/{blobKey}/{configId}', name: 'netbs.core.export.remove_config')]
+    #[Route('/remove-config/{blobKey}/{configId}', name: 'netbs.core.export.remove_config', methods: ['POST'])]
     public function removeConfigAction($blobKey, $configId, EntityManagerInterface $em, ExporterManager $manager, RequestStack $requestStack) {
 
         /** @var ExportBlob $blob */

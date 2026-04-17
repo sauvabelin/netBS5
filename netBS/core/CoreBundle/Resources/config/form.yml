@@ -24,10 +24,6 @@ services:
         tags:
             - { name: form.type }
 
-    NetBS\CoreBundle\Form\Type\TrumbowygType:
-        tags:
-            - { name: form.type }
-
     NetBS\CoreBundle\Form\Type\Select2DocumentType:
         tags:
             - { name: form.type }

@@ -67,7 +67,7 @@ class UserController extends AbstractController
      * @throws \Doctrine\ORM\OptimisticLockException
      * @throws \Doctrine\ORM\TransactionRequiredException
      */
-    #[Route('/user/delete/{id}', name: 'netbs.secure.user.delete_user')]
+    #[Route('/user/delete/{id}', name: 'netbs.secure.user.delete_user', methods: ['POST'])]
     public function deleteUserAction($id, SecureConfig $secureConfig, UserManager $manager, EntityManagerInterface $em, History $history) {
 
         $user           = $em->find($secureConfig->getUserClass(), $id);

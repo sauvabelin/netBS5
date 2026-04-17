@@ -2,8 +2,6 @@
 
 {% block main %}
 
-    {{ registerJs(asset('bundles/netbscore/js/modal.js')) }}
-
     <div class="container-fluid">
 
         {% include '@NetBSCore/includes/header.include.twig' with {
@@ -27,7 +25,11 @@
             {% endfor %}
 
             <div class="col-12 col-md-2">
-                <a class="card bg-success text-white" href="#" id="list_create">
+                <a class="card bg-success text-white" href="#"
+                   data-controller="modal"
+                   data-modal-url-value="{{ path('netbs.core.dynamic_list.modal_add') }}"
+                   data-modal-reload-on-success-value="true"
+                   data-action="click->modal#open">
                     <div class="card-header">
                         <h5 class="card-title">Nouvelle liste</h5>
                     </div>
@@ -63,27 +65,5 @@
         </div>
 
     </div>
-
-    {% set scriptum %}
-    <script>
-        var modal = new BSModal("{{ path('netbs.core.dynamic_list.modal_add') }}");
-
-        modal.handleSubmit = function(data, status, response) {
-
-            var code    = parseInt(response.status);
-
-            if(code === 202)
-                location.reload();
-            else
-                this.remove();
-        };
-
-        document.getElementById('list_create').addEventListener('click', function() {
-            modal.launch();
-        });
-    </script>
-    {% endset %}
-
-    {{ registerScript(scriptum) }}
 
 {% endblock %}

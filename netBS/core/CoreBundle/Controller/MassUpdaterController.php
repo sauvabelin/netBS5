@@ -11,7 +11,9 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\Form\Extension\Core\Type\CollectionType;
 use Symfony\Component\Form\Extension\Core\Type\HiddenType;
 use Symfony\Component\Form\Form;
+use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 
 /**
@@ -89,6 +91,15 @@ class MassUpdaterController extends AbstractController
             ->add('ids', HiddenType::class)
             ->getForm();
 
+        // Capture return URL: on initial render use the referer, on resubmit read from form
+        $returnUrl = $request->request->get('_return_url')
+            ?: $request->headers->get('referer', '');
+
+        // Validate return URL is local to prevent open redirect
+        if ($returnUrl && !str_starts_with($returnUrl, '/') && !str_starts_with($returnUrl, $request->getSchemeAndHttpHost())) {
+            $returnUrl = '';
+        }
+
         $massForm->handleRequest($request);
 
         if($massForm->isSubmitted() && $massForm->isValid()) {
@@ -100,15 +111,27 @@ class MassUpdaterController extends AbstractController
             $em->flush();
 
             $this->addFlash('success', "Modifications enregistrées pour " . count($items) . " éléments");
+
+            if ($returnUrl) {
+                return new RedirectResponse($returnUrl);
+            }
             return $history->getPreviousRoute(3);
         }
 
-        return $this->render('@NetBSCore/updater/updater.html.twig', array(
+        $response = $this->render('@NetBSCore/updater/updater.html.twig', array(
             'title'         => $title,
             'form'          => $massForm->createView(),
             'showToString'  => $updater->showToString(),
-            'generic'       => $genericForm->createView()
+            'generic'       => $genericForm->createView(),
+            'skipFields'    => $updater->getSkipFields(),
+            'returnUrl'     => $returnUrl,
         ));
+
+        if ($massForm->isSubmitted()) {
+            $response->setStatusCode(Response::HTTP_UNPROCESSABLE_ENTITY);
+        }
+
+        return $response;
     }
 
     /**

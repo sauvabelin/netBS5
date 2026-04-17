@@ -4,8 +4,6 @@
 
 {% block main %}
 
-    {{ registerJs(asset('bundles/netbscore/js/modal.js')) }}
-
     <div class="container-fluid">
 
         <div class="row">
@@ -30,7 +28,7 @@
                         </div>
                         <div class="card-footer">
                             <div role="group" class="btn-group btn-group-justified">
-                                <a onclick="return confirm('Etes-vous sur de vouloir supprimer cette liste ? C\'est IRREVERSIBLE!');" href="{{ path('netbs.core.dynamics_list.remove_list', {id: list.id}) }}" class="btn btn-secondary">Supprimer cette liste</a>
+                                <a href="{{ path('netbs.core.dynamics_list.remove_list', {id: list.id}) }}" class="btn btn-secondary" data-turbo-confirm="Etes-vous sûr de vouloir supprimer cette liste ? C'est IRREVERSIBLE!" data-turbo-method="post">Supprimer cette liste</a>
                             </div>
                         </div>
                     {% endif %}
@@ -55,7 +53,7 @@
                                     <tr>
                                         <td>{{ user }}</td>
                                         <td>
-                                            <a href="{{ path('netbs.core.dynamics_list.remove_share', { id: list.id }) }}?userid={{ user.id }}" class="btn btn-xs btn-danger" data-bs-toggle="tooltip" title="Retirer le partage"><i class="fas fa-sm fa-times" aria-hidden="true"></i></a>
+                                            <a href="{{ path('netbs.core.dynamics_list.remove_share', { id: list.id }) }}?userid={{ user.id }}" class="btn btn-xs btn-danger" data-bs-toggle="tooltip" title="Retirer le partage" data-turbo-method="post"><i class="fas fa-sm fa-times" aria-hidden="true"></i></a>
                                         </td>
                                     </tr>
                                 {% endfor %}
@@ -64,7 +62,7 @@
                         </div>
                         <div class="card-footer">
                             <div role="group" class="btn-group btn-group-justified">
-                                <button class="btn btn-secondary" data-modal data-modal-url="{{ path('netbs.core.dynamic_list.modal_add_share', {id: list.id}) }}">Partager avec quelqu'un</button>
+                                <button class="btn btn-secondary" data-controller="modal" data-modal-url-value="{{ path('netbs.core.dynamic_list.modal_add_share', {id: list.id}) }}" data-action="click->modal#open">Partager avec quelqu'un</button>
                             </div>
                         </div>
                     </div>
