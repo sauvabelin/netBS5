@@ -6,7 +6,7 @@
 export function fetchResults(url, ajaxClass, query, nullOption) {
     if (!ajaxClass) return Promise.resolve([]);
     const params = new URLSearchParams({ ajaxClass, nullOption: nullOption || '0', query: query || '' });
-    return fetch(`${url}?${params}`)
+    return fetch(`${url}?${params}`, { headers: { 'Accept': 'application/json' } })
         .then((r) => r.json())
         .then((data) => data.results || data);
 }

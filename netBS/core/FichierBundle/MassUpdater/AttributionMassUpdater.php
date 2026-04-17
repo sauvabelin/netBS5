@@ -42,6 +42,10 @@ class AttributionMassUpdater extends BaseMassUpdater
         return $this->config->getAttributionClass();
     }
 
+    public function getSkipFields(): array {
+        return ['membre'];
+    }
+
     public function getItemForm()
     {
         return AttributionType::class;

@@ -1,11 +1,1 @@
-<script type="text/javascript">
-    function triggerMassDeleteListener(id) {
-        document.querySelectorAll('[data-delete-element-' + id + ']').forEach(function(btn) {
-            btn.addEventListener('click', function() {
-                this.closest('tr').remove();
-            });
-        });
-    }
-
-    triggerMassDeleteListener('{{ _updater_id }}');
-</script>
+{# Replaced by mass-updater Stimulus controller #}

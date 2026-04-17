@@ -15,7 +15,7 @@
     {% for row in table.data %}
         <tr class="shown">
             {% if togglable %}
-                <td><button class="btn btn-primary btn-xs" data-row="{{ tableId ~ loop.index0 }}" onclick="this.closest('tr').classList.toggle('bg-primary'); document.getElementById('togglable-' + this.dataset.row).classList.toggle('active');">+</button></td>
+                <td><button class="btn btn-primary btn-xs" data-controller="togglable-row" data-togglable-row-target-id-value="{{ tableId ~ loop.index0 }}" data-action="click->togglable-row#toggle">+</button></td>
             {% endif %}
             {% for value in row %}
                 <td>{{ value|raw }}</td>

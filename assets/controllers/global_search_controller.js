@@ -32,7 +32,7 @@ export default class extends Controller {
     }
 
     _doSearch(query) {
-        fetch(`${this.urlValue}?query=${encodeURIComponent(query)}`)
+        fetch(`${this.urlValue}?query=${encodeURIComponent(query)}`, { headers: { 'Accept': 'application/json' } })
             .then((r) => r.json())
             .then((results) => this._showResults(results));
     }

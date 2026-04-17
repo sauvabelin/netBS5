@@ -1,4 +1,5 @@
 import { Controller } from '@hotwired/stimulus';
+import { showToast } from '../lib/toast.js';
 
 /*
  * Handles mailing list interactions:
@@ -56,12 +57,12 @@ export default class extends Controller {
                     label.className = 'badge ' + (data.active ? 'text-bg-success' : 'text-bg-secondary');
                 } else {
                     checkbox.checked = !checkbox.checked;
-                    alert('Erreur lors de la mise à jour');
+                    showToast('error', 'Erreur lors de la mise à jour');
                 }
             })
             .catch(() => {
                 checkbox.checked = !checkbox.checked;
-                alert('Erreur lors de la mise à jour');
+                showToast('error', 'Erreur lors de la mise à jour');
             });
     }
 

@@ -312,6 +312,17 @@ export default class extends Controller {
         select.dispatchEvent(new Event('change'));
     }
 
+    // Public API: set value programmatically (used by mass_updater_controller)
+    setValue(id, text) {
+        if (!this._select) return;
+        this._selectSingle(this._select, id, text);
+        // Update visual display for AJAX single-select mode
+        if (this._wrapper && !this._multiple) {
+            const display = this._wrapper.querySelector('.form-control');
+            if (display) display.innerHTML = esc(text);
+        }
+    }
+
     _getDisplayText(select) {
         const selected = Array.from(select.selectedOptions);
         if (selected.length === 0 || !selected[0].value) return '<span class="text-muted">Aucun</span>';

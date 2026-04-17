@@ -2,6 +2,7 @@ import { Controller } from '@hotwired/stimulus';
 import { showToast } from '../lib/toast.js';
 import { createModal, closeModal } from '../lib/modal_dom.js';
 import { submitForm, parseResponse } from '../lib/modal_form.js';
+import * as Turbo from '@hotwired/turbo';
 
 export default class extends Controller {
     static values = {
@@ -59,7 +60,7 @@ export default class extends Controller {
                         this._postAddToList(result.listId, itemsClass, ids);
                     }
                 } else if (result.action === 'reload') {
-                    location.reload();
+                    Turbo.visit(window.location.href, { action: 'replace' });
                 } else if (result.action === 'validation_error') {
                     modalEl.innerHTML = result.html;
                     this._attachCreateFormHandler(modalEl, itemsClass, ids);

@@ -2,6 +2,7 @@ import { Controller } from '@hotwired/stimulus';
 import { createModal, closeModal } from '../lib/modal_dom.js';
 import { submitForm } from '../lib/modal_form.js';
 import { showToast } from '../lib/toast.js';
+import * as Turbo from '@hotwired/turbo';
 
 export default class extends Controller {
     static values = {
@@ -59,6 +60,11 @@ export default class extends Controller {
         const form = modalEl.querySelector('form');
         if (!confirmBtn || !form) return;
 
+        form.addEventListener('submit', (e) => {
+            e.preventDefault();
+            confirmBtn.click();
+        });
+
         confirmBtn.addEventListener('click', () => {
             submitForm(url, form).then((result) => {
                 this._handleSubmitResult(result, modalEl, url);
@@ -68,14 +74,14 @@ export default class extends Controller {
 
     _handleSubmitResult(result, modalEl, url) {
         if (result.action === 'redirect') {
-            window.location.href = result.location;
+            Turbo.visit(result.location);
         } else if (result.action === 'reload') {
-            location.reload();
+            Turbo.visit(window.location.href, { action: 'replace' });
         } else if (result.action === 'toast') {
             showToast(result.type, result.message);
             closeModal(modalEl);
             this.element.dispatchEvent(new CustomEvent('modal:submit-success', { detail: result, bubbles: true }));
-            if (this.reloadOnSuccessValue) location.reload();
+            if (this.reloadOnSuccessValue) Turbo.visit(window.location.href, { action: 'replace' });
         } else if (result.action === 'validation_error') {
             modalEl.innerHTML = result.html;
             this._attachFormHandler(modalEl, url);

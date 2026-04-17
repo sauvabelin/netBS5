@@ -31,6 +31,10 @@ class CreanceMassUpdater extends BaseMassUpdater
         return Creance::class;
     }
 
+    public function getSkipFields(): array {
+        return ['debiteur'];
+    }
+
     public function getItemForm()
     {
         return CreanceType::class;

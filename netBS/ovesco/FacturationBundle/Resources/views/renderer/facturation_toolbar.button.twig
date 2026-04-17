@@ -1,5 +1,10 @@
 {% if assignModel or markPrint %}
-<div class="btn-group dropup">
+<div class="btn-group dropup"
+     data-controller="facturation-toolbar"
+     data-facturation-toolbar-resolve-model-url-value="{{ path('ovesco.facturation.facture.resolve_model', {id: '__ID__'}) }}"
+     data-facturation-toolbar-mark-printed-url-value="{{ path('ovesco.facturation.facture.mark_printed') }}"
+     data-facturation-toolbar-unmark-printed-url-value="{{ path('ovesco.facturation.facture.unmark_printed') }}"
+     data-facturation-toolbar-table-id-value="{{ tableId }}">
     <button type="button" data-bs-toggle="dropdown" class="btn btn-secondary ms-1 dropdown-toggle">
         Actions de masse
         <span class="icon-dropdown mdi mdi-chevron-down"></span>
@@ -12,8 +17,8 @@
            data-modal-ids-source-value="{{ tableId }}"
            data-action="click->modal#open">Assigner un modèle de facture</a>{% endif %}
         {% if markPrint %}
-        <a class="dropdown-item" style="cursor:pointer;" id="mark-printed-{{ tableId }}">Marquer comme imprimé</a>
-        <a class="dropdown-item" style="cursor:pointer;" id="unmark-printed-{{ tableId }}">Marquer comme non-imprimé</a>
+        <a class="dropdown-item" style="cursor:pointer;" data-action="click->facturation-toolbar#markPrinted">Marquer comme imprimé</a>
+        <a class="dropdown-item" style="cursor:pointer;" data-action="click->facturation-toolbar#unmarkPrinted">Marquer comme non-imprimé</a>
         {% endif %}
     </div>
 </div>
@@ -52,46 +57,3 @@
            data-action="click->post-link#submit">Prévisualiser la fusion</a>{% endif %}
     </div>
 </div>
-
-<script>
-    if (!window._factureModelAutoListener) {
-        window._factureModelAutoListener = true;
-        document.addEventListener('mouseenter', function(e) {
-            if (!e.target.closest) return;
-            var badge = e.target.closest('.facture-model-auto');
-            if (!badge || badge.dataset.loaded) return;
-            badge.dataset.loaded = 'true';
-            var factureId = badge.dataset.factureId;
-            fetch("{{ path('ovesco.facturation.facture.resolve_model', {id: '__ID__'}) }}".replace('__ID__', factureId))
-                .then(function(r) { return r.json(); })
-                .then(function(data) { badge.textContent = data.model; });
-        }, true);
-    }
-
-    function markPrintedAction(ids, url, confirmMsg, successMsg) {
-        if (ids.length === 0) { alert('Veuillez sélectionner des factures'); return; }
-        if (!confirm(confirmMsg)) return;
-        fetch(url, {
-            method: 'POST',
-            headers: {'Content-Type': 'application/x-www-form-urlencoded'},
-            body: 'ids=' + encodeURIComponent(JSON.stringify(ids))
-        }).then(function(r) { return r.json(); })
-          .then(function(data) { alert(data.count + ' ' + successMsg); location.reload(); })
-          .catch(function() { alert('Erreur lors de la mise à jour'); });
-    }
-
-    var markBtn = document.getElementById('mark-printed-{{ tableId }}');
-    var unmarkBtn = document.getElementById('unmark-printed-{{ tableId }}');
-    if (markBtn) markBtn.addEventListener('click', function() {
-        var ids = {{ tableId }}.getSelectedIds();
-        markPrintedAction(ids, "{{ path('ovesco.facturation.facture.mark_printed') }}",
-            'Marquer ' + ids.length + ' facture(s) comme imprimée(s) ?',
-            'facture(s) marquée(s) comme imprimée(s)');
-    });
-    if (unmarkBtn) unmarkBtn.addEventListener('click', function() {
-        var ids = {{ tableId }}.getSelectedIds();
-        markPrintedAction(ids, "{{ path('ovesco.facturation.facture.unmark_printed') }}",
-            'Marquer ' + ids.length + ' facture(s) comme non-imprimée(s) ?',
-            'facture(s) marquée(s) comme non-imprimée(s)');
-    });
-</script>

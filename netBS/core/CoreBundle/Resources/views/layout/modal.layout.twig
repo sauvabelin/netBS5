@@ -31,12 +31,3 @@
 
 {{ _modal }}
 
-<script type="text/javascript">
-    document.querySelectorAll('.modal-dialog form').forEach(function(form) {
-        form.addEventListener('submit', function(e) {
-            e.preventDefault();
-            var btn = document.getElementById('validate-modal-btn');
-            if (btn) btn.click();
-        });
-    });
-</script>

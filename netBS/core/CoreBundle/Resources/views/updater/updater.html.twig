@@ -11,7 +11,7 @@
     {% set tableClass   = '' %}
     {% set itemsForm    = (form.children|first).vars.prototype %}
 
-    <div class="d-flex flex-row">
+    <div class="d-flex flex-row" data-controller="mass-updater" data-mass-updater-updater-id-value="{{ _updater_id }}" data-mass-updater-skip-fields-value="{{ skipFields|default([])|json_encode }}">
 
         <aside class="page-aside" style="background:#fcf8e3;">
 
@@ -20,12 +20,15 @@
                 <div class="aside-head">
                     <h3>Opération en masse</h3>
                     <p class="alert alert-warning">
-                        Modifier une valeur dans le formulaire ci-dessous changera les valeurs de <b>tous les éléments</b> du formulaire
-                        ci-contre.
+                        Remplissez les champs ci-dessous puis cliquez sur <b>Appliquer</b> pour pré-remplir tous les éléments du formulaire.
                     </p>
                 </div>
 
                 {{ form(generic) }}
+
+                <button type="button" class="btn btn-warning w-100 mt-2" data-action="click->mass-updater#propagateAll">
+                    <i class="fas fa-arrow-right me-1"></i> Appliquer à tous
+                </button>
 
             </div>
 
@@ -34,7 +37,21 @@
         <div class="p-10" style="background:white;">
 
             {% if allowAdd %}
-                {% include '@NetBSCore/updater/updater_allow_add.script.twig' %}
+                <table id="mass-prototype-{{ _updater_id }}" style="display:none;">
+                    <tr>
+                        {% for protofield in items.vars.prototype.children %}
+                            <td>
+                                {{ form_widget(protofield) }}
+                                {{ form_errors(protofield) }}
+                            </td>
+                        {% endfor %}
+                        {% if allowDelete %}
+                            <td>
+                                <button class="btn btn-rounded btn-space btn-secondary" type="button" data-delete-element-{{ _updater_id }}><i class="fas fa-times fa-sm"></i></button>
+                            </td>
+                        {% endif %}
+                    </tr>
+                </table>
             {% endif %}
 
             <div class="panel panel-table">
@@ -43,16 +60,15 @@
                     <h3>{{ title }}</h3>
                 </div>
 
-                {{ form_start(form) }}
+                {{ form_start(form, {attr: {novalidate: 'novalidate'}}) }}
+                <input type="hidden" name="_return_url" value="{{ returnUrl|default('') }}">
 
                 {% include '@NetBSCore/updater/updater.partial.twig' %}
 
                 <div class="text-end" style="padding:20px;border-top:1px solid #ccc;">
-                    {#
                     {% if allowAdd %}
-                        <button class="btn btn-secondary btn-space" type="button" data-mass-add-{{ _updater_id }}>Ajouter une ligne</button>
+                        <button class="btn btn-secondary btn-space" type="button" data-action="click->mass-updater#addRow">Ajouter une ligne</button>
                     {% endif %}
-                    #}
                     <button class="btn btn-primary btn-space">Valider</button>
                 </div>
 
@@ -62,13 +78,6 @@
                 {{ form_end(form) }}
             </div>
         </div>
-
-        {% include '@NetBSCore/updater/updater_generic_change.script.twig' %}
-
-        {% if allowDelete %}
-            {% include '@NetBSCore/updater/updater_allow_delete.script.twig' %}
-        {% endif %}
-
 
     </div>
 
