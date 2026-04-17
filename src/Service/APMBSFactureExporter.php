@@ -62,7 +62,6 @@ class APMBSFactureExporter
     {
         define('FPDF_FONTPATH', __DIR__ . '/Facture/fonts/');
 
-        /** @var QrFactureConfig $config */
         $config = new QrFactureConfig();
         $fpdf   = new \FPDF();
         $fpdf->SetLeftMargin($config->margeGauche);
@@ -147,7 +146,6 @@ class APMBSFactureExporter
 
     private function printFacture(APMBSReservation $reservation, \FPDF $fpdf) {
 
-        /** @var QrFactureConfig $config */
         $config = new QrFactureConfig();
         $model = $this->getModel($reservation);
         $date = $reservation->getEnd();
