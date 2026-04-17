@@ -82,6 +82,8 @@ class AuditLogList extends BaseListModel
                 return "<span class='badge text-bg-danger'>Suppression</span>";
             case AuditLog::ACTION_RESTORE:
                 return "<span class='badge text-bg-warning'>Restauration</span>";
+            default:
+                return "<span class='badge text-bg-secondary'>$str</span>";
         }
     }
 }

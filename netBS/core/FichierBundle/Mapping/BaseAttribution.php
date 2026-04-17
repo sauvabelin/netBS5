@@ -101,14 +101,18 @@ abstract class BaseAttribution
 
     public function __toString()
     {
-        $parts = [];
-        if ($this->fonction) $parts[] = $this->fonction->getNom();
-        if ($this->groupe) $parts[] = $this->groupe->getNom();
-        $str = implode(' - ', $parts) ?: 'Attribution #' . $this->id;
-        if ($this->membre) {
-            $str .= ' (' . $this->membre->getFullName() . ')';
+        try {
+            $parts = [];
+            if ($this->fonction) $parts[] = $this->fonction->getNom();
+            if ($this->groupe) $parts[] = $this->groupe->getNom();
+            $str = implode(' - ', $parts) ?: 'Attribution #' . $this->id;
+            if ($this->membre) {
+                $str .= ' (' . $this->membre->getFullName() . ')';
+            }
+            return $str;
+        } catch (\Throwable $e) {
+            return 'Attribution #' . $this->id;
         }
-        return $str;
     }
 
     /**

@@ -51,9 +51,19 @@ class SoftDeletedEntityListener
             return;
         }
 
+        // If anything goes wrong rendering the restore page, let the 404 propagate
+        try {
+            $this->handleSoftDeletedEntity($event, $routeName);
+        } catch (\Throwable $e) {
+            return;
+        }
+    }
+
+    private function handleSoftDeletedEntity(ExceptionEvent $event, string $routeName): void
+    {
         $entityClass = $this->routeMap[$routeName]['class'];
         $entityType = $this->routeMap[$routeName]['type'];
-        $id = (int) $request->attributes->get('id');
+        $id = (int) $event->getRequest()->attributes->get('id');
 
         if (!$id) {
             return;

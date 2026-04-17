@@ -79,7 +79,7 @@ class DoctrineLoggerSubscriber implements EventSubscriber
 
         foreach($args->getEntityChangeSet() as $property => $values) {
 
-            if($property === 'updatedAt')
+            if($property === 'updatedAt' || $property === 'deletedAt')
                 continue;
 
             $change     = $this->createLoggedChangeFor(self::UPDATE, $args->getEntity());

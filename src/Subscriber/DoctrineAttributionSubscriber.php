@@ -215,8 +215,10 @@ class DoctrineAttributionSubscriber implements EventSubscriber
 
     public function postRemove(LifecycleEventArgs $args) {
         foreach($this->markedForRemoval as $attr) {
+            $user = $this->getUser($attr, $args->getEntityManager());
+            if (!$user) continue;
             $this->messagesToSend[] = new NextcloudGroupNotification(
-                $this->getUser($attr, $args->getEntityManager())->getId(),
+                $user->getId(),
                 $attr->getGroupeId(),
                 $attr->getFonctionId(),
                 'leave'

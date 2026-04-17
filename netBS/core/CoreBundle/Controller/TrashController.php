@@ -84,18 +84,21 @@ class TrashController extends AbstractController
                     }
                 }
             }
+
+            // Render with filter still disabled — soft-deleted relations
+            // (e.g., a soft-deleted Membre on an Attribution) need to be
+            // accessible for __toString() during template rendering
+            return $this->render('@NetBSCore/trash/list.html.twig', [
+                'entityTypes'  => $this->entityTypes,
+                'selectedType' => $selectedType,
+                'deleted'      => $deleted,
+                'deletionInfo' => $deletionInfo,
+            ]);
         } finally {
             if ($filterWasEnabled) {
                 $filters->enable('softdeleteable');
             }
         }
-
-        return $this->render('@NetBSCore/trash/list.html.twig', [
-            'entityTypes'  => $this->entityTypes,
-            'selectedType' => $selectedType,
-            'deleted'      => $deleted,
-            'deletionInfo' => $deletionInfo,
-        ]);
     }
 
     #[Route('/restore', name: 'netbs.core.trash.restore', methods: ['POST'])]

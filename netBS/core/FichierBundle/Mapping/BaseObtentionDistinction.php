@@ -55,10 +55,14 @@ abstract class BaseObtentionDistinction
 
     public function __toString(): string
     {
-        $parts = [];
-        if ($this->distinction) $parts[] = (string) $this->distinction;
-        if ($this->membre) $parts[] = (string) $this->membre;
-        return implode(' — ', $parts) ?: 'ObtentionDistinction #' . $this->id;
+        try {
+            $parts = [];
+            if ($this->distinction) $parts[] = (string) $this->distinction;
+            if ($this->membre) $parts[] = (string) $this->membre;
+            return implode(' — ', $parts) ?: 'ObtentionDistinction #' . $this->id;
+        } catch (\Throwable $e) {
+            return 'ObtentionDistinction #' . $this->id;
+        }
     }
 
     /**
