@@ -9,7 +9,7 @@ use Genkgo\Camt\DTO\EntryTransactionDetail;
 use Ovesco\FacturationBundle\Entity\Compte;
 use Ovesco\FacturationBundle\Entity\Facture;
 use Ovesco\FacturationBundle\Entity\Paiement;
-use Ovesco\FacturationBundle\Model\ParsedBVR;
+use Ovesco\FacturationBundle\Model\ParsedCamt;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\Form\Extension\Core\Type\FileType;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
@@ -29,17 +29,17 @@ class CamtController extends AbstractController
     #[Route('/import', name: 'ovesco.facturation.camt.import')]
     public function importAction(Request $request, EntityManagerInterface $em) {
 
-        $parsedBVR = null;
-        $form = $this->createFormBuilder([])->add('file', FileType::class, ['label' => 'Fichier BVR'])->getForm();
+        $parsedCamt = null;
+        $form = $this->createFormBuilder([])->add('file', FileType::class, ['label' => 'Fichier CAMT'])->getForm();
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
             $data = $form->getData();
             try {
-                $parsedBVR = $this->parseBVRFile($data['file'], $em);
+                $parsedCamt = $this->parseCamtFile($data['file'], $em);
                 $em->flush();
                 return $this->render('@OvescoFacturation/camt/result.html.twig', [
-                    'result' => $parsedBVR,
+                    'result' => $parsedCamt,
                 ]);
             } catch (\Exception $e) {
                 $this->addFlash('error', "Fichier illisible: " . $e->getMessage());
@@ -53,11 +53,11 @@ class CamtController extends AbstractController
 
     /**
      * @param UploadedFile $file
-     * @return ParsedBVR
+     * @return ParsedCamt
      * @throws \Exception
      */
-    private function parseBVRFile(UploadedFile $file, EntityManagerInterface $em) {
-        $parsedBVR = new ParsedBVR();
+    private function parseCamtFile(UploadedFile $file, EntityManagerInterface $em) {
+        $parsedCamt = new ParsedCamt();
         $reader = new \Genkgo\Camt\Reader(Config::getDefault());
         $data = $reader->readFile($file);
         $statements = $data->getRecords();
@@ -111,11 +111,11 @@ class CamtController extends AbstractController
 
                         // facture déjà payée avant le paiement
                         if ($facture->getStatut() === Facture::PAYEE) {
-                            if ($samePaiement) $parsedBVR->addDoublePaiement($facture);
+                            if ($samePaiement) $parsedCamt->addDoublePaiement($facture);
                             else {
                                 $em->persist($paiement);
                                 $facture->addPaiement($paiement);
-                                $parsedBVR->addAlreadyPaid($facture);
+                                $parsedCamt->addAlreadyPaid($facture);
                             }
                         }
 
@@ -123,27 +123,27 @@ class CamtController extends AbstractController
                         else {
                             // Paiement déjà enregistré
                             if ($samePaiement) {
-                                $parsedBVR->addDoublePaiement($facture);
+                                $parsedCamt->addDoublePaiement($facture);
                             } // Normal
                             else {
 
                                 $em->persist($paiement);
                                 $facture->addPaiement($paiement);
                                 if ($facture->getStatut() === Facture::PAYEE)
-                                    $parsedBVR->addFacture($facture);
+                                    $parsedCamt->addFacture($facture);
                                 else
-                                    $parsedBVR->addNotEnough($facture);
+                                    $parsedCamt->addNotEnough($facture);
                             }
                         }
                     }
                     else {
-                        $parsedBVR->addOrphanPaiement($paiement);
+                        $parsedCamt->addOrphanPaiement($paiement);
                     }
                 }
             }
         }
 
-        return $parsedBVR;
+        return $parsedCamt;
     }
 
     private function getRemittanceInformation(EntryTransactionDetail $detail) {

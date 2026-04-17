@@ -11,7 +11,6 @@ use Ovesco\FacturationBundle\Entity\Facture;
 use Ovesco\FacturationBundle\Entity\FactureModel;
 use Ovesco\FacturationBundle\Exporter\PDFQrFacture;
 use Ovesco\FacturationBundle\Form\MassAssignModelType;
-use Ovesco\FacturationBundle\Model\FactureConfig;
 use Ovesco\FacturationBundle\Model\MassAssignModel;
 use Ovesco\FacturationBundle\Model\QrFactureConfig;
 use Symfony\Component\ExpressionLanguage\ExpressionLanguage;

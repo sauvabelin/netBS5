@@ -10,7 +10,6 @@ use NetBS\CoreBundle\Utils\StrUtil;
 use Ovesco\FacturationBundle\Entity\Compte;
 use Sprain\SwissQrBill\QrBill;
 use Ovesco\FacturationBundle\Entity\FactureModel;
-use Ovesco\FacturationBundle\Model\FactureConfig;
 use Ovesco\FacturationBundle\Model\QrFactureConfig;
 use Sprain\SwissQrBill\DataGroup\Element\CombinedAddress;
 use Sprain\SwissQrBill\DataGroup\Element\CreditorInformation;
@@ -63,7 +62,6 @@ class APMBSFactureExporter
     {
         define('FPDF_FONTPATH', __DIR__ . '/Facture/fonts/');
 
-        /** @var FactureConfig $config */
         $config = new QrFactureConfig();
         $fpdf   = new \FPDF();
         $fpdf->SetLeftMargin($config->margeGauche);
@@ -74,7 +72,6 @@ class APMBSFactureExporter
         $fpdf->AddFont('OpenSans', 'B', 'OpenSans-Bold.php');
         $fpdf->AddFont('Arial', '', 'arial.php');
         $fpdf->AddFont('Arial', 'B', 'arialbd.php');
-        $fpdf->AddFont('BVR', '', 'ocrb10n.php');
 
 
         foreach($items as $reservation)
@@ -149,7 +146,6 @@ class APMBSFactureExporter
 
     private function printFacture(APMBSReservation $reservation, \FPDF $fpdf) {
 
-        /** @var FactureConfig $config */
         $config = new QrFactureConfig();
         $model = $this->getModel($reservation);
         $date = $reservation->getEnd();

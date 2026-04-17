@@ -4,7 +4,7 @@ namespace Ovesco\FacturationBundle\Model;
 
 use Ovesco\FacturationBundle\Entity\Facture;
 
-class ParsedBVR
+class ParsedCamt
 {
     private $factures = [];
 
