@@ -3,6 +3,8 @@
 namespace NetBS\FichierBundle\Mapping;
 
 use Doctrine\ORM\Mapping as ORM;
+use Gedmo\Mapping\Annotation as Gedmo;
+use Gedmo\SoftDeleteable\Traits\SoftDeleteableEntity;
 use NetBS\FichierBundle\Utils\Entity\ExpediableTrait;
 use NetBS\FichierBundle\Utils\Entity\RemarqueTrait;
 use Symfony\Component\Validator\Constraints as Assert;
@@ -12,9 +14,10 @@ use Symfony\Component\Serializer\Annotation\Groups;
  * Email
  */
 #[ORM\MappedSuperclass]
+#[Gedmo\SoftDeleteable(fieldName: 'deletedAt', timeAware: false, hardDelete: false)]
 class BaseEmail
 {
-    use RemarqueTrait, ExpediableTrait;
+    use RemarqueTrait, ExpediableTrait, SoftDeleteableEntity;
 
     /**
      * @var int

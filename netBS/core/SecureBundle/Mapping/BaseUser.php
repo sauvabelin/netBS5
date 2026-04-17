@@ -4,6 +4,8 @@ namespace NetBS\SecureBundle\Mapping;
 
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\ORM\Mapping as ORM;
+use Gedmo\Mapping\Annotation as Gedmo;
+use Gedmo\SoftDeleteable\Traits\SoftDeleteableEntity;
 use NetBS\CoreBundle\Utils\StrUtil;
 use NetBS\FichierBundle\Mapping\BaseMembre;
 use Symfony\Component\Validator\Constraints as Assert;
@@ -14,11 +16,14 @@ use Symfony\Component\Security\Core\User\LegacyPasswordAuthenticatedUserInterfac
 
 #[ORM\MappedSuperclass]
 #[UniqueEntity(fields: ['membre'])]
+#[Gedmo\SoftDeleteable(fieldName: 'deletedAt', timeAware: false, hardDelete: false)]
 class BaseUser implements
     EquatableInterface,
     UserInterface,
     LegacyPasswordAuthenticatedUserInterface
 {
+    use SoftDeleteableEntity;
+
     /**
      * @var int
      */

@@ -59,7 +59,10 @@ class MainMenuListener
             return;
 
         $secureCat->addLink("admin.news", "Gestion des news", "fas fa-newspaper", "netbs.core.news.manage");
-        $secureCat->addLink('secure.admin.changelog', 'Modifications', 'fas fa-history', 'netbs.core.changelog.list');
+        $modifMenu = $secureCat->addSubMenu('secure.admin.modifications', 'Modifications', 'fas fa-history');
+        $modifMenu->addSubLink('Vérification', 'netbs.core.changelog.list');
+        $modifMenu->addSubLink('Historique', 'netbs.core.audit_log.list');
+        $modifMenu->addSubLink('Corbeille', 'netbs.core.trash.list');
 
         if($user->hasRole("ROLE_ADMIN"))
             $secureCat->addLink('secure.admin.parameters', 'Paramètres', 'fas fa-cog', 'netbs.core.parameters.list');

@@ -3,6 +3,7 @@
 namespace NetBS\FichierBundle\Mapping;
 
 use Doctrine\ORM\Mapping as ORM;
+use Gedmo\Mapping\Annotation as Gedmo;
 use NetBS\CoreBundle\Model\EqualInterface;
 use NetBS\FichierBundle\Model\OwnableAdresse;
 use NetBS\FichierBundle\Model\OwnableEmail;
@@ -14,6 +15,7 @@ use Symfony\Component\Serializer\Annotation\Groups;
  * Geniteur
  */
 #[ORM\MappedSuperclass]
+#[Gedmo\SoftDeleteable(fieldName: 'deletedAt', timeAware: false, hardDelete: false)]
 abstract class BaseGeniteur extends Personne implements EqualInterface
 {
     const       MERE                = 'mere';

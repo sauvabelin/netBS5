@@ -74,11 +74,12 @@ class UserController extends AbstractController
 
         try {
             $manager->deleteUser($user);
+            $this->addFlash('success', 'Utilisateur supprimé');
         } catch (\ErrorException $e) {
             $this->addFlash('danger', $e->getMessage());
         }
 
-        return $history->getPreviousRoute();
+        return $history->getPreviousRoute() ?? $this->redirectToRoute('netbs.secure.user.list_users');
     }
 
     /**

@@ -3,6 +3,8 @@
 namespace NetBS\FichierBundle\Mapping;
 
 use Doctrine\ORM\Mapping as ORM;
+use Gedmo\Mapping\Annotation as Gedmo;
+use Gedmo\SoftDeleteable\Traits\SoftDeleteableEntity;
 use Gedmo\Timestampable\Traits\TimestampableEntity;
 use NetBS\FichierBundle\Utils\Entity\ExpediableTrait;
 use NetBS\FichierBundle\Utils\Entity\RemarqueTrait;
@@ -14,9 +16,10 @@ use Symfony\Component\Serializer\Annotation\Groups;
  * Telephone
  */
 #[ORM\MappedSuperclass]
+#[Gedmo\SoftDeleteable(fieldName: 'deletedAt', timeAware: false, hardDelete: false)]
 class BaseTelephone
 {
-    use TimestampableEntity, RemarqueTrait, ExpediableTrait;
+    use TimestampableEntity, RemarqueTrait, ExpediableTrait, SoftDeleteableEntity;
 
     /**
      * @var int
