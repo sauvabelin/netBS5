@@ -4,6 +4,7 @@ namespace App\Entity;
 
 use Doctrine\ORM\Event\LifecycleEventArgs;
 use Doctrine\ORM\Event\PreUpdateEventArgs;
+use Gedmo\Mapping\Annotation as Gedmo;
 use NetBS\FichierBundle\Mapping\BaseGroupe;
 use Doctrine\ORM\Mapping as ORM;
 
@@ -14,6 +15,7 @@ use Doctrine\ORM\Mapping as ORM;
 #[ORM\Entity]
 #[ORM\Table(name: 'sauvabelin_netbs_groupes')]
 #[ORM\HasLifecycleCallbacks]
+#[Gedmo\SoftDeleteable(fieldName: 'deletedAt', timeAware: false, hardDelete: false)]
 class BSGroupe extends BaseGroupe
 {
     /**

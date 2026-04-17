@@ -1,0 +1,22 @@
+{% extends '@NetBSCore/layout/backend.layout.twig' %}
+
+{% block main %}
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-12 col-md-8 offset-md-2">
+                {{ banner|raw }}
+
+                <div class="card" style="opacity: 0.5; pointer-events: none;">
+                    <div class="card-header">
+                        <h5 class="card-title">{{ entity }}</h5>
+                    </div>
+                    <div class="card-body">
+                        <p class="text-muted">
+                            Cet élément a été supprimé. Utilisez le bouton ci-dessus pour le restaurer.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}

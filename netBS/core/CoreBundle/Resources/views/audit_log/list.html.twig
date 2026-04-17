@@ -1,0 +1,24 @@
+{% extends '@NetBSCore/layout/backend.layout.twig' %}
+
+{% set title = "Historique des modifications" %}
+
+{% block main %}
+
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-12">
+                <div class="card card-table">
+                    <div class="card-header">
+                        <h5 class="card-title">Historique complet</h5>
+                        <h6 class="card-subtitle">Toutes les modifications effectuées par tous les utilisateurs</h6>
+                    </div>
+
+                    <div class="card-body">
+                        {{ render_list('netbs.core.audit_log', 'netbs') }}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+{% endblock %}

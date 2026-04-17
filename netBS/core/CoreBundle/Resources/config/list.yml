@@ -85,3 +85,7 @@ services:
     NetBS\CoreBundle\ListModel\LoggedChangesList:
         tags:
             - { name: netbs.list.model }
+
+    NetBS\CoreBundle\ListModel\AuditLogList:
+        tags:
+            - { name: netbs.list.model }

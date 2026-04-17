@@ -3,6 +3,8 @@
 namespace NetBS\FichierBundle\Mapping;
 
 use Doctrine\ORM\Mapping as ORM;
+use Gedmo\Mapping\Annotation as Gedmo;
+use Gedmo\SoftDeleteable\Traits\SoftDeleteableEntity;
 use Gedmo\Timestampable\Traits\TimestampableEntity;
 use NetBS\FichierBundle\Model\AdressableInterface;
 use NetBS\FichierBundle\Model\EmailableInterface;
@@ -16,9 +18,10 @@ use Symfony\Component\Validator\Constraints as Assert;
 /**
  * Personne
  */
+#[Gedmo\SoftDeleteable(fieldName: 'deletedAt', timeAware: false, hardDelete: false)]
 abstract class Personne implements AdressableInterface, TelephonableInterface, EmailableInterface, StatuableInterface
 {
-    use ContactTrait, RemarqueTrait, TimestampableEntity;
+    use ContactTrait, RemarqueTrait, TimestampableEntity, SoftDeleteableEntity;
 
     const   HOMME   = 'homme';
     const   FEMME   = 'femme';

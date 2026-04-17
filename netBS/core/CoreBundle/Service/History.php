@@ -61,6 +61,10 @@ class History
         if($request->headers->get('Accept') === 'application/json')
             return;
 
+        // Skip requests without a route name (e.g. error pages, redirects)
+        if(!$request->get('_route'))
+            return;
+
         $route          = new RouteHistory($request->get('_route'), $request->attributes->get('_route_params'));
         $history        = $this->getHistory();
         $history[]      = $route;
@@ -72,7 +76,7 @@ class History
     public function getPreviousRoute($previousness = 2) {
 
         $route  = $this->goToHistory($previousness);
-        if ($route === null) {
+        if ($route === null || !$route->getRouteName()) {
             return new RedirectResponse($this->router->generate('netbs.core.home.dashboard'));
         }
         return new RedirectResponse($this->router->generate($route->getRouteName(), $route->getParams()));

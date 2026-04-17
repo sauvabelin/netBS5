@@ -3,6 +3,8 @@
 namespace NetBS\FichierBundle\Mapping;
 
 use Doctrine\ORM\Mapping as ORM;
+use Gedmo\Mapping\Annotation as Gedmo;
+use Gedmo\SoftDeleteable\Traits\SoftDeleteableEntity;
 use Gedmo\Timestampable\Traits\TimestampableEntity;
 use NetBS\FichierBundle\Utils\Entity\RemarqueTrait;
 use Symfony\Component\Validator\Constraints as Assert;
@@ -14,9 +16,10 @@ use NetBS\CoreBundle\Validator\Constraints as BSAssert;
  */
 #[ORM\MappedSuperclass]
 #[BSAssert\User(rule: "user.hasRole('ROLE_SG')")]
+#[Gedmo\SoftDeleteable(fieldName: 'deletedAt', timeAware: false, hardDelete: false)]
 abstract class BaseAttribution
 {
-    use RemarqueTrait, TimestampableEntity;
+    use RemarqueTrait, TimestampableEntity, SoftDeleteableEntity;
 
     /**
      * @var int
@@ -98,7 +101,14 @@ abstract class BaseAttribution
 
     public function __toString()
     {
-        return $this->getFonction()->getNom() . ' - ' . $this->getGroupe()->getNom();
+        $parts = [];
+        if ($this->fonction) $parts[] = $this->fonction->getNom();
+        if ($this->groupe) $parts[] = $this->groupe->getNom();
+        $str = implode(' - ', $parts) ?: 'Attribution #' . $this->id;
+        if ($this->membre) {
+            $str .= ' (' . $this->membre->getFullName() . ')';
+        }
+        return $str;
     }
 
     /**

@@ -1,0 +1,16 @@
+<div class="alert alert-warning d-flex align-items-center justify-content-between mb-4" role="alert">
+    <div>
+        <i class="fas fa-trash-alt me-2"></i>
+        <strong>Cet élément a été supprimé</strong>
+        le {{ entity.deletedAt|date('d.m.Y à H:i') }}
+        {% if deletedBy %}par {{ deletedBy }}{% endif %}.
+    </div>
+    <form method="post" action="{{ path('netbs.core.trash.restore') }}" class="ms-3">
+        <input type="hidden" name="entity_id" value="{{ entity.id }}">
+        <input type="hidden" name="type" value="{{ entityType }}">
+        <button type="submit" class="btn btn-warning btn-sm"
+                data-turbo-confirm="Restaurer cet élément et toutes ses données associées ?">
+            <i class="fas fa-undo"></i> Restaurer
+        </button>
+    </form>
+</div>

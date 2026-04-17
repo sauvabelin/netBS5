@@ -3,6 +3,8 @@
 namespace NetBS\FichierBundle\Mapping;
 
 use Doctrine\ORM\Mapping as ORM;
+use Gedmo\Mapping\Annotation as Gedmo;
+use Gedmo\SoftDeleteable\Traits\SoftDeleteableEntity;
 use NetBS\CoreBundle\Model\EqualInterface;
 use NetBS\CoreBundle\Utils\Countries;
 use NetBS\FichierBundle\Utils\Entity\ExpediableTrait;
@@ -13,9 +15,10 @@ use Symfony\Component\Validator\GroupSequenceProviderInterface;
 
 #[Assert\GroupSequenceProvider]
 #[ORM\MappedSuperclass]
+#[Gedmo\SoftDeleteable(fieldName: 'deletedAt', timeAware: false, hardDelete: false)]
 class BaseAdresse implements GroupSequenceProviderInterface, EqualInterface
 {
-    use RemarqueTrait, ExpediableTrait;
+    use RemarqueTrait, ExpediableTrait, SoftDeleteableEntity;
 
     /**
      * @var int

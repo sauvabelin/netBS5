@@ -148,6 +148,14 @@ services:
         tags:
             - { name: doctrine.event_subscriber }
 
+    NetBS\CoreBundle\Subscriber\AuditLogSubscriber:
+        tags:
+            - { name: doctrine.event_subscriber }
+
+    NetBS\CoreBundle\Subscriber\CascadeSoftDeleteSubscriber:
+        tags:
+            - { name: doctrine.event_subscriber }
+
     NetBS\CoreBundle\Listener\DashboardListener:
         tags:
             - { name: kernel.event_listener, event: netbs.block.pre_render_layout, method: preRender, priority: 1000 }
@@ -159,3 +167,7 @@ services:
     NetBS\CoreBundle\Select2\NewsChannelProvider:
         tags:
             - { name: netbs.select2_provider }
+
+    NetBS\CoreBundle\EventListener\SoftDeletedEntityListener:
+        tags:
+            - { name: kernel.event_listener, event: kernel.exception }

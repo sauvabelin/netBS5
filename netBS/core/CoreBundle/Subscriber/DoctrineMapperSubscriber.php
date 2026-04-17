@@ -7,6 +7,7 @@ use Doctrine\ORM\Event\LoadClassMetadataEventArgs;
 use Doctrine\ORM\Events;
 use NetBS\CoreBundle\Entity\DynamicList;
 use NetBS\CoreBundle\Entity\ExportConfiguration;
+use NetBS\CoreBundle\Entity\AuditLog;
 use NetBS\CoreBundle\Entity\LoggedChange;
 use NetBS\CoreBundle\Entity\News;
 use NetBS\CoreBundle\Entity\Notification;
@@ -54,6 +55,7 @@ class DoctrineMapperSubscriber implements EventSubscriber
             case UserLog::class:
             case News::class:
             case LoggedChange::class:
+            case AuditLog::class:
                 $eventArgs->getClassMetadata()->mapManyToOne([
                     'fieldName'     => 'user',
                     'targetEntity'  => $this->secureConfig->getUserClass(),

@@ -76,6 +76,9 @@ class DoctrineAttributionSubscriber implements EventSubscriber
         $attr = $args->getEntity();
         if(!$attr instanceof BaseAttribution)
             return;
+        // Skip soft-delete updates — these are not real attribution changes
+        if($attr->getDeletedAt() !== null)
+            return;
         if (!$this->getUser($attr, $args->getEntityManager()))
             return;
 
@@ -222,10 +225,12 @@ class DoctrineAttributionSubscriber implements EventSubscriber
     }
 
     public function postFlush(PostFlushEventArgs $args) {
-        // Send all waiting messages
-        // We do it here so that changes on the DB are actually done, as nextcloud will check the db
-        // before doing anything
-        foreach ($this->messagesToSend as $message) {
+        $messages = $this->messagesToSend;
+        $this->messagesToSend = [];
+        $this->markedForUpdate = [];
+        $this->markedForRemoval = [];
+
+        foreach ($messages as $message) {
             $this->bus->dispatch($message);
         }
     }
