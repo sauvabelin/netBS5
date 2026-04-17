@@ -1,5 +1,6 @@
 import { Controller } from '@hotwired/stimulus';
 import { showToast } from '../lib/toast.js';
+import { confirmMethod } from '../lib/turbo_confirm.js';
 import * as Turbo from '@hotwired/turbo';
 
 export default class extends Controller {
@@ -11,8 +12,6 @@ export default class extends Controller {
     };
 
     connect() {
-        // Model badge loading uses global event delegation because badges
-        // are rendered in table rows OUTSIDE this controller's element.
         this._handleBadgeHover = (e) => {
             const badge = e.target.closest && e.target.closest('.facture-model-auto');
             if (!badge || badge.dataset.loaded) return;
@@ -30,17 +29,17 @@ export default class extends Controller {
         document.removeEventListener('mouseenter', this._handleBadgeHover, true);
     }
 
-    markPrinted() {
+    async markPrinted() {
         const ids = this._getSelectedIds();
         if (ids.length === 0) { showToast('warning', 'Veuillez sélectionner des factures'); return; }
-        if (!confirm('Marquer ' + ids.length + ' facture(s) comme imprimée(s) ?')) return;
+        if (!await confirmMethod('Marquer ' + ids.length + ' facture(s) comme imprimée(s) ?')) return;
         this._postMarkAction(this.markPrintedUrlValue, ids, 'facture(s) marquée(s) comme imprimée(s)');
     }
 
-    unmarkPrinted() {
+    async unmarkPrinted() {
         const ids = this._getSelectedIds();
         if (ids.length === 0) { showToast('warning', 'Veuillez sélectionner des factures'); return; }
-        if (!confirm('Marquer ' + ids.length + ' facture(s) comme non-imprimée(s) ?')) return;
+        if (!await confirmMethod('Marquer ' + ids.length + ' facture(s) comme non-imprimée(s) ?')) return;
         this._postMarkAction(this.unmarkPrintedUrlValue, ids, 'facture(s) marquée(s) comme non-imprimée(s)');
     }
 

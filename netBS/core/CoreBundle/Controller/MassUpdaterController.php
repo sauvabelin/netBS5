@@ -95,6 +95,11 @@ class MassUpdaterController extends AbstractController
         $returnUrl = $request->request->get('_return_url')
             ?: $request->headers->get('referer', '');
 
+        // Validate return URL is local to prevent open redirect
+        if ($returnUrl && !str_starts_with($returnUrl, '/') && !str_starts_with($returnUrl, $request->getSchemeAndHttpHost())) {
+            $returnUrl = '';
+        }
+
         $massForm->handleRequest($request);
 
         if($massForm->isSubmitted() && $massForm->isValid()) {

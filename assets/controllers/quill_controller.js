@@ -1,4 +1,5 @@
 import { Controller } from '@hotwired/stimulus';
+import { loadScript } from '../lib/load_script.js';
 
 export default class extends Controller {
     static values = {
@@ -7,7 +8,7 @@ export default class extends Controller {
 
     async connect() {
         if (!window.Quill) {
-            await this._loadScript('/bundles/netbscore/lib/quill/quill.min.js');
+            await loadScript('/bundles/netbscore/lib/quill/quill.min.js');
         }
 
         this._quill = new Quill(this.element, {
@@ -26,16 +27,5 @@ export default class extends Controller {
             }
             this._quill = null;
         }
-    }
-
-    _loadScript(src) {
-        return new Promise((resolve, reject) => {
-            if (document.querySelector('script[src="' + src + '"]')) { resolve(); return; }
-            const script = document.createElement('script');
-            script.src = src;
-            script.onload = resolve;
-            script.onerror = reject;
-            document.head.appendChild(script);
-        });
     }
 }

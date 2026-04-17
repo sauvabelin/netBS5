@@ -19,18 +19,21 @@ export function confirmMethod(message, element) {
                         <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                     </div>
                     <div class="modal-body">
-                        <p>${message}</p>
+                        <p></p>
                     </div>
                     <div class="modal-footer">
                         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
-                        <button type="button" class="btn btn-danger" id="_turbo-confirm-btn">Confirmer</button>
+                        <button type="button" class="btn btn-danger">Confirmer</button>
                     </div>
                 </div>
             </div>`;
 
+        el.querySelector('.modal-body p').textContent = message;
+        const confirmBtn = el.querySelector('.btn-danger');
+
         let confirmed = false;
 
-        el.querySelector('#_turbo-confirm-btn').addEventListener('click', () => {
+        confirmBtn.addEventListener('click', () => {
             confirmed = true;
             modal.hide();
         });

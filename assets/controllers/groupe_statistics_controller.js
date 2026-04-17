@@ -1,4 +1,5 @@
 import { Controller } from '@hotwired/stimulus';
+import { loadScript } from '../lib/load_script.js';
 
 export default class extends Controller {
     static values = {
@@ -20,7 +21,7 @@ export default class extends Controller {
 
     async _loadChart() {
         if (!window.Chart) {
-            await this._loadScript('https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.8.0/Chart.min.js');
+            await loadScript('https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.8.0/Chart.min.js');
         }
 
         this._chart = new Chart(this.canvasTarget, {
@@ -75,6 +76,7 @@ export default class extends Controller {
         fetch(this.dataUrlValue + '?' + params)
             .then((r) => r.json())
             .then((data) => {
+                if (!this._chart) return;
                 const ds = this._chart.data.datasets;
                 this._chart.data.labels = data.map((it) => new Date(it.pallier.date));
                 ds[0].data = data.map((it) => it.countAll);
@@ -86,6 +88,7 @@ export default class extends Controller {
 
     toggleSeries() {
         const chart = this._chart;
+        if (!chart) return;
         const ds = chart.data.datasets;
         const showTotal = this.totalTarget.checked;
         const showHommes = this.hommesTarget.checked;
@@ -95,8 +98,8 @@ export default class extends Controller {
         ds[1].hidden = !showHommes;
         ds[2].hidden = !showFemmes;
 
-        const ranges = [ds[0], ds[1], ds[2]]
-            .filter((_, i) => [showTotal, showHommes, showFemmes][i])
+        const ranges = ds
+            .filter((s) => !s.hidden)
             .map((s) => {
                 const vals = s.data.filter((v) => v != null);
                 return vals.length ? { min: Math.min(...vals), max: Math.max(...vals) } : null;
@@ -112,16 +115,5 @@ export default class extends Controller {
         }
 
         chart.update();
-    }
-
-    _loadScript(src) {
-        return new Promise((resolve, reject) => {
-            if (document.querySelector('script[src="' + src + '"]')) { resolve(); return; }
-            const script = document.createElement('script');
-            script.src = src;
-            script.onload = resolve;
-            script.onerror = reject;
-            document.head.appendChild(script);
-        });
     }
 }
