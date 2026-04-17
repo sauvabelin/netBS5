@@ -102,7 +102,7 @@
                             <td style="width:75%;">{{ xeditable(config, 'nom', 'Symfony\\Component\\Form\\Extension\\Core\\Type\\TextType')|raw }}</td>
                             <td style="width:25%;">
                                 <a data-bs-toggle="tooltip" title="Utiliser" href="{{ path('netbs.core.export.switch_config', {blobKey: blob.key, configId: config.id}) }}"><i class="fas fa-check-circle fa-sm"></i></a>
-                                <a data-bs-toggle="tooltip" title="Supprimer" href="{{ path('netbs.core.export.remove_config', {blobKey: blob.key, configId: config.id}) }}"><i class="fas fa-times fa-sm"></i></a>
+                                <a data-bs-toggle="tooltip" title="Supprimer" href="{{ path('netbs.core.export.remove_config', {blobKey: blob.key, configId: config.id}) }}" data-turbo-method="post"><i class="fas fa-times fa-sm"></i></a>
                             </td>
                         </tr>
                     {% endfor %}

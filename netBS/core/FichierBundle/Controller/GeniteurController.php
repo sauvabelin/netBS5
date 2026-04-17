@@ -65,7 +65,7 @@ class GeniteurController extends AbstractController
     /**
      * @return \Symfony\Component\HttpFoundation\RedirectResponse
      */
-    #[Route('/remove/{id}', name: 'netbs.fichier.geniteur.remove')]
+    #[Route('/remove/{id}', name: 'netbs.fichier.geniteur.remove', methods: ['POST'])]
     public function removeGeniteurAction($id, EntityManagerInterface $em) {
 
         $class          = $this->config->getGeniteurClass();

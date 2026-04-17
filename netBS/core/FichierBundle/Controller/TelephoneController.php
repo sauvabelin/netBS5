@@ -32,7 +32,7 @@ class TelephoneController extends AbstractController
      * @param $telephoneId
      * @return Response
      */
-    #[Route('/delete/{ownerType}/{ownerId}/{telephoneId}', name: 'netbs.fichier.telephone.delete')]
+    #[Route('/delete/{ownerType}/{ownerId}/{telephoneId}', name: 'netbs.fichier.telephone.delete', methods: ['POST'])]
     public function deleteTelephoneAction($ownerType, $ownerId, $telephoneId, EntityManagerInterface $em, History $history) {
 
         $class  = $this->config->getTelephoneClass();

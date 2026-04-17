@@ -18,7 +18,7 @@
                 <td>
                     <a class="btn btn-danger btn-xs"
                        href="{{ path('netbs.fichier.telephone.delete', {ownerId: item.id, ownerType: get_class(item)|toBase64, telephoneId: telephone.vars.data.id}) }}"
-                       data-turbo-confirm="Etes-vous sûr de supprimer ce numéro ?"><i class="fas fa-times fa-sm"></i></a>
+                       data-turbo-confirm="Etes-vous sûr de supprimer ce numéro ?" data-turbo-method="post"><i class="fas fa-times fa-sm"></i></a>
                 </td>
             </tr>
         {% endfor %}

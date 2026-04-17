@@ -26,7 +26,7 @@
                                 {{ form_row(geniteurForm.statut) }}
                             </div>
 
-                            <a href="{{ path('netbs.fichier.geniteur.remove', {id: geniteur.id}) }}" class="btn btn-danger" data-turbo-confirm="Êtes-vous sûr de vouloir supprimer {{ geniteur }} des représentants légaux de cette famille?">Supprimer {{ geniteur }}</a>
+                            <a href="{{ path('netbs.fichier.geniteur.remove', {id: geniteur.id}) }}" class="btn btn-danger" data-turbo-confirm="Êtes-vous sûr de vouloir supprimer {{ geniteur }} des représentants légaux de cette famille?" data-turbo-method="post">Supprimer {{ geniteur }}</a>
                         </div>
 
                         <div class="col-md-6">

@@ -35,7 +35,7 @@ class AdresseController extends AbstractController
      * @param $ownerId
      * @return Response
      */
-    #[Route('/delete/{ownerType}/{ownerId}/{adresseId}', name: 'netbs.fichier.adresse.delete')]
+    #[Route('/delete/{ownerType}/{ownerId}/{adresseId}', name: 'netbs.fichier.adresse.delete', methods: ['POST'])]
     public function deleteAdresseAction($ownerType, $ownerId, $adresseId, EntityManagerInterface $em, History $history) {
 
         $class  = $this->getClass();

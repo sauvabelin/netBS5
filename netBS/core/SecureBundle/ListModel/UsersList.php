@@ -86,7 +86,7 @@ class UsersList extends AjaxModel
                         LinkAction::ROUTE   => function(BaseUser $user) {
                             return $this->router->generate('netbs.secure.user.delete_user', array('id' => $user->getId()));
                         },
-                        LinkAction::ATTRS   => 'data-turbo-confirm="Etes-vous sûr? Tout ce qui est lié à cet utilisateur (listes, export...) sera perdu!"'
+                        LinkAction::ATTRS   => 'data-turbo-confirm="Etes-vous sûr? Tout ce qui est lié à cet utilisateur (listes, export...) sera perdu!" data-turbo-method="post"'
                     ])
                 ]
             ))

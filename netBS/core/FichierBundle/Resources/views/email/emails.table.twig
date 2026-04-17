@@ -17,7 +17,7 @@
                 <td>
                     <a class="btn btn-danger btn-xs"
                        href="{{ path('netbs.fichier.email.delete', {ownerId: item.id, ownerType: get_class(item)|toBase64, emailId: email.vars.data.id}) }}"
-                       data-turbo-confirm="Etes-vous sûr de supprimer cette adresse e-mail ?"><i class="fas fa-times fa-sm"></i></a>
+                       data-turbo-confirm="Etes-vous sûr de supprimer cette adresse e-mail ?" data-turbo-method="post"><i class="fas fa-times fa-sm"></i></a>
                 </td>
             </tr>
         {% endfor %}

@@ -35,7 +35,7 @@ class DynamicListController extends AbstractController
      * @throws \Doctrine\ORM\ORMException
      * @throws \Doctrine\ORM\OptimisticLockException
      */
-    #[Route('/remove-items/{id}', name: 'netbs.core.dynamics_list.remove_items')]
+    #[Route('/remove-items/{id}', name: 'netbs.core.dynamics_list.remove_items', methods: ['POST'])]
     public function removeElementFromListAction(Request $request, DynamicList $list, EntityManagerInterface $em) {
 
         $ids    = json_decode($request->get('data'), true)['removed_ids'];
@@ -62,7 +62,7 @@ class DynamicListController extends AbstractController
      * @throws \Doctrine\ORM\ORMException
      * @throws \Doctrine\ORM\OptimisticLockException
      */
-    #[Route('/remove-share/{id}', name: 'netbs.core.dynamics_list.remove_share')]
+    #[Route('/remove-share/{id}', name: 'netbs.core.dynamics_list.remove_share', methods: ['POST'])]
     public function removeShareFromListAction(Request $request, DynamicList $list, EntityManagerInterface $em) {
         $id = $request->get('userid');
         if (!$id) {
@@ -119,7 +119,7 @@ class DynamicListController extends AbstractController
      * @throws \Doctrine\ORM\ORMException
      * @throws \Doctrine\ORM\OptimisticLockException
      */
-    #[Route('/remove/list/{id}', name: 'netbs.core.dynamics_list.remove_list')]
+    #[Route('/remove/list/{id}', name: 'netbs.core.dynamics_list.remove_list', methods: ['POST'])]
     public function removeListAction(DynamicList $list, EntityManagerInterface $em) {
 
         if(!$this->isGranted(CRUD::DELETE, $list))

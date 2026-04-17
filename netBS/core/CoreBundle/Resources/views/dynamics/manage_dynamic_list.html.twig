@@ -28,7 +28,7 @@
                         </div>
                         <div class="card-footer">
                             <div role="group" class="btn-group btn-group-justified">
-                                <a href="{{ path('netbs.core.dynamics_list.remove_list', {id: list.id}) }}" class="btn btn-secondary" data-turbo-confirm="Etes-vous sûr de vouloir supprimer cette liste ? C'est IRREVERSIBLE!">Supprimer cette liste</a>
+                                <a href="{{ path('netbs.core.dynamics_list.remove_list', {id: list.id}) }}" class="btn btn-secondary" data-turbo-confirm="Etes-vous sûr de vouloir supprimer cette liste ? C'est IRREVERSIBLE!" data-turbo-method="post">Supprimer cette liste</a>
                             </div>
                         </div>
                     {% endif %}
@@ -53,7 +53,7 @@
                                     <tr>
                                         <td>{{ user }}</td>
                                         <td>
-                                            <a href="{{ path('netbs.core.dynamics_list.remove_share', { id: list.id }) }}?userid={{ user.id }}" class="btn btn-xs btn-danger" data-bs-toggle="tooltip" title="Retirer le partage"><i class="fas fa-sm fa-times" aria-hidden="true"></i></a>
+                                            <a href="{{ path('netbs.core.dynamics_list.remove_share', { id: list.id }) }}?userid={{ user.id }}" class="btn btn-xs btn-danger" data-bs-toggle="tooltip" title="Retirer le partage" data-turbo-method="post"><i class="fas fa-sm fa-times" aria-hidden="true"></i></a>
                                         </td>
                                     </tr>
                                 {% endfor %}

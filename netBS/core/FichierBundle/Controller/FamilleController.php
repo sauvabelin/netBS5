@@ -111,7 +111,7 @@ class FamilleController extends AbstractController
     }
 
 
-    #[Route('/remove/{id}', name: 'netbs.fichier.famille.remove')]
+    #[Route('/remove/{id}', name: 'netbs.fichier.famille.remove', methods: ['POST'])]
     public function removeFamilleAction($id, EventDispatcherInterface $dispatcher, EntityManagerInterface $em) {
 
         if(!$this->isGranted('ROLE_SG'))

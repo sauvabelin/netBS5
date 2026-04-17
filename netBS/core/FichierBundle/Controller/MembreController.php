@@ -119,7 +119,7 @@ class MembreController extends AbstractController
         return $searcher->render($instance);
     }
 
-    #[Route('/remove/{id}', name: 'netbs.fichier.membre.remove')]
+    #[Route('/remove/{id}', name: 'netbs.fichier.membre.remove', methods: ['POST'])]
     public function removeMembreAction($id, EventDispatcherInterface $dispatcher, EntityManagerInterface $em) {
 
         if(!$this->isGranted('ROLE_SG'))
