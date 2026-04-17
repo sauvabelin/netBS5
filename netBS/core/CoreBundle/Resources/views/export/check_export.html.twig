@@ -13,10 +13,20 @@
             {{ former2.expose(child) }}
         {% endfor %}
     {% elseif form.vars.name != "_token" %}
-        {% if 'number' in form.vars.block_prefixes or 'switch' in form.vars.block_prefixes %}
+        {% if 'number' in form.vars.block_prefixes %}
             <div class="row">
                 <div class="col-12 col-md-8" style="line-height:30px;">{{ form_label(form) }}</div>
                 <div class="col-12 col-md-4">{{ form_widget(form, {attr: {style: "font-size:0.9em;height:30px;"}}) }}</div>
+                {% if form.vars.errors|length > 0 %}
+                    {% for error in form.vars.errors %}
+                    <div class="col-md-12"><small class="text-danger">{{ error.message }}</small></div>
+                    {% endfor %}
+                {% endif %}
+            </div>
+        {% elseif 'switch' in form.vars.block_prefixes %}
+            <div class="row">
+                <div class="col-12 col-md-8" style="line-height:30px;">{{ form_label(form) }}</div>
+                <div class="col-12 col-md-4">{{ form_widget(form) }}</div>
                 {% if form.vars.errors|length > 0 %}
                     {% for error in form.vars.errors %}
                     <div class="col-md-12"><small class="text-danger">{{ error.message }}</small></div>
@@ -89,7 +99,7 @@
                     <h3>Exportation</h3>
                 </div>
 
-                {% if exporter.alias == 'pdf.factures' or exporter.alias == 'pdf.qr.factures' %}
+                {% if exporter.alias == 'pdf.qr.factures' %}
                     {% include '@NetBSCore/doc/_doc_block.twig' with {doc: '@OvescoFacturation/doc/impression_config.twig'} %}
                 {% elseif doc is defined and doc %}
                     {% include '@NetBSCore/doc/_doc_block.twig' with {doc: doc} only %}

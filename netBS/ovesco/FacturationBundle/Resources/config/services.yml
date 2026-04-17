@@ -24,10 +24,6 @@ services:
         tags:
             - { name: doctrine.event_subscriber }
 
-    Ovesco\FacturationBundle\Exporter\PDFFacture:
-        tags:
-            - { name: netbs.exporter }
-
     Ovesco\FacturationBundle\Exporter\CSVPaiements:
         tags:
             - { name: netbs.exporter }
@@ -39,10 +35,6 @@ services:
     Ovesco\FacturationBundle\ListModel\:
         resource: '../../ListModel'
         tags: ['netbs.list.model']
-
-    Ovesco\FacturationBundle\Form\FactureConfigType:
-        tags:
-            - { name: form.type }
 
     Ovesco\FacturationBundle\Form\QrFactureConfigType:
         tags:
