@@ -50,6 +50,7 @@ abstract class BaseFamille implements AdressableInterface, TelephonableInterface
      */
     #[ORM\Column(name: 'nom', type: 'string', length: 255)]
     #[Assert\NotBlank]
+    #[Assert\Length(max: 255)]
     #[Groups(['default'])]
     protected $nom;
 

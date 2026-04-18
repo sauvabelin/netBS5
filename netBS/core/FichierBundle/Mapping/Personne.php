@@ -41,6 +41,7 @@ abstract class Personne implements AdressableInterface, TelephonableInterface, E
     #[Groups(['default'])]
     #[ORM\Column(name: 'prenom', type: 'string', length: 255)]
     #[Assert\NotBlank]
+    #[Assert\Length(max: 255)]
     protected $prenom;
 
     /**
@@ -48,6 +49,8 @@ abstract class Personne implements AdressableInterface, TelephonableInterface, E
      */
     #[Groups(['default'])]
     #[ORM\Column(name: 'sexe', type: 'string', length: 255)]
+    #[Assert\NotBlank]
+    #[Assert\Choice(choices: [Personne::HOMME, Personne::FEMME])]
     protected $sexe;
 
     /**

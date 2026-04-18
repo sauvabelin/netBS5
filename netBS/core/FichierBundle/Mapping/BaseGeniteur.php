@@ -29,6 +29,7 @@ abstract class BaseGeniteur extends Personne implements EqualInterface
      */
     #[Groups(['default'])]
     #[ORM\Column(name: 'nom', type: 'string', length: 255, nullable: true)]
+    #[Assert\Length(max: 255)]
     protected $nom;
 
     /**
@@ -36,6 +37,7 @@ abstract class BaseGeniteur extends Personne implements EqualInterface
      */
     #[Groups(['details'])]
     #[ORM\Column(name: 'profession', type: 'string', length: 255, nullable: true)]
+    #[Assert\Length(max: 255)]
     protected $profession;
 
     /**
@@ -44,6 +46,8 @@ abstract class BaseGeniteur extends Personne implements EqualInterface
     #[Groups(['details'])]
     #[ORM\Column(name: 'statut', type: 'string', length: 255)]
     #[Assert\NotBlank]
+    #[Assert\Length(max: 255)]
+    #[Assert\Choice(choices: [BaseGeniteur::MERE, BaseGeniteur::PERE, BaseGeniteur::GRAND_PARENT, BaseGeniteur::REPRESENTANT_LEGAL, BaseGeniteur::AUTRE])]
     protected $statut;
 
     /**

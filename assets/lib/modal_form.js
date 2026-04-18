@@ -1,4 +1,10 @@
+import { validateForm } from './form_validation.js';
+
 export function submitForm(url, formElement) {
+    if (!validateForm(formElement)) {
+        return Promise.reject(new Error('validation'));
+    }
+
     return fetch(url, {
         method: 'POST',
         headers: { 'Content-Type': 'application/x-www-form-urlencoded' },

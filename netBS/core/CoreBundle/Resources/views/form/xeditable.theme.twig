@@ -45,7 +45,7 @@
     {% elseif type in DATES %}
 
         data-type="hochetdatepicker"
-        data-format="dd.mm.yyyy"
+        data-format="{{ form.vars.attr['data-flatpickr-format-value']|default('d.m.Y') }}"
         data-value="{{ value }}"
         class="editable"
 

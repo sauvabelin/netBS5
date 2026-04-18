@@ -60,6 +60,8 @@ export default class extends Controller {
         const form = modalEl.querySelector('form');
         if (!confirmBtn || !form) return;
 
+        form.setAttribute('novalidate', 'novalidate');
+
         form.addEventListener('submit', (e) => {
             e.preventDefault();
             confirmBtn.click();
@@ -68,7 +70,7 @@ export default class extends Controller {
         confirmBtn.addEventListener('click', () => {
             submitForm(url, form).then((result) => {
                 this._handleSubmitResult(result, modalEl, url);
-            });
+            }).catch(() => {});
         });
     }
 

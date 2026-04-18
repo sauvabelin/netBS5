@@ -162,4 +162,121 @@
   .channel {
     filter: brightness(0.65) saturate(0.7);
   }
+
+  // Flatpickr datepicker — dark theme overrides
+  // Double-class selectors (.flatpickr-calendar.flatpickr-calendar) bump specificity
+  // so our overrides win over flatpickr.min.css regardless of load order.
+  .flatpickr-calendar.flatpickr-calendar {
+    background: var(--bs-body-bg);
+    border-color: var(--bs-border-color);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+    color: var(--bs-body-color);
+
+    .flatpickr-months,
+    .flatpickr-weekdays,
+    span.flatpickr-weekday {
+      background: var(--bs-body-bg);
+      color: var(--bs-body-color);
+    }
+
+    .flatpickr-month,
+    .flatpickr-current-month .flatpickr-monthDropdown-months,
+    .flatpickr-current-month input.cur-year {
+      color: var(--bs-body-color);
+      fill: var(--bs-body-color);
+    }
+
+    .flatpickr-current-month .flatpickr-monthDropdown-months {
+      background: var(--bs-body-bg);
+    }
+
+    .flatpickr-day {
+      color: var(--bs-body-color);
+
+      &:hover,
+      &:focus {
+        background: var(--bs-tertiary-bg);
+        border-color: var(--bs-border-color);
+      }
+
+      &.today {
+        border-color: var(--bs-primary);
+
+        &:hover,
+        &:focus {
+          background: var(--bs-primary);
+          color: #fff;
+        }
+      }
+
+      &.selected,
+      &.selected:hover,
+      &.selected:focus {
+        background: var(--bs-primary);
+        border-color: var(--bs-primary);
+        color: #fff;
+      }
+
+      &.flatpickr-disabled,
+      &.prevMonthDay,
+      &.nextMonthDay {
+        color: var(--bs-secondary-color);
+      }
+    }
+
+    .flatpickr-months .flatpickr-prev-month,
+    .flatpickr-months .flatpickr-next-month {
+      color: var(--bs-body-color);
+      fill: var(--bs-body-color);
+
+      svg {
+        fill: var(--bs-body-color);
+      }
+
+      &:hover svg {
+        fill: var(--bs-primary);
+      }
+    }
+
+    .numInputWrapper {
+      &:hover {
+        background: var(--bs-tertiary-bg);
+      }
+
+      span {
+        border-color: var(--bs-border-color);
+
+        &:hover {
+          background: var(--bs-tertiary-bg);
+        }
+
+        &.arrowUp:after {
+          border-bottom-color: var(--bs-body-color);
+        }
+
+        &.arrowDown:after {
+          border-top-color: var(--bs-body-color);
+        }
+      }
+    }
+
+    .flatpickr-time {
+      border-top-color: var(--bs-border-color);
+    }
+
+    .flatpickr-time input,
+    .flatpickr-time .flatpickr-am-pm {
+      color: var(--bs-body-color);
+      background: transparent;
+
+      &:hover,
+      &:focus {
+        background: var(--bs-tertiary-bg);
+      }
+    }
+
+    .flatpickr-time .flatpickr-time-separator {
+      color: var(--bs-body-color);
+    }
+  }
 }

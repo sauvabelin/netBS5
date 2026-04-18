@@ -17,6 +17,7 @@ use NetBS\SecureBundle\Voter\CRUD;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 
@@ -105,11 +106,15 @@ class UserController extends AbstractController
             return $this->redirectToRoute("netbs.secure.user.list_users");
         }
 
+        $status = $form->isSubmitted() && !$form->isValid()
+            ? Response::HTTP_UNPROCESSABLE_ENTITY
+            : Response::HTTP_OK;
+
         return $this->render('@NetBSCore/generic/form.generic.twig', array(
             'header'    => 'Nouvel utilisateur',
             'subHeader' => "Ajouter un utilisateur manuellement",
             'form'  => $form->createView()
-        ));
+        ), new Response('', $status));
     }
 
     #[Route('/user/my-account', name: 'netbs.secure.user.account_page')]

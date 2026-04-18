@@ -78,7 +78,7 @@ export default class extends Controller {
             .then((data) => {
                 if (!this._chart) return;
                 const ds = this._chart.data.datasets;
-                this._chart.data.labels = data.map((it) => new Date(it.pallier.date));
+                this._chart.data.labels = data.map((it) => new Date(it.pallier));
                 ds[0].data = data.map((it) => it.countAll);
                 ds[1].data = data.map((it) => it.countHomme);
                 ds[2].data = data.map((it) => it.countAll - it.countHomme);
