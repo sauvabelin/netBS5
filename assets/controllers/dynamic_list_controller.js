@@ -67,7 +67,7 @@ export default class extends Controller {
                     modalEl.innerHTML = result.html;
                     this._attachCreateFormHandler(modalEl, itemsClass, ids);
                 }
-            }).catch(() => {});
+            }).catch((err) => { if (err.message !== 'validation') throw err; });
         });
     }
 

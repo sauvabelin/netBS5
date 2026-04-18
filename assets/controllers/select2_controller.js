@@ -82,7 +82,7 @@ export default class extends Controller {
     // --- Static multi-select with tags ---
 
     _buildMultiSelectWidget(select) {
-        const { tagsContainer, searchInput, results } = this._buildMultiScaffold(select, 'select2-multi-wrapper', 'position:absolute;top:100%;left:0;z-index:1070;width:100%;max-height:200px;overflow-y:auto;box-shadow:0 2px 8px rgba(0,0,0,.15);display:none;');
+        const { control, searchInput, results } = this._buildMultiScaffold(select, 'select2-multi-wrapper');
 
         const renderOptions = () => {
             const query = searchInput.value.toLowerCase();
@@ -101,7 +101,7 @@ export default class extends Controller {
         };
 
         const refresh = () => {
-            this._renderTags(select, tagsContainer, refresh);
+            this._renderTags(select, control, refresh);
             renderOptions();
         };
 
@@ -128,7 +128,7 @@ export default class extends Controller {
             renderOptions();
         });
 
-        this._renderTags(select, tagsContainer, refresh);
+        this._renderTags(select, control, refresh);
     }
 
     // --- AJAX single-select ---
@@ -145,17 +145,17 @@ export default class extends Controller {
         display.innerHTML = this._getDisplayText(select);
 
         const dropdown = document.createElement('div');
+        dropdown.className = 'select2-ajax-panel';
         dropdown.style.display = 'none';
 
         const searchInput = document.createElement('input');
         searchInput.type = 'text';
-        searchInput.className = 'form-control mt-1';
+        searchInput.className = 'form-control';
         searchInput.placeholder = 'Rechercher...';
         searchInput.autocomplete = 'off';
 
         const results = document.createElement('div');
-        results.className = 'list-group';
-        results.style.cssText = 'position:absolute;top:100%;left:0;z-index:1070;width:100%;max-height:200px;overflow-y:auto;box-shadow:0 2px 8px rgba(0,0,0,.15);';
+        results.className = 'list-group mt-1';
 
         dropdown.appendChild(searchInput);
         dropdown.appendChild(results);
@@ -197,10 +197,10 @@ export default class extends Controller {
     // --- AJAX multi-select with tags ---
 
     _buildAjaxMultiWidget(select) {
-        const { tagsContainer, searchInput, results } = this._buildMultiScaffold(select, 'select2-ajax-multi-wrapper', 'position:absolute;top:100%;left:0;z-index:1070;width:100%;max-height:200px;overflow-y:auto;box-shadow:0 2px 8px rgba(0,0,0,.15);display:none;');
+        const { control, searchInput, results } = this._buildMultiScaffold(select, 'select2-ajax-multi-wrapper');
 
         const refresh = () => {
-            this._renderTags(select, tagsContainer, refresh);
+            this._renderTags(select, control, refresh);
             if (results.style.display !== 'none') {
                 this._doAjaxSearch(searchInput.value.trim(), results);
             }
@@ -227,12 +227,12 @@ export default class extends Controller {
             this._doAjaxSearch(query, results);
         });
 
-        this._renderTags(select, tagsContainer, refresh);
+        this._renderTags(select, control, refresh);
     }
 
     // --- Shared helpers ---
 
-    _buildMultiScaffold(select, wrapperClass, resultsStyle) {
+    _buildMultiScaffold(select, wrapperClass) {
         select.style.display = 'none';
 
         this._wrapper = document.createElement('div');
@@ -257,8 +257,8 @@ export default class extends Controller {
         });
 
         const results = document.createElement('div');
-        results.className = 'list-group';
-        results.style.cssText = resultsStyle;
+        results.className = 'list-group select2-results-dropdown';
+        results.style.display = 'none';
 
         this._wrapper.appendChild(control);
         this._wrapper.appendChild(results);
@@ -271,12 +271,12 @@ export default class extends Controller {
         };
         document.addEventListener('click', this._outsideClickHandler, true);
 
-        return { tagsContainer: control, searchInput, results };
+        return { control, searchInput, results };
     }
 
-    _renderTags(select, tagsContainer, onRemove) {
-        tagsContainer.querySelectorAll('.select2-tag').forEach((t) => t.remove());
-        const searchInput = tagsContainer.querySelector('.select2-multi-search');
+    _renderTags(select, control, onRemove) {
+        control.querySelectorAll('.select2-tag').forEach((t) => t.remove());
+        const searchInput = control.querySelector('.select2-multi-search');
         Array.from(select.selectedOptions).forEach((opt) => {
             if (!opt.value) return;
             const tag = document.createElement('span');
@@ -287,11 +287,7 @@ export default class extends Controller {
                 select.dispatchEvent(new Event('change'));
                 onRemove();
             });
-            if (searchInput) {
-                tagsContainer.insertBefore(tag, searchInput);
-            } else {
-                tagsContainer.appendChild(tag);
-            }
+            control.insertBefore(tag, searchInput);
         });
     }
 

@@ -5,7 +5,9 @@
     <div class="container-fluid" style="background: white;">
         <h3>{% if title is defined %}{{ title }}{% else %}Rechercher{% endif %}</h3>
 
-        {{form_start(form)}}
+        {# Filters are all optional — skip our required-field validator.
+           data-turbo=false: search returns a 200 (not a redirect), which Turbo would reject. #}
+        {{ form_start(form, {'attr': {'data-skip-validation': '', 'data-turbo': 'false'}}) }}
 
         {% block searchForm %}{% endblock %}
 

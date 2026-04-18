@@ -70,7 +70,7 @@ export default class extends Controller {
         confirmBtn.addEventListener('click', () => {
             submitForm(url, form).then((result) => {
                 this._handleSubmitResult(result, modalEl, url);
-            }).catch(() => {});
+            }).catch((err) => { if (err.message !== 'validation') throw err; });
         });
     }
 

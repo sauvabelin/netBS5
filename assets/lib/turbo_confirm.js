@@ -1,11 +1,3 @@
-/**
- * Custom Turbo confirm dialog using Bootstrap's Modal component.
- * Replaces the native browser confirm() for all data-turbo-confirm attributes.
- *
- * Register in app.js:
- *   import { confirmMethod } from './lib/turbo_confirm.js';
- *   Turbo.setConfirmMethod(confirmMethod);
- */
 export function confirmMethod(message, element) {
     return new Promise((resolve) => {
         const el = document.createElement('div');

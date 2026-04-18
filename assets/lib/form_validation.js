@@ -1,31 +1,29 @@
-// Custom HTML5 form validation — in French, with Bootstrap 5 .is-invalid styling.
-// Replaces the browser's native validation popup so:
-//   - all invalid fields are flagged simultaneously (not one-at-a-time)
-//   - messages are in French and context-specific
-//   - invalid fields turn red via .is-invalid, with a matching .invalid-feedback below.
-
 const FEEDBACK_CLASS = 'js-validation-feedback';
 
 export function validateForm(form) {
     clearValidationErrors(form);
+    if (form.checkValidity()) return true;
 
-    const invalid = [];
+    let first = null;
     for (const el of form.elements) {
-        if (!el.willValidate) continue;
-        if (el.checkValidity()) continue;
-        invalid.push(el);
+        if (!el.willValidate || el.checkValidity()) continue;
+        if (!first) first = el;
         markInvalid(el);
     }
 
-    if (invalid.length === 0) return true;
-
-    invalid[0].focus({ preventScroll: true });
-    invalid[0].scrollIntoView({ block: 'center', behavior: 'smooth' });
+    first.focus({ preventScroll: true });
+    first.scrollIntoView({ block: 'center', behavior: 'smooth' });
     return false;
 }
 
-export function clearValidationErrors(form) {
-    form.querySelectorAll('.is-invalid').forEach((el) => el.classList.remove('is-invalid'));
+function clearValidationErrors(form) {
+    form.querySelectorAll('.is-invalid').forEach((el) => {
+        el.classList.remove('is-invalid');
+        if (el._validationAbort) {
+            el._validationAbort.abort();
+            el._validationAbort = null;
+        }
+    });
     form.querySelectorAll('.' + FEEDBACK_CLASS).forEach((el) => el.remove());
 }
 
@@ -39,18 +37,21 @@ function markInvalid(el) {
     const anchor = el.closest('.input-group') || el;
     anchor.parentNode.insertBefore(feedback, anchor.nextSibling);
 
+    const controller = new AbortController();
+    el._validationAbort = controller;
+
     const onInput = () => {
         if (el.checkValidity()) {
             el.classList.remove('is-invalid');
             feedback.remove();
-            el.removeEventListener('input', onInput);
-            el.removeEventListener('change', onInput);
+            controller.abort();
+            el._validationAbort = null;
         } else {
             feedback.textContent = frenchMessageFor(el);
         }
     };
-    el.addEventListener('input', onInput);
-    el.addEventListener('change', onInput);
+    el.addEventListener('input', onInput, { signal: controller.signal });
+    el.addEventListener('change', onInput, { signal: controller.signal });
 }
 
 function frenchMessageFor(el) {
@@ -61,19 +62,13 @@ function frenchMessageFor(el) {
         return 'Ce champ est obligatoire.';
     }
     if (v.typeMismatch) {
-        if (el.type === 'email') return "Veuillez saisir une adresse email valide.";
+        if (el.type === 'email') return 'Veuillez saisir une adresse email valide.';
         if (el.type === 'url') return 'Veuillez saisir une URL valide.';
         return "Le format saisi n'est pas valide.";
     }
-    if (v.tooShort) {
-        return `Ce champ doit contenir au moins ${el.minLength} caractères (actuellement ${el.value.length}).`;
-    }
-    if (v.tooLong) {
-        return `Ce champ doit contenir au plus ${el.maxLength} caractères.`;
-    }
-    if (v.patternMismatch) {
-        return el.title || "Le format saisi n'est pas valide.";
-    }
+    if (v.tooShort) return `Ce champ doit contenir au moins ${el.minLength} caractères (actuellement ${el.value.length}).`;
+    if (v.tooLong) return `Ce champ doit contenir au plus ${el.maxLength} caractères.`;
+    if (v.patternMismatch) return el.title || "Le format saisi n'est pas valide.";
     if (v.rangeUnderflow) return `La valeur doit être supérieure ou égale à ${el.min}.`;
     if (v.rangeOverflow) return `La valeur doit être inférieure ou égale à ${el.max}.`;
     if (v.stepMismatch) return "La valeur saisie n'est pas dans un incrément valide.";
@@ -81,15 +76,10 @@ function frenchMessageFor(el) {
     return 'Ce champ contient une erreur.';
 }
 
-// Apply novalidate so the browser's native popup never fires — our custom
-// validation handles it instead.
-export function disableNativeValidation(root) {
-    const scope = root instanceof HTMLFormElement ? null : root;
-    const forms = scope ? scope.querySelectorAll('form') : [root];
+function disableNativeValidation(root) {
+    const forms = root instanceof HTMLFormElement ? [root] : root.querySelectorAll('form');
     forms.forEach((form) => {
-        if (!form.hasAttribute('novalidate')) {
-            form.setAttribute('novalidate', 'novalidate');
-        }
+        if (!form.hasAttribute('novalidate')) form.setAttribute('novalidate', 'novalidate');
     });
 }
 
@@ -98,9 +88,8 @@ export function initGlobalFormValidation() {
 
     document.addEventListener('turbo:load', () => disableNativeValidation(document));
     document.addEventListener('turbo:frame-load', (e) => {
-        if (e.target && e.target.querySelectorAll) disableNativeValidation(e.target);
+        if (e.target) disableNativeValidation(e.target);
     });
-    document.addEventListener('turbo:render', () => disableNativeValidation(document));
 
     document.addEventListener('submit', (e) => {
         const form = e.target;

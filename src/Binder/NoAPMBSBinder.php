@@ -54,6 +54,8 @@ class NoAPMBSBinder extends BaseBinder
 
         $ids    = array_column($result, 'id');
 
+        if (empty($ids)) return;
+
         $builder
             ->andWhere($builder->expr()->notIn("$alias.id", $ids));
     }
