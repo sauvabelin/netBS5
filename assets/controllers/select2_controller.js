@@ -63,7 +63,7 @@ export default class extends Controller {
 
         const searchInput = document.createElement('input');
         searchInput.type = 'text';
-        searchInput.className = 'form-control form-control-sm mb-1';
+        searchInput.className = 'form-control mb-1';
         searchInput.placeholder = 'Rechercher...';
         searchInput.autocomplete = 'off';
 
@@ -82,7 +82,7 @@ export default class extends Controller {
     // --- Static multi-select with tags ---
 
     _buildMultiSelectWidget(select) {
-        const { tagsContainer, searchInput, results } = this._buildMultiScaffold(select, 'select2-multi-wrapper', 'max-height:200px;overflow-y:auto;display:none;');
+        const { control, searchInput, results } = this._buildMultiScaffold(select, 'select2-multi-wrapper');
 
         const renderOptions = () => {
             const query = searchInput.value.toLowerCase();
@@ -101,7 +101,7 @@ export default class extends Controller {
         };
 
         const refresh = () => {
-            this._renderTags(select, tagsContainer, refresh);
+            this._renderTags(select, control, refresh);
             renderOptions();
         };
 
@@ -128,7 +128,7 @@ export default class extends Controller {
             renderOptions();
         });
 
-        this._renderTags(select, tagsContainer, refresh);
+        this._renderTags(select, control, refresh);
     }
 
     // --- AJAX single-select ---
@@ -140,23 +140,22 @@ export default class extends Controller {
         this._wrapper.className = 'select2-ajax-wrapper position-relative';
 
         const display = document.createElement('div');
-        display.className = 'form-control form-control-sm d-flex align-items-center';
+        display.className = 'form-control d-flex align-items-center';
         display.style.cursor = 'pointer';
-        display.style.minHeight = '2rem';
         display.innerHTML = this._getDisplayText(select);
 
         const dropdown = document.createElement('div');
+        dropdown.className = 'select2-ajax-panel';
         dropdown.style.display = 'none';
 
         const searchInput = document.createElement('input');
         searchInput.type = 'text';
-        searchInput.className = 'form-control form-control-sm mt-1';
+        searchInput.className = 'form-control';
         searchInput.placeholder = 'Rechercher...';
         searchInput.autocomplete = 'off';
 
         const results = document.createElement('div');
-        results.className = 'list-group';
-        results.style.cssText = 'position:absolute;z-index:1070;width:100%;max-height:200px;overflow-y:auto;box-shadow:0 2px 8px rgba(0,0,0,.15);';
+        results.className = 'list-group mt-1';
 
         dropdown.appendChild(searchInput);
         dropdown.appendChild(results);
@@ -198,10 +197,10 @@ export default class extends Controller {
     // --- AJAX multi-select with tags ---
 
     _buildAjaxMultiWidget(select) {
-        const { tagsContainer, searchInput, results } = this._buildMultiScaffold(select, 'select2-ajax-multi-wrapper position-relative', 'position:absolute;z-index:1070;width:100%;max-height:200px;overflow-y:auto;box-shadow:0 2px 8px rgba(0,0,0,.15);display:none;');
+        const { control, searchInput, results } = this._buildMultiScaffold(select, 'select2-ajax-multi-wrapper');
 
         const refresh = () => {
-            this._renderTags(select, tagsContainer, refresh);
+            this._renderTags(select, control, refresh);
             if (results.style.display !== 'none') {
                 this._doAjaxSearch(searchInput.value.trim(), results);
             }
@@ -228,32 +227,40 @@ export default class extends Controller {
             this._doAjaxSearch(query, results);
         });
 
-        this._renderTags(select, tagsContainer, refresh);
+        this._renderTags(select, control, refresh);
     }
 
     // --- Shared helpers ---
 
-    _buildMultiScaffold(select, wrapperClass, resultsStyle) {
+    _buildMultiScaffold(select, wrapperClass) {
         select.style.display = 'none';
 
         this._wrapper = document.createElement('div');
-        this._wrapper.className = wrapperClass;
+        this._wrapper.className = wrapperClass + ' position-relative';
 
-        const tagsContainer = document.createElement('div');
-        tagsContainer.className = 'd-flex flex-wrap gap-1 mb-1';
+        // Unified bordered container — looks like a form-control and holds tags inline with the search input.
+        const control = document.createElement('div');
+        control.className = 'form-control select2-multi-control d-flex flex-wrap align-items-center gap-1';
+        control.style.cursor = 'text';
 
         const searchInput = document.createElement('input');
         searchInput.type = 'text';
-        searchInput.className = 'form-control form-control-sm';
+        searchInput.className = 'select2-multi-search border-0 bg-transparent p-0 flex-grow-1';
+        searchInput.style.outline = 'none';
+        searchInput.style.minWidth = '80px';
         searchInput.placeholder = 'Rechercher...';
         searchInput.autocomplete = 'off';
+        control.appendChild(searchInput);
+
+        control.addEventListener('click', (e) => {
+            if (e.target === control) searchInput.focus();
+        });
 
         const results = document.createElement('div');
-        results.className = 'list-group';
-        results.style.cssText = resultsStyle;
+        results.className = 'list-group select2-results-dropdown';
+        results.style.display = 'none';
 
-        this._wrapper.appendChild(tagsContainer);
-        this._wrapper.appendChild(searchInput);
+        this._wrapper.appendChild(control);
         this._wrapper.appendChild(results);
         select.parentNode.insertBefore(this._wrapper, select.nextSibling);
 
@@ -264,22 +271,23 @@ export default class extends Controller {
         };
         document.addEventListener('click', this._outsideClickHandler, true);
 
-        return { tagsContainer, searchInput, results };
+        return { control, searchInput, results };
     }
 
-    _renderTags(select, tagsContainer, onRemove) {
-        tagsContainer.innerHTML = '';
+    _renderTags(select, control, onRemove) {
+        control.querySelectorAll('.select2-tag').forEach((t) => t.remove());
+        const searchInput = control.querySelector('.select2-multi-search');
         Array.from(select.selectedOptions).forEach((opt) => {
             if (!opt.value) return;
             const tag = document.createElement('span');
-            tag.className = 'badge bg-primary d-inline-flex align-items-center gap-1';
+            tag.className = 'select2-tag badge bg-primary d-inline-flex align-items-center gap-1';
             tag.innerHTML = esc(opt.text) + '<button type="button" class="btn-close btn-close-white" style="font-size:.6em;" aria-label="Retirer"></button>';
             tag.querySelector('button').addEventListener('click', () => {
                 opt.selected = false;
                 select.dispatchEvent(new Event('change'));
                 onRemove();
             });
-            tagsContainer.appendChild(tag);
+            control.insertBefore(tag, searchInput);
         });
     }
 

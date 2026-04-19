@@ -5,6 +5,7 @@ namespace NetBS\CoreBundle\Controller;
 use Doctrine\ORM\EntityManagerInterface;
 use NetBS\CoreBundle\Entity\AuditLog;
 use NetBS\FichierBundle\Service\FichierConfig;
+use NetBS\SecureBundle\Service\SecureConfig;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -16,15 +17,15 @@ class TrashController extends AbstractController
 {
     private array $entityTypes;
 
-    public function __construct(FichierConfig $config)
+    public function __construct(FichierConfig $config, SecureConfig $secureConfig)
     {
         $this->entityTypes = [
             'Membre'      => $config->getMembreClass(),
             'Famille'     => $config->getFamilleClass(),
-            'Groupe'      => $config->getGroupeClass(),
             'Attribution' => $config->getAttributionClass(),
             'Distinction' => $config->getObtentionDistinctionClass(),
             'Géniteur'    => $config->getGeniteurClass(),
+            'Utilisateur' => $secureConfig->getUserClass(),
         ];
     }
 

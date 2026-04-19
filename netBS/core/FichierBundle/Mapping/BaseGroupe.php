@@ -38,6 +38,7 @@ abstract class BaseGroupe implements ValidableInterface
      */
     #[ORM\Column(name: 'nom', type: 'string', length: 255)]
     #[Assert\NotBlank]
+    #[Assert\Length(max: 255)]
     protected $nom;
 
     /**

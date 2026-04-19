@@ -52,6 +52,8 @@ export default class extends Controller {
         const form = modalEl.querySelector('form');
         if (!confirmBtn || !form) return;
 
+        form.setAttribute('novalidate', 'novalidate');
+
         confirmBtn.addEventListener('click', () => {
             submitForm(this.createUrlValue, form).then((result) => {
                 if (result.action === 'toast') {
@@ -65,7 +67,7 @@ export default class extends Controller {
                     modalEl.innerHTML = result.html;
                     this._attachCreateFormHandler(modalEl, itemsClass, ids);
                 }
-            });
+            }).catch((err) => { if (err.message !== 'validation') throw err; });
         });
     }
 

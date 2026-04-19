@@ -8,6 +8,10 @@ services:
         tags:
             - { name: form.type_extension, extended_type: Symfony\Component\Form\Extension\Core\Type\FormType }
 
+    NetBS\CoreBundle\Form\Extension\ConstraintToHtmlExtension:
+        tags:
+            - { name: form.type_extension, extended_type: Symfony\Component\Form\Extension\Core\Type\FormType }
+
     NetBS\CoreBundle\Form\Type\DatepickerType:
         tags:
             - { name: form.type }

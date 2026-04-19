@@ -46,11 +46,19 @@
                         <tbody>
                             {% for entity in deleted %}
                                 <tr>
-                                    <td>{{ entity }}</td>
+                                    <td>
+                                        {% if selectedType == 'Utilisateur' %}
+                                            {{ entity.username }}
+                                            {% if entity.membre %}<small class="text-muted">({{ entity.membre }})</small>{% endif %}
+                                        {% else %}
+                                            {{ entity }}
+                                        {% endif %}
+                                    </td>
                                     <td>{{ entity.deletedAt|date('d.m.Y H:i') }}</td>
                                     <td>
-                                        {% if deletionInfo[entity.id] is not null and deletionInfo[entity.id].user is not null %}
-                                            {{ deletionInfo[entity.id].user }}
+                                        {% set log = deletionInfo[entity.id] ?? null %}
+                                        {% if log and log.user %}
+                                            {{ log.user }}
                                         {% else %}
                                             —
                                         {% endif %}

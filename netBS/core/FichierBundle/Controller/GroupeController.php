@@ -49,8 +49,19 @@ class GroupeController extends AbstractController
      */
     #[Route('/groupe/statistics/effectifs/{id}', name: 'netbs.fichier.groupe.statistics_effectifs')]
     public function getGroupeEffectifsStats(Request $request, $id, EntityManagerInterface $em) {
-        $begin = new \DateTime($request->get('begin'));
-        $end = new \DateTime($request->get('end'));
+        $beginStr = $request->get('begin');
+        $endStr = $request->get('end');
+
+        if (!$beginStr || !$endStr) {
+            return new JsonResponse(['error' => 'Les paramètres "begin" et "end" sont requis.'], 400);
+        }
+
+        try {
+            $begin = new \DateTime($beginStr);
+            $end = new \DateTime($endStr);
+        } catch (\Exception $e) {
+            return new JsonResponse(['error' => 'Format de date invalide.'], 400);
+        }
 
         $steps = $request->get('steps') ?: 50;
         $diff = $end->getTimestamp() - $begin->getTimestamp();
@@ -89,7 +100,7 @@ and     @pv := concat(@pv, ',', id)
             $aInt = $date->getTimestamp();
             $found = [];
             $pallierData  = [
-                'pallier' => $date,
+                'pallier' => $date->format('c'),
                 'countHomme' => 0,
                 'countAll' => 0,
             ];

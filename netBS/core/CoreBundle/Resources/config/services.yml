@@ -171,3 +171,7 @@ services:
     NetBS\CoreBundle\EventListener\SoftDeletedEntityListener:
         tags:
             - { name: kernel.event_listener, event: kernel.exception }
+
+    NetBS\CoreBundle\EventListener\DatabaseExceptionListener:
+        tags:
+            - { name: kernel.event_listener, event: kernel.exception, priority: 10 }

@@ -76,6 +76,8 @@ abstract class BaseMembre extends Personne implements EqualInterface
     #[Groups(['default'])]
     #[ORM\Column(name: 'statut', type: 'string', length: 255)]
     #[Assert\NotBlank]
+    #[Assert\Length(max: 255)]
+    #[Assert\Choice(choices: [BaseMembre::INSCRIT, BaseMembre::DESINSCRIT, BaseMembre::PAUSE, BaseMembre::DECEDE, BaseMembre::AUTRE])]
     protected $statut;
 
     /**
@@ -91,6 +93,8 @@ abstract class BaseMembre extends Personne implements EqualInterface
      * @var string
      */
     #[ORM\Column(name: 'nom', type: 'string', length: 255)]
+    #[Assert\NotBlank]
+    #[Assert\Length(max: 255)]
     protected $nom;
 
     // Store

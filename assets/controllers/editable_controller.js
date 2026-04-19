@@ -54,12 +54,21 @@ export default class extends Controller {
             this._wireAjaxSearch(tip);
         }
 
+        const fpInput = tip.querySelector('.editable-flatpickr');
+        if (fpInput) {
+            this._initFlatpickr(fpInput).catch(() => {
+                fpInput.placeholder = 'jj.mm.aaaa';
+            });
+        }
+
         const input = tip.querySelector('input:not([type="hidden"]), textarea, select');
         if (input) input.focus();
 
         setTimeout(() => {
             this._outsideClickHandler = (e) => {
-                if (!tip.contains(e.target) && !this.element.contains(e.target)) {
+                if (!tip.contains(e.target)
+                    && !this.element.contains(e.target)
+                    && !e.target.closest('.flatpickr-calendar')) {
                     this._destroyPopover();
                 }
             };
@@ -68,6 +77,10 @@ export default class extends Controller {
     }
 
     _destroyPopover() {
+        if (this._editableFp) {
+            this._editableFp.destroy();
+            this._editableFp = null;
+        }
         if (this._popover) {
             this._popover.dispose();
             this._popover = null;
@@ -111,8 +124,7 @@ export default class extends Controller {
                 break;
 
             case 'hochetdatepicker':
-                const isoVal = this._ddmmyyyyToIso(value);
-                inputHtml = `<input type="date" class="form-control form-control-sm" value="${isoVal}">`;
+                inputHtml = `<input type="text" class="form-control form-control-sm editable-flatpickr" value="${this._esc(value)}">`;
                 break;
 
             default: // text, number, etc.
@@ -168,8 +180,8 @@ export default class extends Controller {
             const hidden = tip.querySelector('.editable-search-value');
             newValue = hidden ? hidden.value : '';
         } else if (type === 'hochetdatepicker') {
-            const input = tip.querySelector('input');
-            newValue = this._isoToDdmmyyyy(input.value);
+            const input = tip.querySelector('.editable-flatpickr');
+            newValue = input.value;
         } else {
             const input = tip.querySelector('input, textarea, select');
             newValue = input.value;
@@ -259,6 +271,20 @@ export default class extends Controller {
         });
     }
 
+    // --- Flatpickr (lazy-loaded only when a date popover opens) ---
+
+    async _initFlatpickr(input) {
+        const [fp, defaults] = await Promise.all([
+            import('flatpickr'),
+            import('../lib/flatpickr_defaults.js'),
+        ]);
+        const format = this.element.dataset.format || 'd.m.Y';
+        this._editableFp = fp.default(input, {
+            ...defaults.flatpickrDefaults,
+            dateFormat: format,
+        });
+    }
+
     // --- Helpers ---
 
     _parseSource() {
@@ -281,17 +307,4 @@ export default class extends Controller {
         return esc(str);
     }
 
-    _ddmmyyyyToIso(val) {
-        if (!val) return '';
-        const parts = val.split('.');
-        if (parts.length === 3) return `${parts[2]}-${parts[1]}-${parts[0]}`;
-        return val;
-    }
-
-    _isoToDdmmyyyy(val) {
-        if (!val) return '';
-        const parts = val.split('-');
-        if (parts.length === 3) return `${parts[2]}.${parts[1]}.${parts[0]}`;
-        return val;
-    }
 }

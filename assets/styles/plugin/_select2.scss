@@ -1,5 +1,64 @@
 $select2-border-width: 1px;
 
+// Custom multi-select widget built by assets/controllers/select2_controller.js.
+// The outer .form-control is a div (not an <input>), so we mirror the focus
+// ring via :focus-within when the inner search input is focused.
+.select2-multi-control {
+  min-height: $input-height;
+
+  &:focus-within {
+    color: var(--bs-body-color);
+    background-color: var(--bs-body-bg);
+    border-color: tint-color($primary, 50%);
+    outline: 0;
+    box-shadow: 0 0 0 0.25rem rgba($primary, .25);
+  }
+
+  .select2-multi-search {
+    color: inherit;
+
+    &::placeholder {
+      color: var(--bs-secondary-color);
+    }
+  }
+
+  .select2-tag {
+    font-weight: 400;
+  }
+}
+
+// Shared dropdown panel used by all select2 widget variants.
+.select2-results-dropdown {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  z-index: 1070;
+  width: 100%;
+  max-height: 200px;
+  overflow-y: auto;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+}
+
+// Floating panel wrapping the search input + results for single-select AJAX.
+// Absolute-positioned so opening it overlays siblings instead of pushing them down.
+.select2-ajax-panel {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  z-index: 1070;
+  width: 100%;
+  padding: 0.25rem;
+  background: var(--bs-body-bg);
+  border: $select2-border-width solid var(--bs-border-color);
+  border-radius: $border-radius;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+
+  .list-group {
+    max-height: 200px;
+    overflow-y: auto;
+  }
+}
+
 .select2-container--default {
 
   .select2-selection--single, .select2-selection--multiple {

@@ -35,6 +35,7 @@ class BaseAdresse implements GroupSequenceProviderInterface, EqualInterface
     #[Groups(['default'])]
     #[ORM\Column(name: 'rue', type: 'string', length: 255)]
     #[Assert\NotBlank(groups: ['checkable'])]
+    #[Assert\Length(max: 255)]
     protected $rue;
 
     /**
@@ -52,6 +53,7 @@ class BaseAdresse implements GroupSequenceProviderInterface, EqualInterface
     #[Groups(['default'])]
     #[ORM\Column(name: 'localite', type: 'string', length: 255)]
     #[Assert\NotBlank(groups: ['checkable'])]
+    #[Assert\Length(max: 255)]
     protected $localite;
 
     /**
@@ -60,6 +62,7 @@ class BaseAdresse implements GroupSequenceProviderInterface, EqualInterface
     #[Groups(['default'])]
     #[ORM\Column(name: 'pays', type: 'string', length: 255)]
     #[Assert\NotBlank(groups: ['checkable'])]
+    #[Assert\Length(max: 255)]
     protected $pays = 'CH';
 
     /**
