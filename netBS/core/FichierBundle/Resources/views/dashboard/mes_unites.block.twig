@@ -1,0 +1,40 @@
+{% if roots is empty %}
+    <p class="text-muted mb-0">Aucune unité à afficher.</p>
+{% else %}
+    {% for root in roots %}
+        <div class="mes-unites-root{% if not loop.last %} mb-3{% endif %}">
+            <div class="d-flex justify-content-between align-items-baseline">
+                <h5 class="mb-1">
+                    <a href="{{ path('netbs.fichier.groupe.page_groupe', {id: root.group.id}) }}">
+                        {{ root.group.nom }}
+                    </a>
+                </h5>
+                <small class="text-muted">{{ root.totalActiveMembers }} membres</small>
+            </div>
+
+            {% if root.children is not empty %}
+                <ul class="list-unstyled ms-3 mb-0">
+                    {% for child in root.children %}
+                        <li class="d-flex justify-content-between">
+                            <span>
+                                <a href="{{ path('netbs.fichier.groupe.page_groupe', {id: child.group.id}) }}">
+                                    {{ child.group.nom }}
+                                </a>
+                                {% if child.userFonction %}
+                                    <span class="badge bg-secondary ms-1">{{ child.userFonction }}</span>
+                                {% endif %}
+                            </span>
+                            <small class="text-muted">{{ child.activeMembers }}</small>
+                        </li>
+                    {% endfor %}
+                </ul>
+            {% endif %}
+
+            <div class="mt-1">
+                <a class="small" href="{{ path('netbs.fichier.groupe.page_groupe', {id: root.group.id}) }}">
+                    Voir plus →
+                </a>
+            </div>
+        </div>
+    {% endfor %}
+{% endif %}

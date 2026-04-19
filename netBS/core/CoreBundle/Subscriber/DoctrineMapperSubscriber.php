@@ -9,7 +9,6 @@ use NetBS\CoreBundle\Entity\DynamicList;
 use NetBS\CoreBundle\Entity\ExportConfiguration;
 use NetBS\CoreBundle\Entity\AuditLog;
 use NetBS\CoreBundle\Entity\LoggedChange;
-use NetBS\CoreBundle\Entity\News;
 use NetBS\CoreBundle\Entity\Notification;
 use NetBS\CoreBundle\Entity\UserLog;
 use NetBS\SecureBundle\Service\SecureConfig;
@@ -53,7 +52,6 @@ class DoctrineMapperSubscriber implements EventSubscriber
                 break;
             case Notification::class:
             case UserLog::class:
-            case News::class:
             case LoggedChange::class:
             case AuditLog::class:
                 $eventArgs->getClassMetadata()->mapManyToOne([

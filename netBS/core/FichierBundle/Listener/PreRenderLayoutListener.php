@@ -2,27 +2,43 @@
 
 namespace NetBS\FichierBundle\Listener;
 
-use Doctrine\ORM\EntityManagerInterface;
+use NetBS\CoreBundle\Block\CardBlock;
 use NetBS\CoreBundle\Event\PreRenderLayoutEvent;
+use NetBS\FichierBundle\Service\MesUnitesResolver;
+use NetBS\SecureBundle\Mapping\BaseUser;
 use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInterface;
 
-class PreRenderLayoutListener
+final class PreRenderLayoutListener
 {
-    protected $token;
+    public function __construct(
+        private readonly TokenStorageInterface $tokenStorage,
+        private readonly RequestStack $requestStack,
+        private readonly MesUnitesResolver $resolver,
+    ) {}
 
-    protected $stack;
-
-    protected $manager;
-
-    public function __construct(TokenStorageInterface $storage, RequestStack $stack, EntityManagerInterface $manager)
+    public function preRender(PreRenderLayoutEvent $event): void
     {
-        $this->token    = $storage;
-        $this->stack    = $stack;
-        $this->manager  = $manager;
-    }
+        $request = $this->requestStack->getCurrentRequest();
+        if ($request === null || $request->get('_route') !== 'netbs.core.home.dashboard') {
+            return;
+        }
 
-    public function preRender(PreRenderLayoutEvent $event) {
+        $user = $this->tokenStorage->getToken()?->getUser();
+        if (!$user instanceof BaseUser) {
+            return;
+        }
 
+        $roots = $this->resolver->resolveFor($user);
+
+        $event->getConfigurator()
+            ->getRow(0)
+            ->addColumn(0, 4, 5, 12)->addRow()
+            ->addColumn(0, 12)->setBlock(CardBlock::class, [
+                'title'    => 'Mes unités',
+                'subtitle' => 'Vos unités actives et leurs effectifs',
+                'template' => '@NetBSFichier/dashboard/mes_unites.block.twig',
+                'params'   => ['roots' => $roots],
+            ]);
     }
 }

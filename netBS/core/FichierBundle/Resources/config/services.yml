@@ -94,7 +94,7 @@ services:
 #listeners
     NetBS\FichierBundle\Listener\PreRenderLayoutListener:
         tags:
-            - { name: kernel.event_listener, event: netbs.block.pre_render_layout, method: preRender }
+            - { name: kernel.event_listener, event: netbs.block.pre_render_layout, method: preRender, priority: 1000 }
 
     NetBS\FichierBundle\Listener\MainMenuListener:
         tags:

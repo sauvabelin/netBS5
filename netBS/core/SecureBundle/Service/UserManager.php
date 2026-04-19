@@ -6,7 +6,6 @@ use Doctrine\ORM\EntityManagerInterface;
 use NetBS\CoreBundle\Entity\DynamicList;
 use NetBS\CoreBundle\Entity\ExportConfiguration;
 use NetBS\CoreBundle\Entity\LoggedChange;
-use NetBS\CoreBundle\Entity\News;
 use NetBS\CoreBundle\Entity\Notification;
 use NetBS\CoreBundle\Entity\UserLog;
 use NetBS\FichierBundle\Mapping\BaseMembre;
@@ -96,10 +95,6 @@ class UserManager
         // Remove dynamics
         $dynamics = $em->getRepository(DynamicList::class)->findBy(['owner' => $user]);
         foreach($dynamics as $dynamic) $em->remove($dynamic);
-
-        // Remove published news
-        $news = $em->getRepository(News::class)->findBy(['user' => $user]);
-        foreach($news as $n) $em->remove($n);
 
         // Remove user export configurations
         $exportConfigs = $em->getRepository(ExportConfiguration::class)->findBy(['user' => $user]);

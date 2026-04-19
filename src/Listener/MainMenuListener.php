@@ -44,10 +44,6 @@ class MainMenuListener
                 ->addSubLink('Cotisations', 'netbs.core.automatic_list.view_list', ['alias' => 'sauvabelin.cotisations']);
         }
 
-        if ($user->hasRole('ROLE_IT')) {
-            $menu->getCategory('secure.admin')->addLink('admin.news.bot', 'News Bots', 'fas fa-history', 'sauvabelin.news_channel_bot.manage');
-        }
-
         if ($user->hasRole("ROLE_APMBS")) {
             $apmbs = $menu->registerCategory("APMBS", "APMBS", 0);
             $apmbs->addLink("apmbs.reservations", "Réservations", "fas fa-calendar-alt", "sauvabelin.apmbs.reservations");

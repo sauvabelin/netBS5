@@ -34,8 +34,7 @@ class MainMenuListener
         $user       = $this->storage->getToken()->getUser();
 
         $menu->registerCategory('app.home', 'Home', 3000)
-            ->addLink('app.home.dashboard', 'Dashboard', 'fas fa-home', 'netbs.core.home.dashboard')
-            ->addLink('netbs.core.news.read_news', 'Lire les news', 'fas fa-newspaper', 'netbs.core.news.read_news');
+            ->addLink('app.home.dashboard', 'Dashboard', 'fas fa-home', 'netbs.core.home.dashboard');
 
         $repo       = $this->manager->getRepository(DynamicList::class);
         $lists      = $repo->findForUser($user);
@@ -58,7 +57,6 @@ class MainMenuListener
         if(!$user->hasRole('ROLE_SG'))
             return;
 
-        $secureCat->addLink("admin.news", "Gestion des news", "fas fa-newspaper", "netbs.core.news.manage");
         $modifMenu = $secureCat->addSubMenu('secure.admin.modifications', 'Modifications', 'fas fa-history');
         $modifMenu->addSubLink('Vérification', 'netbs.core.changelog.list');
         $modifMenu->addSubLink('Historique', 'netbs.core.audit_log.list');

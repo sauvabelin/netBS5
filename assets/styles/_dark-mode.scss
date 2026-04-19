@@ -158,11 +158,6 @@
     color: var(--bs-body-color) !important;
   }
 
-  // News channel badges — database-driven colors we can't control via variables
-  .channel {
-    filter: brightness(0.65) saturate(0.7);
-  }
-
   // Flatpickr datepicker — dark theme overrides
   // Double-class selectors (.flatpickr-calendar.flatpickr-calendar) bump specificity
   // so our overrides win over flatpickr.min.css regardless of load order.

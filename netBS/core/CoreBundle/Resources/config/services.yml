@@ -29,10 +29,6 @@ services:
         tags:
             - { name: validator.constraint_validator }
 
-    NetBS\CoreBundle\Serializer\NewsNormalizer:
-        tags:
-            - { name: serializer.normalizer }
-
     NetBS\CoreBundle\Service\UserLogger: ~
 
     NetBS\CoreBundle\Service\QueryMaker: ~
@@ -156,17 +152,9 @@ services:
         tags:
             - { name: doctrine.event_subscriber }
 
-    NetBS\CoreBundle\Listener\DashboardListener:
-        tags:
-            - { name: kernel.event_listener, event: netbs.block.pre_render_layout, method: preRender, priority: 1000 }
-
     NetBS\CoreBundle\Profiler\NetBSCollector:
         tags:
             - { name: data_collector, template: '@NetBSCore/Profiler/layout.html.twig', id: 'netbs.core.netbs_collector' }
-
-    NetBS\CoreBundle\Select2\NewsChannelProvider:
-        tags:
-            - { name: netbs.select2_provider }
 
     NetBS\CoreBundle\EventListener\SoftDeletedEntityListener:
         tags:
