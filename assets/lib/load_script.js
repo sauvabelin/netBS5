@@ -1,8 +1,8 @@
 const loading = {};
 
 export function loadScript(src) {
-    if (document.querySelector('script[src="' + src + '"]')) return Promise.resolve();
     if (loading[src]) return loading[src];
+    if (document.querySelector('script[src="' + src + '"]')) return Promise.resolve();
 
     loading[src] = new Promise((resolve, reject) => {
         const script = document.createElement('script');

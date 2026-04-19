@@ -88,10 +88,6 @@ services:
     tags:
       - { name: doctrine.event_subscriber, connection: default }
 
-  App\Subscriber\NewsPublishedSubscriber:
-    tags:
-      - { name: doctrine.event_subscriber, connection: default }
-
   App\Subscriber\EventUserAccountSubscriber:
     tags:
       - { name: kernel.event_subscriber }
@@ -130,10 +126,6 @@ services:
           event: netbs.block.pre_render_layout,
           method: extendsPageGroupe,
         }
-
-  App\Form\Type\NewsChannelType:
-    tags:
-      - { name: form.type }
 
   App\Listener\ForceNewPasswordListener:
     tags:
