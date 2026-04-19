@@ -40,6 +40,8 @@ services:
 
     NetBS\FichierBundle\Service\ContactManager: ~
 
+    NetBS\FichierBundle\Service\MesUnitesResolver: ~
+
     NetBS\FichierBundle\Searcher\ActiveAttributionBinder:
         tags:
             - { name: netbs.searcher.binder }

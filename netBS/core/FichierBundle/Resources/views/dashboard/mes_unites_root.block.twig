@@ -1,0 +1,35 @@
+<div class="d-flex flex-column gap-3">
+    <div class="d-flex align-items-center">
+        <div class="flex-shrink-0 mx-auto">
+            <div class="display-2 fw-bold lh-1">{{ root.totalActiveMembers }}</div>
+            <div class="text-muted text-uppercase small mt-1">Membres actifs</div>
+        </div>
+        {% if root.children is not empty %}
+            <div data-controller="mes-unites-pie"
+                 data-mes-unites-pie-data-value="{{ root.children|map(c => {label: c.group.nom, value: c.activeMembers, color: c.color})|json_encode }}"
+                 class="flex-shrink-0 mx-auto"
+                 style="width: 110px; height: 110px;">
+                <canvas data-mes-unites-pie-target="canvas" class="d-block"></canvas>
+            </div>
+        {% endif %}
+    </div>
+
+    {% if root.children is not empty %}
+        <ul class="list-unstyled mb-0 small d-flex flex-column">
+            {% for child in root.children %}
+                <li class="d-flex justify-content-between align-items-center gap-2 py-1 border-bottom">
+                    <span>
+                        <span class="d-inline-block rounded-circle me-2"
+                              style="width: 8px; height: 8px; background: {{ child.color }};"></span>
+                        <a href="{{ path('netbs.fichier.groupe.page_groupe', {id: child.group.id}) }}"
+                           class="text-reset text-decoration-none">{{ child.group.nom }}</a>
+                        {% if child.userFonction %}
+                            <span class="badge text-bg-secondary ms-1">{{ child.userFonction }}</span>
+                        {% endif %}
+                    </span>
+                    <span class="fw-semibold">{{ child.activeMembers }}</span>
+                </li>
+            {% endfor %}
+        </ul>
+    {% endif %}
+</div>

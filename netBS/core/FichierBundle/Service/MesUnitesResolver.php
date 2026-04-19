@@ -8,6 +8,17 @@ use NetBS\SecureBundle\Mapping\BaseUser;
 
 final class MesUnitesResolver
 {
+    private const PALETTE = [
+        '#4f9eff',
+        '#ff9f43',
+        '#6cd4a0',
+        '#c878ff',
+        '#ff7b8a',
+        '#4ed4d4',
+        '#ffd95a',
+        '#ff6b6b',
+    ];
+
     public function __construct(
         private readonly EntityManagerInterface $em,
         private readonly FichierConfig $config,
@@ -29,116 +40,116 @@ final class MesUnitesResolver
         }
 
         $groupsById = [];
-        foreach ($attributions as $attr) {
-            $g = $attr->getGroupe();
-            if ($g !== null) {
-                $groupsById[$g->getId()] = $g;
-            }
-        }
-
-        $roots = $this->filterOutDescendants($groupsById);
-
-        usort($roots, static fn(BaseGroupe $a, BaseGroupe $b) =>
-            strcasecmp((string) $a->getNom(), (string) $b->getNom())
-        );
-
         $userFonctionsByGroupId = [];
         foreach ($attributions as $attr) {
             $g = $attr->getGroupe();
-            if ($g !== null) {
-                $userFonctionsByGroupId[$g->getId()] = (string) $attr->getFonction();
+            if ($g === null) {
+                continue;
             }
+            $id = $g->getId();
+            $groupsById[$id] = $g;
+            $userFonctionsByGroupId[$id] = (string) $attr->getFonction();
         }
 
-        $result = [];
-        foreach ($roots as $root) {
-            $result[] = $this->buildRoot($root, $userFonctionsByGroupId);
-        }
+        $roots = array_values($groupsById);
+        usort($roots, self::compareGroupsByName(...));
 
-        return $result;
+        $now = new \DateTimeImmutable();
+
+        return array_map(
+            fn(BaseGroupe $root) => $this->buildRoot($root, $userFonctionsByGroupId, $now),
+            $roots,
+        );
     }
 
-    /**
-     * Drop every group that has an ancestor (via getParent()) also present in $groupsById.
-     *
-     * @param array<int, BaseGroupe> $groupsById
-     * @return BaseGroupe[]
-     */
-    private function filterOutDescendants(array $groupsById): array
+    private function buildRoot(BaseGroupe $root, array $userFonctionsByGroupId, \DateTimeImmutable $now): MesUnitesRoot
     {
-        $roots = [];
-        foreach ($groupsById as $id => $group) {
-            $ancestor = $group->getParent();
-            $hasAncestorInSet = false;
-            while ($ancestor !== null) {
-                if (isset($groupsById[$ancestor->getId()])) {
-                    $hasAncestorInSet = true;
-                    break;
-                }
-                $ancestor = $ancestor->getParent();
-            }
-            if (!$hasAncestorInSet) {
-                $roots[] = $group;
-            }
-        }
-        return $roots;
-    }
+        $rootSubtree = $this->subtreeIds($root);
+        $membersByGroup = $this->fetchMembersByGroup($rootSubtree, $now);
 
-    /**
-     * @param array<int, string> $userFonctionsByGroupId
-     */
-    private function buildRoot(BaseGroupe $root, array $userFonctionsByGroupId): MesUnitesRoot
-    {
-        $descendants = $root->getEnfantsRecursive();
-        $subtreeIds = [$root->getId()];
-        foreach ($descendants as $d) {
-            $subtreeIds[] = $d->getId();
-        }
+        $childGroups = $root->getEnfants()->toArray();
+        usort($childGroups, self::compareGroupsByName(...));
 
-        $totalActiveMembers = $this->countDistinctActiveMembers($subtreeIds);
-
+        $palette = self::PALETTE;
+        $paletteSize = count($palette);
         $children = [];
-        foreach ($root->getEnfants() as $child) {
-            $activeCount = $this->countDistinctActiveMembers([$child->getId()]);
+        foreach ($childGroups as $i => $child) {
             $children[] = new MesUnitesChild(
                 group: $child,
-                activeMembers: $activeCount,
+                activeMembers: self::countMembersIn($this->subtreeIds($child), $membersByGroup),
                 userFonction: $userFonctionsByGroupId[$child->getId()] ?? null,
+                color: $palette[$i % $paletteSize],
             );
         }
 
-        usort($children, static fn(MesUnitesChild $a, MesUnitesChild $b) =>
-            strcasecmp((string) $a->group->getNom(), (string) $b->group->getNom())
-        );
-
         return new MesUnitesRoot(
             group: $root,
-            totalActiveMembers: $totalActiveMembers,
+            totalActiveMembers: self::countMembersIn($rootSubtree, $membersByGroup),
             children: $children,
         );
     }
 
     /**
-     * Count distinct active-attribution members across the given group ids.
+     * @return int[]
+     */
+    private function subtreeIds(BaseGroupe $group): array
+    {
+        $ids = [$group->getId()];
+        foreach ($group->getEnfantsRecursive() as $d) {
+            $ids[] = $d->getId();
+        }
+        return $ids;
+    }
+
+    /**
+     * Single query: fetch all (groupId, memberId) pairs for active attributions
+     * inside the given group ids. Returns a map [groupId => [memberId => true, ...]]
+     * so that subtree counts can be computed in PHP without further DB round-trips.
      *
      * @param int[] $groupIds
+     * @return array<int, array<int, true>>
      */
-    private function countDistinctActiveMembers(array $groupIds): int
+    private function fetchMembersByGroup(array $groupIds, \DateTimeImmutable $now): array
     {
         if (count($groupIds) === 0) {
-            return 0;
+            return [];
         }
 
-        $qb = $this->em->createQueryBuilder()
-            ->select('COUNT(DISTINCT m.id)')
+        $rows = $this->em->createQueryBuilder()
+            ->select('IDENTITY(a.groupe) AS gid', 'IDENTITY(a.membre) AS mid')
             ->from($this->config->getAttributionClass(), 'a')
-            ->join('a.membre', 'm')
             ->where('a.groupe IN (:gids)')
             ->andWhere('a.dateDebut <= :now')
             ->andWhere('(a.dateFin IS NULL OR a.dateFin >= :now)')
             ->setParameter('gids', $groupIds)
-            ->setParameter('now', new \DateTime());
+            ->setParameter('now', $now)
+            ->getQuery()
+            ->getArrayResult();
 
-        return (int) $qb->getQuery()->getSingleScalarResult();
+        $map = [];
+        foreach ($rows as $row) {
+            $map[(int) $row['gid']][(int) $row['mid']] = true;
+        }
+        return $map;
+    }
+
+    /**
+     * @param int[] $subtreeIds
+     * @param array<int, array<int, true>> $membersByGroup
+     */
+    private static function countMembersIn(array $subtreeIds, array $membersByGroup): int
+    {
+        $members = [];
+        foreach ($subtreeIds as $gid) {
+            if (isset($membersByGroup[$gid])) {
+                $members += $membersByGroup[$gid];
+            }
+        }
+        return count($members);
+    }
+
+    private static function compareGroupsByName(BaseGroupe $a, BaseGroupe $b): int
+    {
+        return strcasecmp((string) $a->getNom(), (string) $b->getNom());
     }
 }

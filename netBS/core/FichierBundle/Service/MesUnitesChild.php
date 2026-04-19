@@ -10,5 +10,6 @@ final class MesUnitesChild
         public readonly BaseGroupe $group,
         public readonly int $activeMembers,
         public readonly ?string $userFonction,
+        public readonly string $color,
     ) {}
 }

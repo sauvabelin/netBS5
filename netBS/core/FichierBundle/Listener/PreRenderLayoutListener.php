@@ -29,16 +29,16 @@ final class PreRenderLayoutListener
             return;
         }
 
-        $roots = $this->resolver->resolveFor($user);
-
-        $event->getConfigurator()
+        $col = $event->getConfigurator()
             ->getRow(0)
-            ->addColumn(0, 4, 5, 12)->addRow()
-            ->addColumn(0, 12)->setBlock(CardBlock::class, [
-                'title'    => 'Mes unités',
-                'subtitle' => 'Vos unités actives et leurs effectifs',
-                'template' => '@NetBSFichier/dashboard/mes_unites.block.twig',
-                'params'   => ['roots' => $roots],
+            ->addColumn(0, 4, 5, 12);
+
+        foreach ($this->resolver->resolveFor($user) as $root) {
+            $col->addRow()->addColumn(0, 12)->setBlock(CardBlock::class, [
+                'title'    => (string) $root->group->getNom(),
+                'template' => '@NetBSFichier/dashboard/mes_unites_root.block.twig',
+                'params'   => ['root' => $root],
             ]);
+        }
     }
 }
