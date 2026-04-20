@@ -100,7 +100,7 @@ export default class extends Controller {
 
         switch (type) {
             case 'textarea':
-                inputHtml = `<textarea class="form-control form-control-sm">${this._esc(value)}</textarea>`;
+                inputHtml = `<textarea class="form-control form-control-sm">${esc(value)}</textarea>`;
                 break;
 
             case 'select':
@@ -108,11 +108,7 @@ export default class extends Controller {
                 break;
 
             case 'select2':
-                if (this._isAjaxSelect()) {
-                    inputHtml = this._buildAjaxSearchHtml(value);
-                } else {
-                    inputHtml = this._buildSelectHtml(value);
-                }
+                inputHtml = this._isAjaxDropdown() ? this._buildAjaxDropdownHtml() : this._buildSelectHtml(value);
                 break;
 
             case 'checklist':
@@ -124,11 +120,11 @@ export default class extends Controller {
                 break;
 
             case 'hochetdatepicker':
-                inputHtml = `<input type="text" class="form-control form-control-sm editable-flatpickr" value="${this._esc(value)}">`;
+                inputHtml = `<input type="text" class="form-control form-control-sm editable-flatpickr" value="${esc(value)}">`;
                 break;
 
             default: // text, number, etc.
-                inputHtml = `<input type="text" class="form-control form-control-sm" value="${this._esc(value)}">`;
+                inputHtml = `<input type="text" class="form-control form-control-sm" value="${esc(value)}">`;
                 break;
         }
 
@@ -141,18 +137,14 @@ export default class extends Controller {
         </div>`;
     }
 
-    _buildAjaxSearchHtml(currentValue) {
-        const source = this._parseSource();
-        const current = source.find((o) => String(o.id) === String(currentValue));
-        const displayText = current ? current.text : (this.element.dataset.emptytext || 'Rien');
-
-        return `<div class="editable-ajax-search" style="min-width:250px;position:relative;">
-            <div class="mb-1 text-muted small">Actuel: <strong>${this._esc(displayText)}</strong></div>
+    _buildAjaxDropdownHtml() {
+        const value = this.element.dataset.value || '';
+        return `<div class="editable-ajax-search" style="min-width:220px;position:relative;">
             <input type="text" class="form-control form-control-sm editable-search-input"
                    placeholder="Rechercher..." value="" autocomplete="off">
-            <input type="hidden" class="editable-search-value" value="${this._esc(currentValue)}">
+            <input type="hidden" class="editable-search-value" value="${esc(value)}">
             <div class="editable-search-results list-group"
-                 style="position:absolute;z-index:1070;width:100%;max-height:200px;overflow-y:auto;display:none;box-shadow:0 2px 8px rgba(0,0,0,.15);"></div>
+                 style="position:absolute;top:100%;left:0;width:100%;z-index:1070;max-height:250px;overflow-y:auto;display:none;background:#fff;box-shadow:0 2px 8px rgba(0,0,0,.15);"></div>
         </div>`;
     }
 
@@ -162,7 +154,7 @@ export default class extends Controller {
             const val = item.value !== undefined ? item.value : item.id;
             const label = item.text || item.label || val;
             const selected = String(val) === String(currentValue) ? 'selected' : '';
-            return `<option value="${this._esc(val)}" ${selected}>${this._esc(label)}</option>`;
+            return `<option value="${esc(val)}" ${selected}>${esc(label)}</option>`;
         }).join('');
         return `<select class="form-select form-select-sm">${options}</select>`;
     }
@@ -170,13 +162,15 @@ export default class extends Controller {
     // --- Save ---
 
     _save(tip) {
+        if (this._saving) return;
+
         const type = this.element.dataset.type;
         let newValue;
 
         if (type === 'checklist') {
             const cb = tip.querySelector('input[type="checkbox"]');
             newValue = cb.checked ? ['1'] : [''];
-        } else if (type === 'select2' && this._isAjaxSelect()) {
+        } else if (this._isAjaxDropdown()) {
             const hidden = tip.querySelector('.editable-search-value');
             newValue = hidden ? hidden.value : '';
         } else if (type === 'hochetdatepicker') {
@@ -197,6 +191,7 @@ export default class extends Controller {
             formData.append('value', newValue);
         }
 
+        this._saving = true;
         fetch(this.element.dataset.url, {
             method: 'POST',
             body: formData,
@@ -219,6 +214,9 @@ export default class extends Controller {
             })
             .catch((err) => {
                 showToast('error', err.message || 'Erreur interne');
+            })
+            .finally(() => {
+                this._saving = false;
             });
     }
 
@@ -230,10 +228,11 @@ export default class extends Controller {
             this.element.textContent = checked ? 'Oui' : 'Non';
             this.element.dataset.value = checked ? '1' : '';
         } else if (type === 'select' || type === 'select2') {
-            const source = this._parseSource();
-            const match = source.find((o) => String(o.value ?? o.id) === String(sentValue));
-            const label = (match ? (match.text || match.label) : null)
-                || responseData.newLabel || sentValue || emptyText;
+            let label = responseData.newLabel || sentValue || emptyText;
+            if (!this._isAjaxDropdown()) {
+                const match = this._parseSource().find((o) => String(o.value ?? o.id) === String(sentValue));
+                if (match) label = match.text || match.label;
+            }
             this.element.textContent = label;
             this.element.dataset.value = sentValue || '';
         } else if (type === 'hochetdatepicker') {
@@ -298,13 +297,9 @@ export default class extends Controller {
         }
     }
 
-    _isAjaxSelect() {
-        return this.element.classList.contains('ajax-editable')
-            || !!this.element.dataset.ajaxClass;
-    }
-
-    _esc(str) {
-        return esc(str);
+    _isAjaxDropdown() {
+        return this.element.dataset.type === 'select2'
+            && (this.element.classList.contains('ajax-editable') || !!this.element.dataset.ajaxClass);
     }
 
 }

@@ -60,11 +60,10 @@ class MailingAliasListModel extends BaseListModel
                     $deleteUrl = htmlspecialchars($this->router->generate('iacopo.mailing.alias.delete', ['id' => $alias->getId()]), ENT_QUOTES, 'UTF-8');
 
                     return "
-                        <form method=\"post\" action=\"{$deleteUrl}\" style=\"display:inline\" onsubmit=\"return confirm('Supprimer cette adresse ?')\">
-                            <button type=\"submit\" class=\"btn btn-sm btn-danger\" title=\"Supprimer\">
-                                <i class=\"fas fa-trash\"></i>
-                            </button>
-                        </form>
+                        <a href=\"{$deleteUrl}\" class=\"btn btn-sm btn-danger\" title=\"Supprimer\"
+                           data-turbo-method=\"post\" data-turbo-confirm=\"Supprimer cette adresse ?\">
+                            <i class=\"fas fa-trash\"></i>
+                        </a>
                     ";
                 }
             ]);
