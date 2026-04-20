@@ -51,40 +51,8 @@ class TrashController extends AbstractController
         }
 
         try {
-            $deleted = $em->createQueryBuilder()
-                ->select('e')
-                ->from($entityClass, 'e')
-                ->where('e.deletedAt IS NOT NULL')
-                ->orderBy('e.deletedAt', 'DESC')
-                ->setMaxResults(200)
-                ->getQuery()
-                ->getResult();
-
-            // Batch query for deletion info (avoids N+1)
-            $deletionInfo = [];
-            if (!empty($deleted)) {
-                $ids = array_map(fn($e) => $e->getId(), $deleted);
-
-                $logs = $em->createQueryBuilder()
-                    ->select('a')
-                    ->from(AuditLog::class, 'a')
-                    ->where('a.action = :action')
-                    ->andWhere('a.entityClass = :class')
-                    ->andWhere('a.entityId IN (:ids)')
-                    ->setParameter('action', AuditLog::ACTION_DELETE)
-                    ->setParameter('class', $entityClass)
-                    ->setParameter('ids', $ids)
-                    ->getQuery()
-                    ->getResult();
-
-                foreach ($logs as $log) {
-                    $eid = $log->getEntityId();
-                    if (!isset($deletionInfo[$eid])
-                        || $log->getCreatedAt() > $deletionInfo[$eid]->getCreatedAt()) {
-                        $deletionInfo[$eid] = $log;
-                    }
-                }
-            }
+            $deleted      = $this->fetchDeletedEntities($entityClass, $em);
+            $deletionInfo = $this->fetchLatestDeletionLogs($deleted, $entityClass, $em);
 
             // Render with filter still disabled — soft-deleted relations
             // (e.g., a soft-deleted Membre on an Attribution) need to be
@@ -139,5 +107,51 @@ class TrashController extends AbstractController
         $this->addFlash('success', 'Élément restauré avec succès');
 
         return $this->redirectToRoute('netbs.core.trash.list', ['type' => $type]);
+    }
+
+    private function fetchDeletedEntities(string $entityClass, EntityManagerInterface $em): array
+    {
+        return $em->createQueryBuilder()
+            ->select('e')
+            ->from($entityClass, 'e')
+            ->where('e.deletedAt IS NOT NULL')
+            ->orderBy('e.deletedAt', 'DESC')
+            ->setMaxResults(200)
+            ->getQuery()
+            ->getResult();
+    }
+
+    /**
+     * Returns a map of entity id → most recent deletion AuditLog, fetched in a single query.
+     *
+     * @param object[] $deleted
+     * @return array<int, AuditLog>
+     */
+    private function fetchLatestDeletionLogs(array $deleted, string $entityClass, EntityManagerInterface $em): array
+    {
+        if (empty($deleted)) {
+            return [];
+        }
+
+        $logs = $em->createQueryBuilder()
+            ->select('a')
+            ->from(AuditLog::class, 'a')
+            ->where('a.action = :action')
+            ->andWhere('a.entityClass = :class')
+            ->andWhere('a.entityId IN (:ids)')
+            ->setParameter('action', AuditLog::ACTION_DELETE)
+            ->setParameter('class', $entityClass)
+            ->setParameter('ids', array_map(fn($e) => $e->getId(), $deleted))
+            ->getQuery()
+            ->getResult();
+
+        $latest = [];
+        foreach ($logs as $log) {
+            $id = $log->getEntityId();
+            if (!isset($latest[$id]) || $log->getCreatedAt() > $latest[$id]->getCreatedAt()) {
+                $latest[$id] = $log;
+            }
+        }
+        return $latest;
     }
 }

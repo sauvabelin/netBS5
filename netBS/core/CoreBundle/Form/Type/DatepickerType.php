@@ -68,7 +68,6 @@ class DatepickerType extends AbstractType
      */
     private function phpToFlatpickrFormat(string $phpFormat): string
     {
-        // Only tokens that differ between PHP and Flatpickr
         $map = [
             'G' => 'H',  // PHP: 0-23 no pad → Flatpickr: H
             'g' => 'G',  // PHP: 1-12 no pad → Flatpickr: G

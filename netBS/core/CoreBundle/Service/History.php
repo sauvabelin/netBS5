@@ -45,32 +45,45 @@ class History
     public function update() {
 
         $request = $this->requestStack->getCurrentRequest();
-        $route = $request->get('_route');
+        $route   = $request->get('_route');
 
-        if($route == '_wdt' || $request->isXmlHttpRequest() || $this->updated)
+        if ($this->updated || $this->shouldSkipForNavigationHistory($request, $route)) {
             return;
+        }
 
-        // Skip AJAX, modal, API, and data-fetching routes from navigation history
-        if($route && (str_contains($route, 'ajax') || str_contains($route, 'modal')
-            || str_starts_with($route, 'api') || str_contains($route, 'select2')
-            || str_contains($route, 'search') || str_contains($route, 'xeditable')
-            || str_contains($route, 'helper') || str_contains($route, 'preview')))
-            return;
-
-        // Skip fetch()-based AJAX calls that explicitly request JSON
-        if($request->headers->get('Accept') === 'application/json')
-            return;
-
-        // Skip requests without a route name (e.g. error pages, redirects)
-        if(!$request->get('_route'))
-            return;
-
-        $route          = new RouteHistory($request->get('_route'), $request->attributes->get('_route_params'));
-        $history        = $this->getHistory();
-        $history[]      = $route;
-        $this->updated  = true;
+        $entry         = new RouteHistory($route, $request->attributes->get('_route_params'));
+        $history       = $this->getHistory();
+        $history[]     = $entry;
+        $this->updated = true;
 
         $this->requestStack->getSession()->set(self::SESSION_KEY, serialize($history));
+    }
+
+    private function shouldSkipForNavigationHistory(\Symfony\Component\HttpFoundation\Request $request, ?string $route): bool
+    {
+        if ($route === '_wdt' || $request->isXmlHttpRequest()) {
+            return true;
+        }
+        if (!$route) {
+            return true;
+        }
+        if ($request->headers->get('Accept') === 'application/json') {
+            return true;
+        }
+        return $this->isDataFetchingRoute($route);
+    }
+
+    private function isDataFetchingRoute(string $route): bool
+    {
+        if (str_starts_with($route, 'api')) {
+            return true;
+        }
+        foreach (['ajax', 'modal', 'select2', 'search', 'xeditable', 'helper', 'preview'] as $fragment) {
+            if (str_contains($route, $fragment)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     public function getPreviousRoute($previousness = 2) {

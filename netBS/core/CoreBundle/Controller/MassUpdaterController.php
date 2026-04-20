@@ -91,14 +91,7 @@ class MassUpdaterController extends AbstractController
             ->add('ids', HiddenType::class)
             ->getForm();
 
-        // Capture return URL: on initial render use the referer, on resubmit read from form
-        $returnUrl = $request->request->get('_return_url')
-            ?: $request->headers->get('referer', '');
-
-        // Validate return URL is local to prevent open redirect
-        if ($returnUrl && !str_starts_with($returnUrl, '/') && !str_starts_with($returnUrl, $request->getSchemeAndHttpHost())) {
-            $returnUrl = '';
-        }
+        $returnUrl = $this->resolveSafeReturnUrl($request);
 
         $massForm->handleRequest($request);
 
@@ -132,6 +125,31 @@ class MassUpdaterController extends AbstractController
         }
 
         return $response;
+    }
+
+    /**
+     * Captures the page to return to after the mass-update form is submitted.
+     *
+     * On initial render the referer identifies the calling list; on resubmit
+     * the original value is carried through the form's _return_url field.
+     * Non-local URLs are discarded to prevent open-redirect attacks.
+     */
+    private function resolveSafeReturnUrl(Request $request): string
+    {
+        $returnUrl = $request->request->get('_return_url')
+            ?: $request->headers->get('referer', '');
+
+        if ($returnUrl && !$this->isLocalUrl($returnUrl, $request)) {
+            return '';
+        }
+
+        return $returnUrl;
+    }
+
+    private function isLocalUrl(string $url, Request $request): bool
+    {
+        return str_starts_with($url, '/')
+            || str_starts_with($url, $request->getSchemeAndHttpHost());
     }
 
     /**

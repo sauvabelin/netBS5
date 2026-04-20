@@ -31,7 +31,6 @@ class CascadeSoftDeleteSubscriber implements EventSubscriber
         $em  = $args->getObjectManager();
         $uow = $em->getUnitOfWork();
 
-        // Collect entities whose deletedAt field changed in this flush
         foreach ($uow->getScheduledEntityUpdates() as $entity) {
             $changeSet = $uow->getEntityChangeSet($entity);
 
@@ -39,14 +38,11 @@ class CascadeSoftDeleteSubscriber implements EventSubscriber
                 continue;
             }
 
-            $oldValue = $changeSet['deletedAt'][0];
-            $newValue = $changeSet['deletedAt'][1];
+            [$oldValue, $newValue] = $changeSet['deletedAt'];
 
             if ($oldValue === null && $newValue instanceof \DateTimeInterface) {
-                // Soft-delete: propagate the same timestamp to cascade children
                 $this->cascadeSoftDelete($entity, $newValue, $em, $uow);
             } elseif ($oldValue instanceof \DateTimeInterface && $newValue === null) {
-                // Restore: undelete children that were deleted together with this entity
                 $this->cascadeRestore($entity, $oldValue, $em, $uow);
             }
         }
@@ -69,12 +65,7 @@ class CascadeSoftDeleteSubscriber implements EventSubscriber
             $children = $this->getAssociationTargets($entity, $assocMapping);
 
             foreach ($children as $child) {
-                if (!$this->hasSoftDelete($child)) {
-                    continue;
-                }
-
-                // Skip if already soft-deleted
-                if ($child->getDeletedAt() !== null) {
+                if (!$this->hasSoftDelete($child) || $child->getDeletedAt() !== null) {
                     continue;
                 }
 
@@ -82,7 +73,6 @@ class CascadeSoftDeleteSubscriber implements EventSubscriber
                 $childMetadata = $em->getClassMetadata(get_class($child));
                 $uow->recomputeSingleEntityChangeSet($childMetadata, $child);
 
-                // Recurse into the child's own cascade associations
                 $this->cascadeSoftDelete($child, $deletedAt, $em, $uow);
             }
         }
@@ -131,9 +121,7 @@ class CascadeSoftDeleteSubscriber implements EventSubscriber
         foreach ($associations as $assocMapping) {
             $targetClass    = $assocMapping['targetEntity'];
             $targetMetadata = $em->getClassMetadata($targetClass);
-
-            // Re-fetch children from the database (bypassing the now-disabled filter)
-            $children = $this->fetchAssociationTargets($entity, $assocMapping, $em);
+            $children       = $this->fetchAssociationTargets($entity, $assocMapping, $em);
 
             foreach ($children as $child) {
                 if (!$this->hasSoftDelete($child)) {
@@ -141,23 +129,22 @@ class CascadeSoftDeleteSubscriber implements EventSubscriber
                 }
 
                 $childDeletedAt = $child->getDeletedAt();
-
-                // Only restore children that were deleted at the same moment as the parent
-                if ($childDeletedAt === null) {
-                    continue;
-                }
-
-                if ($childDeletedAt->getTimestamp() !== $originalDeletedAt->getTimestamp()) {
+                if (!$this->wasDeletedWithParent($childDeletedAt, $originalDeletedAt)) {
                     continue;
                 }
 
                 $child->setDeletedAt(null);
                 $uow->recomputeSingleEntityChangeSet($targetMetadata, $child);
 
-                // Recurse, carrying the child's original deletedAt as the matching key
                 $this->doRestore($child, $childDeletedAt, $em, $uow);
             }
         }
+    }
+
+    private function wasDeletedWithParent(?\DateTimeInterface $childDeletedAt, \DateTimeInterface $parentDeletedAt): bool
+    {
+        return $childDeletedAt !== null
+            && $childDeletedAt->getTimestamp() === $parentDeletedAt->getTimestamp();
     }
 
     /**

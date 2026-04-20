@@ -34,45 +34,49 @@ class ConstraintToHtmlExtension extends AbstractTypeExtension
 
     public function buildForm(FormBuilderInterface $builder, array $options)
     {
+        // Priority -1: run after Symfony's own validation so we only add errors to fields that passed validator checks.
         $builder->addEventListener(FormEvents::POST_SUBMIT, function (FormEvent $event) {
             $form = $event->getForm();
-
-            // Only run on root forms, not on each child field
             if ($form->getParent() !== null) {
                 return;
             }
+            $this->enforceNotNullColumns($form);
+        }, -1);
+    }
 
-            $dataClass = $form->getConfig()->getDataClass();
-            if (!$dataClass) {
-                return;
+    private function enforceNotNullColumns(FormInterface $rootForm): void
+    {
+        $dataClass = $rootForm->getConfig()->getDataClass();
+        if (!$dataClass) {
+            return;
+        }
+
+        $notNullColumns = $this->getNotNullColumns($dataClass);
+        if (empty($notNullColumns)) {
+            return;
+        }
+
+        foreach ($rootForm->all() as $child) {
+            if ($this->shouldSkipNotNullCheck($child, $notNullColumns)) {
+                continue;
             }
 
-            $notNullColumns = $this->getNotNullColumns($dataClass);
-            if (empty($notNullColumns)) {
-                return;
+            $value = $child->getData();
+            if ($value === null || $value === '') {
+                $child->addError(new FormError('Ce champ est obligatoire.'));
             }
+        }
+    }
 
-            foreach ($form->all() as $child) {
-                if (!$child->getConfig()->getMapped()) {
-                    continue;
-                }
-
-                $fieldName = $child->getName();
-                if (!isset($notNullColumns[$fieldName])) {
-                    continue;
-                }
-
-                // Already has validation errors — don't pile on
-                if ($child->getErrors()->count() > 0) {
-                    continue;
-                }
-
-                $value = $child->getData();
-                if ($value === null || $value === '') {
-                    $child->addError(new FormError('Ce champ est obligatoire.'));
-                }
-            }
-        }, -1); // Low priority: run after Symfony's own validation
+    private function shouldSkipNotNullCheck(FormInterface $child, array $notNullColumns): bool
+    {
+        if (!$child->getConfig()->getMapped()) {
+            return true;
+        }
+        if (!isset($notNullColumns[$child->getName()])) {
+            return true;
+        }
+        return $child->getErrors()->count() > 0;
     }
 
     public function finishView(FormView $view, FormInterface $form, array $options)
@@ -90,69 +94,90 @@ class ConstraintToHtmlExtension extends AbstractTypeExtension
             return;
         }
 
-        $propertyName = $form->getName();
+        $constraints = $this->getPropertyConstraints($parentClass, $form->getName());
+        $this->applyConstraintsToView($view, $constraints, $parentClass);
+    }
 
-        // --- Validator constraints → HTML attributes ---
+    /**
+     * @return object[]
+     */
+    private function getPropertyConstraints(string $className, string $propertyName): array
+    {
+        try {
+            $metadata = $this->validator->getMetadataFor($className);
+        } catch (NoSuchMetadataException $e) {
+            return [];
+        }
 
+        if (!$metadata->hasPropertyMetadata($propertyName)) {
+            return [];
+        }
+
+        $constraints = [];
+        foreach ($metadata->getPropertyMetadata($propertyName) as $propertyMetadata) {
+            foreach ($propertyMetadata->getConstraints() as $constraint) {
+                $constraints[] = $constraint;
+            }
+        }
+        return $constraints;
+    }
+
+    /**
+     * @param object[] $constraints
+     */
+    private function applyConstraintsToView(FormView $view, array $constraints, string $ownerClass): void
+    {
         $hasNotBlank = false;
 
-        try {
-            $metadata = $this->validator->getMetadataFor($parentClass);
-            if ($metadata->hasPropertyMetadata($propertyName)) {
-                $constraints = [];
-                foreach ($metadata->getPropertyMetadata($propertyName) as $propertyMetadata) {
-                    foreach ($propertyMetadata->getConstraints() as $constraint) {
-                        $constraints[] = $constraint;
-                    }
-                }
-
-                foreach ($constraints as $constraint) {
-                    if (!$this->isInDefaultGroup($constraint, $parentClass)) {
-                        continue;
-                    }
-
-                    if ($constraint instanceof Assert\NotBlank) {
-                        $hasNotBlank = true;
-                    }
-
-                    if ($constraint instanceof Assert\Length) {
-                        if ($constraint->max !== null) {
-                            $view->vars['attr']['maxlength'] = $constraint->max;
-                        }
-                        if ($constraint->min !== null) {
-                            $view->vars['attr']['minlength'] = $constraint->min;
-                        }
-                    }
-
-                    if ($constraint instanceof Assert\Email && !isset($view->vars['attr']['type'])) {
-                        $view->vars['attr']['type'] = 'email';
-                    }
-
-                    if ($constraint instanceof Assert\Range) {
-                        if ($constraint->min !== null) {
-                            $view->vars['attr']['min'] = $constraint->min;
-                        }
-                        if ($constraint->max !== null) {
-                            $view->vars['attr']['max'] = $constraint->max;
-                        }
-                    }
-
-                    if ($constraint instanceof Assert\Regex) {
-                        $pattern = $constraint->pattern;
-                        if (preg_match('#^(.)(.+)\1([a-zA-Z]*)$#s', $pattern, $m)) {
-                            $pattern = $m[2];
-                        }
-                        $view->vars['attr']['pattern'] = $pattern;
-                    }
-                }
+        foreach ($constraints as $constraint) {
+            if (!$this->isInDefaultGroup($constraint, $ownerClass)) {
+                continue;
             }
-        } catch (NoSuchMetadataException $e) {
-            // No validator metadata for this class
+
+            if ($constraint instanceof Assert\NotBlank) {
+                $hasNotBlank = true;
+            } elseif ($constraint instanceof Assert\Length) {
+                $this->applyLengthConstraint($view, $constraint);
+            } elseif ($constraint instanceof Assert\Email && !isset($view->vars['attr']['type'])) {
+                $view->vars['attr']['type'] = 'email';
+            } elseif ($constraint instanceof Assert\Range) {
+                $this->applyRangeConstraint($view, $constraint);
+            } elseif ($constraint instanceof Assert\Regex) {
+                $view->vars['attr']['pattern'] = $this->stripRegexDelimiters($constraint->pattern);
+            }
         }
 
         if ($hasNotBlank) {
             $view->vars['required'] = true;
         }
+    }
+
+    private function applyLengthConstraint(FormView $view, Assert\Length $constraint): void
+    {
+        if ($constraint->max !== null) {
+            $view->vars['attr']['maxlength'] = $constraint->max;
+        }
+        if ($constraint->min !== null) {
+            $view->vars['attr']['minlength'] = $constraint->min;
+        }
+    }
+
+    private function applyRangeConstraint(FormView $view, Assert\Range $constraint): void
+    {
+        if ($constraint->min !== null) {
+            $view->vars['attr']['min'] = $constraint->min;
+        }
+        if ($constraint->max !== null) {
+            $view->vars['attr']['max'] = $constraint->max;
+        }
+    }
+
+    private function stripRegexDelimiters(string $pattern): string
+    {
+        if (preg_match('#^(.)(.+)\1([a-zA-Z]*)$#s', $pattern, $m)) {
+            return $m[2];
+        }
+        return $pattern;
     }
 
     /**

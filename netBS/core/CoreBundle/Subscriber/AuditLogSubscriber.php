@@ -109,18 +109,7 @@ class AuditLogSubscriber implements EventSubscriber
 
             [$oldValue, $newValue] = $changeSet['deletedAt'];
 
-            // Only log if we haven't already logged this entity in preUpdate
-            $alreadyLogged = false;
-            foreach ($this->pendingLogs as $log) {
-                if ($log->getEntityClass() === ClassUtils::getClass($entity)
-                    && $log->getEntityId() === $entity->getId()
-                    && in_array($log->getAction(), [AuditLog::ACTION_DELETE, AuditLog::ACTION_RESTORE])) {
-                    $alreadyLogged = true;
-                    break;
-                }
-            }
-
-            if ($alreadyLogged) continue;
+            if ($this->hasPendingDeleteOrRestoreLog($entity)) continue;
 
             if ($oldValue === null && $newValue instanceof \DateTimeInterface) {
                 $this->pendingLogs[] = $this->createAuditLogFor(AuditLog::ACTION_DELETE, $entity);
@@ -128,6 +117,21 @@ class AuditLogSubscriber implements EventSubscriber
                 $this->pendingLogs[] = $this->createAuditLogFor(AuditLog::ACTION_RESTORE, $entity);
             }
         }
+    }
+
+    private function hasPendingDeleteOrRestoreLog(object $entity): bool
+    {
+        $class = ClassUtils::getClass($entity);
+        $id    = $entity->getId();
+
+        foreach ($this->pendingLogs as $log) {
+            if ($log->getEntityClass() === $class
+                && $log->getEntityId() === $id
+                && in_array($log->getAction(), [AuditLog::ACTION_DELETE, AuditLog::ACTION_RESTORE], true)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     public function postFlush()

@@ -3,6 +3,8 @@
 namespace NetBS\CoreBundle\Controller;
 
 use NetBS\CoreBundle\ListModel\AjaxModel;
+use NetBS\ListBundle\Model\BaseListModel;
+use NetBS\ListBundle\Model\SnapshotTable;
 use NetBS\ListBundle\Service\ListEngine;
 use NetBS\ListBundle\Service\ListManager;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -16,86 +18,34 @@ class AjaxListController extends AbstractController
     #[Route('/ajax-list/query/{listId}', name: 'netbs.core.ajax_list_query')]
     public function queryAction($listId, Request $request, ListManager $listManager, ListEngine $engine) {
 
-        $model = $listManager->getModelByAlias($listId);
-        if (!$model instanceof AjaxModel) {
-            throw new \Exception("Model $listId must extend the AjaxModel class");
-        }
+        $model = $this->requireAjaxModel($listManager, $listId);
 
         $params = json_decode($request->getContent(), true);
-        $amount = intval($this->getOrDefault($request->get('amount'), 10));
-        $page = intval($this->getOrDefault($request->get('page'), 0));
-        $search = $this->getOrDefault($request->get('search'), null);
-        $search = empty($search) ? null : $search;
+        [$page, $amount, $search] = $this->extractPaginationFromRequest($request->query);
 
-
-        foreach ($params ?? [] as $key => $value) {
-            $model->setParameter($key, $value);
-        }
-
+        $this->applyParamsToModel($model, $params ?? []);
         $model->_setAjaxParams($page, $amount, $search);
+
         $snapshot = $engine->generateSnaphot($model);
 
-        $res = [];
-        // Generate a fancy response
-        for ($i = 0; $i < count($snapshot->getData()); $i++) {
-            $row = $snapshot->getData()[$i];
-            $item = $model->getElements()[$i];
-            $vals = [];
-            foreach ($row as $value) {
-                $vals[] = $value;
-            }
-
-            $res[] = [
-                'id' => $item->getId(),
-                'row' => $vals,
-            ];
-        }
-
-        return new JsonResponse($res);
+        return new JsonResponse($this->pairElementsWithRows($snapshot, $model));
     }
 
     #[Route('/ajax-list/html/{listId}', name: 'netbs.core.ajax_list_html')]
     public function htmlAction($listId, Request $request, ListManager $listManager, ListEngine $engine): Response {
 
-        $model = $listManager->getModelByAlias($listId);
-        if (!$model instanceof AjaxModel) {
-            throw new \Exception("Model $listId must extend the AjaxModel class");
-        }
+        $model = $this->requireAjaxModel($listManager, $listId);
 
-        $amount = intval($this->getOrDefault($request->query->get('amount'), 10));
-        $page = intval($this->getOrDefault($request->query->get('page'), 0));
-        $search = $this->getOrDefault($request->query->get('search'), null);
-        $search = empty($search) ? null : $search;
+        [$page, $amount, $search] = $this->extractPaginationFromRequest($request->query);
         $tableId = $this->getOrDefault($request->query->get('tableId'), 'list');
+        $params  = $this->decodeParams($request->query->get('params'));
 
-        // Decode model parameters from query string
-        $paramsJson = $request->query->get('params');
-        $params = $paramsJson ? json_decode($paramsJson, true) : [];
-
-        foreach ($params as $key => $value) {
-            $model->setParameter($key, $value);
-        }
-
+        $this->applyParamsToModel($model, $params);
         $model->_setAjaxParams($page, $amount, $search);
 
-        // Count total items matching the search filter (before pagination)
         $totalItems = $model->countFilteredItems();
-
-        $snapshot = $engine->generateSnaphot($model);
-
-        // Build row data with IDs
-        $rows = [];
-        for ($i = 0; $i < count($snapshot->getData()); $i++) {
-            $row = $snapshot->getData()[$i];
-            $item = $model->getElements()[$i];
-            $rows[] = [
-                'id' => $item->getId(),
-                'cells' => $row,
-            ];
-        }
-
-        // All IDs (unfiltered) for the checkbox-select controller
-        $allIds = $model->retrieveAllIds();
+        $snapshot   = $engine->generateSnaphot($model);
+        $rows       = $this->buildRowsWithIds($snapshot, $model);
 
         return $this->render('@NetBSCore/renderer/ajax.frame.twig', [
             'rows' => $rows,
@@ -105,7 +55,7 @@ class AjaxListController extends AbstractController
             'amount' => $amount,
             'search' => $search ?? '',
             'totalItems' => $totalItems,
-            'allIds' => $allIds,
+            'allIds' => $model->retrieveAllIds(),
             'listId' => $listId,
             'params' => $params,
             'hasSearch' => count($model->searchTerms()) > 0,
@@ -117,54 +67,18 @@ class AjaxListController extends AbstractController
 
         $model = $listManager->getModelByAlias($listId);
 
-        $amount = intval($this->getOrDefault($request->query->get('amount'), 10));
-        $page = intval($this->getOrDefault($request->query->get('page'), 0));
-        $search = $this->getOrDefault($request->query->get('search'), null);
-        $search = empty($search) ? null : $search;
+        [$page, $amount, $search] = $this->extractPaginationFromRequest($request->query);
         $tableId = $this->getOrDefault($request->query->get('tableId'), 'list');
+        $params  = $this->decodeParams($request->query->get('params'));
 
-        // Decode model parameters from query string
-        $paramsJson = $request->query->get('params');
-        $params = $paramsJson ? json_decode($paramsJson, true) : [];
+        $this->applyParamsToModel($model, $params);
 
-        foreach ($params as $key => $value) {
-            $model->setParameter($key, $value);
-        }
-
-        // Generate full snapshot (all items — BaseListModel returns everything)
         $snapshot = $engine->generateSnaphot($model);
+        $allRows  = $this->buildRowsWithIds($snapshot, $model);
+        $allIds   = array_column($allRows, 'id');
 
-        // Build full rows array with IDs
-        $allRows = [];
-        $elements = $model->getElements();
-        $elements = is_array($elements) ? array_values($elements) : iterator_to_array($elements, false);
-        $data = $snapshot->getData();
-        for ($i = 0; $i < count($data); $i++) {
-            $allRows[] = [
-                'id' => $elements[$i]->getId(),
-                'cells' => $data[$i],
-            ];
-        }
-
-        $allIds = array_map(fn($el) => $el->getId(), $elements);
-
-        // Apply in-memory text search across rendered cell values
-        if ($search) {
-            $allRows = array_values(array_filter($allRows, function($row) use ($search) {
-                foreach ($row['cells'] as $cell) {
-                    if (stripos(strip_tags((string)$cell), $search) !== false) {
-                        return true;
-                    }
-                }
-                return false;
-            }));
-        }
-
-        $totalItems = count($allRows);
-
-        // Paginate
-        $offset = $page * $amount;
-        $rows = array_slice($allRows, $offset, $amount);
+        $filteredRows = $this->filterRowsByTextSearch($allRows, $search);
+        $rows         = $this->paginate($filteredRows, $page, $amount);
 
         return $this->render('@NetBSCore/renderer/ajax.frame.twig', [
             'rows' => $rows,
@@ -173,13 +87,97 @@ class AjaxListController extends AbstractController
             'page' => $page,
             'amount' => $amount,
             'search' => $search ?? '',
-            'totalItems' => $totalItems,
+            'totalItems' => count($filteredRows),
             'allIds' => $allIds,
             'listId' => $listId,
             'params' => $params,
             'hasSearch' => true,
             'baseUrl' => $this->generateUrl('netbs.core.netbs_list_html', ['listId' => $listId]),
         ]);
+    }
+
+    private function requireAjaxModel(ListManager $listManager, string $listId): AjaxModel {
+        $model = $listManager->getModelByAlias($listId);
+        if (!$model instanceof AjaxModel) {
+            throw new \Exception("Model $listId must extend the AjaxModel class");
+        }
+        return $model;
+    }
+
+    /**
+     * @return array{0:int,1:int,2:?string}
+     */
+    private function extractPaginationFromRequest(\Symfony\Component\HttpFoundation\InputBag $query): array {
+        $amount = intval($this->getOrDefault($query->get('amount'), 10));
+        $page   = intval($this->getOrDefault($query->get('page'), 0));
+        $search = $this->getOrDefault($query->get('search'), null);
+        $search = empty($search) ? null : $search;
+        return [$page, $amount, $search];
+    }
+
+    private function decodeParams(?string $json): array {
+        return $json ? (json_decode($json, true) ?: []) : [];
+    }
+
+    private function applyParamsToModel(BaseListModel $model, array $params): void {
+        foreach ($params as $key => $value) {
+            $model->setParameter($key, $value);
+        }
+    }
+
+    /**
+     * Pair each snapshot row with its backing element id: [['id' => ..., 'cells' => [...]], ...].
+     */
+    private function buildRowsWithIds(SnapshotTable $snapshot, BaseListModel $model): array {
+        $elements = $model->getElements();
+        $elements = is_array($elements) ? array_values($elements) : iterator_to_array($elements, false);
+        $data     = $snapshot->getData();
+
+        $rows = [];
+        for ($i = 0, $n = count($data); $i < $n; $i++) {
+            $rows[] = [
+                'id'    => $elements[$i]->getId(),
+                'cells' => $data[$i],
+            ];
+        }
+        return $rows;
+    }
+
+    /**
+     * Pair each snapshot row with its element id, flattening cell values into a plain array:
+     * [['id' => ..., 'row' => [v1, v2, ...]], ...].
+     */
+    private function pairElementsWithRows(SnapshotTable $snapshot, BaseListModel $model): array {
+        $elements = $model->getElements();
+        $data     = $snapshot->getData();
+
+        $res = [];
+        for ($i = 0, $n = count($data); $i < $n; $i++) {
+            $res[] = [
+                'id'  => $elements[$i]->getId(),
+                'row' => array_values($data[$i]),
+            ];
+        }
+        return $res;
+    }
+
+    private function filterRowsByTextSearch(array $rows, ?string $search): array {
+        if (!$search) {
+            return $rows;
+        }
+
+        return array_values(array_filter($rows, function ($row) use ($search) {
+            foreach ($row['cells'] as $cell) {
+                if (stripos(strip_tags((string)$cell), $search) !== false) {
+                    return true;
+                }
+            }
+            return false;
+        }));
+    }
+
+    private function paginate(array $rows, int $page, int $amount): array {
+        return array_slice($rows, $page * $amount, $amount);
     }
 
     private function getOrDefault($value, $default) {

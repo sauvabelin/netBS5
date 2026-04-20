@@ -46,15 +46,8 @@ class NetBSRenderer implements RendererInterface
 
         $this->dispatcher->dispatch($event, NetbsRendererToolbarEvent::NAME);
 
-        // Render all rows server-side; the client-list controller handles pagination and text search.
-        $elements = $table->getItems();
-        $elements = is_array($elements) ? array_values($elements) : iterator_to_array($elements, false);
-        $data = $table->getData();
-        $rows = [];
-        $n = count($data);
-        for ($i = 0; $i < $n; $i++) {
-            $rows[] = ['id' => $elements[$i]->getId(), 'cells' => $data[$i]];
-        }
+        // Renders all rows up-front; the client-list controller then handles pagination and text search in the browser.
+        $rows = $this->buildRowsWithIds($table);
 
         return $this->engine->render('@NetBSCore/renderer/netbs.renderer.twig', array(
             'table'       => $table,
@@ -71,5 +64,18 @@ class NetBSRenderer implements RendererInterface
             'modelParams' => $model->getParameters(),
             'hasSearch'   => true,
         ));
+    }
+
+    private function buildRowsWithIds(SnapshotTable $table): array
+    {
+        $elements = $table->getItems();
+        $elements = is_array($elements) ? array_values($elements) : iterator_to_array($elements, false);
+        $data     = $table->getData();
+
+        $rows = [];
+        for ($i = 0, $n = count($data); $i < $n; $i++) {
+            $rows[] = ['id' => $elements[$i]->getId(), 'cells' => $data[$i]];
+        }
+        return $rows;
     }
 }

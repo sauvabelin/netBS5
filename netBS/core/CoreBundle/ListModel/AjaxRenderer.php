@@ -48,30 +48,18 @@ class AjaxRenderer implements RendererInterface
             throw new \Exception("Table {$model->getAlias()} must extend AjaxModel");
         }
 
-        $toolbar    = new Toolbar();
-        $tableId    = uniqid("__dt_");
+        $toolbar = new Toolbar();
+        $tableId = uniqid("__dt_");
 
-        // Make it compatible with netbs toolbar
-        $event      = new NetbsRendererToolbarEvent($toolbar, $table, $tableId);
-
+        // Reuses the netbs toolbar event so toolbar subscribers stay shared across renderers.
+        $event = new NetbsRendererToolbarEvent($toolbar, $table, $tableId);
         $this->dispatcher->dispatch($event, NetbsRendererToolbarEvent::NAME);
 
-        // Generate server-side data for the first page
         $initialAmount = 10;
         $model->_setAjaxParams(0, $initialAmount, null);
         $totalItems = $model->countFilteredItems();
-        $snapshot = $this->listEngine->generateSnaphot($model);
-
-        // Build row data with IDs
-        $rows = [];
-        for ($i = 0; $i < count($snapshot->getData()); $i++) {
-            $row = $snapshot->getData()[$i];
-            $item = $model->getElements()[$i];
-            $rows[] = [
-                'id' => $item->getId(),
-                'cells' => $row,
-            ];
-        }
+        $snapshot   = $this->listEngine->generateSnaphot($model);
+        $rows       = $this->buildRowsWithIds($snapshot, $model);
 
         return $this->engine->render('@NetBSCore/renderer/ajax.renderer.twig', array(
             'table'       => $table,
@@ -89,5 +77,20 @@ class AjaxRenderer implements RendererInterface
             'modelParams' => $model->getParameters(),
             'hasSearch'   => count($model->searchTerms()) > 0,
         ));
+    }
+
+    private function buildRowsWithIds(SnapshotTable $snapshot, AjaxModel $model): array
+    {
+        $elements = $model->getElements();
+        $data     = $snapshot->getData();
+
+        $rows = [];
+        for ($i = 0, $n = count($data); $i < $n; $i++) {
+            $rows[] = [
+                'id'    => $elements[$i]->getId(),
+                'cells' => $data[$i],
+            ];
+        }
+        return $rows;
     }
 }
