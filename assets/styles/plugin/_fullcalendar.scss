@@ -1,0 +1,62 @@
+// FullCalendar theme integration with Bootstrap 5 CSS variables.
+// Scoped to `.fc` so overrides win against FC's dynamically-injected :root defaults.
+
+.fc {
+  --fc-border-color: var(--bs-border-color);
+  --fc-page-bg-color: var(--bs-body-bg);
+  --fc-neutral-bg-color: var(--bs-tertiary-bg);
+  --fc-neutral-text-color: var(--bs-secondary-color);
+  --fc-today-bg-color: rgba(var(--bs-primary-rgb), 0.08);
+  --fc-list-event-hover-bg-color: var(--bs-tertiary-bg);
+
+  --fc-button-text-color: #fff;
+  --fc-button-bg-color: var(--bs-primary);
+  --fc-button-border-color: var(--bs-primary);
+  --fc-button-hover-bg-color: color-mix(in srgb, var(--bs-primary) 85%, black);
+  --fc-button-hover-border-color: color-mix(in srgb, var(--bs-primary) 85%, black);
+  --fc-button-active-bg-color: color-mix(in srgb, var(--bs-primary) 75%, black);
+  --fc-button-active-border-color: color-mix(in srgb, var(--bs-primary) 75%, black);
+
+  color: var(--bs-body-color);
+
+  .fc-button-primary {
+    font-weight: 700;
+    border-radius: 2px;
+  }
+
+  .fc-col-header-cell {
+    background: var(--bs-tertiary-bg);
+  }
+
+  .fc-event {
+    font-size: 0.85em;
+  }
+
+  .fc-daygrid-day-number {
+    color: var(--bs-body-color);
+    text-decoration: none;
+  }
+
+  .fc-daygrid-more-link {
+    color: var(--bs-body-color);
+  }
+}
+
+@media (prefers-color-scheme: dark) {
+  .fc {
+    --fc-today-bg-color: rgba(var(--bs-primary-rgb), 0.15);
+
+    .fc-day-other .fc-daygrid-day-number {
+      color: var(--bs-tertiary-color);
+    }
+
+    .fc-popover {
+      background: var(--bs-body-bg);
+      border-color: var(--bs-border-color);
+    }
+
+    .fc-popover-header {
+      background: var(--bs-secondary-bg);
+    }
+  }
+}

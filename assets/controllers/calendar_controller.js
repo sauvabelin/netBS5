@@ -1,16 +1,29 @@
 import { Controller } from '@hotwired/stimulus';
 
-/*
- * Initializes FullCalendar on an element.
- * FullCalendar is still loaded via CDN <script> tag.
- *
- * Usage:
- *   <div data-controller="calendar"
- *        data-calendar-events-url-value="/api/events"
- *        data-calendar-initial-view-value="dayGridMonth"
- *        data-calendar-initial-date-value="2026-01-15">
- *   </div>
- */
+const FULLCALENDAR_SRC = 'https://cdn.jsdelivr.net/npm/fullcalendar@6.1.15/index.global.min.js';
+let fullCalendarPromise = null;
+
+const HTML_ESCAPE = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' };
+const escapeHtml = (s) => String(s).replace(/[&<>"']/g, (c) => HTML_ESCAPE[c]);
+
+function loadFullCalendar() {
+    if (typeof window.FullCalendar !== 'undefined') return Promise.resolve();
+    if (fullCalendarPromise) return fullCalendarPromise;
+
+    fullCalendarPromise = new Promise((resolve, reject) => {
+        const script = document.createElement('script');
+        script.src = FULLCALENDAR_SRC;
+        script.async = true;
+        script.onload = () => resolve();
+        script.onerror = () => {
+            fullCalendarPromise = null;
+            reject(new Error('Failed to load FullCalendar'));
+        };
+        document.head.appendChild(script);
+    });
+    return fullCalendarPromise;
+}
+
 export default class extends Controller {
     static values = {
         eventsUrl: { type: String, default: '' },
@@ -19,11 +32,14 @@ export default class extends Controller {
         initialDate: { type: String, default: '' },
     };
 
-    connect() {
-        if (typeof FullCalendar === 'undefined') {
-            console.error('FullCalendar not loaded');
+    async connect() {
+        try {
+            await loadFullCalendar();
+        } catch (e) {
+            console.error(e);
             return;
         }
+        if (!this.element.isConnected) return;
 
         const options = {
             locale: 'fr',
@@ -33,6 +49,26 @@ export default class extends Controller {
                 left: 'prev,next',
                 center: 'title',
                 right: 'dayGridMonth,timeGridWeek,timeGridDay',
+            },
+            eventDidMount: (info) => {
+                if (info.event.url) {
+                    info.el.setAttribute('target', '_blank');
+                    info.el.setAttribute('rel', 'noopener');
+                }
+                const { description, location } = info.event.extendedProps;
+                const parts = [`<strong>${escapeHtml(info.event.title)}</strong>`];
+                if (location) parts.push(escapeHtml(location));
+                if (description) parts.push(escapeHtml(description));
+                new bootstrap.Tooltip(info.el, {
+                    title: parts.join('<br>'),
+                    html: true,
+                    placement: 'top',
+                    container: 'body',
+                    trigger: 'hover',
+                });
+            },
+            eventWillUnmount: (info) => {
+                bootstrap.Tooltip.getInstance(info.el)?.dispose();
             },
         };
 
@@ -46,7 +82,7 @@ export default class extends Controller {
             options.initialDate = this.initialDateValue;
         }
 
-        this.calendar = new FullCalendar.Calendar(this.element, options);
+        this.calendar = new window.FullCalendar.Calendar(this.element, options);
         this.calendar.render();
     }
 
