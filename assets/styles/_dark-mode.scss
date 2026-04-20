@@ -117,6 +117,31 @@
     border-radius: 4px;
   }
 
+  // Handsontable CSV preview — its own stylesheet loads after main.scss and
+  // hard-codes light backgrounds, so we override with !important.
+  .handsontable {
+    td, th {
+      background-color: var(--bs-body-bg) !important;
+      color: var(--bs-body-color) !important;
+      border-color: var(--bs-border-color) !important;
+    }
+
+    th,
+    thead th,
+    tbody th,
+    .rowHeader {
+      background-color: var(--bs-tertiary-bg) !important;
+    }
+
+    td.htDimmed {
+      color: var(--bs-secondary-color) !important;
+    }
+
+    .wtBorder {
+      background-color: var(--bs-primary) !important;
+    }
+  }
+
   // Override inline border:#eee from renderers and tables
   [style*="border:1px solid #eee"],
   [style*="border: 1px solid #eee"] {

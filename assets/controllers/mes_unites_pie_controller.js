@@ -38,10 +38,20 @@ export default class extends Controller {
                 layout: { padding: 0 },
             },
         });
+
+        // Chart.js 2.x only reacts to window resizes; observe the container so
+        // late layout shifts (font load, flex siblings settling on first visit)
+        // don't leave the canvas stuck at stale dimensions.
+        this._resizeObserver = new ResizeObserver(() => this._chart?.resize());
+        this._resizeObserver.observe(this.element);
     }
 
     disconnect() {
         this._disconnected = true;
+        if (this._resizeObserver) {
+            this._resizeObserver.disconnect();
+            this._resizeObserver = null;
+        }
         if (this._chart) {
             this._chart.destroy();
             this._chart = null;

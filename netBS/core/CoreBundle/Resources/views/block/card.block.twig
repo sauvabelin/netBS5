@@ -2,7 +2,9 @@
 <div class="card {% if borderColor %} border-{{ borderColor }}{% endif %}{% if table %} card-table{% endif %}{% if backgroundColor %} bg-{{ backgroundColor }}{% endif %}">
 
     {% set heading %}
-    <h5 class="card-title">{{ title }}</h5>
+    <h5 class="card-title">
+        {% if titleUrl %}<a href="{{ titleUrl }}" class="text-reset text-decoration-none">{{ title }}</a>{% else %}{{ title }}{% endif %}
+    </h5>
     {% if subtitle %}<h6 class="card-subtitle">{{ subtitle }}</h6>{% endif %}
     {% endset %}
 

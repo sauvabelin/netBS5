@@ -51,6 +51,9 @@ services:
 
   App\Exporter\:
     resource: "../src/Exporter/"
+    # Class-replacement override for PDFEtiquettesV2 (see OverrideServicePass) —
+    # auto-registering it here would tag the exporter a second time.
+    exclude: "../src/Exporter/EtiquettesV2Exporter.php"
     tags: ["netbs.exporter"]
 
   App\Voter\:

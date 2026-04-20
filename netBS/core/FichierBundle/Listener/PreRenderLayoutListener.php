@@ -7,6 +7,7 @@ use NetBS\CoreBundle\Event\PreRenderLayoutEvent;
 use NetBS\FichierBundle\Service\MesUnitesResolver;
 use NetBS\SecureBundle\Mapping\BaseUser;
 use Symfony\Component\HttpFoundation\RequestStack;
+use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInterface;
 
 final class PreRenderLayoutListener
@@ -15,6 +16,7 @@ final class PreRenderLayoutListener
         private readonly TokenStorageInterface $tokenStorage,
         private readonly RequestStack $requestStack,
         private readonly MesUnitesResolver $resolver,
+        private readonly UrlGeneratorInterface $router,
     ) {}
 
     public function preRender(PreRenderLayoutEvent $event): void
@@ -36,6 +38,7 @@ final class PreRenderLayoutListener
         foreach ($this->resolver->resolveFor($user) as $root) {
             $col->addRow()->addColumn(0, 12)->setBlock(CardBlock::class, [
                 'title'    => (string) $root->group->getNom(),
+                'titleUrl' => $this->router->generate('netbs.fichier.groupe.page_groupe', ['id' => $root->group->getId()]),
                 'template' => '@NetBSFichier/dashboard/mes_unites_root.block.twig',
                 'params'   => ['root' => $root],
             ]);

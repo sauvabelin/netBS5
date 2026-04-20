@@ -41,7 +41,11 @@ class MembreController extends AbstractController
     #[Route('/page/{id}', name: 'netbs.fichier.membre.page_membre')]
     public function pageMembreAction($id, ExporterManager $exporterManager, EntityManagerInterface $em, LayoutManager $designer, DynamicListManager $dynamics) {
 
-        $exporters  = $exporterManager->getExportersForClass($this->config->getMembreClass());
+        // "mailing.*" exporters target a whole audience selection; irrelevant on a single-member page.
+        $exporters  = array_filter(
+            $exporterManager->getExportersForClass($this->config->getMembreClass()),
+            fn($exporter) => !str_starts_with($exporter->getAlias(), 'mailing.')
+        );
 
         /** @var BaseMembre $membre */
         $membre     = $em->find($this->config->getMembreClass(), $id);

@@ -15,6 +15,7 @@ class BasicCardBlock implements BlockInterface
             ->setRequired('title')
             ->setRequired('body')
             ->setDefault('subtitle', null)
+            ->setDefault('titleUrl', null)
             ->setDefault('borderColor', null)
             ->setDefault('backgroundColor', null)
             ->setDefault('divider', true)
