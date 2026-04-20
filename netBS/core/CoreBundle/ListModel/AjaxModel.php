@@ -20,14 +20,7 @@ abstract class AjaxModel extends BaseListModel
     public function buildItemsList() {
         if ($this->page !== null && $this->amount !== null) {
             $queryBuilder = $this->ajaxQueryBuilder("x");
-            if ($this->search) {
-                $orTerms = [];
-                foreach ($this->searchTerms() as $term) {
-                    $orTerms[] = $queryBuilder->expr()->like("x." . $term, ":s");
-                }
-                $queryBuilder->andWhere(...$orTerms)
-                    ->setParameter('s', '%' . $this->search . '%');
-            }
+            $this->applySearchFilter($queryBuilder);
 
             return $queryBuilder
                 ->setMaxResults($this->amount)
@@ -37,6 +30,24 @@ abstract class AjaxModel extends BaseListModel
         }
 
         return [];
+    }
+
+    /**
+     * Applies the active text search as an OR-across-searchTerms LIKE filter.
+     * No-op when there's no search or no terms declared.
+     */
+    protected function applySearchFilter(QueryBuilder $queryBuilder): void {
+        if (!$this->search) return;
+        $terms = $this->searchTerms();
+        if (count($terms) === 0) return;
+
+        $orTerms = array_map(
+            fn($t) => $queryBuilder->expr()->like("x.$t", ':s'),
+            $terms,
+        );
+        $queryBuilder
+            ->andWhere($queryBuilder->expr()->orX(...$orTerms))
+            ->setParameter('s', '%' . $this->search . '%');
     }
 
     public function retrieveAllIds() {
@@ -52,14 +63,7 @@ abstract class AjaxModel extends BaseListModel
      */
     public function countFilteredItems(): int {
         $queryBuilder = $this->ajaxQueryBuilder("x");
-        if ($this->search && count($this->searchTerms()) > 0) {
-            $orTerms = [];
-            foreach ($this->searchTerms() as $term) {
-                $orTerms[] = $queryBuilder->expr()->like("x." . $term, ":s");
-            }
-            $queryBuilder->andWhere(...$orTerms)
-                ->setParameter('s', '%' . $this->search . '%');
-        }
+        $this->applySearchFilter($queryBuilder);
 
         return (int) $queryBuilder
             ->select('COUNT(x)')

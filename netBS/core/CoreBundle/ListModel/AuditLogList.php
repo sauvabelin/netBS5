@@ -2,6 +2,7 @@
 
 namespace NetBS\CoreBundle\ListModel;
 
+use Doctrine\ORM\QueryBuilder;
 use NetBS\CoreBundle\Entity\AuditLog;
 use NetBS\CoreBundle\ListModel\Column\HelperColumn;
 use NetBS\CoreBundle\Utils\Traits\EntityManagerTrait;
@@ -9,26 +10,43 @@ use NetBS\CoreBundle\Utils\Traits\ParamTrait;
 use NetBS\ListBundle\Column\ClosureColumn;
 use NetBS\ListBundle\Column\DateTimeColumn;
 use NetBS\ListBundle\Column\SimpleColumn;
-use NetBS\ListBundle\Model\BaseListModel;
 use NetBS\ListBundle\Model\ListColumnsConfiguration;
 
-class AuditLogList extends BaseListModel
+class AuditLogList extends AjaxModel
 {
     use EntityManagerTrait, ParamTrait;
 
-    /**
-     * Retrieves all elements managed by this list
-     * @return array
-     */
-    protected function buildItemsList()
+    public function ajaxQueryBuilder(string $alias): QueryBuilder
     {
+        // LEFT JOIN the user so hard-deleted users don't break EAGER hydration;
+        // soft-deleted users are still surfaced (audit must show the historical actor).
         return $this->entityManager->createQueryBuilder()
-            ->select('a')
-            ->from(AuditLog::class, 'a')
-            ->orderBy('a.createdAt', 'DESC')
-            ->setMaxResults(500)
-            ->getQuery()
-            ->execute();
+            ->select($alias, 'u')
+            ->from(AuditLog::class, $alias)
+            ->leftJoin("$alias.user", 'u')
+            ->orderBy("$alias.createdAt", 'DESC');
+    }
+
+    public function buildItemsList()
+    {
+        $filters = $this->entityManager->getFilters();
+        $wasEnabled = $filters->has('softdeleteable') && $filters->isEnabled('softdeleteable');
+        if ($wasEnabled) {
+            $filters->disable('softdeleteable');
+        }
+
+        try {
+            return parent::buildItemsList();
+        } finally {
+            if ($wasEnabled) {
+                $filters->enable('softdeleteable');
+            }
+        }
+    }
+
+    public function searchTerms(): array
+    {
+        return ['action', 'entityClass', 'displayName', 'property'];
     }
 
     /**

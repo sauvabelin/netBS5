@@ -1,7 +1,12 @@
+{#
+    Renderer for complex-search-result lists. All matching rows are server-rendered
+    once; client_list_controller paginates and text-filters them in the browser.
+#}
+<div id="netbs-renderer-{{ tableId }}" class="netbs-renderer position-relative" style="border:1px solid #eee"
+     data-controller="checkbox-select client-list">
 
-<div class="netbs-renderer position-relative" style="border:1px solid #eee">
-
-    {% include '@NetBSCore/renderer/ajax.frame.twig' with {
+    {% include '@NetBSCore/renderer/_list_body.twig' with {
+        controllerName: 'client-list',
         rows: rows,
         headers: headers,
         tableId: tableId,
@@ -9,11 +14,8 @@
         amount: amount,
         search: search,
         totalItems: totalItems,
-        allIds: allIds,
-        listId: listId,
-        params: modelParams,
         hasSearch: hasSearch,
-        baseUrl: path('netbs.core.netbs_list_html', { listId: listId }),
+        hasSelection: true,
     } %}
 
     {% if toolbar.items|length > 0 %}
@@ -39,16 +41,30 @@
 <script type="text/javascript">
     var {{ tableId }} = {
         getSelectedIds: function() {
-            var frameEl = document.getElementById('list-frame-{{ tableId }}');
-            if (!frameEl) return {{ allIds|json_encode }};
+            var frameEl = document.getElementById('netbs-renderer-{{ tableId }}');
+            if (!frameEl) return [];
             var app = window.Stimulus;
+
+            // 1. Whatever the user explicitly checked wins
+            var selected = [];
             if (app) {
-                var controller = app.getControllerForElementAndIdentifier(frameEl, 'checkbox-select');
-                if (controller) return controller.getSelectedIds();
+                var cbCtrl = app.getControllerForElementAndIdentifier(frameEl, 'checkbox-select');
+                if (cbCtrl) selected = cbCtrl.selectedIds;
             }
-            var checked = frameEl.querySelectorAll('[data-checkbox-select-target="checkbox"]:checked');
-            if (checked.length === 0) return {{ allIds|json_encode }};
-            return Array.from(checked).map(function(cb) { return parseInt(cb.value, 10); });
+            if (!selected.length) {
+                selected = Array.from(frameEl.querySelectorAll('[data-checkbox-select-target="checkbox"]:checked'))
+                    .map(function(cb) { return parseInt(cb.value, 10); });
+            }
+            if (selected.length > 0) return selected;
+
+            // 2. Nothing checked → fall back to every row matching the current search filter
+            if (app) {
+                var clCtrl = app.getControllerForElementAndIdentifier(frameEl, 'client-list');
+                if (clCtrl && typeof clCtrl.getFilteredIds === 'function') {
+                    return clCtrl.getFilteredIds();
+                }
+            }
+            return [];
         }
     };
 </script>

@@ -46,23 +46,15 @@ class NetBSRenderer implements RendererInterface
 
         $this->dispatcher->dispatch($event, NetbsRendererToolbarEvent::NAME);
 
-        // Build row data from the pre-built snapshot (all items)
+        // Render all rows server-side; the client-list controller handles pagination and text search.
         $elements = $table->getItems();
         $elements = is_array($elements) ? array_values($elements) : iterator_to_array($elements, false);
         $data = $table->getData();
-        $allRows = [];
-        $allIds = [];
+        $rows = [];
         $n = count($data);
         for ($i = 0; $i < $n; $i++) {
-            $id = $elements[$i]->getId();
-            $allRows[] = ['id' => $id, 'cells' => $data[$i]];
-            $allIds[] = $id;
+            $rows[] = ['id' => $elements[$i]->getId(), 'cells' => $data[$i]];
         }
-
-        // Paginate to first page
-        $initialAmount = 10;
-        $totalItems = count($allRows);
-        $rows = array_slice($allRows, 0, $initialAmount);
 
         return $this->engine->render('@NetBSCore/renderer/netbs.renderer.twig', array(
             'table'       => $table,
@@ -72,10 +64,9 @@ class NetBSRenderer implements RendererInterface
             'rows'        => $rows,
             'headers'     => $table->getHeaders(),
             'page'        => 0,
-            'amount'      => $initialAmount,
+            'amount'      => 10,
             'search'      => '',
-            'totalItems'  => $totalItems,
-            'allIds'      => $allIds,
+            'totalItems'  => count($rows),
             'listId'      => $model->getAlias(),
             'modelParams' => $model->getParameters(),
             'hasSearch'   => true,

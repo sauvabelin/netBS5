@@ -37,7 +37,12 @@ export default class extends Controller {
 
     toggleAll() {
         const checked = this.selectAllTarget.checked;
-        this.checkboxTargets.forEach((cb) => (cb.checked = checked));
+        this.checkboxTargets.forEach((cb) => {
+            // Skip checkboxes on hidden rows so select-all only affects the visible page
+            const tr = cb.closest('tr');
+            if (tr && tr.hidden) return;
+            cb.checked = checked;
+        });
         this.updateCount();
     }
 

@@ -21,9 +21,10 @@ final class Version0004_drop_news extends AbstractMigration
             "Migration can only be executed safely on '\\Doctrine\\DBAL\\Platforms\\MariaDb1010Platform'."
         );
 
-        $this->addSql('DROP TABLE netbs_core_news');
-        $this->addSql('DROP TABLE netbs_core_news_channel');
-        $this->addSql('DROP TABLE news_channel_bot');
+        $this->addSql('DROP TABLE IF EXISTS newschannelbot_newschannel');
+        $this->addSql('DROP TABLE IF EXISTS netbs_core_news');
+        $this->addSql('DROP TABLE IF EXISTS netbs_core_news_channel');
+        $this->addSql('DROP TABLE IF EXISTS news_channel_bot');
     }
 
     public function down(Schema $schema): void

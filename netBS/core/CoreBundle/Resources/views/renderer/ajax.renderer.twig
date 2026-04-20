@@ -9,7 +9,6 @@
         amount: amount,
         search: search,
         totalItems: totalItems,
-        allIds: allIds,
         listId: listId,
         params: modelParams,
         hasSearch: hasSearch,
@@ -39,14 +38,13 @@
     var {{ tableId }} = {
         getSelectedIds: function() {
             var frameEl = document.getElementById('list-frame-{{ tableId }}');
-            if (!frameEl) return {{ allIds|json_encode }};
+            if (!frameEl) return [];
             var app = window.Stimulus;
             if (app) {
                 var controller = app.getControllerForElementAndIdentifier(frameEl, 'checkbox-select');
-                if (controller) return controller.getSelectedIds();
+                if (controller) return controller.selectedIds;
             }
             var checked = frameEl.querySelectorAll('[data-checkbox-select-target="checkbox"]:checked');
-            if (checked.length === 0) return {{ allIds|json_encode }};
             return Array.from(checked).map(function(cb) { return parseInt(cb.value, 10); });
         }
     };

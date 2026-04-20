@@ -1,4 +1,5 @@
 import { Controller } from '@hotwired/stimulus';
+import { reinitCellPlugins } from '../utils/reinit_cell_plugins.js';
 
 /**
  * Drives ajax-list pagination, search, and amount changes via Turbo Frames.
@@ -93,6 +94,8 @@ export default class extends Controller {
             input.setSelectionRange(input.value.length, input.value.length);
         }
         this._searchFocused = false;
+
+        reinitCellPlugins(this.element);
     }
 
     /**

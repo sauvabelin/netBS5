@@ -135,7 +135,7 @@ class FactureController extends AbstractController
         $factures = $em->getRepository(Facture::class)->findBy(['id' => $ids]);
         $now = new \DateTime();
         foreach ($factures as $facture) {
-            $facture->setDateImpression($now);
+            $this->setPrintDate($facture, $now);
         }
         $em->flush();
         return new JsonResponse(['success' => true, 'count' => count($factures)]);
@@ -210,9 +210,28 @@ class FactureController extends AbstractController
 
         $factures = $em->getRepository(Facture::class)->findBy(['id' => $ids]);
         foreach ($factures as $facture) {
-            $facture->setDateImpression(null);
+            $this->setPrintDate($facture, null);
         }
         $em->flush();
         return new JsonResponse(['success' => true, 'count' => count($factures)]);
+    }
+
+    /**
+     * Sets the print date on the "currently active" document for this facture.
+     * Mirrors AbstractFacturesImpressionList's waiting-for-print logic: the latest
+     * rappel owns print state when rappels exist; otherwise the facture itself does.
+     */
+    private function setPrintDate(Facture $facture, ?\DateTime $when): void {
+        $latestRappel = null;
+        foreach ($facture->getRappels() as $rappel) {
+            if ($latestRappel === null || $rappel->getDate() > $latestRappel->getDate()) {
+                $latestRappel = $rappel;
+            }
+        }
+        if ($latestRappel) {
+            $latestRappel->setDateImpression($when);
+        } else {
+            $facture->setDateImpression($when);
+        }
     }
 }

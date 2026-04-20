@@ -73,8 +73,6 @@ class AjaxRenderer implements RendererInterface
             ];
         }
 
-        $allIds = $model->retrieveAllIds();
-
         return $this->engine->render('@NetBSCore/renderer/ajax.renderer.twig', array(
             'table'       => $table,
             'tableId'     => $tableId,
@@ -86,7 +84,6 @@ class AjaxRenderer implements RendererInterface
             'amount'      => $initialAmount,
             'search'      => '',
             'totalItems'  => $totalItems,
-            'allIds'      => $allIds,
             'listId'      => $model->getAlias(),
             'modelParams' => $model->getParameters(),
             'hasSearch'   => count($model->searchTerms()) > 0,

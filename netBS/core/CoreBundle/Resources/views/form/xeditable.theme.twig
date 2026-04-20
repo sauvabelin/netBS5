@@ -132,7 +132,7 @@
 
         {% set item = form.parent.vars.value %}
         {% set key = form.vars.name %}
-        {% set displayText %}{% apply spaceless %}{% set v = attribute(item, key) %}{% if v is null %}Rien{% elseif v is same as(true) %}Oui{% elseif v is same as(false) %}Non{% elseif v.timestamp is defined %}{{ v|date('d.m.Y') }}{% else %}{{ v|default('Rien') }}{% endif %}{% endapply %}{% endset %}
+        {% set displayText %}{% apply spaceless %}{% set v = attribute(item, key) %}{% if v is null %}Rien{% elseif v is same as(true) %}Oui{% elseif v is same as(false) %}Non{% elseif v.timestamp is defined %}{{ v|date('d.m.Y') }}{% elseif v is iterable %}{{ v|length }} élément(s){% else %}{{ v|default('Rien') }}{% endif %}{% endapply %}{% endset %}
 
         {% if is_granted('update', form.parent.vars.data) and editProperty(item, key) %}
             <a href="#" class="editable-link" data-controller="editable" data-action="click->editable#open:prevent"
