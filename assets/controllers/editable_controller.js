@@ -62,7 +62,7 @@ export default class extends Controller {
         }
 
         const input = tip.querySelector('input:not([type="hidden"]), textarea, select');
-        if (input) input.focus();
+        if (input) input.focus({ preventScroll: true });
 
         setTimeout(() => {
             this._outsideClickHandler = (e) => {

@@ -8,11 +8,11 @@ use NetBS\CoreBundle\ListModel\Action\LinkAction;
 use NetBS\CoreBundle\ListModel\Action\RemoveAction;
 use NetBS\CoreBundle\ListModel\ActionItem;
 use NetBS\CoreBundle\ListModel\Column\ActionColumn;
-use NetBS\CoreBundle\ListModel\Column\ArrayColumn;
 use NetBS\CoreBundle\ListModel\Column\HelperColumn;
 use NetBS\CoreBundle\ListModel\Column\XEditableColumn;
 use NetBS\FichierBundle\Utils\Traits\FichierConfigTrait;
 use NetBS\FichierBundle\Utils\Traits\SecureConfigTrait;
+use NetBS\ListBundle\Column\ClosureColumn;
 use NetBS\ListBundle\Column\SimpleColumn;
 use NetBS\ListBundle\Model\BaseListModel;
 use NetBS\ListBundle\Model\ListColumnsConfiguration;
@@ -62,10 +62,14 @@ class AutorisationsList extends BaseListModel
         $configuration
             ->addColumn('Utilisateur', 'user', HelperColumn::class)
             ->addColumn('Groupe', 'groupe', HelperColumn::class)
-            ->addColumn('Roles', 'roles', ArrayColumn::class, [
-                ArrayColumn::LABEL      => function($items) {return count($items) . " role(s)";},
-                ArrayColumn::FORMATTING => function(BaseRole $role) {
-                    return $role->getRole();
+            ->addColumn('Roles', 'roles', ClosureColumn::class, [
+                ClosureColumn::CLOSURE => function($roles) {
+                    $items  = is_object($roles) && method_exists($roles, 'toArray') ? $roles->toArray() : (array) $roles;
+                    $count  = count($items);
+                    $labels = array_map(fn(BaseRole $r) => htmlspecialchars($r->getRole(), ENT_QUOTES, 'UTF-8'), $items);
+                    $tooltip = implode('<br>', $labels);
+                    $theme  = $count > 0 ? 'text-bg-primary' : 'text-bg-secondary';
+                    return "<span class='badge {$theme}' data-bs-toggle='tooltip' data-bs-html='true' title='{$tooltip}' style='cursor:help;'>{$count} role(s)</span>";
                 }
             ])
             ->addColumn('Actions', null, ActionColumn::class, [

@@ -51,7 +51,7 @@ export default class extends Controller {
         }
         return response.text().then((html) => {
             const modalEl = createModal(html);
-            this._attachFormHandler(modalEl, url);
+            if (modalEl) this._attachFormHandler(modalEl, url);
         });
     }
 

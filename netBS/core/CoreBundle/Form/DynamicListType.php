@@ -59,6 +59,7 @@ class DynamicListType extends AbstractType
             ->add('shares', AjaxSelect2DocumentType::class, [
                 'label' => 'Partager la liste',
                 'multiple' => true,
+                'required' => false,
                 'class' => $this->secureConfig->getUserClass(),
             ])
             ->add('itemsClass', ChoiceType::class, array(
