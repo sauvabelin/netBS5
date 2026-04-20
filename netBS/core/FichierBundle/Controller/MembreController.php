@@ -127,11 +127,15 @@ class MembreController extends AbstractController
 
         $membre = $em->find($this->config->getMembreClass(), $id);
 
-        $dispatcher->dispatch(new RemoveMembreEvent($membre, $em), RemoveMembreEvent::NAME);
+        try {
+            $dispatcher->dispatch(new RemoveMembreEvent($membre, $em), RemoveMembreEvent::NAME);
+            $em->remove($membre);
+            $em->flush();
+            $this->addFlash('success', 'Membre supprimé');
+        } catch (\Exception $e) {
+            $this->addFlash('danger', $e->getMessage());
+        }
 
-        $em->remove($membre);
-        $em->flush();
-        $this->addFlash('success', 'Membre supprimé');
         return $this->redirectToRoute('netbs.core.home.dashboard');
     }
 }

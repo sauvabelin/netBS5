@@ -121,16 +121,21 @@ class FamilleController extends AbstractController
         /** @var BaseFamille $famille */
         $famille = $em->find($config->getFamilleClass(), $id);
 
-        foreach($famille->getMembres() as $membre) {
-            $dispatcher->dispatch(new RemoveMembreEvent($membre, $em), RemoveMembreEvent::NAME);
-            $em->remove($membre);
+        try {
+            foreach($famille->getMembres() as $membre) {
+                $dispatcher->dispatch(new RemoveMembreEvent($membre, $em), RemoveMembreEvent::NAME);
+                $em->remove($membre);
+            }
+
+            $dispatcher->dispatch(new RemoveFamilleEvent($famille, $em), RemoveFamilleEvent::NAME);
+
+            $em->remove($famille);
+            $em->flush();
+            $this->addFlash('success', 'Famille supprimée');
+        } catch (\Exception $e) {
+            $this->addFlash('danger', $e->getMessage());
         }
 
-        $dispatcher->dispatch(new RemoveFamilleEvent($famille, $em), RemoveFamilleEvent::NAME);
-
-        $em->remove($famille);
-        $em->flush();
-        $this->addFlash('success', 'Famille supprimée');
         return $this->redirectToRoute('netbs.core.home.dashboard');
     }
 }
