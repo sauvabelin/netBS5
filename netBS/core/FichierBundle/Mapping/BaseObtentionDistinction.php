@@ -3,6 +3,8 @@
 namespace NetBS\FichierBundle\Mapping;
 
 use Doctrine\ORM\Mapping as ORM;
+use Gedmo\Mapping\Annotation as Gedmo;
+use Gedmo\SoftDeleteable\Traits\SoftDeleteableEntity;
 use Gedmo\Timestampable\Traits\TimestampableEntity;
 use NetBS\FichierBundle\Utils\Entity\RemarqueTrait;
 use Symfony\Component\Validator\Constraints as Assert;
@@ -13,9 +15,10 @@ use NetBS\CoreBundle\Validator\Constraints as BSAssert;
  */
 #[ORM\MappedSuperclass]
 #[BSAssert\User(rule: "user.hasRole('ROLE_SG')")]
+#[Gedmo\SoftDeleteable(fieldName: 'deletedAt', timeAware: false, hardDelete: false)]
 abstract class BaseObtentionDistinction
 {
-    use RemarqueTrait, TimestampableEntity;
+    use RemarqueTrait, TimestampableEntity, SoftDeleteableEntity;
 
     /**
      * @var int
@@ -48,6 +51,18 @@ abstract class BaseObtentionDistinction
     public function __construct()
     {
         $this->date = new \DateTime();
+    }
+
+    public function __toString(): string
+    {
+        try {
+            $parts = [];
+            if ($this->distinction) $parts[] = (string) $this->distinction;
+            if ($this->membre) $parts[] = (string) $this->membre;
+            return implode(' — ', $parts) ?: 'ObtentionDistinction #' . $this->id;
+        } catch (\Throwable $e) {
+            return 'ObtentionDistinction #' . $this->id;
+        }
     }
 
     /**

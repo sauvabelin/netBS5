@@ -19,66 +19,27 @@
 {% endblock %}
 
 {% block switch_widget %}
-    {{ registerCss(asset('bundles/netbscore/css/switchery.css')) }}
     <div>
-        <label class="bs-switch">
-            <input type="checkbox" {{ block('widget_attributes') }}{% if value is defined %} value="{{ value }}"{% endif %}{% if checked %} checked="checked"{% endif %} />            <span class="slider round"></span>
-        </label>
+        <div class="form-check form-switch">
+            <input type="checkbox" class="form-check-input" {{ block('widget_attributes') }}{% if value is defined %} value="{{ value }}"{% endif %}{% if checked %} checked="checked"{% endif %} />
+        </div>
     </div>
-
 {% endblock %}
 
 {% block mask_widget %}
-    {{ registerJs(asset('bundles/netbscore/js/jquery.inputmask.min.js')) }}
-    {% set maskJs %}
-    <script type="text/javascript">
-        $(document).ready(function(){
-            $(":input").inputmask();
-        });
-    </script>
-    {% endset %}
-    {{ registerScript(maskJs) }}
     {{ block('form_widget_simple') }}
 {% endblock %}
 
 {% block quill_widget %}
 
     {{ registerCss(asset('bundles/netbscore/lib/quill/quill.snow.css')) }}
-    {{ registerJs(asset('bundles/netbscore/lib/quill/quill.min.js')) }}
-    {% set quillJs %}
-    <script type="text/javascript">
-        new Quill('#{{ form.vars.id }}', {
-            theme: 'snow',
-            debug: 'info'
-        });
-    </script>
-    {% endset %}
 
-    {{ registerScript(quillJs) }}
-
-    {{ block('textarea_widget') }}
+    <div data-controller="quill" id="{{ form.vars.id }}">
+        {{ block('textarea_widget') }}
+    </div>
 
 {% endblock %}
 
-{% block trumbowyg_widget %}
-
-    {{ registerCss(asset('bundles/netbscore/lib/jquery/jquery.min.js')) }}
-    {{ registerCss(asset('bundles/netbscore/lib/trumbowyg/ui/trumbowyg.min.css')) }}
-    {{ registerJs(asset('bundles/netbscore/lib/trumbowyg/trumbowyg.min.js')) }}
-
-    {% set script %}
-        <script type="text/javascript">
-            $('#{{ form.vars.id }}').trumbowyg({
-                btns: [['bold', 'italic'], ['link'], ['viewHTML']]
-            });
-        </script>
-    {% endset %}
-
-    {{ registerScript(script) }}
-
-    {{ block('textarea_widget') }}
-
-{% endblock %}
 
 
 {# select 2 stuff #}
@@ -89,24 +50,21 @@
         {% for item in form.vars.data %}
             {% set dataCheck = dataCheck|merge([item.id]) %}
         {% endfor %}
-    {% elseif  form.vars.data %}
+    {% elseif form.vars.data %}
         {% set dataCheck = [form.vars.data.id] %}
     {% endif %}
 
-    <select style="width:100%;" {{ block('widget_attributes') }} {% if form.vars.multiple %}multiple="multiple"{% endif %}>
-        {% for option in form.vars.base_choices %}
-            <option {% if option.value in dataCheck %}selected{% endif %} value="{{ option.value }}">{{ option.label }}</option>
-        {% endfor %}
-    </select>
-
-    {{ registerCss(asset('bundles/netbscore/lib/select2/css/select2.min.css')) }}
-    {{ registerCss(asset('bundles/netbscore/lib/select2/css/select2.bs4.min.css')) }}
-    {{ registerJs(asset('bundles/netbscore/lib/select2/js/select2.full.min.js')) }}
-    {% include '@NetBSCore/javascript/select2_init.script.twig' %}
-
-
-    {% set attr = attr|merge({style: "min-width:200px;width:100%;"}) %}
-
+    <div data-controller="select2"
+         data-select2-ajax-class-value="{{ form.vars.attr['data-ajax-class'] }}"
+         data-select2-null-option-value="{{ form.vars.attr['data-null-option']|default('0') }}"
+         data-select2-url-value="{{ path('netbs.core.select2.results') }}"
+         style="min-width:200px;width:100%;">
+        <select {{ block('widget_attributes') }} {% if form.vars.multiple %}multiple="multiple"{% endif %} style="width:100%;">
+            {% for option in form.vars.base_choices %}
+                <option {% if option.value in dataCheck %}selected{% endif %} value="{{ option.value }}">{{ option.label }}</option>
+            {% endfor %}
+        </select>
+    </div>
 
 {% endblock %}
 
@@ -115,31 +73,17 @@
 {% endblock %}
 
 {% block select2_widget %}
-
-    {% include '@NetBSCore/javascript/select2_init.script.twig' %}
     {{ block('select2') }}
 {% endblock %}
 
 {% block select2 %}
-
-    {{ registerCss(asset('bundles/netbscore/lib/select2/css/select2.min.css')) }}
-    {{ registerCss(asset('bundles/netbscore/lib/select2/css/select2.bs4.min.css')) }}
-    {{ registerJs(asset('bundles/netbscore/lib/select2/js/select2.full.min.js')) }}
-
-    {% set attr = attr|merge({style: "min-width:200px;width:100%;"}) %}
-
-    <div>
+    <div data-controller="select2" style="min-width:200px;width:100%;">
         {{ block('choice_widget') }}
     </div>
 {% endblock %}
 
 {# datepicker #}
 {% block datepicker_widget %}
-
-    {{ registerCss(asset('bundles/netbscore/lib/datetimepicker/bootstrap-datetimepicker.min.css')) }}
-    {{ registerJs(asset('bundles/netbscore/lib/datetimepicker/bootstrap-datetimepicker.min.js')) }}
-    {% include '@NetBSCore/javascript/datepicker_init.script.twig' %}
-
     {{ block('form_widget_simple') }}
 {% endblock %}
 
@@ -147,7 +91,7 @@
 {# daterange #}
 {% block daterange_widget %}
     <div>
-        <div class="input-daterange input-group d-flex align-items-center" data-date-format="dd.mm.yyyy">
+        <div class="input-daterange input-group d-flex align-items-center">
             <div class="flex-grow-1">
                 {{ form_row(form.biggerThan) }}
             </div>

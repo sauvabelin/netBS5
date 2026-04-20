@@ -43,6 +43,15 @@ abstract class BaseMassUpdater
     }
 
     /**
+     * Fields to exclude from the "Appliquer à tous" propagation.
+     * Override in subclasses to skip fields like 'membre' that are per-row.
+     * @return string[]
+     */
+    public function getSkipFields(): array {
+        return [];
+    }
+
+    /**
      * Returns this updater name
      * @return string
      */

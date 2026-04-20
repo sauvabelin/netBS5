@@ -221,14 +221,27 @@ class DefaultController extends AbstractController
         // Calculate recipient count
         $recipientCount = $this->targetResolver->countMailingList($mailingList);
 
+        // Turbo requires 422 on POST when the form has errors (otherwise it rejects
+        // a 200 response as "must redirect"). A successful submit already returned
+        // via redirectToRoute() above, so if we're here with a submitted-but-invalid
+        // form, emit 422.
+        $hasInvalidSubmission =
+            ($listForm->isSubmitted() && !$listForm->isValid())
+            || ($targetForm->isSubmitted() && !$targetForm->isValid())
+            || ($aliasForm->isSubmitted() && !$aliasForm->isValid());
+
+        $status = $hasInvalidSubmission
+            ? Response::HTTP_UNPROCESSABLE_ENTITY
+            : Response::HTTP_OK;
+
         return $this->render('@IacopoMailing/default/edit.html.twig', [
             'mailingList' => $mailingList,
             'listForm' => $listForm->createView(),
             'targetForm' => $targetForm->createView(),
             'aliasForm' => $aliasForm->createView(),
             'lastType' => $lastType,
-            'recipientCount' => $recipientCount
-        ]);
+            'recipientCount' => $recipientCount,
+        ], new Response('', $status));
     }
 
     #[Route('/target/{id}/edit', name: 'iacopo.mailing.target.edit')]
@@ -269,10 +282,14 @@ class DefaultController extends AbstractController
             }
         }
 
+        $status = $form->isSubmitted() && !$form->isValid()
+            ? Response::HTTP_UNPROCESSABLE_ENTITY
+            : Response::HTTP_OK;
+
         return $this->render('@IacopoMailing/default/edit_target.modal.twig', [
             'form' => $form->createView(),
-            'target' => $target
-        ]);
+            'target' => $target,
+        ], new Response('', $status));
     }
 
     #[Route('/{id}/toggle-active', name: 'iacopo.mailing.toggle_active', methods: ['POST'])]
@@ -354,7 +371,7 @@ class DefaultController extends AbstractController
         ]);
     }
 
-    #[Route('/delete/{id}', name: 'iacopo.mailing.delete')]
+    #[Route('/delete/{id}', name: 'iacopo.mailing.delete', methods: ['POST'])]
     public function deleteAction(int $id): Response
     {
         $list = $this->em->getRepository(MailingList::class)->find($id);

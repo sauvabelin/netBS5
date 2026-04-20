@@ -1,19 +1,6 @@
-<button id="exportTroupe" class="btn btn-secondary w-100 mb-2">Générer une liste de {{ groupe.groupeType.nom }}</button>
-
-{{ registerJs(asset('bundles/netbscore/js/post_link.js')) }}
-
-{% set script %}
-<script>
-    document.getElementById('exportTroupe').addEventListener('click', function() {
-        var data = {
-            itemsClass: "{{ get_class(groupe)|toBase64 }}",
-            exporterAlias: "pdf.unite",
-            selectedIds: [{{ groupe.id }}]
-        };
-
-        PostLink("{{ path('netbs.core.export.export_selected') }}", data);
-    });
-</script>
-{% endset %}
-
-{{ registerScript(script) }}
+<button class="btn btn-secondary w-100 mb-2"
+        data-controller="post-link"
+        data-post-link-url-value="{{ path('netbs.core.export.export_selected') }}"
+        data-post-link-static-ids-value="{{ [groupe.id]|json_encode }}"
+        data-post-link-extra-data-value='{{ {"itemsClass": get_class(groupe)|toBase64, "exporterAlias": "pdf.unite"}|json_encode }}'
+        data-action="click->post-link#submit">Générer une liste de {{ groupe.groupeType.nom }}</button>

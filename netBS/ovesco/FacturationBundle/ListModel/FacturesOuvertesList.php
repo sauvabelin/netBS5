@@ -2,22 +2,27 @@
 
 namespace Ovesco\FacturationBundle\ListModel;
 
+use Doctrine\ORM\QueryBuilder;
+use NetBS\CoreBundle\ListModel\AjaxModel;
 use NetBS\CoreBundle\Utils\Traits\EntityManagerTrait;
-use NetBS\ListBundle\Model\BaseListModel;
 use Ovesco\FacturationBundle\Entity\Facture;
 use Ovesco\FacturationBundle\Util\FactureListTrait;
 
-class FacturesOuvertesList extends BaseListModel
+class FacturesOuvertesList extends AjaxModel
 {
     use EntityManagerTrait, FactureListTrait;
 
-    /**
-     * Retrieves all elements managed by this list
-     * @return array
-     */
-    protected function buildItemsList()
+    public function ajaxQueryBuilder(string $alias): QueryBuilder
     {
-        return $this->entityManager->getRepository(Facture::class)->findBy(['statut' => Facture::OUVERTE]);
+        $qb = $this->entityManager->getRepository(Facture::class)->createQueryBuilder($alias);
+        return $qb
+            ->andWhere("$alias.statut = :statut")
+            ->setParameter('statut', Facture::OUVERTE);
+    }
+
+    public function searchTerms(): array
+    {
+        return ['remarques'];
     }
 
     /**

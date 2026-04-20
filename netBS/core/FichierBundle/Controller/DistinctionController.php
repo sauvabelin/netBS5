@@ -54,7 +54,7 @@ class DistinctionController extends AbstractController
         $form           = $this->createForm(DistinctionType::class, $distinction);
 
         $form->handleRequest($request);
-        if($form->isValid() && $form->isSubmitted()) {
+        if($form->isSubmitted() && $form->isValid()) {
             $em->persist($form->getData());
             $em->flush();
 

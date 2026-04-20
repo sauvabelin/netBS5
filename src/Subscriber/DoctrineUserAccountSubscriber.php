@@ -92,6 +92,10 @@ class DoctrineUserAccountSubscriber implements EventSubscriber
 
     private function handleCreation(BaseAttribution $attribution, ObjectManager $manager) {
 
+        // Skip if the attribution is being soft-deleted
+        if($attribution->getDeletedAt() !== null)
+            return;
+
         /** @var BSMembre $membre */
         $membre     = $attribution->getMembre();
 
@@ -116,9 +120,16 @@ class DoctrineUserAccountSubscriber implements EventSubscriber
             if(intval($attribution->getGroupe()->getId()) === $this->adabsId)
                 return;
 
-        $user = $manager->getRepository(BSUser::class)->findOneBy(array('membre' => $membre));
+        // Check including soft-deleted users to avoid unique constraint violations
+        $filters = $manager->getFilters();
+        $filterWasEnabled = $filters->isEnabled('softdeleteable');
+        if ($filterWasEnabled) $filters->disable('softdeleteable');
+        try {
+            $user = $manager->getRepository(BSUser::class)->findOneBy(array('membre' => $membre));
+        } finally {
+            if ($filterWasEnabled) $filters->enable('softdeleteable');
+        }
 
-        //Deja un compte
         if($user instanceof BaseUser)
             return;
 

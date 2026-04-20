@@ -1,0 +1,24 @@
+// Custom variables (must come before Bootstrap import)
+@import "variables";
+
+// Bootstrap 5
+@import "bootstrap";
+
+// Layout
+@import "layout/menu";
+@import "layout/header";
+@import "layout/global";
+
+// Plugin overrides
+@import "plugin/datatables";
+@import "plugin/select2";
+@import "plugin/fullcalendar";
+
+// Bootstrap component overrides
+@import "bootstrap/cards";
+@import "bootstrap/buttons";
+@import "bootstrap/tabs";
+@import "bootstrap/form";
+
+// Dark mode overrides for custom styles
+@import "dark-mode";

@@ -103,11 +103,10 @@ class MailingTargetListModel extends BaseListModel
                     $deleteUrl = htmlspecialchars($this->router->generate('iacopo.mailing.target.delete', ['id' => $target->getId()]), ENT_QUOTES, 'UTF-8');
 
                     return "
-                        <form method=\"post\" action=\"{$deleteUrl}\" style=\"display:inline\" onsubmit=\"return confirm('Supprimer ce destinataire ?')\">
-                            <button type=\"submit\" class=\"btn btn-sm btn-danger\" title=\"Supprimer\">
-                                <i class=\"fas fa-trash\"></i>
-                            </button>
-                        </form>
+                        <a href=\"{$deleteUrl}\" class=\"btn btn-sm btn-danger\" title=\"Supprimer\"
+                           data-turbo-method=\"post\" data-turbo-confirm=\"Supprimer ce destinataire ?\">
+                            <i class=\"fas fa-trash\"></i>
+                        </a>
                     ";
                 }
             ]);

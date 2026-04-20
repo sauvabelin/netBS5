@@ -5,7 +5,12 @@
 
 <div class="row g-0">
     <div class="col-6 pe-1">
-        <div class="btn-group btn-hspace" style="width:100%;">
+        <div class="btn-group btn-hspace" style="width:100%;"
+             data-controller="dynamic-list"
+             data-dynamic-list-add-url-value="{{ path('netbs.core.dynamics_list.items_add') }}"
+             data-dynamic-list-create-url-value="{{ path('netbs.core.dynamic_list.modal_add') }}"
+             data-dynamic-list-items-class-value="{{ get_class(membre)|toBase64 }}"
+             data-dynamic-list-static-ids-value="{{ [membre.id]|json_encode }}">
 
             <button type="button" data-bs-toggle="dropdown" class="btn btn-secondary w-100 dropdown-toggle" aria-expanded="false">
                 Ajouter à une liste
@@ -13,12 +18,16 @@
             </button>
             <div role="menu" class="dropdown-menu">
                 {% for list in lists %}
-                    <a href="#" class="dropdown-item membre-list-add" data-list-id="{{ list.id }}" data-list-class="{{ list.itemsClass|toBase64 }}">{{ list.name }}</a>
+                    <a href="#" class="dropdown-item"
+                       data-action="click->dynamic-list#addToList"
+                       data-list-id="{{ list.id }}"
+                       data-list-class="{{ list.itemsClass|toBase64 }}">{{ list.name }}</a>
                 {% endfor %}
                 {% if lists|length > 0 %}
                     <div class="dropdown-divider"></div>
                 {% endif %}
-                <a href="#" class="dropdown-item add-to-new-list">Nouvelle liste</a>
+                <a href="#" class="dropdown-item"
+                   data-action="click->dynamic-list#createList">Nouvelle liste</a>
             </div>
         </div>
     </div>
@@ -31,7 +40,13 @@
             </button>
             <div role="menu" class="dropdown-menu">
                 {% for exporter in exporters %}
-                    <a href="#" class="dropdown-item membre-exporter" data-exporter-alias="{{ exporter.alias }}">{{ exporter.name }}</a>
+                    <a href="#" class="dropdown-item"
+                       data-controller="post-link"
+                       data-post-link-url-value="{{ path('netbs.core.export.export_selected') }}"
+                       data-post-link-static-ids-value="{{ [membre.id]|json_encode }}"
+                       data-post-link-extra-data-value='{{ {"itemsClass": exportClass}|json_encode }}'
+                       data-action="click->post-link#submit"
+                       data-exporter-alias="{{ exporter.alias }}">{{ exporter.name }}</a>
                 {% endfor %}
             </div>
         </div>
@@ -39,43 +54,6 @@
 </div>
 
 {% if app.user.hasRole('ROLE_SG') %}
-    <a href="{{ path('netbs.fichier.membre.remove', { id: membre.id}) }}" class="btn btn-outline-danger w-100 mt-2" onclick="return confirm('Etes-vous VRAIMENT sûr? Toutes les données liées (compte utilisateur, factures, créances) seront supprimées et peuvent entraîner des erreurs de données.');">Supprimer ce membre</a>
+    <a href="{{ path('netbs.fichier.membre.remove', { id: membre.id}) }}" class="btn btn-outline-danger w-100 mt-2" data-turbo-confirm="Etes-vous VRAIMENT sûr? Toutes les données liées (compte utilisateur, factures, créances) seront supprimées et peuvent entraîner des erreurs de données." data-turbo-method="post">Supprimer ce membre</a>
 {% endif %}
 
-{% include '@NetBSCore/javascript/dynamic.javascript.twig' %}
-
-{% set membreDynamicsScript %}
-    <script type="text/javascript">
-
-        $('.membre-list-add').click(function() {
-
-            var listId  = $(this).attr("data-list-id");
-            var lclass  = $(this).attr("data-list-class");
-
-            BSDynamic.addToList(listId, lclass, [{{ membre.id }}]);
-        });
-
-        $('.add-to-new-list').on('click', function() {
-
-            var classe  = '{{ get_class(membre)|toBase64 }}';
-
-            BSDynamic.createList(classe, function(listId) {
-                BSDynamic.addToList(listId, classe, [{{ membre.id }}]);
-            });
-        });
-
-        $('.membre-exporter').on('click', function() {
-
-            var data = {
-                itemsClass:     "{{ exportClass }}",
-                exporterAlias:  $(this).attr('data-exporter-alias'),
-                selectedIds:    [{{ membre.id }}]
-            };
-
-            PostLink("{{ path('netbs.core.export.export_selected') }}", data);
-        });
-    </script>
-{% endset %}
-
-{{ registerJs(asset('bundles/netbscore/js/modal.js')) }}
-{{ registerScript(membreDynamicsScript) }}

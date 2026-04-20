@@ -13,26 +13,14 @@
             {% endif %}
             <div class="dropdown-header">{{ extension }}</div>
             {% for exporter in exporters %}
-                <a class="dropdown-item" style="cursor:pointer;" data-exporter="{{ exporter.alias }}">{{ exporter.name }}</a>
+                <a class="dropdown-item" style="cursor:pointer;"
+                   data-controller="post-link"
+                   data-post-link-url-value="{{ path('netbs.core.export.export_selected') }}"
+                   data-post-link-ids-source-value="{{ tableId }}"
+                   data-post-link-extra-data-value='{{ {"itemsClass": table.itemClass|toBase64}|json_encode }}'
+                   data-action="click->post-link#submit"
+                   data-exporter="{{ exporter.alias }}">{{ exporter.name }}</a>
             {% endfor %}
         {% endfor %}
     </div>
 </div>
-
-{% set exportScript %}
-    <script type="text/javascript">
-        $('[data-exporter]').click(function() {
-
-            var data = {
-                itemsClass:     "{{ table.itemClass|toBase64 }}",
-                exporterAlias:  $(this).attr("data-exporter"),
-                selectedIds:    {{ tableId }}.getSelectedIds()
-            };
-            PostLink("{{ path('netbs.core.export.export_selected') }}", data);
-        });
-    </script>
-{% endset %}
-
-{{ registerScript(exportScript) }}
-
-{{ registerJs(asset('bundles/netbscore/js/post_link.js')) }}

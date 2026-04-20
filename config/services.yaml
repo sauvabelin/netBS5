@@ -51,6 +51,9 @@ services:
 
   App\Exporter\:
     resource: "../src/Exporter/"
+    # Class-replacement override for PDFEtiquettesV2 (see OverrideServicePass) —
+    # auto-registering it here would tag the exporter a second time.
+    exclude: "../src/Exporter/EtiquettesV2Exporter.php"
     tags: ["netbs.exporter"]
 
   App\Voter\:
@@ -85,10 +88,6 @@ services:
       - { name: doctrine.event_subscriber, connection: default }
 
   App\Subscriber\DoctrineAttributionSubscriber:
-    tags:
-      - { name: doctrine.event_subscriber, connection: default }
-
-  App\Subscriber\NewsPublishedSubscriber:
     tags:
       - { name: doctrine.event_subscriber, connection: default }
 
@@ -130,10 +129,6 @@ services:
           event: netbs.block.pre_render_layout,
           method: extendsPageGroupe,
         }
-
-  App\Form\Type\NewsChannelType:
-    tags:
-      - { name: form.type }
 
   App\Listener\ForceNewPasswordListener:
     tags:

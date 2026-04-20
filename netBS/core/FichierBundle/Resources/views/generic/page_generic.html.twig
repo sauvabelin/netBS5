@@ -2,8 +2,6 @@
 
 {% block main %}
 
-    {{ registerJs(asset('bundles/netbscore/js/modal.js')) }}
-
     <div class="container-fluid">
         {% if doc is defined and doc %}
             {% include '@NetBSCore/doc/_doc_block.twig' with {doc: doc} %}
@@ -30,7 +28,7 @@
                         <h5 class="card-title">Actions</h5>
                     </div>
                     <div class="card-body">
-                        <button data-modal data-modal-url="{{ modalPath }}" class="btn btn-primary">Nouveau</button>
+                        <button data-controller="modal" data-modal-url-value="{{ modalPath }}" data-action="click->modal#open" class="btn btn-primary">Nouveau</button>
                     </div>
                 </div>
             </div>

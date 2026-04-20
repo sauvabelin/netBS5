@@ -1,11 +1,11 @@
-<div class="menu" id="_menu">
+<div class="menu" id="_menu" data-mobile-target="menu">
 
     <a href="{{ path('netbs.core.home.dashboard') }}" class="menu-logo">
         <img src="{{ asset('bundles/netbscore/img/logo.png') }}" />
         <span>{{ param('app', 'name') }}</span>
     </a>
 
-    <div class="menu-content">
+    <div class="menu-content" data-controller="menu">
 
         <ul>
             {% for category in menu.categories|filter(c => not c.empty) %}
@@ -25,7 +25,7 @@
                             </a>
                             <ul>
                                 {% for firstlevel in item.subLinks %}
-                                    <li><a href="{{ path(firstlevel.route, firstlevel.routeParams) }}">{{ firstlevel.label }}</a></li>
+                                    <li {% if firstlevel.route == route and firstlevel.routeParams == routeParams %}class="active"{% endif %}><a href="{{ path(firstlevel.route, firstlevel.routeParams) }}">{{ firstlevel.label }}</a></li>
                                 {% endfor %}
 
                                 {% for secondLevel in item.secondLevelMenus %}
@@ -33,7 +33,7 @@
                                         <a>{{ secondLevel.label }}<span class="caret"><i class="fas fa-caret-down"></i></span></a>
                                         <ul>
                                             {% for lastLink in secondLevel.subLinks %}
-                                                <li>
+                                                <li {% if lastLink.route == route and lastLink.routeParams == routeParams %}class="active"{% endif %}>
                                                     <a href="{{ path(lastLink.route, lastLink.routeParams) }}">{{ lastLink.label }}</a>
                                                 </li>
                                             {% endfor %}

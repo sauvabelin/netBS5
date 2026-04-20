@@ -3,17 +3,10 @@
 {% set title %}Listes de diffusion{% endset %}
 
 {% block main %}
-    {{ registerJs(asset('bundles/netbscore/js/modal.js')) }}
-    {{ registerJs(asset('bundles/iacopomailing/js/mailing.js')) }}
-
-    <script>
-        window.mailingRoutes = {
-            toggleActive: "{{ path('iacopo.mailing.toggle_active', {id: '__ID__'}) }}",
-            recipients: "{{ path('iacopo.mailing.recipients', {id: '__ID__'}) }}"
-        };
-    </script>
-
-    <div class="container-fluid">
+    <div class="container-fluid"
+         data-controller="mailing"
+         data-mailing-toggle-url-value="{{ path('iacopo.mailing.toggle_active', {id: '__ID__'}) }}"
+         data-mailing-recipients-url-value="{{ path('iacopo.mailing.recipients', {id: '__ID__'}) }}">
         {% include '@NetBSCore/includes/header.include.twig' with {
             header: 'Listes de diffusion',
             subHeader: 'Gestion des mailings'
@@ -24,7 +17,7 @@
                 <div class="card card-table">
                     <div class="card-header d-flex justify-content-between align-items-center">
                         <h5 class="card-title mb-0">Listes de diffusion</h5>
-                        <button data-modal data-modal-url="{{ path('iacopo.mailing.create') }}" class="btn btn-primary">
+                        <button data-controller="modal" data-modal-url-value="{{ path('iacopo.mailing.create') }}" data-action="click->modal#open" class="btn btn-primary">
                             <i class="fas fa-plus"></i> Nouveau
                         </button>
                     </div>

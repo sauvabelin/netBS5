@@ -9,6 +9,7 @@ use NetBS\CoreBundle\Block\CardBlock;
 use NetBS\CoreBundle\Block\TabsCardBlock;
 use NetBS\CoreBundle\Block\TemplateBlock;
 use NetBS\CoreBundle\Event\RemoveMembreEvent;
+use NetBS\CoreBundle\Exceptions\UserConstraintException;
 use NetBS\CoreBundle\Searcher\SearcherManager;
 use NetBS\CoreBundle\Service\DynamicListManager;
 use NetBS\CoreBundle\Service\ExporterManager;
@@ -41,7 +42,11 @@ class MembreController extends AbstractController
     #[Route('/page/{id}', name: 'netbs.fichier.membre.page_membre')]
     public function pageMembreAction($id, ExporterManager $exporterManager, EntityManagerInterface $em, LayoutManager $designer, DynamicListManager $dynamics) {
 
-        $exporters  = $exporterManager->getExportersForClass($this->config->getMembreClass());
+        // "mailing.*" exporters target a whole audience selection; irrelevant on a single-member page.
+        $exporters  = array_filter(
+            $exporterManager->getExportersForClass($this->config->getMembreClass()),
+            fn($exporter) => !str_starts_with($exporter->getAlias(), 'mailing.')
+        );
 
         /** @var BaseMembre $membre */
         $membre     = $em->find($this->config->getMembreClass(), $id);
@@ -119,7 +124,7 @@ class MembreController extends AbstractController
         return $searcher->render($instance);
     }
 
-    #[Route('/remove/{id}', name: 'netbs.fichier.membre.remove')]
+    #[Route('/remove/{id}', name: 'netbs.fichier.membre.remove', methods: ['POST'])]
     public function removeMembreAction($id, EventDispatcherInterface $dispatcher, EntityManagerInterface $em) {
 
         if(!$this->isGranted('ROLE_SG'))
@@ -127,11 +132,15 @@ class MembreController extends AbstractController
 
         $membre = $em->find($this->config->getMembreClass(), $id);
 
-        $dispatcher->dispatch(new RemoveMembreEvent($membre, $em), RemoveMembreEvent::NAME);
+        try {
+            $dispatcher->dispatch(new RemoveMembreEvent($membre, $em), RemoveMembreEvent::NAME);
+            $em->remove($membre);
+            $em->flush();
+            $this->addFlash('success', 'Membre supprimé');
+        } catch (UserConstraintException $e) {
+            $this->addFlash('danger', $e->getMessage());
+        }
 
-        $em->remove($membre);
-        $em->flush();
-        $this->addFlash('success', 'Membre supprimé');
         return $this->redirectToRoute('netbs.core.home.dashboard');
     }
 }

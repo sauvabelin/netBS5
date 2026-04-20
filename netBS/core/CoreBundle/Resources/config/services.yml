@@ -29,10 +29,6 @@ services:
         tags:
             - { name: validator.constraint_validator }
 
-    NetBS\CoreBundle\Serializer\NewsNormalizer:
-        tags:
-            - { name: serializer.normalizer }
-
     NetBS\CoreBundle\Service\UserLogger: ~
 
     NetBS\CoreBundle\Service\QueryMaker: ~
@@ -144,18 +140,22 @@ services:
         tags:
             - { name: doctrine.event_subscriber }
 
-    NetBS\CoreBundle\Subscriber\DoctrineLoggerSubscriber:
+    NetBS\CoreBundle\Subscriber\AuditLogSubscriber:
         tags:
             - { name: doctrine.event_subscriber }
 
-    NetBS\CoreBundle\Listener\DashboardListener:
+    NetBS\CoreBundle\Subscriber\CascadeSoftDeleteSubscriber:
         tags:
-            - { name: kernel.event_listener, event: netbs.block.pre_render_layout, method: preRender, priority: 1000 }
+            - { name: doctrine.event_subscriber }
 
     NetBS\CoreBundle\Profiler\NetBSCollector:
         tags:
             - { name: data_collector, template: '@NetBSCore/Profiler/layout.html.twig', id: 'netbs.core.netbs_collector' }
 
-    NetBS\CoreBundle\Select2\NewsChannelProvider:
+    NetBS\CoreBundle\EventListener\SoftDeletedEntityListener:
         tags:
-            - { name: netbs.select2_provider }
+            - { name: kernel.event_listener, event: kernel.exception }
+
+    NetBS\CoreBundle\EventListener\DatabaseExceptionListener:
+        tags:
+            - { name: kernel.event_listener, event: kernel.exception, priority: 10 }

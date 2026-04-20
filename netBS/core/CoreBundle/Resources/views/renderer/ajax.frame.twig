@@ -1,0 +1,38 @@
+{#
+    Server-paginated list frame (turbo-frame wrapper).
+    AjaxListController::htmlAction re-renders this on page/amount/search change.
+
+    Variables:
+      - rows: current page of data
+      - headers: column header strings
+      - tableId: unique table identifier
+      - page, amount, search, totalItems: pagination state
+      - params: model parameters (associative array)
+      - listId: model alias
+      - hasSearch: whether the model supports search
+      - baseUrl: (optional) endpoint URL for Turbo Frame navigation
+#}
+
+{% set frameId = 'list-frame-' ~ tableId %}
+{% set baseUrl = baseUrl|default(path('netbs.core.ajax_list_html', { listId: listId })) %}
+
+<turbo-frame id="{{ frameId }}" target="_top"
+    data-controller="checkbox-select ajax-list"
+    data-checkbox-select-all-ids-value="{{ (allIds ?? [])|json_encode }}"
+    data-ajax-list-base-url-value="{{ baseUrl }}"
+    data-ajax-list-params-value="{{ params|length > 0 ? params|json_encode : '{}' }}"
+    data-ajax-list-table-id-value="{{ tableId }}"
+>
+    {% include '@NetBSCore/renderer/_list_body.twig' with {
+        controllerName: 'ajax-list',
+        rows: rows,
+        headers: headers,
+        tableId: tableId,
+        page: page,
+        amount: amount,
+        search: search ?? '',
+        totalItems: totalItems,
+        hasSearch: hasSearch,
+        hasSelection: true,
+    } %}
+</turbo-frame>

@@ -8,6 +8,7 @@ use NetBS\CoreBundle\Exceptions\UserConstraintException;
 use NetBS\CoreBundle\Model\XEditable;
 use NetBS\CoreBundle\Service\FormTypesRegistrer;
 use NetBS\SecureBundle\Voter\CRUD;
+use Psr\Log\LoggerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
@@ -16,63 +17,56 @@ use Symfony\Component\Routing\Annotation\Route;
 
 class XEditableController extends AbstractController
 {
-    /**
-     * @param Request $request
-     * @return JsonResponse
-     */
     #[Route('/utils/xeditable', name: 'netbs.core.xeditable.endpoint')]
-    public function endpointAction(Request $request, EntityManagerInterface $em, PropertyAccessorInterface $accessor, FormTypesRegistrer $registrer)
+    public function endpointAction(Request $request, EntityManagerInterface $em, PropertyAccessorInterface $accessor, FormTypesRegistrer $registrer, LoggerInterface $logger)
     {
-        $xeditable  = new XEditable($request);
-        $item       = $em->find(base64_decode($xeditable->getData('itemClass')), $xeditable->getId());
-        $typeClass  = $this->findType($xeditable->getData('type'), $registrer);
+        try {
+            $xeditable  = new XEditable($request);
+            $item       = $em->find(base64_decode($xeditable->getData('itemClass')), $xeditable->getId());
+            $typeClass  = $this->findType($xeditable->getData('type'), $registrer);
 
-        if(!$this->isGranted(CRUD::UPDATE, $item))
-            throw $this->createAccessDeniedException("Vous n'avez pas le droit de modifier cet élément.");
-        $form       = $this->createFormBuilder($item, array('csrf_protection' => false))
-            ->add($xeditable->getField(), $typeClass, $xeditable->getTypeOptions())
-            ->getForm();
+            if(!$this->isGranted(CRUD::UPDATE, $item))
+                return new JsonResponse(['message' => "Vous n'avez pas le droit de modifier cet élément."], 403);
 
-        $form->submit(array($xeditable->getField() => $xeditable->getFinalValue()));
-        if($form->isValid()) {
+            $form       = $this->createFormBuilder($item, array('csrf_protection' => false))
+                ->add($xeditable->getField(), $typeClass, $xeditable->getTypeOptions())
+                ->getForm();
 
-            $item = $form->getData();
+            $form->submit(array($xeditable->getField() => $xeditable->getFinalValue()));
 
-            try {
-                $em->persist($item);
-                $em->flush();
-            } catch(UserConstraintException $exception) {
-                return new JsonResponse(['message' => $exception->getMessage()], 400);
+            if (!$form->isValid()) {
+                $str = "";
+                foreach ($this->getErrorMessages($form) as $message) {
+                    $str .= is_array($message) ? $message[0] : $message;
+                }
+                return new JsonResponse(['message' => $str], 400);
             }
 
-            $value  = $accessor->getValue($item, $xeditable->getField());
+            $item = $form->getData();
+            $em->persist($item);
+            $em->flush();
 
-            if(is_object($value) && method_exists($value, '__toString'))
+            $value = $accessor->getValue($item, $xeditable->getField());
+
+            if (is_object($value) && method_exists($value, '__toString')) {
                 $value = $value->__toString();
-
-            elseif(is_array($value) || $value instanceof Collection) {
-
-                $rv    = [];
-                foreach($value as $item)
-                    if(is_object($item))
-                        $rv[] = $item->getId();
-
+            } elseif (is_array($value) || $value instanceof Collection) {
+                $rv = [];
+                foreach ($value as $v) {
+                    if (is_object($v)) {
+                        $rv[] = $v->getId();
+                    }
+                }
                 $value = implode(',', $rv);
             }
 
             return $this->json(['newValue' => $xeditable->getFinalValue(), 'newLabel' => $value]);
+        } catch (UserConstraintException $exception) {
+            return new JsonResponse(['message' => $exception->getMessage()], 400);
+        } catch (\Throwable $e) {
+            $logger->error('XEditable endpoint failed: ' . $e->getMessage(), ['exception' => $e]);
+            return new JsonResponse(['message' => 'Erreur interne'], 500);
         }
-
-        else {
-
-            //return new JsonResponse($this->getErrorMessages($form), 400);
-            $str = "";
-            foreach($this->getErrorMessages($form) as $message)
-                $str .= $message[0];
-
-            return new JsonResponse(['message' => $str], 400);
-        }
-
     }
 
     /**

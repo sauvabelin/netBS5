@@ -21,6 +21,11 @@ class HelperController extends AbstractController
     {
         $class          = base64_decode($request->request->get('class'));
         $id             = $request->request->get('id');
+
+        if (empty($class) || empty($id)) {
+            return new JsonResponse(['content' => '', 'title' => ''], 400);
+        }
+
         $item           = $em->getRepository($class)->find($id);
 
         if(!$item)

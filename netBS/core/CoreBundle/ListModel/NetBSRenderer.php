@@ -38,17 +38,44 @@ class NetBSRenderer implements RendererInterface
      */
     public function render(SnapshotTable $table, $params = [])
     {
+        $model = $table->getModel();
+
         $toolbar    = new Toolbar();
         $tableId    = uniqid("__dt_");
         $event      = new NetbsRendererToolbarEvent($toolbar, $table, $tableId);
 
         $this->dispatcher->dispatch($event, NetbsRendererToolbarEvent::NAME);
 
+        // Renders all rows up-front; the client-list controller then handles pagination and text search in the browser.
+        $rows = $this->buildRowsWithIds($table);
+
         return $this->engine->render('@NetBSCore/renderer/netbs.renderer.twig', array(
-            'table'     => $table,
-            'tableId'   => $tableId,
-            'toolbar'   => $toolbar,
-            'params'    => $params,
+            'table'       => $table,
+            'tableId'     => $tableId,
+            'toolbar'     => $toolbar,
+            'params'      => $params,
+            'rows'        => $rows,
+            'headers'     => $table->getHeaders(),
+            'page'        => 0,
+            'amount'      => 10,
+            'search'      => '',
+            'totalItems'  => count($rows),
+            'listId'      => $model->getAlias(),
+            'modelParams' => $model->getParameters(),
+            'hasSearch'   => true,
         ));
+    }
+
+    private function buildRowsWithIds(SnapshotTable $table): array
+    {
+        $elements = $table->getItems();
+        $elements = is_array($elements) ? array_values($elements) : iterator_to_array($elements, false);
+        $data     = $table->getData();
+
+        $rows = [];
+        for ($i = 0, $n = count($data); $i < $n; $i++) {
+            $rows[] = ['id' => $elements[$i]->getId(), 'cells' => $data[$i]];
+        }
+        return $rows;
     }
 }

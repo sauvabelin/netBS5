@@ -5,8 +5,6 @@ namespace NetBS\SecureBundle\Service;
 use Doctrine\ORM\EntityManagerInterface;
 use NetBS\CoreBundle\Entity\DynamicList;
 use NetBS\CoreBundle\Entity\ExportConfiguration;
-use NetBS\CoreBundle\Entity\LoggedChange;
-use NetBS\CoreBundle\Entity\News;
 use NetBS\CoreBundle\Entity\Notification;
 use NetBS\CoreBundle\Entity\UserLog;
 use NetBS\FichierBundle\Mapping\BaseMembre;
@@ -81,25 +79,9 @@ class UserManager
 
         $em             = $this->em;
 
-        // Check user logged changes
-        $changes = $em->getRepository(LoggedChange::class)->findBy(['user' => $user]);
-        $waitingChanges = array_filter($changes, function(LoggedChange $change) {
-            return $change->getStatus() === LoggedChange::WAITING;
-        });
-
-        if(count($waitingChanges) > 0)
-            throw new \ErrorException("Impossible de supprimer {$user->getUsername()} actuellement, des " .
-                "modifications qu'il a réalisé sont en attente, veuillez les valider ou rejeter avant.");
-
-        foreach($changes as $change) $em->remove($change);
-
         // Remove dynamics
         $dynamics = $em->getRepository(DynamicList::class)->findBy(['owner' => $user]);
         foreach($dynamics as $dynamic) $em->remove($dynamic);
-
-        // Remove published news
-        $news = $em->getRepository(News::class)->findBy(['user' => $user]);
-        foreach($news as $n) $em->remove($n);
 
         // Remove user export configurations
         $exportConfigs = $em->getRepository(ExportConfiguration::class)->findBy(['user' => $user]);

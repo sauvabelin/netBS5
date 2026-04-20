@@ -4,6 +4,8 @@ namespace NetBS\FichierBundle\Mapping;
 
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\ORM\Mapping as ORM;
+use Gedmo\Mapping\Annotation as Gedmo;
+use Gedmo\SoftDeleteable\Traits\SoftDeleteableEntity;
 use NetBS\FichierBundle\Entity\GroupeType;
 use NetBS\FichierBundle\Model\ValidableInterface;
 use NetBS\FichierBundle\Utils\Entity\RemarqueTrait;
@@ -15,9 +17,10 @@ use Symfony\Component\Validator\Constraints as Assert;
  */
 #[ORM\Table(name: 'fichier_groupes')]
 #[ORM\Entity]
+#[Gedmo\SoftDeleteable(fieldName: 'deletedAt', timeAware: false, hardDelete: false)]
 abstract class BaseGroupe implements ValidableInterface
 {
-    use ValidityTrait, RemarqueTrait;
+    use ValidityTrait, RemarqueTrait, SoftDeleteableEntity;
 
     const   OUVERT  = 'ouvert';
     const   FERME   = 'ferme';
@@ -35,6 +38,7 @@ abstract class BaseGroupe implements ValidableInterface
      */
     #[ORM\Column(name: 'nom', type: 'string', length: 255)]
     #[Assert\NotBlank]
+    #[Assert\Length(max: 255)]
     protected $nom;
 
     /**

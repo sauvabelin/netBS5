@@ -5,7 +5,7 @@ namespace Ovesco\FacturationBundle\Listener;
 use Doctrine\ORM\EntityManagerInterface;
 use NetBS\CoreBundle\Event\RemoveFamilleEvent;
 use NetBS\CoreBundle\Event\RemoveMembreEvent;
-use Ovesco\FacturationBundle\Entity\Creance;
+use NetBS\CoreBundle\Exceptions\UserConstraintException;
 use Ovesco\FacturationBundle\Entity\Facture;
 use Ovesco\FacturationBundle\Subscriber\DoctrineDebiteurSubscriber;
 
@@ -16,29 +16,26 @@ class RemoveMembreListener
     }
 
     public function onRemove(RemoveMembreEvent $event) {
-        $membre = $event->getMembre();
-        $manager = $event->getManager();
-        $this->remove($membre, $manager);
+        $this->checkNoOpenFactures($event->getMembre(), $event->getManager(), 'le membre');
     }
 
     public function onRemoveFamille(RemoveFamilleEvent $event) {
-        $famille = $event->getFamille();
-        $manager = $event->getManager();
-        $this->remove($famille, $manager);
+        $this->checkNoOpenFactures($event->getFamille(), $event->getManager(), 'la famille');
     }
 
-    private function remove($debiteur, EntityManagerInterface $manager) {
+    private function checkNoOpenFactures($debiteur, EntityManagerInterface $manager, string $label) {
 
-        $factures = $manager->getRepository(Facture::class)
-            ->findBy(['debiteurId' => DoctrineDebiteurSubscriber::createId($debiteur)]);
+        $debiteurId = DoctrineDebiteurSubscriber::createId($debiteur);
 
-        $creances = $manager->getRepository(Creance::class)
-            ->findBy(['debiteurId' => DoctrineDebiteurSubscriber::createId($debiteur)]);
+        $open = $manager->getRepository(Facture::class)->findBy([
+            'debiteurId' => $debiteurId,
+            'statut'     => Facture::OUVERTE,
+        ]);
 
-        foreach($factures as $facture)
-            $manager->remove($facture);
-
-        foreach ($creances as $creance)
-            $manager->remove($creance);
+        if (count($open) > 0) {
+            throw new UserConstraintException("Impossible de supprimer {$label} {$debiteur} : "
+                . count($open) . " facture(s) ouverte(s) y sont attachée(s). "
+                . "Veuillez les clôturer avant.");
+        }
     }
 }

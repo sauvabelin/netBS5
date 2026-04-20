@@ -1,0 +1,87 @@
+{% extends '@NetBSCore/layout/backend.layout.twig' %}
+
+{% set title = "Corbeille" %}
+
+{% block main %}
+
+    <div class="container-fluid">
+
+        {% include '@NetBSCore/includes/header.include.twig' with {
+            header: 'Corbeille',
+            subHeader: 'Éléments supprimés pouvant être restaurés'
+        } %}
+
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title">Éléments supprimés</h5>
+                <h6 class="card-subtitle">Éléments supprimés pouvant être restaurés</h6>
+            </div>
+
+            <div class="card-header pt-0">
+                <ul class="nav nav-tabs card-header-tabs">
+                    {% for type, class in entityTypes %}
+                        <li class="nav-item">
+                            <a class="nav-link {{ type == selectedType ? 'active' : '' }}"
+                               href="{{ path('netbs.core.trash.list', {type: type}) }}">
+                                {{ type }}
+                            </a>
+                        </li>
+                    {% endfor %}
+                </ul>
+            </div>
+
+            <div class="card-body">
+                {% if deleted is empty %}
+                    <p class="text-muted">Aucun élément supprimé de type {{ selectedType }}.</p>
+                {% else %}
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>Élément</th>
+                                <th>Supprimé le</th>
+                                <th>Supprimé par</th>
+                                <th></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for entity in deleted %}
+                                <tr>
+                                    <td>
+                                        {% if selectedType == 'Utilisateur' %}
+                                            {{ entity.username }}
+                                            {% if entity.membre %}<small class="text-muted">({{ entity.membre }})</small>{% endif %}
+                                        {% else %}
+                                            {{ entity }}
+                                        {% endif %}
+                                    </td>
+                                    <td>{{ entity.deletedAt|date('d.m.Y H:i') }}</td>
+                                    <td>
+                                        {% set log = deletionInfo[entity.id] ?? null %}
+                                        {% if log and log.user %}
+                                            {{ log.user }}
+                                        {% else %}
+                                            —
+                                        {% endif %}
+                                    </td>
+                                    <td class="text-end">
+                                        <form method="post" action="{{ path('netbs.core.trash.restore') }}">
+                                            <input type="hidden" name="entity_id" value="{{ entity.id }}">
+                                            <input type="hidden" name="type" value="{{ selectedType }}">
+                                            <button type="submit"
+                                                    class="btn btn-sm btn-warning"
+                                                    data-turbo-confirm="Restaurer « {{ entity }} » et toutes ses données associées ?">
+                                                Restaurer
+                                            </button>
+                                        </form>
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                {% endif %}
+            </div>
+        </div>
+
+    </div>
+
+{% endblock %}

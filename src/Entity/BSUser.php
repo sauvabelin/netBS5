@@ -3,6 +3,7 @@
 namespace App\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
+use Gedmo\Mapping\Annotation as Gedmo;
 use NetBS\FichierBundle\Mapping\BaseMembre;
 use NetBS\SecureBundle\Mapping\BaseUser;
 
@@ -11,6 +12,7 @@ use NetBS\SecureBundle\Mapping\BaseUser;
  */
 #[ORM\Table(name: 'sauvabelin_netbs_users')]
 #[ORM\Entity]
+#[Gedmo\SoftDeleteable(fieldName: 'deletedAt', timeAware: false, hardDelete: false)]
 class BSUser extends BaseUser
 {
     const HAS_REDIRECT = 'has_a_mail_redirect';

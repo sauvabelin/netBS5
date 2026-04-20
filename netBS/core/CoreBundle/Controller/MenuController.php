@@ -20,8 +20,11 @@ class MenuController extends AbstractController
         $menu       = new MainMenu();
         $dispatcher->dispatch(new ExtendMainMenuEvent($menu), ExtendMainMenuEvent::KEY);
 
+        $parentRequest = $requestStack->getParentRequest();
+
         return $this->render('@NetBSCore/partial/menubar.partial.twig', array(
-            'route' => $requestStack->getParentRequest()->get('_route'),
+            'route' => $parentRequest->get('_route'),
+            'routeParams' => $parentRequest->get('_route_params', []),
             'menu'  => $menu
         ));
     }

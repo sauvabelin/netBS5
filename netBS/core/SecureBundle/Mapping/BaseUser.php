@@ -4,6 +4,8 @@ namespace NetBS\SecureBundle\Mapping;
 
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\ORM\Mapping as ORM;
+use Gedmo\Mapping\Annotation as Gedmo;
+use Gedmo\SoftDeleteable\Traits\SoftDeleteableEntity;
 use NetBS\CoreBundle\Utils\StrUtil;
 use NetBS\FichierBundle\Mapping\BaseMembre;
 use Symfony\Component\Validator\Constraints as Assert;
@@ -14,11 +16,16 @@ use Symfony\Component\Security\Core\User\LegacyPasswordAuthenticatedUserInterfac
 
 #[ORM\MappedSuperclass]
 #[UniqueEntity(fields: ['membre'])]
+#[UniqueEntity(fields: ['username'], message: "Ce nom d'utilisateur est déjà pris.")]
+#[UniqueEntity(fields: ['email'], message: "Cette adresse email est déjà utilisée.")]
+#[Gedmo\SoftDeleteable(fieldName: 'deletedAt', timeAware: false, hardDelete: false)]
 class BaseUser implements
     EquatableInterface,
     UserInterface,
     LegacyPasswordAuthenticatedUserInterface
 {
+    use SoftDeleteableEntity;
+
     /**
      * @var int
      */
@@ -31,6 +38,8 @@ class BaseUser implements
      * @var string
      */
     #[ORM\Column(name: 'username', type: 'string', length: 255, unique: true)]
+    #[Assert\NotBlank]
+    #[Assert\Length(max: 255)]
     protected $username;
 
     /**

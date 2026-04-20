@@ -23,8 +23,8 @@ class CompteController extends AbstractController
 
         return $this->render('@NetBSFichier/generic/page_generic.html.twig', array(
             'list'      => 'facturation.accounts',
-            'title'     => 'Comptes BVR',
-            'subtitle'  => 'Tous les comptes banquaires utilisables pour BVR',
+            'title'     => 'Comptes CAMT',
+            'subtitle'  => 'Tous les comptes banquaires utilisables pour CAMT',
             'modalPath' => $router->generate('ovesco.facturation.compte.modal_add')
         ));
     }

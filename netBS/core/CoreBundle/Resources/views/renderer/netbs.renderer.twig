@@ -1,116 +1,70 @@
+{#
+    Renderer for complex-search-result lists. All matching rows are server-rendered
+    once; client_list_controller paginates and text-filters them in the browser.
+#}
+<div id="netbs-renderer-{{ tableId }}" class="netbs-renderer position-relative" style="border:1px solid #eee"
+     data-controller="checkbox-select client-list">
 
-{{ registerCss(asset('bundles/netbscore/lib/datatables/datatables.min.css')) }}
-{{ registerCss(asset('bundles/netbscore/css/netbs.datatables.css')) }}
-
-{{ registerJs(asset('bundles/netbscore/lib/moment/moment.min.js')) }}
-{{ registerJs(asset('bundles/netbscore/lib/datatables/datatables.min.js')) }}
-{{ registerJs(asset('bundles/netbscore/lib/datatables/datatables-moment.js')) }}
-{{ registerJs(asset('bundles/netbscore/js/netbsTable.js')) }}
-
-{% set mainCheckboxId           = tableId ~ '_main_cb' %}
-{% set checkboxClass            = tableId ~ '_cb' %}
-{% set updateCountFunction      = tableId ~ '_update_function' %}
-{% set retrieveSelectedFunction = tableId ~ 'retrieve_selected_function' %}
-{% set buildMassParamsFunction  = tableId ~ 'build_mass_params_function' %}
-{% set updateCountClass         = tableId ~ '_count_class' %}
-{% set itemClass                = table.model.managedItemsClass %}
-
-<div class="netbs-renderer" style="border:1px solid #eee">
-    <table id="{{ tableId }}" class="table table-hover dataTable table-responsive-md table-striped table-fw-widget" style="margin:0 !important;">
-        <thead>
-        <tr>
-            <th data-orderDataType="checkbox" style="width:30px;">
-                <div class="form-check">
-                    <input id="{{ mainCheckboxId }}" class="form-check-input" type="checkbox">
-                    <label class="form-check-label" for="{{ mainCheckboxId }}"></label>
-                </div>
-            </th>
-
-            {% for header in table.headers %}
-                <th>{{ header }}</th>
-            {% endfor %}
-        </tr>
-        </thead>
-
-        <tbody>
-        {% for item in table.items %}
-
-            {% set row = table.data[loop.index0] %}
-            <tr data-id="{{ loader_id(item, table.model.managedItemsClass) }}">
-                <td>
-                    <div class="form-check">
-                        <input id="{{ tableId }}_{{ loop.index }}" class="{{ checkboxClass }} form-check-input" type="checkbox">
-                        <label class="form-check-label" for="{{ tableId }}_{{ loop.index }}"></label>
-                    </div>
-                </td>
-                {% for value in row %}
-                    <td>{{ value|raw }}</td>
-                {% endfor %}
-            </tr>
-        {% endfor %}
-        </tbody>
-    </table>
+    {% include '@NetBSCore/renderer/_list_body.twig' with {
+        controllerName: 'client-list',
+        rows: rows,
+        headers: headers,
+        tableId: tableId,
+        page: page,
+        amount: amount,
+        search: search,
+        totalItems: totalItems,
+        hasSearch: hasSearch,
+        hasSelection: true,
+    } %}
 
     {% if toolbar.items|length > 0 %}
     <div class="netbs-toolbar dropup">
-
-        <div class="row">
-
+        <div class="row pb-3 px-3">
             <div class="col-md-6">
                 {% for item in toolbar.items('left') %}
                     {{ item.render()|raw }}
                 {% endfor %}
-                {#
-                Nature des éléments : <b>{{ table.model.containedItemsName }}</b>
-                #}
             </div>
 
-            <div class="col-md-6">
+            <div class="col-md-6 d-flex justify-content-end">
                 {% for item in toolbar.items('right') %}
                     {{ item.render()|raw }}
                 {% endfor %}
             </div>
-
         </div>
     </div>
     {% endif %}
 
 </div>
 
-{% set disableSortColumns       = [] %}
-{% for column in table.configuration.columns %}
-    {% if not column.params.sortable %}
-        {% set disableSortColumns = disableSortColumns|merge([loop.index]) %}
-    {% endif %}
-{% endfor %}
+<script type="text/javascript">
+    var {{ tableId }} = {
+        getSelectedIds: function() {
+            var frameEl = document.getElementById('netbs-renderer-{{ tableId }}');
+            if (!frameEl) return [];
+            var app = window.Stimulus;
 
-{% set tableJs %}
+            // 1. Whatever the user explicitly checked wins
+            var selected = [];
+            if (app) {
+                var cbCtrl = app.getControllerForElementAndIdentifier(frameEl, 'checkbox-select');
+                if (cbCtrl) selected = cbCtrl.selectedIds;
+            }
+            if (!selected.length) {
+                selected = Array.from(frameEl.querySelectorAll('[data-checkbox-select-target="checkbox"]:checked'))
+                    .map(function(cb) { return parseInt(cb.value, 10); });
+            }
+            if (selected.length > 0) return selected;
 
-    <script type="text/javascript">
-
-        $.fn.dataTable.moment( '{{ param('format', 'js_moment_date') }}' );
-
-        var {{ tableId }};
-
-        $(document).ready(function() {
-
-            var dtbl_{{ tableId }} = $('#' + '{{ tableId }}').DataTable({
-                columns: [
-                    {orderable: false},
-                    {% for column in table.configuration.columns %}
-                    {orderable: {% if loop.index in disableSortColumns %}false{% else %}true{% endif %} }{% if not loop.last %},{% endif %}
-                    {% endfor %}
-                ]
-            });
-
-            {{ tableId }} = new netBSTable(
-                '{{ tableId }}',
-                dtbl_{{ tableId }},
-                '{{ mainCheckboxId }}',
-                '{{ table.model.alias }}',
-                '{{ updateCountClass }}');
-        });
-    </script>
-{% endset %}
-
-{{ registerScript(tableJs) }}
+            // 2. Nothing checked → fall back to every row matching the current search filter
+            if (app) {
+                var clCtrl = app.getControllerForElementAndIdentifier(frameEl, 'client-list');
+                if (clCtrl && typeof clCtrl.getFilteredIds === 'function') {
+                    return clCtrl.getFilteredIds();
+                }
+            }
+            return [];
+        }
+    };
+</script>

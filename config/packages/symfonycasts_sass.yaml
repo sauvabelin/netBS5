@@ -1,0 +1,5 @@
+symfonycasts_sass:
+    root_sass: 'assets/styles/main.scss'
+    sass_options:
+        load_path:
+            - '%kernel.project_dir%/vendor/twbs/bootstrap/scss'

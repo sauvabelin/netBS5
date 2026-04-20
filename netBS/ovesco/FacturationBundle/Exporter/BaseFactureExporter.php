@@ -16,7 +16,6 @@ use NetBS\FichierBundle\Mapping\BaseMembre;
 use Ovesco\FacturationBundle\Entity\Creance;
 use Ovesco\FacturationBundle\Entity\Facture;
 use Ovesco\FacturationBundle\Entity\FactureModel;
-use Ovesco\FacturationBundle\Model\FactureConfig;
 use Symfony\Component\ExpressionLanguage\ExpressionLanguage;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
@@ -68,7 +67,6 @@ abstract class BaseFactureExporter implements ExporterInterface, ConfigurableExp
     {
         define('FPDF_FONTPATH', __DIR__ . '/Facture/fonts/');
 
-        /** @var FactureConfig $config */
         $config = $this->getConfiguration();
         $fpdf   = new \FPDF();
         $fpdf->SetLeftMargin($config->margeGauche);
@@ -79,7 +77,6 @@ abstract class BaseFactureExporter implements ExporterInterface, ConfigurableExp
         $fpdf->AddFont('OpenSans', 'B', 'OpenSans-Bold.php');
         $fpdf->AddFont('Arial', '', 'arial.php');
         $fpdf->AddFont('Arial', 'B', 'arialbd.php');
-        $fpdf->AddFont('BVR', '', 'ocrb10n.php');
 
         if (!empty($config->sortAlpha)) {
             usort($items, function(Facture $a, Facture $b) {
@@ -327,7 +324,6 @@ abstract class BaseFactureExporter implements ExporterInterface, ConfigurableExp
 
         if (!$facture->getDebiteur()->getSendableAdresse()) return;
 
-        /** @var FactureConfig $config */
         $config = $this->getConfiguration();
         $model = $this->getModel($facture);
         $date = $config->date instanceof \DateTime ? $config->date : $this->factureLatestDate($facture);

@@ -3,67 +3,29 @@
 {% block title %}Modifier le destinataire{% endblock %}
 
 {% block content %}
-    {{ form_start(form) }}
-    {{ form_row(form.type) }}
-    <div id="email-field">
-        {{ form_row(form.targetEmail) }}
-    </div>
-    <div id="user-field" style="display:none">
-        {{ form_row(form.targetUser) }}
-    </div>
-    <div id="group-field" style="display:none">
-        {{ form_row(form.targetGroup) }}
-    </div>
-    <div id="fonction-field" style="display:none">
-        {{ form_row(form.targetFonction) }}
-    </div>
-    <div id="list-field" style="display:none">
-        {{ form_row(form.targetList) }}
-    </div>
-    {{ form_end(form) }}
-
-    <script>
-        (function() {
-            const typeSelect = document.querySelector('.target-type-selector');
-            const emailField = document.getElementById('email-field');
-            const userField = document.getElementById('user-field');
-            const groupField = document.getElementById('group-field');
-            const fonctionField = document.getElementById('fonction-field');
-            const listField = document.getElementById('list-field');
-
-            function updateFields() {
-                const type = typeSelect.value;
-                emailField.style.display = type === 'email' ? 'block' : 'none';
-                userField.style.display = type === 'user' ? 'block' : 'none';
-                groupField.style.display = type === 'unite' ? 'block' : 'none';
-                fonctionField.style.display = type === 'role' ? 'block' : 'none';
-                listField.style.display = type === 'list' ? 'block' : 'none';
-
-                // Clear non-visible fields to avoid validation issues
-                if (type !== 'email') {
-                    const emailInput = emailField.querySelector('input');
-                    if (emailInput) emailInput.value = '';
-                }
-                if (type !== 'user') {
-                    const userInput = userField.querySelector('select');
-                    if (userInput) userInput.value = '';
-                }
-                if (type !== 'unite') {
-                    const groupInput = groupField.querySelector('select');
-                    if (groupInput) groupInput.value = '';
-                }
-                if (type !== 'role') {
-                    const fonctionInput = fonctionField.querySelector('select');
-                    if (fonctionInput) fonctionInput.value = '';
-                }
-                if (type !== 'list') {
-                    const listInput = listField.querySelector('select');
-                    if (listInput) listInput.value = '';
-                }
+    <div data-controller="mailing">
+        {{ form_start(form) }}
+        {{ form_row(form.type, {
+            attr: {
+                'data-mailing-target': 'typeSelect',
+                'data-action': 'change->mailing#updateTargetFields'
             }
-
-            typeSelect.addEventListener('change', updateFields);
-            updateFields();
-        })();
-    </script>
+        }) }}
+        <div data-mailing-target="field" data-field-type="email">
+            {{ form_row(form.targetEmail) }}
+        </div>
+        <div data-mailing-target="field" data-field-type="user" style="display:none">
+            {{ form_row(form.targetUser) }}
+        </div>
+        <div data-mailing-target="field" data-field-type="unite" style="display:none">
+            {{ form_row(form.targetGroup) }}
+        </div>
+        <div data-mailing-target="field" data-field-type="role" style="display:none">
+            {{ form_row(form.targetFonction) }}
+        </div>
+        <div data-mailing-target="field" data-field-type="list" style="display:none">
+            {{ form_row(form.targetList) }}
+        </div>
+        {{ form_end(form) }}
+    </div>
 {% endblock %}

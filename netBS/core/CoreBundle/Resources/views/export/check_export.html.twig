@@ -6,6 +6,14 @@
 
 {% import _self as former %}
 
+{% macro field_errors(form) %}
+    {% if form.vars.errors|length > 0 %}
+        {% for error in form.vars.errors %}
+        <div class="col-md-12"><small class="text-danger">{{ error.message }}</small></div>
+        {% endfor %}
+    {% endif %}
+{% endmacro %}
+
 {% macro expose(form) %}
     {% import _self as former2 %}
     {% if form.children|length > 0 %}
@@ -13,15 +21,17 @@
             {{ former2.expose(child) }}
         {% endfor %}
     {% elseif form.vars.name != "_token" %}
-        {% if 'number' in form.vars.block_prefixes or 'switch' in form.vars.block_prefixes %}
+        {% if 'number' in form.vars.block_prefixes %}
             <div class="row">
                 <div class="col-12 col-md-8" style="line-height:30px;">{{ form_label(form) }}</div>
                 <div class="col-12 col-md-4">{{ form_widget(form, {attr: {style: "font-size:0.9em;height:30px;"}}) }}</div>
-                {% if form.vars.errors|length > 0 %}
-                    {% for error in form.vars.errors %}
-                    <div class="col-md-12"><small class="text-danger">{{ error.message }}</small></div>
-                    {% endfor %}
-                {% endif %}
+                {{ former2.field_errors(form) }}
+            </div>
+        {% elseif 'switch' in form.vars.block_prefixes %}
+            <div class="row">
+                <div class="col-12 col-md-8" style="line-height:30px;">{{ form_label(form) }}</div>
+                <div class="col-12 col-md-4">{{ form_widget(form) }}</div>
+                {{ former2.field_errors(form) }}
             </div>
         {% else %}
             <div class="row">
@@ -89,7 +99,7 @@
                     <h3>Exportation</h3>
                 </div>
 
-                {% if exporter.alias == 'pdf.factures' or exporter.alias == 'pdf.qr.factures' %}
+                {% if exporter.alias == 'pdf.qr.factures' %}
                     {% include '@NetBSCore/doc/_doc_block.twig' with {doc: '@OvescoFacturation/doc/impression_config.twig'} %}
                 {% elseif doc is defined and doc %}
                     {% include '@NetBSCore/doc/_doc_block.twig' with {doc: doc} only %}
@@ -102,7 +112,7 @@
                             <td style="width:75%;">{{ xeditable(config, 'nom', 'Symfony\\Component\\Form\\Extension\\Core\\Type\\TextType')|raw }}</td>
                             <td style="width:25%;">
                                 <a data-bs-toggle="tooltip" title="Utiliser" href="{{ path('netbs.core.export.switch_config', {blobKey: blob.key, configId: config.id}) }}"><i class="fas fa-check-circle fa-sm"></i></a>
-                                <a data-bs-toggle="tooltip" title="Supprimer" href="{{ path('netbs.core.export.remove_config', {blobKey: blob.key, configId: config.id}) }}"><i class="fas fa-times fa-sm"></i></a>
+                                <a data-bs-toggle="tooltip" title="Supprimer" href="{{ path('netbs.core.export.remove_config', {blobKey: blob.key, configId: config.id}) }}" data-turbo-method="post"><i class="fas fa-times fa-sm"></i></a>
                             </td>
                         </tr>
                     {% endfor %}

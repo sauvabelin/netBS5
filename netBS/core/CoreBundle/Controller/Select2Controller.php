@@ -20,6 +20,9 @@ class Select2Controller extends AbstractController
     public function resultsAction(Request $request, Select2ProviderManager $select2ProviderManager) {
 
         $class      = $request->get('ajaxClass');
+        if (empty($class)) {
+            return $this->json(['results' => []]);
+        }
         $nullOption = $request->get('nullOption') === '1';
         $provider   = $select2ProviderManager->getProvider(base64_decode($class));
         $search     = $request->get(self::SEARCH_NEEDLE);

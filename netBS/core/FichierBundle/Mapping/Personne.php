@@ -3,6 +3,8 @@
 namespace NetBS\FichierBundle\Mapping;
 
 use Doctrine\ORM\Mapping as ORM;
+use Gedmo\Mapping\Annotation as Gedmo;
+use Gedmo\SoftDeleteable\Traits\SoftDeleteableEntity;
 use Gedmo\Timestampable\Traits\TimestampableEntity;
 use NetBS\FichierBundle\Model\AdressableInterface;
 use NetBS\FichierBundle\Model\EmailableInterface;
@@ -16,9 +18,10 @@ use Symfony\Component\Validator\Constraints as Assert;
 /**
  * Personne
  */
+#[Gedmo\SoftDeleteable(fieldName: 'deletedAt', timeAware: false, hardDelete: false)]
 abstract class Personne implements AdressableInterface, TelephonableInterface, EmailableInterface, StatuableInterface
 {
-    use ContactTrait, RemarqueTrait, TimestampableEntity;
+    use ContactTrait, RemarqueTrait, TimestampableEntity, SoftDeleteableEntity;
 
     const   HOMME   = 'homme';
     const   FEMME   = 'femme';
@@ -38,6 +41,7 @@ abstract class Personne implements AdressableInterface, TelephonableInterface, E
     #[Groups(['default'])]
     #[ORM\Column(name: 'prenom', type: 'string', length: 255)]
     #[Assert\NotBlank]
+    #[Assert\Length(max: 255)]
     protected $prenom;
 
     /**
@@ -45,6 +49,8 @@ abstract class Personne implements AdressableInterface, TelephonableInterface, E
      */
     #[Groups(['default'])]
     #[ORM\Column(name: 'sexe', type: 'string', length: 255)]
+    #[Assert\NotBlank]
+    #[Assert\Choice(choices: [Personne::HOMME, Personne::FEMME])]
     protected $sexe;
 
     /**

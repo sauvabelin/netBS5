@@ -11,7 +11,9 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\Form\Extension\Core\Type\CollectionType;
 use Symfony\Component\Form\Extension\Core\Type\HiddenType;
 use Symfony\Component\Form\Form;
+use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 
 /**
@@ -89,6 +91,8 @@ class MassUpdaterController extends AbstractController
             ->add('ids', HiddenType::class)
             ->getForm();
 
+        $returnUrl = $this->resolveSafeReturnUrl($request);
+
         $massForm->handleRequest($request);
 
         if($massForm->isSubmitted() && $massForm->isValid()) {
@@ -100,15 +104,52 @@ class MassUpdaterController extends AbstractController
             $em->flush();
 
             $this->addFlash('success', "Modifications enregistrées pour " . count($items) . " éléments");
+
+            if ($returnUrl) {
+                return new RedirectResponse($returnUrl);
+            }
             return $history->getPreviousRoute(3);
         }
 
-        return $this->render('@NetBSCore/updater/updater.html.twig', array(
+        $response = $this->render('@NetBSCore/updater/updater.html.twig', array(
             'title'         => $title,
             'form'          => $massForm->createView(),
             'showToString'  => $updater->showToString(),
-            'generic'       => $genericForm->createView()
+            'generic'       => $genericForm->createView(),
+            'skipFields'    => $updater->getSkipFields(),
+            'returnUrl'     => $returnUrl,
         ));
+
+        if ($massForm->isSubmitted()) {
+            $response->setStatusCode(Response::HTTP_UNPROCESSABLE_ENTITY);
+        }
+
+        return $response;
+    }
+
+    /**
+     * Captures the page to return to after the mass-update form is submitted.
+     *
+     * On initial render the referer identifies the calling list; on resubmit
+     * the original value is carried through the form's _return_url field.
+     * Non-local URLs are discarded to prevent open-redirect attacks.
+     */
+    private function resolveSafeReturnUrl(Request $request): string
+    {
+        $returnUrl = $request->request->get('_return_url')
+            ?: $request->headers->get('referer', '');
+
+        if ($returnUrl && !$this->isLocalUrl($returnUrl, $request)) {
+            return '';
+        }
+
+        return $returnUrl;
+    }
+
+    private function isLocalUrl(string $url, Request $request): bool
+    {
+        return str_starts_with($url, '/')
+            || str_starts_with($url, $request->getSchemeAndHttpHost());
     }
 
     /**

@@ -52,7 +52,7 @@ class AutorisationController extends AbstractController
      * @throws \Doctrine\ORM\OptimisticLockException
      * @throws \Doctrine\ORM\TransactionRequiredException
      */
-    #[Route('/autorisation/delete/{id}', name: 'netbs.secure.autorisation.delete')]
+    #[Route('/autorisation/delete/{id}', name: 'netbs.secure.autorisation.delete', methods: ['POST'])]
     public function deleteAutorisationAction($id, SecureConfig $secureConfig, EntityManagerInterface $em) {
         $autorisation   = $em->find($secureConfig->getAutorisationClass(), $id);
 

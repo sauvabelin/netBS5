@@ -6,10 +6,26 @@
 {% set items        = form %}
 {% set tableClass   = 'table-condensed table-bordered' %}
 
-{% include '@NetBSCore/updater/updater.partial.twig' %}
-{% include '@NetBSCore/updater/updater_allow_add.script.twig' %}
-{% include '@NetBSCore/updater/updater_allow_delete.script.twig' %}
+<div data-controller="mass-updater" data-mass-updater-updater-id-value="{{ _updater_id }}">
 
-<div class="text-end">
-    <button class="btn btn-secondary btn-space" type="button" data-mass-add-{{ _updater_id }}>Ajouter</button>
+    {% include '@NetBSCore/updater/updater.partial.twig' %}
+
+    <table id="mass-prototype-{{ _updater_id }}" style="display:none;">
+        <tr>
+            {% for protofield in form.vars.prototype.children %}
+                <td>
+                    {{ form_widget(protofield) }}
+                    {{ form_errors(protofield) }}
+                </td>
+            {% endfor %}
+            <td>
+                <button class="btn btn-rounded btn-space btn-secondary" type="button" data-delete-element-{{ _updater_id }}><i class="fas fa-times fa-sm"></i></button>
+            </td>
+        </tr>
+    </table>
+
+    <div class="text-end">
+        <button class="btn btn-secondary btn-space" type="button" data-action="click->mass-updater#addRow">Ajouter</button>
+    </div>
+
 </div>

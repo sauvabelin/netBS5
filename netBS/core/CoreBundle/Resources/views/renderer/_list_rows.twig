@@ -1,0 +1,30 @@
+{#
+    Rows-only partial. Renders a sequence of <tr> elements only — no <table>, <thead>, or <tbody>.
+
+    Shared between:
+      - _list_body.twig (initial full-page render, wrapped in <tbody>)
+      - AjaxListController row-fragment endpoints (no wrapping)
+
+    Variables:
+      - rows: array of {id, cells}
+      - tableId: unique table identifier (used for checkbox input ids)
+      - hasSelection: whether to render the leading checkbox cell
+#}
+{% for row in rows %}
+    <tr data-row-id="{{ row.id }}">
+        {% if hasSelection %}
+            <td>
+                <div class="form-check">
+                    <input id="{{ tableId }}_cb_{{ row.id }}" class="form-check-input" type="checkbox"
+                           value="{{ row.id }}"
+                           data-checkbox-select-target="checkbox"
+                           data-action="change->checkbox-select#toggle">
+                    <label class="form-check-label" for="{{ tableId }}_cb_{{ row.id }}"></label>
+                </div>
+            </td>
+        {% endif %}
+        {% for cell in row.cells %}
+            <td>{{ cell|raw }}</td>
+        {% endfor %}
+    </tr>
+{% endfor %}

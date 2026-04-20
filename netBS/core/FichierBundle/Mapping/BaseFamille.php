@@ -4,6 +4,8 @@ namespace NetBS\FichierBundle\Mapping;
 
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\ORM\Mapping as ORM;
+use Gedmo\Mapping\Annotation as Gedmo;
+use Gedmo\SoftDeleteable\Traits\SoftDeleteableEntity;
 use Gedmo\Timestampable\Traits\TimestampableEntity;
 use NetBS\CoreBundle\Model\EqualInterface;
 use NetBS\FichierBundle\Model\AdressableInterface;
@@ -25,13 +27,14 @@ use NetBS\CoreBundle\Validator\Constraints as BSAssert;
  */
 #[ORM\MappedSuperclass]
 #[BSAssert\User(rule: "user.hasRole('ROLE_SG')")]
+#[Gedmo\SoftDeleteable(fieldName: 'deletedAt', timeAware: false, hardDelete: false)]
 abstract class BaseFamille implements AdressableInterface, TelephonableInterface, EmailableInterface, ValidableInterface, EqualInterface
 {
     const   VALIDE      = 'valide';
     const   INVALIDE    = 'invalide';
     const   EN_ATTENTE  = 'en_attente';
 
-    use ContactTrait, RemarqueTrait, ValidityTrait, TimestampableEntity;
+    use ContactTrait, RemarqueTrait, ValidityTrait, TimestampableEntity, SoftDeleteableEntity;
 
     /**
      * @var int
@@ -47,6 +50,7 @@ abstract class BaseFamille implements AdressableInterface, TelephonableInterface
      */
     #[ORM\Column(name: 'nom', type: 'string', length: 255)]
     #[Assert\NotBlank]
+    #[Assert\Length(max: 255)]
     #[Groups(['default'])]
     protected $nom;
 

@@ -15,9 +15,9 @@
                 <td>{{ form_widget(email.expediable) }}</td>
                 <td>{{ form_widget(email.remarques) }}</td>
                 <td>
-                    <a onclick="return confirm('Etes-vous sûr de supprimer cette adresse e-mail ?');"
-                       class="btn btn-danger btn-xs"
-                       href="{{ path('netbs.fichier.email.delete', {ownerId: item.id, ownerType: get_class(item)|toBase64, emailId: email.vars.data.id}) }}"><i class="fas fa-times fa-sm"></i></a>
+                    <a class="btn btn-danger btn-xs"
+                       href="{{ path('netbs.fichier.email.delete', {ownerId: item.id, ownerType: get_class(item)|toBase64, emailId: email.vars.data.id}) }}"
+                       data-turbo-confirm="Etes-vous sûr de supprimer cette adresse e-mail ?" data-turbo-method="post"><i class="fas fa-times fa-sm"></i></a>
                 </td>
             </tr>
         {% endfor %}
@@ -28,4 +28,4 @@
 {% endif %}
 
 <button class="btn btn-space btn-primary"
-        data-modal data-modal-url="{{ path('netbs.fichier.email.modal_creation', {ownerId: item.id, ownerType: get_class(item)|toBase64}) }}">Nouvel E-mail</button>
+        data-controller="modal" data-modal-url-value="{{ path('netbs.fichier.email.modal_creation', {ownerId: item.id, ownerType: get_class(item)|toBase64}) }}" data-action="click->modal#open">Nouvel E-mail</button>

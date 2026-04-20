@@ -3,6 +3,7 @@
 namespace NetBS\FichierBundle\Mapping;
 
 use Doctrine\ORM\Mapping as ORM;
+use Gedmo\Mapping\Annotation as Gedmo;
 use NetBS\CoreBundle\Model\EqualInterface;
 use NetBS\FichierBundle\Model\OwnableAdresse;
 use NetBS\FichierBundle\Model\OwnableEmail;
@@ -14,6 +15,7 @@ use Symfony\Component\Serializer\Annotation\Groups;
  * Geniteur
  */
 #[ORM\MappedSuperclass]
+#[Gedmo\SoftDeleteable(fieldName: 'deletedAt', timeAware: false, hardDelete: false)]
 abstract class BaseGeniteur extends Personne implements EqualInterface
 {
     const       MERE                = 'mere';
@@ -27,6 +29,7 @@ abstract class BaseGeniteur extends Personne implements EqualInterface
      */
     #[Groups(['default'])]
     #[ORM\Column(name: 'nom', type: 'string', length: 255, nullable: true)]
+    #[Assert\Length(max: 255)]
     protected $nom;
 
     /**
@@ -34,6 +37,7 @@ abstract class BaseGeniteur extends Personne implements EqualInterface
      */
     #[Groups(['details'])]
     #[ORM\Column(name: 'profession', type: 'string', length: 255, nullable: true)]
+    #[Assert\Length(max: 255)]
     protected $profession;
 
     /**
@@ -42,6 +46,8 @@ abstract class BaseGeniteur extends Personne implements EqualInterface
     #[Groups(['details'])]
     #[ORM\Column(name: 'statut', type: 'string', length: 255)]
     #[Assert\NotBlank]
+    #[Assert\Length(max: 255)]
+    #[Assert\Choice(choices: [BaseGeniteur::MERE, BaseGeniteur::PERE, BaseGeniteur::GRAND_PARENT, BaseGeniteur::REPRESENTANT_LEGAL, BaseGeniteur::AUTRE])]
     protected $statut;
 
     /**
