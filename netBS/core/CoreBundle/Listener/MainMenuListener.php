@@ -58,7 +58,6 @@ class MainMenuListener
             return;
 
         $modifMenu = $secureCat->addSubMenu('secure.admin.modifications', 'Modifications', 'fas fa-history');
-        $modifMenu->addSubLink('Vérification', 'netbs.core.changelog.list');
         $modifMenu->addSubLink('Historique', 'netbs.core.audit_log.list');
         $modifMenu->addSubLink('Corbeille', 'netbs.core.trash.list');
 

@@ -13,12 +13,8 @@ use Symfony\Component\Routing\Annotation\Route;
 
 class AjaxListController extends AbstractController
 {
-    /**
-     * Legacy JSON endpoint — kept for backward compatibility during transition.
-     * @return Response
-     */
     #[Route('/ajax-list/query/{listId}', name: 'netbs.core.ajax_list_query')]
-    public function removeItemAction($listId, Request $request, ListManager $listManager, ListEngine $engine) {
+    public function queryAction($listId, Request $request, ListManager $listManager, ListEngine $engine) {
 
         $model = $listManager->getModelByAlias($listId);
         if (!$model instanceof AjaxModel) {
@@ -58,9 +54,6 @@ class AjaxListController extends AbstractController
         return new JsonResponse($res);
     }
 
-    /**
-     * HTML endpoint for Turbo Frame — returns server-rendered table rows + pagination.
-     */
     #[Route('/ajax-list/html/{listId}', name: 'netbs.core.ajax_list_html')]
     public function htmlAction($listId, Request $request, ListManager $listManager, ListEngine $engine): Response {
 
@@ -119,10 +112,6 @@ class AjaxListController extends AbstractController
         ]);
     }
 
-    /**
-     * HTML endpoint for Turbo Frame — returns server-rendered table rows + pagination
-     * for netbs (BaseListModel) lists with in-memory pagination and search.
-     */
     #[Route('/netbs-list/html/{listId}', name: 'netbs.core.netbs_list_html')]
     public function netbsHtmlAction($listId, Request $request, ListManager $listManager, ListEngine $engine): Response {
 

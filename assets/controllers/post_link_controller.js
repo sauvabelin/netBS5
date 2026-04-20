@@ -1,20 +1,6 @@
 import { Controller } from '@hotwired/stimulus';
+import { confirmMethod } from '../lib/turbo_confirm.js';
 
-/*
- * Replaces the legacy jQuery PostLink(url, data) function.
- * Creates a hidden form and POSTs it, causing a full page navigation.
- *
- * Usage example (Twig):
- *   <a href="#"
- *      data-controller="post-link"
- *      data-post-link-url-value="{{ path('some_route') }}"
- *      data-post-link-ids-source-value="tableId"
- *      data-post-link-id-field-value="selectedIds"
- *      data-post-link-extra-data-value='{{ { itemsClass: "App\\Entity\\Foo" }|json_encode }}'
- *      data-action="post-link#submit">
- *       Export
- *   </a>
- */
 export default class extends Controller {
     static values = {
         url: String,
@@ -24,16 +10,27 @@ export default class extends Controller {
         extraData: { type: Object, default: {} },
     };
 
-    submit(event) {
+    async submit(event) {
         event.preventDefault();
-        const data = this._buildData(event);
+        // Capture the button before any `await`: event.currentTarget is cleared once
+        // the synchronous dispatch ends, and _buildData reads its dataset.
+        const button = event.currentTarget;
+
+        // post-link builds and submits a form programmatically, bypassing Turbo's
+        // form-intercept entirely — so honour data-turbo-confirm ourselves.
+        const confirmMsg = button.dataset.turboConfirm;
+        if (confirmMsg && !(await confirmMethod(confirmMsg, button))) {
+            return;
+        }
+
+        const data = this._buildData(button);
         this._postForm(this.urlValue, data);
     }
 
-    _buildData(event) {
+    _buildData(button) {
         const data = Object.assign({}, this.extraDataValue);
         data[this.idFieldValue] = this._resolveIds();
-        this._mergeDynamicAttrs(data, event.currentTarget);
+        this._mergeDynamicAttrs(data, button);
         return data;
     }
 

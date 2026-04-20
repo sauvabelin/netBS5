@@ -1,21 +1,6 @@
 import { Controller } from '@hotwired/stimulus';
 import { reinitCellPlugins } from '../utils/reinit_cell_plugins.js';
 
-/**
- * Drives ajax-list pagination, search, and amount changes via Turbo Frames.
- *
- * The controller lives on the <turbo-frame> element and navigates the frame
- * by setting its `src` attribute to the new URL.
- *
- * Values:
- *   baseUrl  — the HTML endpoint URL (without query params)
- *   params   — JSON-encoded model parameters
- *   tableId  — the unique table identifier (passed to server for consistent IDs)
- *
- * Targets:
- *   search — the search <input>
- *   amount — the amount <select>
- */
 export default class extends Controller {
     static targets = ['search', 'amount'];
     static values = {

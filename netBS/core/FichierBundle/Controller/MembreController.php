@@ -9,6 +9,7 @@ use NetBS\CoreBundle\Block\CardBlock;
 use NetBS\CoreBundle\Block\TabsCardBlock;
 use NetBS\CoreBundle\Block\TemplateBlock;
 use NetBS\CoreBundle\Event\RemoveMembreEvent;
+use NetBS\CoreBundle\Exceptions\UserConstraintException;
 use NetBS\CoreBundle\Searcher\SearcherManager;
 use NetBS\CoreBundle\Service\DynamicListManager;
 use NetBS\CoreBundle\Service\ExporterManager;
@@ -136,7 +137,7 @@ class MembreController extends AbstractController
             $em->remove($membre);
             $em->flush();
             $this->addFlash('success', 'Membre supprimé');
-        } catch (\Exception $e) {
+        } catch (UserConstraintException $e) {
             $this->addFlash('danger', $e->getMessage());
         }
 

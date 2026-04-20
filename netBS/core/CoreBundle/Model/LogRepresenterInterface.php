@@ -2,8 +2,6 @@
 
 namespace NetBS\CoreBundle\Model;
 
-use NetBS\CoreBundle\Entity\LoggedChange;
-
 interface LogRepresenterInterface
 {
     /**

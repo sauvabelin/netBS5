@@ -10,6 +10,7 @@ use NetBS\CoreBundle\Block\TabsCardBlock;
 use NetBS\CoreBundle\Block\TemplateBlock;
 use NetBS\CoreBundle\Event\RemoveFamilleEvent;
 use NetBS\CoreBundle\Event\RemoveMembreEvent;
+use NetBS\CoreBundle\Exceptions\UserConstraintException;
 use NetBS\FichierBundle\Form\FamilleType;
 use NetBS\FichierBundle\Mapping\BaseFamille;
 use NetBS\FichierBundle\Service\FichierConfig;
@@ -132,7 +133,7 @@ class FamilleController extends AbstractController
             $em->remove($famille);
             $em->flush();
             $this->addFlash('success', 'Famille supprimée');
-        } catch (\Exception $e) {
+        } catch (UserConstraintException $e) {
             $this->addFlash('danger', $e->getMessage());
         }
 

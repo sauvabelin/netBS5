@@ -5,6 +5,7 @@ namespace NetBS\CoreBundle\EventListener;
 use Doctrine\ORM\EntityManagerInterface;
 use NetBS\CoreBundle\Entity\AuditLog;
 use NetBS\FichierBundle\Service\FichierConfig;
+use Psr\Log\LoggerInterface;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Event\ExceptionEvent;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
@@ -16,17 +17,20 @@ class SoftDeletedEntityListener
     private EntityManagerInterface $em;
     private AuthorizationCheckerInterface $authChecker;
     private Environment $twig;
+    private LoggerInterface $logger;
     private array $routeMap;
 
     public function __construct(
         EntityManagerInterface $em,
         AuthorizationCheckerInterface $authChecker,
         Environment $twig,
-        FichierConfig $config
+        FichierConfig $config,
+        LoggerInterface $logger
     ) {
         $this->em = $em;
         $this->authChecker = $authChecker;
         $this->twig = $twig;
+        $this->logger = $logger;
 
         $this->routeMap = [
             'netbs.fichier.membre.page_membre'   => ['class' => $config->getMembreClass(), 'type' => 'Membre'],
@@ -51,11 +55,13 @@ class SoftDeletedEntityListener
             return;
         }
 
-        // If anything goes wrong rendering the restore page, let the 404 propagate
         try {
             $this->handleSoftDeletedEntity($event, $routeName);
         } catch (\Throwable $e) {
-            return;
+            $this->logger->error('Soft-delete restore banner failed to render: ' . $e->getMessage(), [
+                'exception' => $e,
+                'route' => $routeName,
+            ]);
         }
     }
 

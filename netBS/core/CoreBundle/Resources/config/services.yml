@@ -140,10 +140,6 @@ services:
         tags:
             - { name: doctrine.event_subscriber }
 
-    NetBS\CoreBundle\Subscriber\DoctrineLoggerSubscriber:
-        tags:
-            - { name: doctrine.event_subscriber }
-
     NetBS\CoreBundle\Subscriber\AuditLogSubscriber:
         tags:
             - { name: doctrine.event_subscriber }

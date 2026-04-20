@@ -2,11 +2,6 @@ import { Controller } from '@hotwired/stimulus';
 import { showToast } from '../lib/toast.js';
 import { fetchResults, renderDropdownItems, wireSearchInput, esc } from '../lib/ajax_search.js';
 
-/**
- * Replaces jQuery x-editable with a Bootstrap Popover-based inline editor.
- * Reads the same data attributes (data-pk, data-url, data-type, data-value,
- * data-name, data-source, data-title) and POSTs to the same XEditableController.
- */
 export default class extends Controller {
 
     connect() {
@@ -17,8 +12,6 @@ export default class extends Controller {
         this._destroyPopover();
     }
 
-    // --- Main action ---
-
     open(event) {
         event.preventDefault();
         if (this._popover) {
@@ -28,7 +21,6 @@ export default class extends Controller {
         this._showPopover();
     }
 
-    // --- Popover lifecycle ---
 
     _showPopover() {
         const title = this.element.dataset.title || 'Edit';
@@ -91,7 +83,6 @@ export default class extends Controller {
         }
     }
 
-    // --- Build edit form HTML ---
 
     _buildFormHtml() {
         const type = this.element.dataset.type;
@@ -159,7 +150,6 @@ export default class extends Controller {
         return `<select class="form-select form-select-sm">${options}</select>`;
     }
 
-    // --- Save ---
 
     _save(tip) {
         if (this._saving) return;
@@ -244,7 +234,6 @@ export default class extends Controller {
         }
     }
 
-    // --- AJAX search for entity fields ---
 
     _wireAjaxSearch(tip) {
         const searchInput = tip.querySelector('.editable-search-input');
@@ -270,7 +259,6 @@ export default class extends Controller {
         });
     }
 
-    // --- Flatpickr (lazy-loaded only when a date popover opens) ---
 
     async _initFlatpickr(input) {
         const [fp, defaults] = await Promise.all([
@@ -284,7 +272,6 @@ export default class extends Controller {
         });
     }
 
-    // --- Helpers ---
 
     _parseSource() {
         try {

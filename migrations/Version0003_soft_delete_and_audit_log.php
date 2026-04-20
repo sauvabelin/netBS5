@@ -53,7 +53,7 @@ final class Version0003_soft_delete_and_audit_log extends AbstractMigration
             updatedAt DATETIME NOT NULL,
             INDEX IDX_4DB31AA4A76ED395 (user_id),
             PRIMARY KEY(id),
-            CONSTRAINT FK_4DB31AA4A76ED395 FOREIGN KEY (user_id) REFERENCES sauvabelin_netbs_users (id)
+            CONSTRAINT FK_4DB31AA4A76ED395 FOREIGN KEY (user_id) REFERENCES sauvabelin_netbs_users (id) ON DELETE SET NULL
         ) DEFAULT CHARACTER SET utf8mb4 COLLATE `utf8mb4_unicode_ci` ENGINE = InnoDB');
     }
 

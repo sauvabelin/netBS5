@@ -2,7 +2,6 @@
 
 namespace NetBS\CoreBundle\Listener;
 
-use NetBS\CoreBundle\Entity\LoggedChange;
 use NetBS\CoreBundle\Event\NetbsRendererToolbarEvent;
 use NetBS\CoreBundle\ListModel\Renderer\BasicToolbarItem;
 use NetBS\CoreBundle\Service\DynamicListManager;
@@ -82,9 +81,6 @@ class NetbsToolbarListener
                 $dynamics = true;
         if($dynamics)
             $this->extendWithDynamics($event);
-
-        if($event->getTable()->getItemClass() === LoggedChange::class)
-            $this->loggerFunctionnalities($event);
     }
 
     /**
@@ -149,15 +145,6 @@ class NetbsToolbarListener
         $content    = $this->twig->render('@NetBSCore/renderer/toolbar/dynamics.button.twig', [
             'event' => $event,
             'lists' => $lists
-        ]);
-
-        $event->getToolbar()->addItem(new BasicToolbarItem($content));
-    }
-
-    protected function loggerFunctionnalities(NetbsRendererToolbarEvent $event) {
-
-        $content    = $this->twig->render('@NetBSCore/renderer/toolbar/logger.button.twig', [
-            'event' => $event
         ]);
 
         $event->getToolbar()->addItem(new BasicToolbarItem($content));
