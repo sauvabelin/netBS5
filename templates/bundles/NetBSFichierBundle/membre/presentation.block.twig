@@ -11,4 +11,7 @@
         {{ form_row(form.desinscription) }}
     {% endif %}
     {{ form_row(form.statut) }}
+    {% if app.user.hasRole('ROLE_SG') %}
+        {{ form_row(form.famille) }}
+    {% endif %}
 </form>
