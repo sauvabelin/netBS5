@@ -208,17 +208,11 @@ class Cabane {
         $this->intendants->removeElement($intendant);
     }
 
-    /**
-     * @return string
-     */
-    public function getGoogleFormUrl(): string {
+    public function getGoogleFormUrl(): ?string {
         return $this->googleFormUrl;
     }
 
-    /**
-     * @param string $googleFormUrl
-     */
-    public function setGoogleFormUrl(string $googleFormUrl): void {
+    public function setGoogleFormUrl(?string $googleFormUrl): void {
         $this->googleFormUrl = $googleFormUrl;
     }
 

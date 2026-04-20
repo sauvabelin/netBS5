@@ -50,11 +50,16 @@ abstract class AjaxModel extends BaseListModel
             ->setParameter('s', '%' . $this->search . '%');
     }
 
-    public function retrieveAllIds() {
-        $data = $this->ajaxQueryBuilder("x")
-            ->getQuery()
-            ->getResult();
-        return array_map(fn ($item) => $item->getId(), $data);
+    /**
+     * Returns the ids of every item matching the current search filter.
+     * Used by bulk actions: an empty explicit selection falls back to this set.
+     * Efficient: selects only the id column, no entity hydration.
+     */
+    public function retrieveAllIds(): array {
+        $qb = $this->ajaxQueryBuilder("x");
+        $this->applySearchFilter($qb);
+        $rows = $qb->select('x.id')->getQuery()->getArrayResult();
+        return array_map(fn($r) => (int) $r['id'], $rows);
     }
 
     /**

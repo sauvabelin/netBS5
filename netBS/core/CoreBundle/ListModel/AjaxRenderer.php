@@ -84,6 +84,7 @@ class AjaxRenderer implements RendererInterface
             'amount'      => $initialAmount,
             'search'      => '',
             'totalItems'  => $totalItems,
+            'allIds'      => $model->retrieveAllIds(),
             'listId'      => $model->getAlias(),
             'modelParams' => $model->getParameters(),
             'hasSearch'   => count($model->searchTerms()) > 0,

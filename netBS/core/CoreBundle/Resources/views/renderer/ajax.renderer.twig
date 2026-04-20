@@ -9,6 +9,7 @@
         amount: amount,
         search: search,
         totalItems: totalItems,
+        allIds: allIds,
         listId: listId,
         params: modelParams,
         hasSearch: hasSearch,
@@ -42,7 +43,8 @@
             var app = window.Stimulus;
             if (app) {
                 var controller = app.getControllerForElementAndIdentifier(frameEl, 'checkbox-select');
-                if (controller) return controller.selectedIds;
+                // getSelectedIds() handles the "empty selection → all filtered ids" fallback
+                if (controller) return controller.getSelectedIds();
             }
             var checked = frameEl.querySelectorAll('[data-checkbox-select-target="checkbox"]:checked');
             return Array.from(checked).map(function(cb) { return parseInt(cb.value, 10); });

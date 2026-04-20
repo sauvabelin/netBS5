@@ -18,6 +18,7 @@
 
 <turbo-frame id="{{ frameId }}" target="_top"
     data-controller="checkbox-select ajax-list"
+    data-checkbox-select-all-ids-value="{{ (allIds ?? [])|json_encode }}"
     data-ajax-list-base-url-value="{{ baseUrl }}"
     data-ajax-list-params-value="{{ params|length > 0 ? params|json_encode : '{}' }}"
     data-ajax-list-table-id-value="{{ tableId }}"
