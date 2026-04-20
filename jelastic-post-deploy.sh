@@ -14,3 +14,10 @@ php /var/www/webroot/ROOT/bin/console cache:clear --env=prod
 php /var/www/webroot/ROOT/bin/console sass:build --env=prod
 php /var/www/webroot/ROOT/bin/console asset-map:compile --env=prod
 php /var/www/webroot/ROOT/bin/console assets:install
+
+
+
+# php bin/console cache:clear --env=prod
+# php bin/console sass:build --env=prod
+# php bin/console asset-map:compile --env=prod
+# php bin/console assets:install

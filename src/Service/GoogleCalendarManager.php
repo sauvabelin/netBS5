@@ -89,31 +89,73 @@ class GoogleCalendarManager {
     }
 
     public function listCalendarEvents(string $calendarId, \DateTimeInterface $start, \DateTimeInterface $end): array {
-        $events = $this->service->events->listEvents($calendarId, [
-            'maxResults' => 2500,
-            'singleEvents' => true,
-            'orderBy' => 'startTime',
-            'timeMin' => $start->format('c'),
-            'timeMax' => $end->format('c'),
-        ]);
+        $events = $this->service->events->listEvents($calendarId, $this->listEventsParams($start, $end));
+        return $this->mapEventsToArray($events->getItems());
+    }
+
+    /**
+     * Batched version of listCalendarEvents: fetches all calendars in a single HTTP round-trip.
+     *
+     * @param string[] $calendarIds
+     * @return array<string, array> map of calendarId => events[]. Failing calendars are returned as empty arrays.
+     */
+    public function listCalendarEventsBatch(array $calendarIds, \DateTimeInterface $start, \DateTimeInterface $end): array {
+        if (empty($calendarIds)) {
+            return [];
+        }
+
+        $client = $this->service->getClient();
+        $client->setUseBatch(true);
+
+        try {
+            $batch  = $this->service->createBatch();
+            $params = $this->listEventsParams($start, $end);
+            foreach ($calendarIds as $calId) {
+                $request = $this->service->events->listEvents($calId, $params);
+                $batch->add($request, $calId);
+            }
+            $responses = $batch->execute();
+        } finally {
+            $client->setUseBatch(false);
+        }
 
         $result = [];
-        foreach ($events->getItems() as $event) {
+        foreach ($calendarIds as $calId) {
+            $response = $responses["response-$calId"] ?? null;
+            $result[$calId] = $response instanceof \Google\Service\Calendar\Events
+                ? $this->mapEventsToArray($response->getItems())
+                : [];
+        }
+        return $result;
+    }
+
+    private function listEventsParams(\DateTimeInterface $start, \DateTimeInterface $end): array {
+        return [
+            'maxResults'   => 2500,
+            'singleEvents' => true,
+            'orderBy'      => 'startTime',
+            'timeMin'      => $start->format('c'),
+            'timeMax'      => $end->format('c'),
+        ];
+    }
+
+    private function mapEventsToArray(array $items): array {
+        $result = [];
+        foreach ($items as $event) {
             $eventStart = $event->getStart()->getDateTime() ?: $event->getStart()->getDate();
-            $eventEnd = $event->getEnd()->getDateTime() ?: $event->getEnd()->getDate();
+            $eventEnd   = $event->getEnd()->getDateTime() ?: $event->getEnd()->getDate();
 
             $result[] = [
                 'title' => $event->getSummary(),
                 'start' => $eventStart,
-                'end' => $eventEnd,
-                'url' => $event->getHtmlLink(),
+                'end'   => $eventEnd,
+                'url'   => $event->getHtmlLink(),
                 'extendedProps' => [
                     'description' => $event->getDescription(),
-                    'location' => $event->getLocation(),
+                    'location'    => $event->getLocation(),
                 ],
             ];
         }
-
         return $result;
     }
 
