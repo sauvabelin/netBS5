@@ -16,29 +16,24 @@ class RemoveMembreListener
     }
 
     public function onRemove(RemoveMembreEvent $event) {
-        $membre = $event->getMembre();
-        $manager = $event->getManager();
-        $this->remove($membre, $manager);
+        $this->checkNoAttachedFactures($event->getMembre(), $event->getManager(), 'le membre');
     }
 
     public function onRemoveFamille(RemoveFamilleEvent $event) {
-        $famille = $event->getFamille();
-        $manager = $event->getManager();
-        $this->remove($famille, $manager);
+        $this->checkNoAttachedFactures($event->getFamille(), $event->getManager(), 'la famille');
     }
 
-    private function remove($debiteur, EntityManagerInterface $manager) {
+    private function checkNoAttachedFactures($debiteur, EntityManagerInterface $manager, string $label) {
 
-        $factures = $manager->getRepository(Facture::class)
-            ->findBy(['debiteurId' => DoctrineDebiteurSubscriber::createId($debiteur)]);
+        $debiteurId = DoctrineDebiteurSubscriber::createId($debiteur);
 
-        $creances = $manager->getRepository(Creance::class)
-            ->findBy(['debiteurId' => DoctrineDebiteurSubscriber::createId($debiteur)]);
+        $factures = $manager->getRepository(Facture::class)->findBy(['debiteurId' => $debiteurId]);
+        $creances = $manager->getRepository(Creance::class)->findBy(['debiteurId' => $debiteurId]);
 
-        foreach($factures as $facture)
-            $manager->remove($facture);
-
-        foreach ($creances as $creance)
-            $manager->remove($creance);
+        if (count($factures) > 0 || count($creances) > 0) {
+            throw new \ErrorException("Impossible de supprimer {$label} {$debiteur} : "
+                . count($factures) . " facture(s) et " . count($creances) . " créance(s) y sont attachées. "
+                . "Veuillez les supprimer avant.");
+        }
     }
 }
