@@ -47,12 +47,28 @@ class DoctrineDebiteurSubscriber implements EventSubscriber
         if ($data[0] === self::MEMBRE) $class = $this->config->getMembreClass();
         else if ($data[0] === self::FAMILLE) $class = $this->config->getFamilleClass();
 
-        $debiteur   = $args->getEntityManager()->find($class, $data[1]);
+        $em             = $args->getEntityManager();
+        // Debiteurs (Membre/Famille/Geniteur) use Gedmo SoftDeleteable, so a "deleted" debiteur
+        // is hidden by the filter but its row still exists. Bypass the filter during lookup
+        // so historical factures keep displaying their original debiteur even after deletion.
+        $filters        = $em->getFilters();
+        $filterEnabled  = $filters->isEnabled('softdeleteable');
+        if ($filterEnabled) {
+            $filters->disable('softdeleteable');
+        }
+
+        try {
+            $debiteur = $em->find($class, $data[1]);
+        } finally {
+            if ($filterEnabled) {
+                $filters->enable('softdeleteable');
+            }
+        }
+
         if ($debiteur === null) {
-            // Orphan reference: the Membre/Famille/Geniteur was deleted but the Facture/Creance
-            // still points at it via the polymorphic debiteur_id string. Leave $debiteur null
-            // rather than throwing — otherwise any page that eagerly loads this entity
-            // (e.g. DynamicList hydration during menu rendering) breaks for the user.
+            // Safety net: if a debiteur was truly hard-deleted (or the filter was not registered),
+            // leave the debiteur null rather than throwing — otherwise any page that eagerly
+            // loads this entity (e.g. DynamicList hydration during menu rendering) breaks.
             $this->logger->warning('Debiteur introuvable for ' . get_class($item) . '#' . $item->getId() . ' (debiteurId=' . $item->_getDebiteurId() . ')');
             return;
         }
