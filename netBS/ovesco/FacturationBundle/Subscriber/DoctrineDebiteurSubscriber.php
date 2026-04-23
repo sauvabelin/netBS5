@@ -10,6 +10,8 @@ use NetBS\FichierBundle\Mapping\BaseMembre;
 use NetBS\FichierBundle\Service\FichierConfig;
 use Ovesco\FacturationBundle\Entity\Creance;
 use Ovesco\FacturationBundle\Entity\Facture;
+use Psr\Log\LoggerInterface;
+use Psr\Log\NullLogger;
 
 class DoctrineDebiteurSubscriber implements EventSubscriber
 {
@@ -18,10 +20,12 @@ class DoctrineDebiteurSubscriber implements EventSubscriber
     const GENITEUR  = 'geniteur';
 
     private $config;
+    private LoggerInterface $logger;
 
-    public function __construct(FichierConfig $config)
+    public function __construct(FichierConfig $config, ?LoggerInterface $logger = null)
     {
         $this->config   = $config;
+        $this->logger   = $logger ?? new NullLogger();
     }
 
     public function getSubscribedEvents()
@@ -45,7 +49,12 @@ class DoctrineDebiteurSubscriber implements EventSubscriber
 
         $debiteur   = $args->getEntityManager()->find($class, $data[1]);
         if ($debiteur === null) {
-            throw new \Exception("Debiteur introuvable");
+            // Orphan reference: the Membre/Famille/Geniteur was deleted but the Facture/Creance
+            // still points at it via the polymorphic debiteur_id string. Leave $debiteur null
+            // rather than throwing — otherwise any page that eagerly loads this entity
+            // (e.g. DynamicList hydration during menu rendering) breaks for the user.
+            $this->logger->warning('Debiteur introuvable for ' . get_class($item) . '#' . $item->getId() . ' (debiteurId=' . $item->_getDebiteurId() . ')');
+            return;
         }
         $item->setDebiteur($debiteur);
     }
