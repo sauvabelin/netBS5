@@ -87,10 +87,6 @@ services:
     tags:
       - { name: doctrine.event_subscriber, connection: default }
 
-  App\Subscriber\DoctrineAttributionSubscriber:
-    tags:
-      - { name: doctrine.event_subscriber, connection: default }
-
   App\Subscriber\EventUserAccountSubscriber:
     tags:
       - { name: kernel.event_subscriber }
@@ -141,13 +137,6 @@ services:
   App\Listener\DoctrineMembreAdabsIdListener:
     tags:
       - { name: doctrine.event_listener, event: postLoad }
-
-  App\Service\NextcloudApiCall:
-    arguments:
-      $ncUrl: "%env(NEXTCLOUD_BASE_URI)%"
-      $ncUser: "%env(NEXTCLOUD_USER)%"
-      $ncPass: "%env(NEXTCLOUD_PASS)%"
-      $env: "%env(APP_ENV)%"
 
   App\Service\GoogleCalendarManager:
     arguments:
