@@ -1,0 +1,15 @@
+{% extends '@NetBSCore/layout/backend.layout.twig' %}
+
+{% block title %}Erreur d'authentification{% endblock %}
+
+{% block main %}
+<div class="container my-5">
+    <h1>Accès refusé</h1>
+    <p>Vous n'avez pas accès à cette application.</p>
+    {% if errorDescription %}
+        <p class="text-muted small">{{ errorDescription }}</p>
+    {% endif %}
+    <p>Si vous pensez qu'il s'agit d'une erreur, contactez un administrateur.</p>
+    <a href="{{ path('netbs.core.home.dashboard') }}" class="btn btn-primary">Retour à netBS</a>
+</div>
+{% endblock %}
