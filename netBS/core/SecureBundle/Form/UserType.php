@@ -30,7 +30,18 @@ class UserType extends AbstractType
     public function buildForm(FormBuilderInterface $builder, array $options)
     {
         $builder
-            ->add('username', TextType::class, array('label' => "Nom d'utilisateur"))
+            ->add('username', TextType::class, [
+                'label' => "Nom d'utilisateur (identifiant permanent)",
+                'disabled' => $options['operation'] !== CRUD::CREATE,
+                'help' => $options['operation'] === CRUD::CREATE
+                    ? null
+                    : 'Identifiant interne du compte. Non modifiable.',
+            ])
+            ->add('loginUsername', TextType::class, [
+                'label' => 'Nom de connexion',
+                'required' => false,
+                'help' => 'Ce que vous tapez pour vous connecter. Différent de votre identifiant permanent.',
+            ])
             ->add('email', EmailType::class, array('label' => 'Email du compte', 'required' => false))
             ->add('membre', AjaxSelect2DocumentType::class, array(
                 'class'         => $this->fichierConfig->getMembreClass(),
