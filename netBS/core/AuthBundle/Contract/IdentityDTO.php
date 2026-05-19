@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Identity\Contract;
+namespace NetBS\AuthBundle\Contract;
 
 /**
  * Immutable identity DTO crossing the User → Identity boundary.

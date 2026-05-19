@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace App\Identity\UserModule;
 
 use App\Entity\BSUser;
-use App\Identity\Contract\IdentityDTO;
-use App\Identity\Contract\IdentityGroupProviderInterface;
+use NetBS\AuthBundle\Contract\IdentityDTO;
+use NetBS\AuthBundle\Contract\IdentityGroupProviderInterface;
 use Doctrine\ORM\EntityManagerInterface;
 
 final class IdentityGroupProvider implements IdentityGroupProviderInterface

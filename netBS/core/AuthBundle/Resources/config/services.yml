@@ -1,0 +1,25 @@
+services:
+  _defaults:
+    autowire: true
+    autoconfigure: true
+    public: false
+
+  NetBS\AuthBundle\:
+    resource: '../../*'
+    exclude: '../../{Entity,Tests,Resources,DependencyInjection,NetBSAuthBundle.php}'
+
+  # Hydra admin client (env-injected URL)
+  NetBS\AuthBundle\Service\HydraAdminClient:
+    arguments:
+      $hydraAdminUrl: '%env(HYDRA_ADMIN_URL)%'
+
+  # ClaimsAssembler reads clients.yaml in Phase A — replaced with DB-backed provider in Phase B
+  NetBS\AuthBundle\Service\ClaimsAssembler:
+    factory: ['NetBS\AuthBundle\Service\ClaimsAssembler', 'fromConfigPath']
+    arguments:
+      - '%kernel.project_dir%/config/identity/clients.yaml'
+      - '@NetBS\AuthBundle\Contract\IdentityClientPolicyInterface'
+
+  # Contract → concrete policy (lives in bundle)
+  NetBS\AuthBundle\Contract\IdentityClientPolicyInterface:
+    alias: NetBS\AuthBundle\Service\IdentityClientPolicy

@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Identity\Service;
+namespace NetBS\AuthBundle\Service;
 
 use Symfony\Component\Yaml\Yaml;
 

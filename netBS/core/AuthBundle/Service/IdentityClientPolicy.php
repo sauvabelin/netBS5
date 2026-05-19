@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace App\Identity\UserModule;
+namespace NetBS\AuthBundle\Service;
 
 use App\Entity\BSUser;
-use App\Identity\Contract\IdentityClientPolicyInterface;
-use App\Identity\Contract\IdentityDTO;
+use NetBS\AuthBundle\Contract\IdentityClientPolicyInterface;
+use NetBS\AuthBundle\Contract\IdentityDTO;
 use Doctrine\ORM\EntityManagerInterface;
 
 final class IdentityClientPolicy implements IdentityClientPolicyInterface

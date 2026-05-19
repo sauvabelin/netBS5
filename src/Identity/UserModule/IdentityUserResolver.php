@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace App\Identity\UserModule;
 
 use App\Entity\BSUser;
-use App\Identity\Contract\IdentityDTO;
-use App\Identity\Contract\IdentityUserResolverInterface;
+use NetBS\AuthBundle\Contract\IdentityDTO;
+use NetBS\AuthBundle\Contract\IdentityUserResolverInterface;
 use Doctrine\ORM\EntityManagerInterface;
 
 final class IdentityUserResolver implements IdentityUserResolverInterface

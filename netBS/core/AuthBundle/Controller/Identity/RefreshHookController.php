@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace App\Identity\Controller;
+namespace NetBS\AuthBundle\Controller\Identity;
 
-use App\Identity\Contract\IdentityClientPolicyInterface;
-use App\Identity\Contract\IdentityUserResolverInterface;
-use App\Identity\Service\ClaimsAssembler;
+use NetBS\AuthBundle\Contract\IdentityClientPolicyInterface;
+use NetBS\AuthBundle\Contract\IdentityUserResolverInterface;
+use NetBS\AuthBundle\Service\ClaimsAssembler;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;

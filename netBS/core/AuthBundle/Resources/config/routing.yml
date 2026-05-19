@@ -1,0 +1,4 @@
+auth_bundle:
+    resource: "@NetBSAuthBundle/Controller/"
+    type:     attribute
+    prefix:   /

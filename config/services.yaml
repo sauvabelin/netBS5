@@ -158,24 +158,12 @@ services:
     arguments:
       $manager: "@doctrine.orm.default_entity_manager"
 
-  App\Identity\Service\HydraAdminClient:
-    arguments:
-      $hydraAdminUrl: '%env(HYDRA_ADMIN_URL)%'
-
-  App\Identity\Contract\IdentityUserResolverInterface:
+  # Identity contracts implemented by app-specific glue in src/Identity/UserModule/
+  NetBS\AuthBundle\Contract\IdentityUserResolverInterface:
     alias: App\Identity\UserModule\IdentityUserResolver
 
-  App\Identity\Contract\IdentityGroupProviderInterface:
+  NetBS\AuthBundle\Contract\IdentityGroupProviderInterface:
     alias: App\Identity\UserModule\IdentityGroupProvider
-
-  App\Identity\Contract\IdentityClientPolicyInterface:
-    alias: App\Identity\UserModule\IdentityClientPolicy
-
-  App\Identity\Service\ClaimsAssembler:
-    factory: ['App\Identity\Service\ClaimsAssembler', 'fromConfigPath']
-    arguments:
-      - '%kernel.project_dir%/config/identity/clients.yaml'
-      - '@App\Identity\Contract\IdentityClientPolicyInterface'
 
 imports:
   - { resource: "@NetBSCoreBundle/Resources/config/services.yml" }

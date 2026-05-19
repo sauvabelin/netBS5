@@ -22,3 +22,7 @@ home:
   defaults:
     path: /netBS
     permanent: true
+
+auth:
+  resource: '@NetBSAuthBundle/Resources/config/routing.yml'
+  prefix: /
