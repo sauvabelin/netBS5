@@ -158,6 +158,10 @@ services:
     arguments:
       $manager: "@doctrine.orm.default_entity_manager"
 
+  App\Identity\Service\HydraAdminClient:
+    arguments:
+      $hydraAdminUrl: '%env(HYDRA_ADMIN_URL)%'
+
 imports:
   - { resource: "@NetBSCoreBundle/Resources/config/services.yml" }
   - { resource: "@NetBSFichierBundle/Resources/config/services.yml" }
