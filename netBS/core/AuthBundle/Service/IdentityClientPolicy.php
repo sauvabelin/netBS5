@@ -17,16 +17,11 @@ final class IdentityClientPolicy implements IdentityClientPolicyInterface
 
     public function canAccess(IdentityDTO $identity, string $clientId): bool
     {
+        // Default-allow: any registered user can authenticate to any client
+        // that's been provisioned in Hydra. Per-client access rules will be
+        // added back via Hydra client metadata (see TODO in OidcClientDto).
         $user = $this->em->getRepository(BSUser::class)->findOneBy(['username' => $identity->sub]);
-        if (!$user instanceof BSUser) {
-            return false;
-        }
-
-        return match ($clientId) {
-            'nextcloud' => $user->hasNextcloudAccount(),
-            'wiki'      => $user->hasWikiAccount(),
-            default     => false,
-        };
+        return $user instanceof BSUser && !$identity->isDisabled;
     }
 
     public function additionalClaimsFor(IdentityDTO $identity, string $clientId): array

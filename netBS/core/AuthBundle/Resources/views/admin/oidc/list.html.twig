@@ -1,0 +1,57 @@
+{% extends '@NetBSCore/layout/backend.layout.twig' %}
+
+{% set title %}Authentication — OAuth clients{% endset %}
+
+{% block main %}
+    <div class="container-fluid">
+        {% include '@NetBSCore/includes/header.include.twig' with {
+            header: 'Authentication',
+            subHeader: 'OAuth / OIDC clients'
+        } %}
+
+        <div class="row">
+            <div class="col-12">
+                <div class="card card-table">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <h5 class="card-title mb-0">Clients</h5>
+                        <form method="post" action="{{ path('auth.admin.oidc_clients.create') }}" class="m-0">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-plus"></i> New client
+                            </button>
+                        </form>
+                    </div>
+                    <div class="card-body">
+                        {% if clients is empty %}
+                            <p class="text-muted mb-0">No OAuth clients yet.</p>
+                        {% else %}
+                            <table class="table table-striped mb-0">
+                                <thead>
+                                    <tr>
+                                        <th>Name</th>
+                                        <th>client_id</th>
+                                        <th class="text-end">Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for c in clients %}
+                                        <tr>
+                                            <td>{{ c.client_name|default('—') }}</td>
+                                            <td><code>{{ c.client_id }}</code></td>
+                                            <td class="text-end">
+                                                <a href="{{ path('auth.admin.oidc_clients.edit', { slug: c.client_id }) }}"
+                                                   class="btn btn-sm btn-primary"
+                                                   title="Edit">
+                                                    <i class="fas fa-edit"></i>
+                                                </a>
+                                            </td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}

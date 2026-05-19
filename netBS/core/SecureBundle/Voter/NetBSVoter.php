@@ -34,6 +34,10 @@ abstract class NetBSVoter extends Voter
      */
     protected function supports(string $attribute, mixed $subject): bool
     {
+        if (!is_object($subject)) {
+            return false;
+        }
+
         return in_array($attribute, CRUD::toArray()) &&
             (is_string($this->supportClass())
                 ? $this->supportClass() === ClassUtils::getRealClass(get_class($subject))

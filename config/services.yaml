@@ -165,6 +165,12 @@ services:
   NetBS\AuthBundle\Contract\IdentityGroupProviderInterface:
     alias: App\Identity\UserModule\IdentityGroupProvider
 
+  # Picked up by SecureBundle's RoleTreeSyncer via the netbs.role_tree_source tag.
+  # The tag is set explicitly because SecureBundle's _instanceof rule only
+  # applies within its own services.yml file.
+  App\Service\AppRoleTreeSource:
+    tags: ['netbs.role_tree_source']
+
 imports:
   - { resource: "@NetBSCoreBundle/Resources/config/services.yml" }
   - { resource: "@NetBSFichierBundle/Resources/config/services.yml" }

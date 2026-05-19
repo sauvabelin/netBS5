@@ -84,7 +84,35 @@ class BSUser extends BaseUser
 
     public function setLoginUsername(?string $loginUsername): self
     {
-        $this->loginUsername = $loginUsername;
+        // Login handle is what users see and edit. Blank collapses to the
+        // permanent username (which exists once the entity has been bootstrapped).
+        $value = ($loginUsername === null || $loginUsername === '')
+            ? $this->username
+            : $loginUsername;
+
+        $this->loginUsername = $value;
+
+        // On first assignment, bootstrap the permanent backend username too.
+        // After this, setUsername is a no-op and the backend identifier never moves.
+        if ($this->username === null || $this->username === '') {
+            parent::setUsername($value);
+        }
+
+        return $this;
+    }
+
+    public function setUsername($username)
+    {
+        // Permanent backend identifier — set once at creation. Subsequent calls
+        // are no-ops so legacy callsites keep working without mutating the row.
+        if ($this->username !== null && $this->username !== '') {
+            return $this;
+        }
+        parent::setUsername($username);
+
+        if ($this->loginUsername === null || $this->loginUsername === '') {
+            $this->loginUsername = $username;
+        }
         return $this;
     }
 

@@ -61,9 +61,13 @@ final class ConsentChallengeController extends AbstractController
             'grant_access_token_audience' => $consentRequest['requested_access_token_audience'] ?? [],
             'remember' => true,
             'remember_for' => 3600 * 12,
+            // Hydra's session schema defines id_token/access_token as JSON
+            // objects (maps). Empty PHP arrays JSON-encode as `[]` (a JSON
+            // array) which Hydra rejects with "error is unrecognizable" —
+            // cast to object so they serialize as `{}` when empty.
             'session' => [
-                'id_token' => $idTokenClaims,
-                'access_token' => [],
+                'id_token' => empty($idTokenClaims) ? (object) [] : $idTokenClaims,
+                'access_token' => (object) [],
             ],
         ]);
 

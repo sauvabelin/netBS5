@@ -1,0 +1,70 @@
+{% set endpoints = oidc_endpoints() %}
+{% set one_shot_secret = app.flashes('oidc_one_shot_secret')|first|default(null) %}
+
+{% macro copyable(value) %}
+    <span class="input-group input-group-sm" style="max-width:100%;">
+        <input type="text" class="form-control form-control-sm font-monospace" value="{{ value }}" readonly>
+        <button type="button" class="btn btn-outline-secondary oidc-copy-btn" data-copy="{{ value }}" title="Copy">
+            <i class="fas fa-copy"></i>
+        </button>
+    </span>
+{% endmacro %}
+
+{% import _self as macros %}
+
+<div class="card">
+    <div class="card-header"><h5 class="card-title mb-0">Identity</h5></div>
+    <div class="card-body">
+        <dl class="row mb-0">
+            <dt class="col-sm-3">client_id</dt>
+            <dd class="col-sm-9">{{ macros.copyable(client.slug) }}</dd>
+
+            <dt class="col-sm-3">Secret</dt>
+            <dd class="col-sm-9">
+                {% if one_shot_secret %}
+                    <div class="alert alert-warning mb-2">
+                        <strong>Shown only once:</strong>
+                        {{ macros.copyable(one_shot_secret) }}
+                    </div>
+                {% else %}
+                    <form method="post"
+                          action="{{ path('auth.admin.oidc_clients.regenerate_secret', { slug: client.slug }) }}"
+                          data-turbo-confirm="Regenerate the secret? The previous one will be invalidated."
+                          class="m-0">
+                        <button type="submit" class="btn btn-sm btn-outline-warning">
+                            <i class="fas fa-sync"></i> Regenerate secret
+                        </button>
+                    </form>
+                {% endif %}
+            </dd>
+
+            <dt class="col-sm-3">Issuer</dt>
+            <dd class="col-sm-9">{{ macros.copyable(endpoints.issuer) }}</dd>
+
+            <dt class="col-sm-3">Discovery</dt>
+            <dd class="col-sm-9">{{ macros.copyable(endpoints.discovery) }}</dd>
+
+            <dt class="col-sm-3">Authorization</dt>
+            <dd class="col-sm-9">{{ macros.copyable(endpoints.authorization) }}</dd>
+
+            <dt class="col-sm-3">Token</dt>
+            <dd class="col-sm-9">{{ macros.copyable(endpoints.token) }}</dd>
+
+            <dt class="col-sm-3">Userinfo</dt>
+            <dd class="col-sm-9">{{ macros.copyable(endpoints.userinfo) }}</dd>
+
+            <dt class="col-sm-3">JWKS</dt>
+            <dd class="col-sm-9">{{ macros.copyable(endpoints.jwks) }}</dd>
+
+            <dt class="col-sm-3">Logout</dt>
+            <dd class="col-sm-9">{{ macros.copyable(endpoints.logout) }}</dd>
+
+            <dt class="col-sm-3">Allowed claims</dt>
+            <dd class="col-sm-9">
+                {% for claim in client.allowedClaims %}
+                    <span class="badge text-bg-secondary me-1">{{ claim }}</span>
+                {% endfor %}
+            </dd>
+        </dl>
+    </div>
+</div>
