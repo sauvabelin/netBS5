@@ -29,8 +29,19 @@ security:
             provider: database
             jwt: ~
 
+        oidc:
+            pattern: ^/oidc-(login|consent|logout|error)
+            provider: database
+            context: netbs   # share session with the netbs firewall so login carries over
+            form_login:
+                login_path: netbs.secure.login.login
+                check_path: netbs.secure.login.login
+                default_target_path: oidc_login
+            logout: false
+
         netbs:
             pattern: ^/netBS
+            context: netbs   # shared with the oidc firewall
             switch_user: true
             form_login:
                 login_path: netbs.secure.login.login
@@ -48,6 +59,11 @@ security:
         - { path: ^/api/v1/netBS/gettoken, roles: PUBLIC_ACCESS }
         - { path: ^/api/v1/netBS, roles: IS_AUTHENTICATED_FULLY }
         - { path: ^/netBS/secure/login, roles: PUBLIC_ACCESS }
+        - { path: ^/oidc-login, roles: IS_AUTHENTICATED_FULLY }
+        - { path: ^/oidc-consent, roles: IS_AUTHENTICATED_FULLY }
+        - { path: ^/oidc-refresh-hook, roles: PUBLIC_ACCESS }
+        - { path: ^/oidc-logout, roles: PUBLIC_ACCESS }
+        - { path: ^/oidc-error, roles: PUBLIC_ACCESS }
         - { path: ^/netBS/secure/user/my-account, roles: ROLE_USER }
         - { path: ^/netBS/secure, roles: ROLE_ADMIN }
         - { path: ^/netBS, roles: [IS_AUTHENTICATED_FULLY, ROLE_USER] }
