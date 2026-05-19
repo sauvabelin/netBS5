@@ -63,6 +63,27 @@ class BSUser extends BaseUser
     #[ORM\Column(name: 'email_bs', type: 'string', length: 255, nullable: true)]
     protected $emailBS = null;
 
+    /**
+     * Mutable login handle. Defaults to username on insert. Used by the
+     * Symfony firewall to look up users at login. The immutable username
+     * remains the OIDC `sub` and the system-wide identifier.
+     *
+     * @var string|null
+     */
+    #[ORM\Column(name: 'login_username', type: 'string', length: 255, nullable: true, unique: true)]
+    protected ?string $loginUsername = null;
+
+    public function getLoginUsername(): ?string
+    {
+        return $this->loginUsername;
+    }
+
+    public function setLoginUsername(?string $loginUsername): self
+    {
+        $this->loginUsername = $loginUsername;
+        return $this;
+    }
+
     public function getUserIdentifier(): string {
         return $this->username;
     }
