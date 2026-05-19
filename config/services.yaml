@@ -171,6 +171,12 @@ services:
   App\Identity\Contract\IdentityClientPolicyInterface:
     alias: App\Identity\UserModule\IdentityClientPolicy
 
+  App\Identity\Service\ClaimsAssembler:
+    factory: ['App\Identity\Service\ClaimsAssembler', 'fromConfigPath']
+    arguments:
+      - '%kernel.project_dir%/config/identity/clients.yaml'
+      - '@App\Identity\Contract\IdentityClientPolicyInterface'
+
 imports:
   - { resource: "@NetBSCoreBundle/Resources/config/services.yml" }
   - { resource: "@NetBSFichierBundle/Resources/config/services.yml" }

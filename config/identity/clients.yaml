@@ -1,0 +1,5 @@
+clients:
+  nextcloud:
+    allowed_claims: [sub, preferred_username, email, email_verified, name, groups, nextcloud_admin, nextcloud_quota]
+  wiki:
+    allowed_claims: [sub, preferred_username, email, email_verified, name, wiki_admin]
