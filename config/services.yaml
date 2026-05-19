@@ -162,6 +162,15 @@ services:
     arguments:
       $hydraAdminUrl: '%env(HYDRA_ADMIN_URL)%'
 
+  App\Identity\Contract\IdentityUserResolverInterface:
+    alias: App\Identity\UserModule\IdentityUserResolver
+
+  App\Identity\Contract\IdentityGroupProviderInterface:
+    alias: App\Identity\UserModule\IdentityGroupProvider
+
+  App\Identity\Contract\IdentityClientPolicyInterface:
+    alias: App\Identity\UserModule\IdentityClientPolicy
+
 imports:
   - { resource: "@NetBSCoreBundle/Resources/config/services.yml" }
   - { resource: "@NetBSFichierBundle/Resources/config/services.yml" }
