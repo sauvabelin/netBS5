@@ -4,6 +4,9 @@ declare(strict_types=1);
 
 namespace App\Identity\Controller;
 
+use App\Identity\Contract\IdentityClientPolicyInterface;
+use App\Identity\Contract\IdentityUserResolverInterface;
+use App\Identity\Service\ClaimsAssembler;
 use App\Identity\Service\HydraAdminClient;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\RedirectResponse;
@@ -13,8 +16,12 @@ use Symfony\Component\Routing\Attribute\Route;
 
 final class ConsentChallengeController extends AbstractController
 {
-    public function __construct(private readonly HydraAdminClient $hydra)
-    {
+    public function __construct(
+        private readonly HydraAdminClient $hydra,
+        private readonly IdentityUserResolverInterface $userResolver,
+        private readonly IdentityClientPolicyInterface $policy,
+        private readonly ClaimsAssembler $claims,
+    ) {
     }
 
     #[Route('/oidc-consent', name: 'oidc_consent', methods: ['GET'])]
@@ -27,15 +34,27 @@ final class ConsentChallengeController extends AbstractController
 
         $consentRequest = $this->hydra->getConsentRequest($consentChallenge);
         $subject = $consentRequest['subject'];
+        $clientId = $consentRequest['client']['client_id'];
         $requestedScopes = $consentRequest['requested_scope'] ?? [];
 
-        // 0c skeleton: hardcoded claims. Real ClaimsAssembler comes in 0d.
-        $idTokenClaims = [
-            'sub' => $subject,
-            'preferred_username' => $subject,
-            'email' => 'placeholder@example.org',
-            'name' => $subject,
-        ];
+        $identity = $this->userResolver->resolveBySub($subject);
+        if ($identity === null || $identity->isDisabled) {
+            $reject = $this->hydra->rejectConsentRequest($consentChallenge, [
+                'error' => 'access_denied',
+                'error_description' => 'User not found or disabled',
+            ]);
+            return new RedirectResponse($reject['redirect_to']);
+        }
+
+        if (!$this->policy->canAccess($identity, $clientId)) {
+            $reject = $this->hydra->rejectConsentRequest($consentChallenge, [
+                'error' => 'access_denied',
+                'error_description' => "User does not have access to {$clientId}",
+            ]);
+            return new RedirectResponse($reject['redirect_to']);
+        }
+
+        $idTokenClaims = $this->claims->assemble($identity, $clientId);
 
         $accept = $this->hydra->acceptConsentRequest($consentChallenge, [
             'grant_scope' => $requestedScopes,
