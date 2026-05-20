@@ -40,11 +40,10 @@
                        class="card text-decoration-none h-100 {{ has_any ? 'border-danger' : '' }}">
                         <div class="card-body py-2 px-3">
                             <div class="text-muted small text-truncate">{{ role|replace({'ROLE_': ''}) }}</div>
-                            <div class="text-danger">
-                                <span class="h5 mb-0">{{ explicit }}</span>
-                                <span class="small">·</span>
-                                <span class="h6 mb-0">{{ inherited }}</span>
-                                <span class="small">hérité{% if inherited != 1 %}s{% endif %}</span>
+                            <div class="text-danger d-flex align-items-baseline gap-2">
+                                <span class="h3 fw-bold mb-0">{{ explicit }}</span>
+                                <span>·</span>
+                                <span class="h4 fw-bold mb-0">{{ inherited }}</span>
                             </div>
                         </div>
                     </a>
