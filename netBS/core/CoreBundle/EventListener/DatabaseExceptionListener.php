@@ -8,20 +8,9 @@ use Symfony\Component\HttpKernel\Event\ExceptionEvent;
 use Symfony\Component\HttpFoundation\RequestStack;
 
 /**
- * Last-resort safety net for uncaught DB constraint violations (SQLSTATE 23xxx —
- * NOT NULL, UNIQUE, FK). Surfaces a friendly toast message and a 422 response
- * instead of a raw 500. Crucially: this listener NEVER redirects, so the
- * browser stays on the same URL and the user's form data is preserved in the
- * native history (back button restores fields).
- *
- * Controllers that handle a specific form's known constraint violations
- * (e.g. uniqueness conflicts on user-edited fields) should catch the
- * Doctrine\DBAL\Exception\* subclasses themselves and re-render the form
- * with a form-level error — this listener is for the violations no controller
- * was prepared for.
- *
- * See {@see \NetBS\CoreBundle\Controller\Trait\HandlesFormPersistenceTrait}
- * for the controller-side helper.
+ * Safety net for uncaught DB constraint violations (SQLSTATE 23xxx). Returns
+ * 422 — never redirects, so the browser keeps the user's form data in history.
+ * Controllers should prefer HandlesFormPersistenceTrait for forms they own.
  */
 class DatabaseExceptionListener
 {
@@ -40,10 +29,6 @@ class DatabaseExceptionListener
             return;
         }
 
-        // Flash a friendly toast for the next page render. We intentionally do
-        // NOT redirect — redirecting destroys the user's POST data and is
-        // useless given the response will be a 422 the browser will not
-        // navigate to a new URL for.
         $session = $this->requestStack->getSession();
         if (method_exists($session, 'getFlashBag')) {
             $session->getFlashBag()->add('error',
@@ -52,11 +37,7 @@ class DatabaseExceptionListener
             );
         }
 
-        // Re-throw a clean 422 — Turbo treats 422 as a form-rejection and
-        // re-renders the response body in place. The body is whatever
-        // Symfony's error renderer produces for the exception (with the
-        // flash visible). Controllers that want better UX should catch the
-        // exception themselves and re-render their form.
+        // 422 so Turbo re-renders the response body in place instead of navigating.
         $event->setResponse(new Response(
             $this->renderErrorBody($dbException->getMessage()),
             Response::HTTP_UNPROCESSABLE_ENTITY,
