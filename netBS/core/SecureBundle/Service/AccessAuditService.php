@@ -9,6 +9,7 @@ use NetBS\SecureBundle\Audit\AccessGrant;
 use NetBS\SecureBundle\Audit\Provenance;
 use NetBS\SecureBundle\Audit\ScopeAccessEntry;
 use NetBS\SecureBundle\Audit\ScopeAccessReport;
+use NetBS\SecureBundle\Audit\SensitiveRoleCell;
 use NetBS\SecureBundle\Audit\UserAccessReport;
 use NetBS\SecureBundle\Mapping\BaseRole;
 use NetBS\SecureBundle\Mapping\BaseUser;
@@ -39,13 +40,14 @@ final class AccessAuditService
 
     /**
      * Builds a "who has the keys" matrix: rows are users holding at least one
-     * sensitive role, columns are the sensitive roles. Each cell is the list
-     * of AccessGrants by which that user holds that role (empty = no access).
+     * sensitive role, columns are the sensitive roles. Each cell carries the
+     * AccessGrants and whether at least one of them is explicit (holds the
+     * audited role itself, not just an ancestor role that contains it).
      *
      * @return array{
      *     roles: string[],
-     *     rows: list<array{user: BaseUser, cells: array<string, list<AccessGrant>>}>,
-     *     counts: array<string, int>,
+     *     rows: list<array{user: BaseUser, cells: array<string, SensitiveRoleCell>}>,
+     *     counts: array{explicit: array<string, int>, inherited: array<string, int>},
      * }
      */
     public function buildSensitiveRoleMatrix(): array
@@ -57,16 +59,27 @@ final class AccessAuditService
             ->setParameter('names', self::SENSITIVE_ROLES)
             ->getQuery()->getResult();
 
-        $byUid  = [];
-        $counts = array_fill_keys(self::SENSITIVE_ROLES, 0);
+        $byUid     = [];
+        $explicit  = array_fill_keys(self::SENSITIVE_ROLES, 0);
+        $inherited = array_fill_keys(self::SENSITIVE_ROLES, 0);
 
         foreach ($roles as $role) {
             $name = $role->getRole();
             foreach ($this->auditRoleScope($role)->entries as $entry) {
+                $cellExplicit = false;
+                foreach ($entry->grants as $g) {
+                    foreach ($g->roles as $r) {
+                        if ($r->getRole() === $name) {
+                            $cellExplicit = true;
+                            break 2;
+                        }
+                    }
+                }
+
                 $uid = $entry->user->getId();
                 $byUid[$uid] ??= ['user' => $entry->user, 'cells' => []];
-                $byUid[$uid]['cells'][$name] = $entry->grants;
-                $counts[$name]++;
+                $byUid[$uid]['cells'][$name] = new SensitiveRoleCell($entry->grants, $cellExplicit);
+                $cellExplicit ? $explicit[$name]++ : $inherited[$name]++;
             }
         }
 
@@ -78,7 +91,7 @@ final class AccessAuditService
         return [
             'roles'  => self::SENSITIVE_ROLES,
             'rows'   => array_values($byUid),
-            'counts' => $counts,
+            'counts' => ['explicit' => $explicit, 'inherited' => $inherited],
         ];
     }
 

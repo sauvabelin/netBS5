@@ -30,19 +30,22 @@
         </div>
 
         <h5 class="mb-2">Rôles sensibles</h5>
-        <p class="text-muted small mb-3">Nombre d'utilisateurs ayant effectivement accès via chaque rôle. Cliquer pour voir le détail.</p>
+        <p class="text-muted small mb-3">Utilisateurs ayant effectivement accès via chaque rôle. <strong>Explicite</strong>&nbsp;: le rôle est listé directement, par fonction ou par autorisation. <strong>Hérité</strong>&nbsp;: obtenu via un rôle ancêtre (typiquement ROLE_ADMIN).</p>
         <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-3 mb-3">
             {% for role in sensitive_roles %}
-                {% set count = matrix.counts[role] ?? 0 %}
+                {% set explicit = matrix.counts.explicit[role] ?? 0 %}
+                {% set inherited = matrix.counts.inherited[role] ?? 0 %}
                 <div class="col">
                     <a href="{{ path('netbs.secure.audit.scope_role', {role: role}) }}"
-                       class="card text-decoration-none h-100 {{ count > 0 ? 'border-danger' : '' }}">
-                        <div class="card-body d-flex justify-content-between align-items-center">
-                            <div>
-                                <div class="text-muted small">{{ role }}</div>
-                                <div class="h4 mb-0 {{ count > 0 ? 'text-danger' : 'text-muted' }}">
-                                    {{ count }} <span class="small fw-normal">utilisateur{% if count != 1 %}s{% endif %}</span>
-                                </div>
+                       class="card text-decoration-none h-100 {{ explicit > 0 ? 'border-danger' : '' }}">
+                        <div class="card-body">
+                            <div class="text-muted small">{{ role }}</div>
+                            <div class="d-flex align-items-baseline gap-3">
+                                <span class="h4 mb-0 {{ explicit > 0 ? 'text-danger' : 'text-muted' }}">{{ explicit }}</span>
+                                <span class="small text-muted">explicite{% if explicit != 1 %}s{% endif %}</span>
+                                <span class="text-muted">·</span>
+                                <span class="h6 mb-0 text-muted">{{ inherited }}</span>
+                                <span class="small text-muted">hérité{% if inherited != 1 %}s{% endif %}</span>
                             </div>
                         </div>
                     </a>
@@ -79,19 +82,27 @@
                                                class="text-decoration-none">{{ row.user.username }}</a>
                                         </th>
                                         {% for role in matrix.roles %}
-                                            {% set grants = row.cells[role]|default([]) %}
+                                            {% set cell = row.cells[role]|default(null) %}
                                             <td class="text-center">
-                                                {% if grants is not empty %}
-                                                    {# Provenance hint: D (direct), F (fonction), A (autorisation). #}
-                                                    {% set provs = [] %}
-                                                    {% for g in grants %}
-                                                        {% set letter = g.provenance.value == 'direct_role' ? 'D'
-                                                                       : g.provenance.value == 'fonction_role' ? 'F' : 'A' %}
-                                                        {% if letter not in provs %}{% set provs = provs|merge([letter]) %}{% endif %}
-                                                    {% endfor %}
-                                                    <span class="badge bg-danger" title="{{ provs|join(' + ') }}">{{ provs|join('') }}</span>
-                                                {% else %}
+                                                {% if cell is null %}
                                                     <span class="text-muted">·</span>
+                                                {% elseif cell.explicit %}
+                                                    {# Aggregate provenances of grants that hold the role explicitly. #}
+                                                    {% set provs = [] %}
+                                                    {% for g in cell.grants %}
+                                                        {% set holds_role_explicit = false %}
+                                                        {% for r in g.roles %}
+                                                            {% if r.role == role %}{% set holds_role_explicit = true %}{% endif %}
+                                                        {% endfor %}
+                                                        {% if holds_role_explicit %}
+                                                            {% set letter = g.provenance.value == 'direct_role' ? 'D'
+                                                                           : g.provenance.value == 'fonction_role' ? 'F' : 'A' %}
+                                                            {% if letter not in provs %}{% set provs = provs|merge([letter]) %}{% endif %}
+                                                        {% endif %}
+                                                    {% endfor %}
+                                                    <span class="badge bg-danger" title="Explicite — {{ provs|join(' + ') }}">{{ provs|join('') }}</span>
+                                                {% else %}
+                                                    <span class="badge bg-secondary opacity-75" title="Hérité d'un rôle ancêtre">I</span>
                                                 {% endif %}
                                             </td>
                                         {% endfor %}
@@ -103,7 +114,8 @@
                     <div class="card-footer small text-muted">
                         Légende&nbsp;: <span class="badge bg-danger">D</span> rôle direct ·
                         <span class="badge bg-danger">F</span> via fonction ·
-                        <span class="badge bg-danger">A</span> via autorisation
+                        <span class="badge bg-danger">A</span> via autorisation ·
+                        <span class="badge bg-secondary opacity-75">I</span> hérité (ancêtre)
                     </div>
                 {% endif %}
             </div>
