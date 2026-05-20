@@ -80,28 +80,42 @@ final class LogoutController extends AbstractController
         $currentUser   = $this->getUser();
         $currentSubject = $currentUser?->getUserIdentifier();
 
-        // If a user is logged in locally, the subject Hydra wants to log out
-        // must match. Otherwise an attacker who can craft a logout_challenge
-        // for some other identity could trick us into ending an unrelated
-        // session.
-        if ($currentSubject !== null && $hydraSubject !== '' && $hydraSubject !== $currentSubject) {
-            $this->logger->warning('OIDC logout subject mismatch', [
-                'challenge'      => $logoutChallenge,
-                'hydra_subject'  => $hydraSubject,
-                'session_subject'=> $currentSubject,
-            ]);
-            throw $this->createAccessDeniedException('Logout subject does not match the current session.');
-        }
+        // The Hydra session and the local netBS session are independent. If
+        // they disagree on identity (e.g. user is locally `iacopo` but Hydra
+        // still has a session for `admin` from a previous login), accepting
+        // Hydra's logout only terminates Hydra's session — it does NOT touch
+        // the local session. The original subject-match check rejected this
+        // benign multi-account case; we now allow it but skip the local
+        // logout when subjects differ. Since we never end the local session
+        // on mismatch, the drive-by-logout-challenge attack vector vanishes.
+        $subjectMismatch = (
+            $currentSubject !== null
+            && $hydraSubject !== ''
+            && $hydraSubject !== $currentSubject
+        );
 
         if ($request->isMethod('POST')) {
             if (!$this->isCsrfTokenValid(self::CSRF_TOKEN_ID, (string) $request->request->get('_token'))) {
                 throw $this->createAccessDeniedException('Invalid CSRF token.');
             }
 
-            // 1) Kill the local session FIRST. If anything below explodes the
-            //    safer state is "logged out locally" rather than "still
-            //    logged in but a stack trace on screen".
-            $this->security->logout(validateCsrfToken: false);
+            if ($subjectMismatch) {
+                // Hydra's session belongs to a different identity than the
+                // one logged in locally. Accept Hydra's logout (kills its
+                // session for $hydraSubject and notifies RPs) but leave the
+                // local session alone — it isn't this user's to terminate.
+                $this->logger->warning('oidc.logout: subject mismatch but accepted (local untouched)', [
+                    'challenge'      => $logoutChallenge,
+                    'hydra_subject'  => $hydraSubject,
+                    'session_subject'=> $currentSubject,
+                    'decision'       => 'accept_hydra_only',
+                ]);
+            } else {
+                // 1) Kill the local session FIRST. If anything below explodes the
+                //    safer state is "logged out locally" rather than "still
+                //    logged in but a stack trace on screen".
+                $this->security->logout(validateCsrfToken: false);
+            }
 
             // 2) Now tell Hydra to finalise its end of the logout. Failures
             //    are logged but don't bubble up — the user already saw the
@@ -112,14 +126,19 @@ final class LogoutController extends AbstractController
                     return new RedirectResponse($accept['redirect_to']);
                 }
             } catch (\Throwable $e) {
-                $this->logger->error('Hydra acceptLogoutRequest failed; local session already cleared', [
-                    'challenge' => $logoutChallenge,
-                    'subject'   => $hydraSubject,
-                    'exception' => $e->getMessage(),
+                $this->logger->error('Hydra acceptLogoutRequest failed', [
+                    'challenge'        => $logoutChallenge,
+                    'subject'          => $hydraSubject,
+                    'subject_mismatch' => $subjectMismatch,
+                    'exception'        => $e->getMessage(),
                 ]);
             }
 
-            return $this->redirectToRoute('netbs.secure.login.login');
+            // After a mismatch the user is still logged in locally — send
+            // them to the dashboard instead of the login page.
+            return $this->redirectToRoute(
+                $subjectMismatch ? 'netbs.core.home.dashboard' : 'netbs.secure.login.login'
+            );
         }
 
         // Hydra returns the OAuth client that initiated the logout under
@@ -135,6 +154,8 @@ final class LogoutController extends AbstractController
             'csrfTokenId'     => self::CSRF_TOKEN_ID,
             'subject'         => $hydraSubject,
             'oidc_client'     => $oidcClient,
+            'subjectMismatch' => $subjectMismatch,
+            'localSubject'    => $currentSubject,
         ]);
     }
 }
