@@ -28,15 +28,14 @@ final class DebugUserRolesCommand extends Command
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $username = $input->getArgument('username');
-        $user = $this->em->getRepository(BSUser::class)->findOneBy(['loginUsername' => $username])
-            ?? $this->em->getRepository(BSUser::class)->findOneBy(['username' => $username]);
+        $user = $this->em->getRepository(BSUser::class)->findOneBy(['username' => $username]);
 
         if (!$user) {
             $output->writeln("<error>User '$username' not found.</error>");
             return Command::FAILURE;
         }
 
-        $output->writeln("User: {$user->getLoginUsername()} (id={$user->getId()})");
+        $output->writeln("User: {$user->getUsername()} (id={$user->getId()})");
         $output->writeln("\nDirect roles:");
         foreach ($user->getDirectRoles() as $r) {
             $output->writeln("  - " . $r->getRole());
