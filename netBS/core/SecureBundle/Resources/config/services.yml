@@ -36,6 +36,8 @@ services:
         resource: '../../DataFixtures'
         tags: ['doctrine.fixture.orm']
 
+    NetBS\SecureBundle\Service\AccessAuditService: ~
+
     NetBS\SecureBundle\Service\UserManager: ~
 
     NetBS\SecureBundle\Service\SecureConfig:
