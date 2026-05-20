@@ -1,5 +1,37 @@
 $select2-border-width: 1px;
 
+// Server-side validation marks the underlying <select> with .is-invalid via the
+// Twig form theme. Our select2 widgets wrap that <select> in a styled div, so the
+// :has() selector propagates the red ring to the visible wrapper. Targets every
+// variant (static-search, multi, AJAX single/multi, plus the legacy jQuery select2
+// container that some pages still render).
+[data-controller="select2"]:has(> select.is-invalid),
+[data-controller~="select2"]:has(.select2-multi-control + select.is-invalid),
+.select2-search-wrapper:has(> select.is-invalid),
+.select2-ajax-wrapper:has(~ select.is-invalid),
+.select2-ajax-multi-wrapper:has(~ select.is-invalid) {
+  .form-control,
+  .select2-multi-control,
+  > select,
+  > input.form-control,
+  .select2-selection {
+    border-color: var(--bs-form-invalid-border-color, #dc3545) !important;
+  }
+}
+
+// Bootstrap's .invalid-feedback only displays when its previous sibling carries
+// .is-invalid. Custom widgets wrap the invalid <select> inside a div, breaking
+// that sibling relationship — force-display the feedback in those cases.
+[data-controller="select2"]:has(select.is-invalid) + .invalid-feedback,
+.select2-search-wrapper:has(select.is-invalid) + .invalid-feedback,
+.select2-ajax-wrapper:has(select.is-invalid) + .invalid-feedback,
+.select2-ajax-multi-wrapper:has(select.is-invalid) + .invalid-feedback,
+.input-daterange:has(.is-invalid) ~ .invalid-feedback,
+[data-controller="quill"]:has(.is-invalid) + .invalid-feedback {
+  display: block;
+}
+
+
 // Custom multi-select widget built by assets/controllers/select2_controller.js.
 // The outer .form-control is a div (not an <input>), so we mirror the focus
 // ring via :focus-within when the inner search input is focused.
@@ -24,6 +56,21 @@ $select2-border-width: 1px;
 
   .select2-tag {
     font-weight: 400;
+  }
+}
+
+// Static single-select with an inline search filter (built by _wrapWithSearch).
+// Stacks the search input above the native <select> with consistent spacing.
+.select2-search-wrapper {
+  display: block;
+  width: 100%;
+
+  > input.form-control {
+    margin-bottom: 0.25rem;
+  }
+
+  > select {
+    width: 100%;
   }
 }
 
