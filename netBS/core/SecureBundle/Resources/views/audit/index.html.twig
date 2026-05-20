@@ -29,21 +29,11 @@
             </div>
         </div>
 
-        {# Per-role counts derived from the matrix #}
-        {% set role_counts = {} %}
-        {% for role in sensitive_roles %}
-            {% set c = 0 %}
-            {% for row in matrix.rows %}
-                {% if row.cells[role] is defined %}{% set c = c + 1 %}{% endif %}
-            {% endfor %}
-            {% set role_counts = role_counts|merge({(role): c}) %}
-        {% endfor %}
-
         <h5 class="mb-2">Rôles sensibles</h5>
         <p class="text-muted small mb-3">Nombre d'utilisateurs ayant effectivement accès via chaque rôle. Cliquer pour voir le détail.</p>
         <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-3 mb-3">
             {% for role in sensitive_roles %}
-                {% set count = role_counts[role] %}
+                {% set count = matrix.counts[role] ?? 0 %}
                 <div class="col">
                     <a href="{{ path('netbs.secure.audit.scope_role', {role: role}) }}"
                        class="card text-decoration-none h-100 {{ count > 0 ? 'border-danger' : '' }}">

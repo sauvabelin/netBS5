@@ -6,6 +6,7 @@ namespace NetBS\SecureBundle\Command;
 
 use Doctrine\ORM\EntityManagerInterface;
 use App\Entity\BSUser;
+use NetBS\SecureBundle\Service\AccessAuditService;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
@@ -47,7 +48,7 @@ final class DebugUserRolesCommand extends Command
         }
 
         $output->writeln("");
-        foreach (['ROLE_ADMIN', 'ROLE_COMMANDANT', 'ROLE_SG', 'ROLE_READ_EVERYWHERE', 'ROLE_APMBS', 'ROLE_TRESORIER'] as $r) {
+        foreach (AccessAuditService::SENSITIVE_ROLES as $r) {
             $output->writeln(sprintf("hasRole %-25s : %s", $r, $user->hasRole($r) ? 'YES' : 'no'));
         }
 

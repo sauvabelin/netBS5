@@ -201,13 +201,23 @@ class AccessAuditServiceTest extends TestCase
     {
         $service = $this->makeService();
 
+        $flatten = static function (array $groupes, array $byName): array {
+            $out = [];
+            foreach ($groupes as $g) {
+                foreach ($byName[$g->getNom()] ?? [] as $item) {
+                    $out[] = $item;
+                }
+            }
+            return $out;
+        };
+
         $autoRef = new \ReflectionProperty(AccessAuditService::class, 'autorisationFinder');
         $autoRef->setAccessible(true);
-        $autoRef->setValue($service, fn(\NetBS\FichierBundle\Mapping\BaseGroupe $g) => $autorisations[$g->getNom()] ?? []);
+        $autoRef->setValue($service, fn(array $groupes) => $flatten($groupes, $autorisations));
 
         $attrRef = new \ReflectionProperty(AccessAuditService::class, 'attributionFinder');
         $attrRef->setAccessible(true);
-        $attrRef->setValue($service, fn(\NetBS\FichierBundle\Mapping\BaseGroupe $g) => $attributions[$g->getNom()] ?? []);
+        $attrRef->setValue($service, fn(array $groupes) => $flatten($groupes, $attributions));
 
         return $service;
     }
