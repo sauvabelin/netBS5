@@ -37,6 +37,23 @@ final class AccessAuditService
         'ROLE_READ_EVERYWHERE',
     ];
 
+    /**
+     * Returns an array keyed by sensitive role name with the count of users
+     * effectively holding that role (any path). Missing roles map to 0.
+     *
+     * @return array<string, int>
+     */
+    public function countUsersForSensitiveRoles(): array
+    {
+        $repo = $this->em->getRepository($this->secureConfig->getRoleClass());
+        $counts = [];
+        foreach (self::SENSITIVE_ROLES as $name) {
+            $role = $repo->findOneBy(['role' => $name]);
+            $counts[$name] = $role === null ? 0 : count($this->auditRoleScope($role)->entries);
+        }
+        return $counts;
+    }
+
     public function auditUser(BaseUser $user): UserAccessReport
     {
         $grants = [

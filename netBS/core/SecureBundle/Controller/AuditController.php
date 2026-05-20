@@ -47,8 +47,9 @@ final class AuditController extends AbstractController
         }
 
         return $this->render('@NetBSSecure/audit/index.html.twig', [
-            'form'            => $form->createView(),
-            'sensitive_roles' => AccessAuditService::SENSITIVE_ROLES,
+            'form'                  => $form->createView(),
+            'sensitive_roles'       => AccessAuditService::SENSITIVE_ROLES,
+            'sensitive_role_counts' => $this->audit->countUsersForSensitiveRoles(),
         ]);
     }
 

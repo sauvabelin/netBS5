@@ -1,5 +1,9 @@
 {# Renders one AccessGrant. Inputs: grant, sensitive_roles. #}
-<div class="list-group-item">
+{% set has_sensitive = 0 %}
+{% for role in grant.roles %}
+    {% if role.role in sensitive_roles %}{% set has_sensitive = 1 %}{% endif %}
+{% endfor %}
+<div class="list-group-item audit-grant" data-has-sensitive="{{ has_sensitive }}">
     <div class="d-flex justify-content-between align-items-start">
         <div class="me-3">
             {% if grant.provenance.value == 'direct_role' %}
