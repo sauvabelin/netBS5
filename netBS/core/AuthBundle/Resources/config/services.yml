@@ -1,0 +1,50 @@
+services:
+  _defaults:
+    autowire: true
+    autoconfigure: true
+    public: false
+
+  NetBS\AuthBundle\:
+    resource: '../../*'
+    exclude: '../../{Dto,Tests,Resources,DependencyInjection,NetBSAuthBundle.php}'
+
+  # Hydra admin client (env-injected URL). Logger is injected so transport
+  # and HTTP failures surface in the application logs (see HydraClientException).
+  NetBS\AuthBundle\Service\HydraAdminClient:
+    arguments:
+      $hydraAdminUrl: '%env(HYDRA_ADMIN_URL)%'
+      $logger: '@logger'
+
+  # Contract → concrete policy (lives in bundle)
+  NetBS\AuthBundle\Contract\IdentityClientPolicyInterface:
+    alias: NetBS\AuthBundle\Service\IdentityClientPolicy
+
+  NetBS\AuthBundle\Service\OidcEndpoints:
+    arguments:
+      $issuer: '%env(HYDRA_ISSUER)%'
+
+  # Shared secret verified on every Hydra refresh_token_hook call.
+  # Must match Hydra's oauth2.refresh_token_hook.auth.config.value.
+  NetBS\AuthBundle\Controller\Identity\RefreshHookController:
+    arguments:
+      $expectedSecret: '%env(HYDRA_REFRESH_HOOK_SECRET)%'
+      $logger: '@logger'
+    tags: ['controller.service_arguments']
+
+  NetBS\AuthBundle\Controller\Identity\LoginChallengeController:
+    arguments:
+      $logger: '@logger'
+    tags: ['controller.service_arguments']
+
+  NetBS\AuthBundle\Controller\Identity\ConsentChallengeController:
+    arguments:
+      $logger: '@logger'
+    tags: ['controller.service_arguments']
+
+  NetBS\AuthBundle\Listener\MainMenuListener:
+    tags:
+      - { name: kernel.event_listener, event: netbs.menu.extend, method: onMenuConfigure }
+
+  NetBS\AuthBundle\Security\OidcAwareLoginSuccessHandler:
+    arguments:
+      $defaultRoute: 'netbs.core.home.dashboard'

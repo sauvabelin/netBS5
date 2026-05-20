@@ -1,0 +1,139 @@
+{% extends '@NetBSCore/layout/backend.layout.twig' %}
+
+{% set title %}OAuth client — {{ client.name }}{% endset %}
+
+{% macro uri_collection(field, label) %}
+    <div class="mb-3 oidc-uri-collection"
+         data-prototype="{{ form_widget(field.vars.prototype)|e('html_attr') }}"
+         data-index="{{ field|length }}">
+        <label class="form-label">{{ label }}</label>
+        <div class="oidc-uri-collection-items">
+            {% for item in field %}
+                <div class="input-group input-group-sm mb-1 oidc-uri-collection-item">
+                    {{ form_widget(item, { attr: { class: 'form-control form-control-sm' } }) }}
+                    <button type="button" class="btn btn-outline-secondary oidc-copy-btn"
+                            data-copy-from="prev-input" title="Copy">
+                        <i class="fas fa-copy"></i>
+                    </button>
+                    <button type="button" class="btn btn-outline-danger oidc-uri-collection-remove" title="Remove">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+            {% endfor %}
+        </div>
+        {{ form_errors(field) }}
+        <button type="button" class="btn btn-sm btn-outline-secondary oidc-uri-collection-add">
+            <i class="fas fa-plus"></i> Add
+        </button>
+    </div>
+{% endmacro %}
+
+{% block main %}
+    {% import _self as macros %}
+    <div class="container-fluid">
+        {% include '@NetBSCore/includes/header.include.twig' with {
+            header: 'OAuth client',
+            subHeader: client.name
+        } %}
+
+        {% include '@NetBSAuth/admin/oidc/_identity_card.html.twig' with { client: client } %}
+
+        <div class="card mt-3">
+            <div class="card-header"><h5 class="card-title mb-0">Configuration</h5></div>
+            <div class="card-body">
+                {{ form_start(form) }}
+                {{ form_errors(form) }}
+                {{ form_row(form.name) }}
+                {{ form_row(form.scopes) }}
+                {{ macros.uri_collection(form.redirectUris, 'Redirect URIs') }}
+                {{ macros.uri_collection(form.postLogoutRedirectUris, 'Post-logout redirect URIs') }}
+                {% do form.redirectUris.setRendered() %}
+                {% do form.postLogoutRedirectUris.setRendered() %}
+                {{ form_row(form.backchannelLogoutUri) }}
+                {{ form_row(form.allowedClaims) }}
+
+                <div class="mt-3">
+                    <button type="submit" class="btn btn-primary">Save</button>
+                </div>
+                {{ form_end(form) }}
+
+                <div class="mt-3 d-flex justify-content-end">
+                    <form method="post"
+                          action="{{ path('auth.admin.oidc_clients.delete', { slug: client.slug }) }}"
+                          data-turbo-confirm="Permanently delete this client?"
+                          class="m-0">
+                        <input type="hidden" name="_token" value="{{ csrf_token('oidc_client_delete_' ~ client.slug) }}">
+                        <button type="submit" class="btn btn-outline-danger">
+                            <i class="fas fa-trash"></i> Delete
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        (function () {
+            function wire(container) {
+                container.querySelectorAll('.oidc-uri-collection').forEach(function (col) {
+                    if (col.dataset.wired) return;
+                    col.dataset.wired = '1';
+                    var items = col.querySelector('.oidc-uri-collection-items');
+
+                    col.querySelector('.oidc-uri-collection-add').addEventListener('click', function () {
+                        var idx = parseInt(col.dataset.index, 10);
+                        var html = col.dataset.prototype.replace(/__name__/g, idx);
+                        col.dataset.index = idx + 1;
+                        var row = document.createElement('div');
+                        row.className = 'input-group input-group-sm mb-1 oidc-uri-collection-item';
+                        row.innerHTML = html +
+                            '<button type="button" class="btn btn-outline-secondary oidc-copy-btn" data-copy-from="prev-input" title="Copy">' +
+                            '<i class="fas fa-copy"></i></button>' +
+                            '<button type="button" class="btn btn-outline-danger oidc-uri-collection-remove" title="Remove">' +
+                            '<i class="fas fa-times"></i></button>';
+                        row.querySelectorAll('input').forEach(function (i) {
+                            i.classList.add('form-control', 'form-control-sm');
+                        });
+                        items.appendChild(row);
+                    });
+
+                    items.addEventListener('click', function (e) {
+                        var btn = e.target.closest('.oidc-uri-collection-remove');
+                        if (!btn) return;
+                        btn.closest('.oidc-uri-collection-item').remove();
+                    });
+                });
+            }
+
+            function flash(btn) {
+                var orig = btn.innerHTML;
+                btn.innerHTML = '<i class="fas fa-check"></i>';
+                setTimeout(function () { btn.innerHTML = orig; }, 1200);
+            }
+
+            document.addEventListener('click', function (e) {
+                var btn = e.target.closest('.oidc-copy-btn');
+                if (!btn) return;
+                var value = btn.dataset.copy;
+                if (!value && btn.dataset.copyFrom === 'prev-input') {
+                    var input = btn.parentElement.querySelector('input');
+                    if (input) value = input.value;
+                }
+                if (!value) return;
+                if (navigator.clipboard && navigator.clipboard.writeText) {
+                    navigator.clipboard.writeText(value).then(function () { flash(btn); });
+                } else {
+                    var tmp = document.createElement('textarea');
+                    tmp.value = value;
+                    document.body.appendChild(tmp);
+                    tmp.select();
+                    try { document.execCommand('copy'); flash(btn); } catch (_) {}
+                    document.body.removeChild(tmp);
+                }
+            });
+
+            wire(document);
+            document.addEventListener('turbo:render', function () { wire(document); });
+        })();
+    </script>
+{% endblock %}

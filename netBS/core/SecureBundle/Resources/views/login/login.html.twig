@@ -34,8 +34,18 @@
     <div>
         <div class="card">
             <div class="card-header text-center">
-                <img src="{{ asset('bundles/netbscore/img/logo.png') }}" alt="logo" width="64" height="64" class="logo-img">
-                <h5 class="card-title">{{ param('app', 'name') }} | Connexion</h5>
+                {% if oidc_client and oidc_client.client_name %}
+                    {% if oidc_client.logo_uri %}
+                        <img src="{{ oidc_client.logo_uri }}" alt="{{ oidc_client.client_name }}" height="64" class="logo-img">
+                    {% else %}
+                        <img src="{{ asset('bundles/netbscore/img/logo.png') }}" alt="logo" width="64" height="64" class="logo-img">
+                    {% endif %}
+                    <h5 class="card-title">Connexion à <strong>{{ oidc_client.client_name }}</strong></h5>
+                    <p class="text-muted small mb-0">via {{ param('app', 'name') }}</p>
+                {% else %}
+                    <img src="{{ asset('bundles/netbscore/img/logo.png') }}" alt="logo" width="64" height="64" class="logo-img">
+                    <h5 class="card-title">{{ param('app', 'name') }} | Connexion</h5>
+                {% endif %}
             </div>
 
             <div class="card-body">

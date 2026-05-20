@@ -6,6 +6,8 @@ use Doctrine\ORM\Mapping as ORM;
 use Gedmo\Mapping\Annotation as Gedmo;
 use NetBS\FichierBundle\Mapping\BaseMembre;
 use NetBS\SecureBundle\Mapping\BaseUser;
+use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
+use Symfony\Component\Validator\Constraints as Assert;
 
 /**
  * User
@@ -13,6 +15,7 @@ use NetBS\SecureBundle\Mapping\BaseUser;
 #[ORM\Table(name: 'sauvabelin_netbs_users')]
 #[ORM\Entity]
 #[Gedmo\SoftDeleteable(fieldName: 'deletedAt', timeAware: false, hardDelete: false)]
+#[UniqueEntity(fields: ['loginUsername'], message: "Ce nom de connexion est déjà pris.")]
 class BSUser extends BaseUser
 {
     const HAS_REDIRECT = 'has_a_mail_redirect';
@@ -62,6 +65,80 @@ class BSUser extends BaseUser
      */
     #[ORM\Column(name: 'email_bs', type: 'string', length: 255, nullable: true)]
     protected $emailBS = null;
+
+    /**
+     * Mutable login handle. Defaults to username on insert. Used by the
+     * Symfony firewall to look up users at login. The immutable username
+     * remains the OIDC `sub` and the system-wide identifier.
+     *
+     * Enforced NOT NULL at the schema level (see
+     * Version20260519110000_login_username_not_null) — the unique index would
+     * otherwise allow an unbounded number of NULL rows, breaking the lookup.
+     *
+     * @var string|null
+     */
+    #[ORM\Column(name: 'login_username', type: 'string', length: 255, nullable: false, unique: true)]
+    #[Assert\Length(max: 255)]
+    protected ?string $loginUsername = null;
+
+    public function getLoginUsername(): ?string
+    {
+        return $this->loginUsername;
+    }
+
+    public function setLoginUsername(?string $loginUsername): self
+    {
+        // Login handle is what users see and edit. Blank collapses to the
+        // permanent username (which exists once the entity has been bootstrapped).
+        $value = ($loginUsername === null || $loginUsername === '')
+            ? $this->username
+            : $loginUsername;
+
+        $this->loginUsername = $value;
+
+        // On first assignment, bootstrap the permanent backend username too.
+        // After this, setUsername is a no-op and the backend identifier never moves.
+        if ($this->username === null || $this->username === '') {
+            parent::setUsername($value);
+        }
+
+        return $this;
+    }
+
+    /**
+     * Sets the permanent backend identifier.
+     *
+     * Invariant: `username` is the immutable OIDC subject and the system-wide
+     * row identifier. It is set exactly once, at entity creation. For editable
+     * display / login handles, use {@see setLoginUsername()} instead.
+     *
+     * Calling this method again with the same value is allowed (idempotent).
+     * Calling it with a different value once `username` has been set throws —
+     * silently no-oping (the previous behaviour) hid bugs in fixture loaders,
+     * admin tools and data importers.
+     *
+     * @throws \LogicException when attempting to change an already-set username.
+     */
+    public function setUsername($username)
+    {
+        if ($this->username !== null && $this->username !== '') {
+            if ($this->username === $username) {
+                return $this;
+            }
+            throw new \LogicException(sprintf(
+                'BSUser::setUsername(): username is immutable once set (current="%s", attempted="%s"). '
+                . 'Use setLoginUsername() to change the editable login handle.',
+                $this->username,
+                (string) $username
+            ));
+        }
+        parent::setUsername($username);
+
+        if ($this->loginUsername === null || $this->loginUsername === '') {
+            $this->loginUsername = $username;
+        }
+        return $this;
+    }
 
     public function getUserIdentifier(): string {
         return $this->username;
