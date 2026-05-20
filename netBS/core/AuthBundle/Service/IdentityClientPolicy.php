@@ -13,21 +13,6 @@ use Psr\Log\NullLogger;
 
 final class IdentityClientPolicy implements IdentityClientPolicyInterface
 {
-    /**
-     * Per-client gating map: `clientId` => `BSUser` method whose boolean return
-     * value gates access. Clients not listed here fall through to default-allow
-     * (see {@see canAccess}). When adding a new internal client that should be
-     * toggleable per-user, add its `client_id` here and expose the corresponding
-     * boolean field on `BSUser` (and in the admin user list, see
-     * `BSUserList::PROPERTY`).
-     *
-     * @var array<string, string>
-     */
-    private const CLIENT_ACCESS_FIELDS = [
-        'nextcloud' => 'hasNextcloudAccount',
-        'wiki'      => 'hasWikiAccount',
-    ];
-
     private readonly LoggerInterface $logger;
 
     /**
@@ -66,17 +51,14 @@ final class IdentityClientPolicy implements IdentityClientPolicyInterface
     /**
      * Whether `$identity` may obtain tokens for `$clientId`.
      *
+     * IdP gates only on identity validity. Per-RP access policy lives in
+     * the RP (e.g. Nextcloud user_oidc 'required group' setting, Wiki OIDC
+     * plugin's allow-list).
+     *
      * Decision flow:
-     *  1. Resolve the local `BSUser` by `sub`. No user / disabled => deny.
-     *  2. If the client appears in {@see CLIENT_ACCESS_FIELDS}, gate on the
-     *     corresponding boolean field of `BSUser` (admins toggle these per
-     *     user via the user list UI).
-     *  3. Otherwise default-allow. This is intentional for a small internal
-     *     scout-association deployment where every netBS user is trusted on
-     *     every internally-operated OIDC client. If you ever federate to a
-     *     less-trusted client, add it to `CLIENT_ACCESS_FIELDS` (or replace
-     *     this policy with one that reads `metadata.access_groups` from the
-     *     Hydra client).
+     *  1. `isDisabled` => deny.
+     *  2. Local `BSUser` not found for `sub` => deny.
+     *  3. Otherwise => allow.
      *
      * Every decision is logged at INFO so post-hoc audits are possible.
      */
@@ -101,39 +83,24 @@ final class IdentityClientPolicy implements IdentityClientPolicyInterface
             return false;
         }
 
-        $user = $this->loadUser($identity->sub);
-        if ($user === null) {
+        if ($this->loadUser($identity->sub) === null) {
             $reason = 'user_not_found';
             return false;
         }
 
-        if (isset(self::CLIENT_ACCESS_FIELDS[$clientId])) {
-            $method = self::CLIENT_ACCESS_FIELDS[$clientId];
-            $allowed = (bool) $user->{$method}();
-            $reason = $allowed ? 'client_gate_allow' : 'client_gate_deny';
-            return $allowed;
-        }
-
-        $reason = 'default_allow_unlisted_client';
+        $reason = 'allow';
         return true;
     }
 
+    /**
+     * Hook for emitting additional per-client claims beyond the universal
+     * identity ones. The IdP itself emits no RP-specific claims — RPs derive
+     * any authorisation signals they need from `groups` (or from their own
+     * local config). Kept for interface compatibility and as an extension
+     * point for future configurable claim sources.
+     */
     public function additionalClaimsFor(IdentityDTO $identity, string $clientId): array
     {
-        $user = $this->loadUser($identity->sub);
-        if ($user === null) {
-            return [];
-        }
-
-        return match ($clientId) {
-            'nextcloud' => [
-                'nextcloud_admin' => $user->isNextcloudAdmin(),
-                'nextcloud_quota' => $user->getNextcloudQuota(),
-            ],
-            'wiki' => [
-                'wiki_admin' => $user->isWikiAdmin(),
-            ],
-            default => [],
-        };
+        return [];
     }
 }

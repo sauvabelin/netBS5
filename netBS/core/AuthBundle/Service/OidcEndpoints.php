@@ -16,9 +16,6 @@ final class OidcEndpoints
         'email',
         'name',
         'groups',
-        'nextcloud_admin',
-        'nextcloud_quota',
-        'wiki_admin',
     ];
 
     public function __construct(private readonly string $issuer)

@@ -77,11 +77,11 @@ final class ConsentChallengeController extends AbstractController
             ]);
         }
 
-        // Per-client access gate. For internally-operated clients listed in
-        // IdentityClientPolicy::CLIENT_ACCESS_FIELDS this maps to a boolean
-        // toggle on BSUser (nextcloudAccount, wikiAccount). Unlisted clients
-        // are default-allowed — see the docblock on IdentityClientPolicy::canAccess
-        // for the trust-model rationale. Every decision is logged.
+        // Identity-validity gate. The IdP only checks that the user exists
+        // and is not disabled; per-RP authorisation (which users may sign in
+        // to which client) lives in the RP itself — e.g. Nextcloud user_oidc's
+        // "required group" setting, the Wiki OIDC plugin's allow-list, etc.
+        // Every decision is logged.
         if (!$this->policy->canAccess($identity, $clientId)) {
             return $this->rejectAndRedirect($consentChallenge, 'access_denied', "User does not have access to {$clientId}", [
                 'subject'   => $subject,

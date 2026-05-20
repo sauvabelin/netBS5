@@ -95,10 +95,10 @@ final class ClaimsAssemblerTest extends TestCase
     public function testStandardClaimsTakePrecedenceOnUnrelatedPolicyExtras(): void
     {
         $assembler = $this->makeAssembler(
-            allowedClaims: ['sub', 'preferred_username', 'nextcloud_admin', 'nextcloud_quota'],
+            allowedClaims: ['sub', 'preferred_username', 'custom_flag', 'custom_value'],
             policy: $this->policyReturning([
-                'nextcloud_admin' => true,
-                'nextcloud_quota' => '5GB',
+                'custom_flag'  => true,
+                'custom_value' => '5GB',
             ]),
         );
 
@@ -106,8 +106,8 @@ final class ClaimsAssemblerTest extends TestCase
 
         $this->assertSame('alice', $claims['sub']);
         $this->assertSame('alice', $claims['preferred_username']);
-        $this->assertTrue($claims['nextcloud_admin']);
-        $this->assertSame('5GB', $claims['nextcloud_quota']);
+        $this->assertTrue($claims['custom_flag']);
+        $this->assertSame('5GB', $claims['custom_value']);
     }
 
     public function testUserWithoutEmailOmitsTheEmailClaim(): void
@@ -140,7 +140,7 @@ final class ClaimsAssemblerTest extends TestCase
     {
         $assembler = $this->makeAssembler(
             allowedClaims: ['sub'],
-            policy: $this->policyReturning(['nextcloud_admin' => true]),
+            policy: $this->policyReturning(['custom_flag' => true]),
         );
 
         $claims = $assembler->assemble($this->makeIdentity(), 'test-client');
@@ -151,16 +151,16 @@ final class ClaimsAssemblerTest extends TestCase
     public function testNullAdditionalClaimsAreDroppedSilently(): void
     {
         $assembler = $this->makeAssembler(
-            allowedClaims: ['sub', 'nextcloud_admin', 'nextcloud_quota'],
+            allowedClaims: ['sub', 'custom_flag', 'custom_value'],
             policy: $this->policyReturning([
-                'nextcloud_admin' => true,
-                'nextcloud_quota' => null,
+                'custom_flag'  => true,
+                'custom_value' => null,
             ]),
         );
 
         $claims = $assembler->assemble($this->makeIdentity(), 'test-client');
 
-        $this->assertTrue($claims['nextcloud_admin']);
-        $this->assertArrayNotHasKey('nextcloud_quota', $claims);
+        $this->assertTrue($claims['custom_flag']);
+        $this->assertArrayNotHasKey('custom_value', $claims);
     }
 }
