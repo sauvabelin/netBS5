@@ -1,6 +1,6 @@
 import { Controller } from '@hotwired/stimulus';
 import { showToast } from '../lib/toast.js';
-import { fetchResults, renderDropdownItems, wireSearchInput, esc } from '../lib/ajax_search.js';
+import { fetchResults, renderDropdownItems, wireSearchInput, parseJsonArray, esc } from '../lib/ajax_search.js';
 
 export default class extends Controller {
 
@@ -295,20 +295,15 @@ export default class extends Controller {
         const url = this.element.dataset.editableSelect2UrlValue || '/netBS/netbs/select2/results';
 
         const sourceById = {};
-        for (const it of this._parseJsonArray(this.element.dataset.originalSource)) {
+        for (const it of parseJsonArray(this.element.dataset.originalSource)) {
             sourceById[String(it.id)] = it.text;
         }
-        for (const id of this._parseJsonArray(this.element.dataset.value)) {
-            this._addTag(control, searchInput, String(id), sourceById[String(id)] || String(id));
+        for (const id of parseJsonArray(this.element.dataset.value)) {
+            this._addTag(tip, String(id), sourceById[String(id)] || String(id));
         }
 
         control.addEventListener('click', (e) => {
             if (e.target === control) searchInput.focus();
-        });
-
-        searchInput.addEventListener('focus', () => {
-            results.style.display = 'block';
-            fetchResults(url, ajaxClass, '', nullOption).then((items) => renderDropdownItems(items, results));
         });
 
         wireSearchInput(searchInput, results, (query) => {
@@ -321,7 +316,7 @@ export default class extends Controller {
             const item = e.target.closest('[data-id]');
             if (!item) return;
             if (!control.querySelector(`.select2-tag[data-id="${CSS.escape(item.dataset.id)}"]`)) {
-                this._addTag(control, searchInput, item.dataset.id, item.dataset.text);
+                this._addTag(tip, item.dataset.id, item.dataset.text);
             }
             searchInput.value = '';
             results.style.display = 'none';
@@ -329,7 +324,9 @@ export default class extends Controller {
         });
     }
 
-    _addTag(control, searchInput, id, text) {
+    _addTag(tip, id, text) {
+        const control = tip.querySelector('.select2-multi-control');
+        const searchInput = tip.querySelector('.editable-search-input');
         const tag = document.createElement('span');
         tag.className = 'select2-tag badge bg-primary d-inline-flex align-items-center gap-1';
         tag.dataset.id = id;
@@ -359,15 +356,6 @@ export default class extends Controller {
         this.element.dataset.originalSource = JSON.stringify(tagData);
     }
 
-    _parseJsonArray(raw) {
-        if (!raw) return [];
-        try {
-            const v = JSON.parse(raw);
-            return Array.isArray(v) ? v : [];
-        } catch (e) {
-            return [];
-        }
-    }
 
 
     async _initFlatpickr(input) {

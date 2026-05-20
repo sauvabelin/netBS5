@@ -12,12 +12,15 @@ export function fetchResults(url, ajaxClass, query, nullOption) {
 }
 
 export function renderDropdownItems(items, container) {
-    container.innerHTML = items.map((item) =>
-        `<a href="#" class="list-group-item list-group-item-action py-1 px-2"
+    container.innerHTML = items.map((item) => {
+        const subtitle = item.subtitle
+            ? `<div class="small text-muted">${esc(item.subtitle)}</div>`
+            : '';
+        return `<a href="#" class="list-group-item list-group-item-action py-1 px-2"
             data-id="${esc(item.id)}" data-text="${esc(item.text)}">
-            ${esc(item.text)}
-        </a>`
-    ).join('') || '<span class="list-group-item py-1 px-2 text-muted">Aucun résultat</span>';
+            <div>${esc(item.text)}</div>${subtitle}
+        </a>`;
+    }).join('') || '<span class="list-group-item py-1 px-2 text-muted">Aucun résultat</span>';
     container.style.display = 'block';
 }
 
@@ -31,6 +34,16 @@ export function wireSearchInput(input, resultsContainer, searchFn) {
 
     input.addEventListener('focus', () => doSearch(input.value.trim()));
     input.addEventListener('input', () => doSearch(input.value.trim()));
+}
+
+export function parseJsonArray(raw) {
+    if (!raw) return [];
+    try {
+        const v = JSON.parse(raw);
+        return Array.isArray(v) ? v : [];
+    } catch (e) {
+        return [];
+    }
 }
 
 export function esc(str) {
