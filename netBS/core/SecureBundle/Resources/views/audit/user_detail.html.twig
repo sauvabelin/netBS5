@@ -1,0 +1,43 @@
+{% extends '@NetBSCore/layout/backend.layout.twig' %}
+
+{% block title %}Audit — {{ report.user.username }}{% endblock %}
+
+{% block main %}
+    <div class="container-fluid">
+
+        {% include '@NetBSCore/includes/header.include.twig' with {
+            header: "Audit — " ~ report.user.username,
+            subHeader: "Droits effectifs de cet utilisateur"
+        } %}
+
+        <div class="card mb-3">
+            <div class="card-header">
+                <strong>{{ report.user.username }}</strong>
+                <a href="{{ path('netbs.secure.audit.index') }}" class="float-end btn btn-sm btn-link">← retour</a>
+            </div>
+            <div class="card-body">
+                {% set sensitive_count = 0 %}
+                {% set scope_ids = [] %}
+                {% for g in report.grants %}
+                    {% for r in g.roles %}
+                        {% if r.role in sensitive_roles %}{% set sensitive_count = sensitive_count + 1 %}{% endif %}
+                    {% endfor %}
+                    {% if g.scope and g.scope.id not in scope_ids %}
+                        {% set scope_ids = scope_ids|merge([g.scope.id]) %}
+                    {% endif %}
+                {% endfor %}
+                <span class="badge bg-danger me-2">{{ sensitive_count }} rôle{% if sensitive_count != 1 %}s{% endif %} sensible{% if sensitive_count != 1 %}s{% endif %}</span>
+                <span class="badge bg-info">{{ scope_ids|length }} périmètre{% if scope_ids|length != 1 %}s{% endif %}</span>
+            </div>
+        </div>
+
+        <div class="list-group">
+            {% for grant in report.grants %}
+                {% include '@NetBSSecure/audit/_grant_row.html.twig' with {grant: grant, sensitive_roles: sensitive_roles} only %}
+            {% else %}
+                <div class="alert alert-info">Aucun accès enregistré.</div>
+            {% endfor %}
+        </div>
+
+    </div>
+{% endblock %}

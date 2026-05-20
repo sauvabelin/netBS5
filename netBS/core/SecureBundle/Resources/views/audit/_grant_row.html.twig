@@ -1,0 +1,28 @@
+{# Renders one AccessGrant. Inputs: grant, sensitive_roles. #}
+<div class="list-group-item">
+    <div class="d-flex justify-content-between align-items-start">
+        <div class="me-3">
+            {% if grant.provenance.value == 'direct_role' %}
+                <span class="badge bg-primary">Rôle direct</span>
+            {% elseif grant.provenance.value == 'fonction_role' %}
+                <span class="badge bg-info">Fonction</span>
+                {% if grant.sourceFonction %}
+                    <span class="text-muted small">{{ grant.sourceFonction.nom }}</span>
+                {% endif %}
+            {% else %}
+                <span class="badge bg-warning text-dark">Autorisation</span>
+            {% endif %}
+            {% if grant.scope %}
+                <span class="ms-2 badge bg-light text-dark border">📂 {{ grant.scope.nom }}</span>
+            {% else %}
+                <span class="ms-2 badge bg-light text-dark border">Global</span>
+            {% endif %}
+        </div>
+        <div>
+            {% for role in grant.roles %}
+                {% set is_sensitive = role.role in sensitive_roles %}
+                <span class="badge {{ is_sensitive ? 'bg-danger' : 'bg-secondary' }}">{{ role.role }}</span>
+            {% endfor %}
+        </div>
+    </div>
+</div>

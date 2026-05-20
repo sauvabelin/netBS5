@@ -1,0 +1,49 @@
+{% extends '@NetBSCore/layout/backend.layout.twig' %}
+
+{% block title %}Audit des accès{% endblock %}
+
+{% block main %}
+    <div class="container-fluid">
+
+        {% include '@NetBSCore/includes/header.include.twig' with {
+            header: "Audit des accès",
+            subHeader: "Contrôler les droits attribués aux utilisateurs"
+        } %}
+
+        <div class="row">
+            <div class="col-md-6">
+                <div class="card mb-3">
+                    <div class="card-header"><strong>Utilisateurs</strong></div>
+                    <div class="card-body">
+                        <p class="text-muted mb-2">Pour auditer un utilisateur, ouvrez "Utilisateurs &gt; Gestion", puis utilisez le bouton "Audit" sur la fiche.</p>
+                        <a href="{{ path('netbs.secure.user.list_users') }}" class="btn btn-sm btn-outline-primary">Liste des utilisateurs</a>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="card mb-3">
+                    <div class="card-header"><strong>Rôles sensibles</strong></div>
+                    <div class="card-body">
+                        <p class="text-muted">Voir tous les utilisateurs ayant accès via un rôle sensible.</p>
+                        <ul class="list-inline mb-0">
+                            {% for role in sensitive_roles %}
+                                <li class="list-inline-item mb-1">
+                                    <a href="{{ path('netbs.secure.audit.scope_role', {role: role}) }}"
+                                       class="badge bg-danger text-decoration-none">{{ role }}</a>
+                                </li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                </div>
+                <div class="card">
+                    <div class="card-header"><strong>Groupes</strong></div>
+                    <div class="card-body">
+                        <p class="text-muted">Voir tous les utilisateurs ayant accès à un groupe (fonctions + autorisations, incluant les groupes parents).</p>
+                        <a href="{{ path('netbs.fichier.groupe.page_groupes_hierarchy') }}" class="btn btn-sm btn-outline-primary">Choisir un groupe…</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+{% endblock %}

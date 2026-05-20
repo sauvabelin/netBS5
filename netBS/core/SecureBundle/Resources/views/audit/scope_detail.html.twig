@@ -1,0 +1,48 @@
+{% extends '@NetBSCore/layout/backend.layout.twig' %}
+
+{% block title %}Audit — périmètre{% endblock %}
+
+{% block main %}
+    <div class="container-fluid">
+
+        {% include '@NetBSCore/includes/header.include.twig' with {
+            header: "Audit — périmètre",
+            subHeader: "Utilisateurs ayant accès à ce périmètre"
+        } %}
+
+        <div class="card mb-3">
+            <div class="card-header">
+                <strong>
+                    {% if report.scope.nom is defined %}
+                        Groupe : {{ report.scope.nom }}
+                    {% else %}
+                        Rôle : {{ report.scope.role }}
+                    {% endif %}
+                </strong>
+                <a href="{{ path('netbs.secure.audit.index') }}" class="float-end btn btn-sm btn-link">← retour</a>
+            </div>
+            <div class="card-body">
+                <span class="badge bg-info">{{ report.entries|length }} utilisateur{% if report.entries|length != 1 %}s{% endif %}</span>
+            </div>
+        </div>
+
+        {% for entry in report.entries %}
+            <div class="card mb-2">
+                <div class="card-header">
+                    <a href="{{ path('netbs.secure.audit.user_show', {id: entry.user.id}) }}">
+                        {{ entry.user.username }}
+                    </a>
+                    <span class="text-muted small">— {{ entry.grants|length }} accès</span>
+                </div>
+                <div class="list-group list-group-flush">
+                    {% for grant in entry.grants %}
+                        {% include '@NetBSSecure/audit/_grant_row.html.twig' with {grant: grant, sensitive_roles: sensitive_roles} only %}
+                    {% endfor %}
+                </div>
+            </div>
+        {% else %}
+            <div class="alert alert-info">Aucun utilisateur n'a accès à ce périmètre.</div>
+        {% endfor %}
+
+    </div>
+{% endblock %}
