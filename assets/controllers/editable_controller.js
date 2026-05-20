@@ -129,6 +129,16 @@ export default class extends Controller {
     }
 
     _buildAjaxDropdownHtml() {
+        if (this._isMulti()) {
+            return `<div class="editable-ajax-search editable-ajax-multi-wrapper position-relative" style="min-width:240px;">
+                <div class="form-control select2-multi-control d-flex flex-wrap align-items-center gap-1" style="cursor:text;">
+                    <input type="text" class="select2-multi-search editable-search-input border-0 bg-transparent p-0 flex-grow-1"
+                           style="outline:none;min-width:80px;" placeholder="Rechercher..." autocomplete="off">
+                </div>
+                <div class="list-group select2-results-dropdown editable-search-results"
+                     style="position:absolute;top:100%;left:0;width:100%;z-index:1070;max-height:250px;overflow-y:auto;display:none;background:#fff;box-shadow:0 2px 8px rgba(0,0,0,.15);"></div>
+            </div>`;
+        }
         const value = this.element.dataset.value || '';
         return `<div class="editable-ajax-search" style="min-width:220px;position:relative;">
             <input type="text" class="form-control form-control-sm editable-search-input"
@@ -137,6 +147,11 @@ export default class extends Controller {
             <div class="editable-search-results list-group"
                  style="position:absolute;top:100%;left:0;width:100%;z-index:1070;max-height:250px;overflow-y:auto;display:none;background:#fff;box-shadow:0 2px 8px rgba(0,0,0,.15);"></div>
         </div>`;
+    }
+
+    _isMulti() {
+        const m = this.element.dataset.multiple;
+        return m === '1' || m === 'true';
     }
 
     _buildSelectHtml(currentValue) {
@@ -161,8 +176,12 @@ export default class extends Controller {
             const cb = tip.querySelector('input[type="checkbox"]');
             newValue = cb.checked ? ['1'] : [''];
         } else if (this._isAjaxDropdown()) {
-            const hidden = tip.querySelector('.editable-search-value');
-            newValue = hidden ? hidden.value : '';
+            if (this._isMulti()) {
+                newValue = Array.from(tip.querySelectorAll('.select2-tag')).map((t) => t.dataset.id);
+            } else {
+                const hidden = tip.querySelector('.editable-search-value');
+                newValue = hidden ? hidden.value : '';
+            }
         } else if (type === 'hochetdatepicker') {
             const input = tip.querySelector('.editable-flatpickr');
             newValue = input.value;
@@ -198,7 +217,11 @@ export default class extends Controller {
                 });
             })
             .then((data) => {
-                this._updateDisplayValue(type, newValue, data);
+                if (this._isAjaxDropdown() && this._isMulti()) {
+                    this._updateMultiDisplay(tip);
+                } else {
+                    this._updateDisplayValue(type, newValue, data);
+                }
                 this._destroyPopover();
                 showToast('success', 'Valeur modifiée avec succès');
             })
@@ -236,6 +259,10 @@ export default class extends Controller {
 
 
     _wireAjaxSearch(tip) {
+        if (this._isMulti()) {
+            this._wireAjaxMultiSearch(tip);
+            return;
+        }
         const searchInput = tip.querySelector('.editable-search-input');
         const hiddenInput = tip.querySelector('.editable-search-value');
         const results = tip.querySelector('.editable-search-results');
@@ -257,6 +284,89 @@ export default class extends Controller {
             searchInput.value = item.dataset.text;
             results.style.display = 'none';
         });
+    }
+
+    _wireAjaxMultiSearch(tip) {
+        const control = tip.querySelector('.select2-multi-control');
+        const searchInput = tip.querySelector('.editable-search-input');
+        const results = tip.querySelector('.editable-search-results');
+        const ajaxClass = this.element.dataset.ajaxClass;
+        const nullOption = this.element.dataset.nullOption || '0';
+        const url = this.element.dataset.editableSelect2UrlValue || '/netBS/netbs/select2/results';
+
+        const sourceById = {};
+        for (const it of this._parseJsonArray(this.element.dataset.originalSource)) {
+            sourceById[String(it.id)] = it.text;
+        }
+        for (const id of this._parseJsonArray(this.element.dataset.value)) {
+            this._addTag(control, searchInput, String(id), sourceById[String(id)] || String(id));
+        }
+
+        control.addEventListener('click', (e) => {
+            if (e.target === control) searchInput.focus();
+        });
+
+        searchInput.addEventListener('focus', () => {
+            results.style.display = 'block';
+            fetchResults(url, ajaxClass, '', nullOption).then((items) => renderDropdownItems(items, results));
+        });
+
+        wireSearchInput(searchInput, results, (query) => {
+            results.style.display = 'block';
+            fetchResults(url, ajaxClass, query, nullOption).then((items) => renderDropdownItems(items, results));
+        });
+
+        results.addEventListener('click', (e) => {
+            e.preventDefault();
+            const item = e.target.closest('[data-id]');
+            if (!item) return;
+            if (!control.querySelector(`.select2-tag[data-id="${CSS.escape(item.dataset.id)}"]`)) {
+                this._addTag(control, searchInput, item.dataset.id, item.dataset.text);
+            }
+            searchInput.value = '';
+            results.style.display = 'none';
+            searchInput.focus();
+        });
+    }
+
+    _addTag(control, searchInput, id, text) {
+        const tag = document.createElement('span');
+        tag.className = 'select2-tag badge bg-primary d-inline-flex align-items-center gap-1';
+        tag.dataset.id = id;
+        const label = document.createElement('span');
+        label.className = 'select2-tag-text';
+        label.textContent = text;
+        const close = document.createElement('button');
+        close.type = 'button';
+        close.className = 'btn-close btn-close-white';
+        close.style.fontSize = '.6em';
+        close.setAttribute('aria-label', 'Retirer');
+        close.addEventListener('click', () => tag.remove());
+        tag.appendChild(label);
+        tag.appendChild(close);
+        control.insertBefore(tag, searchInput);
+    }
+
+    _updateMultiDisplay(tip) {
+        const tagEls = tip.querySelectorAll('.select2-tag');
+        const tagData = Array.from(tagEls).map((t) => ({
+            id: t.dataset.id,
+            text: t.querySelector('.select2-tag-text').textContent,
+        }));
+        const empty = this.element.dataset.emptytext || 'Rien';
+        this.element.textContent = tagData.length === 0 ? empty : `${tagData.length} élément(s)`;
+        this.element.dataset.value = JSON.stringify(tagData.map((t) => t.id));
+        this.element.dataset.originalSource = JSON.stringify(tagData);
+    }
+
+    _parseJsonArray(raw) {
+        if (!raw) return [];
+        try {
+            const v = JSON.parse(raw);
+            return Array.isArray(v) ? v : [];
+        } catch (e) {
+            return [];
+        }
     }
 
 
