@@ -1,102 +1,102 @@
 roles:
     ROLE_APMBS:
-        description: "Membre de l'APMBS"
+        description: "Membre de l'APMBS (Association des Parents et Anciens). Donne le plein CRUD sur le module de réservation des cabanes : Cabane, APMBSReservation, CabaneTimePeriod, Intendant, ReservationLog (voir APMBSVoter). Active le menu 'APMBS' en sidebar. N'a aucun effet sur les données du fichier des membres."
         poids: 900
     ROLE_COMMANDANT:
-        description: "Role du commandant"
+        description: "Chef de l'organisation. Racine de la hiérarchie organisationnelle : enfant de ce rôle hérite tous ses descendants (QM + branches + clans + camps). Reçoit automatiquement ROLE_SG par grafting de FichierBundle — donc accès global au fichier. Pas de capacité métier directe au-delà de l'héritage."
         poids: 1000
         children:
             ROLE_QM:
-                description: "Role du QM"
+                description: "Quartier-maître. Coordonne l'administration interne (trésorerie, communication, formations, matériel, économat). Parent regroupant les rôles de fonction support — n'octroie aucune capacité métier directe, sert de chapeau hiérarchique."
                 poids: 990
                 children:
                     ROLE_MEMBRE_EDC:
-                        description: "membre de l'EDC"
+                        description: "Membre de l'Équipe de Coordination. Rôle de tagging hiérarchique — n'octroie aucune capacité métier directe."
                         poids: 980
                     ROLE_TRESORIER:
-                        description: "Trésorier"
+                        description: "Trésorier. Donne le plein CRUD sur le module de facturation : Facture, Creance, Paiement, Rappel, FactureModel, Compte (voir FacturationVoter). Active le menu 'Cotisations' et affiche les factures sur les fiches membres."
                         poids: 980
                     ROLE_MAILING:
-                        description: "Gestionnaire des listes de diffusion"
+                        description: "Gestionnaire des listes de diffusion. Donne le plein CRUD sur MailingList, MailingTarget, MailingListAlias (voir MailingListVoter). Active le menu 'Mailings'."
                         poids: 980
                     ROLE_RESPONSABLE_COMM:
-                        description: "Responsable communication"
+                        description: "Responsable communication. Rôle de tagging — n'octroie aucune capacité métier directe. Parent de ROLE_RESPONSABLE_PUBLICATIONS."
                         poids: 980
                         children:
                             ROLE_RESPONSABLE_PUBLICATIONS:
                                 poids: 800
-                                description: "Responsable publications"
+                                description: "Responsable publications. Rôle de tagging — n'octroie aucune capacité métier directe."
                     ROLE_RESPONSABLE_FORMATION_EXTERNE:
-                        description: "Responsable formation externe"
+                        description: "Responsable formation externe. Rôle de tagging — n'octroie aucune capacité métier directe."
                         poids: 980
                     ROLE_RESPONSABLE_FORMATION_INTERNE:
-                        description: "Responsable formation interne"
+                        description: "Responsable formation interne. Rôle de tagging — n'octroie aucune capacité métier directe."
                         poids: 980
                     ROLE_RESPONSABLE_LOCAUX:
-                        description: "Responsable des locaux"
+                        description: "Responsable des locaux. Rôle de tagging — n'octroie aucune capacité métier directe."
                         poids: 980
                     ROLE_COACH:
-                        description: "Responsable formation externe"
+                        description: "Coach JS (Jeunesse + Sport). Rôle de tagging — n'octroie aucune capacité métier directe. Mêmes responsabilités que la formation externe côté association."
                         poids: 980
                     ROLE_CHEF_MAT:
-                        description: "Chef mat'"
+                        description: "Chef matériel. Rôle de tagging — n'octroie aucune capacité métier directe. Parent de ROLE_CHEF_MAT_ADJOINT."
                         poids: 800
                         children:
                             ROLE_CHEF_MAT_ADJOINT:
                                 poids: 700
-                                description: "Chef mat' adjoint"
+                                description: "Chef matériel adjoint. Rôle de tagging — n'octroie aucune capacité métier directe."
                     ROLE_CHEF_TENTES:
-                        description: "Chef tentes"
+                        description: "Chef tentes. Rôle de tagging — n'octroie aucune capacité métier directe. Parent de ROLE_CHEF_TENTES_ADJOINT."
                         poids: 800
                         children:
                             ROLE_CHEF_TENTES_ADJOINT:
                                 poids: 700
-                                description: "Chef tentes adjoint"
+                                description: "Chef tentes adjoint. Rôle de tagging — n'octroie aucune capacité métier directe."
                     ROLE_RESPONSABLE_ECONOMAT:
-                        description: "Responsable de l'économat"
+                        description: "Responsable de l'économat. Rôle de tagging — n'octroie aucune capacité métier directe. Parent de ROLE_RESPONSABLE_ECONOMAT_ADJOINT."
                         poids: 800
                         children:
                             ROLE_RESPONSABLE_ECONOMAT_ADJOINT:
                                 poids: 700
-                                description: "Chef économat adjoint"
+                                description: "Économat adjoint. Rôle de tagging — n'octroie aucune capacité métier directe."
             ROLE_CB:
-                description: "Chef de branche"
+                description: "Chef de branche. Responsable d'une branche (Meute, Troupe, Clan, etc.). Rôle de tagging hiérarchique — les capacités d'accès aux membres de la branche viennent des autorisations/attributions sur les groupes correspondants, pas du rôle lui-même."
                 poids: 980
                 children:
                     ROLE_CB_ADJ:
-                        description: "Chef de branche adjoint"
+                        description: "Chef de branche adjoint. Rôle de tagging hiérarchique — pas de capacité métier directe."
                         poids: 950
                         children:
                             ROLE_CHEF_MEUTE:
-                                description: "Chef de meute"
+                                description: "Chef de meute (louveteaux). Rôle de tagging — accès aux louveteaux via attributions/autorisations sur le groupe meute."
                                 poids: 300
                                 children:
                                     ROLE_CHEF_MEUTE_ADJOINT:
-                                        description: "adjoint chef de meute"
+                                        description: "Adjoint chef de meute. Rôle de tagging — pas de capacité métier directe."
                                         poids: 250
 
 
             ROLE_CHEF_CLAN:
-                description: "Chef de clan"
+                description: "Chef de clan (Routiers / Pionniers). Rôle de tagging — accès aux membres du clan via attributions/autorisations sur le groupe clan."
                 poids: 650
                 children:
                     ROLE_MEMBRE_CLAN:
                         poids: 100
-                        description: "Membre d'un clan"
+                        description: "Membre du clan. Rôle de tagging — pas de capacité métier directe."
             ROLE_CHEF_EQUIPE:
-                description: "Chef d'équipe"
+                description: "Chef d'équipe. Rôle de tagging — pas de capacité métier directe au-delà des autorisations explicites."
                 poids: 650
                 children:
                     ROLE_ADJOINT_CHEF_EQUIPE:
-                        description: "Adjoint chef d'équipe"
+                        description: "Adjoint chef d'équipe. Rôle de tagging — pas de capacité métier directe."
                         poids: 500
             ROLE_CHEF_CE:
-                description: "Chef de camp d'été"
+                description: "Chef de camp d'été. Rôle de tagging — pas de capacité métier directe au-delà des autorisations explicites."
                 poids: 300
                 children:
                     ROLE_ADJOINT_CHEF_CE:
-                        description: "Adjoint chef de camp d'été"
+                        description: "Adjoint chef de camp d'été. Rôle de tagging — pas de capacité métier directe."
                         poids: 250
             ROLE_CHEF_SAINT_GEORGES:
-                description: "Chef de la St-Georges"
+                description: "Chef de la Saint-Georges (cérémonie annuelle). Rôle de tagging — pas de capacité métier directe."
                 poids: 300

@@ -1,8 +1,8 @@
 roles:
     ROLE_ADMIN:
-        description: "Role administrateur système"
+        description: "Administrateur système. ACCÈS GLOBAL : court-circuite tous les voters CRUD du fichier, du facturation, du mailing et de l'APMBS via NetBSVoter::specialRule. Accès au tableau d'audit (/utilisateurs/audit) et à la gestion des clients OIDC. Parent de ROLE_USER."
         poids: 10000000
         children:
             ROLE_USER:
-                description: "Autorisation d'accès à l'application"
+                description: "Accès minimal à l'application. Rôle implicite pour tout utilisateur authentifié — sans lui, le firewall refuse l'accès. N'octroie aucune permission métier en lui-même."
                 poids: 1

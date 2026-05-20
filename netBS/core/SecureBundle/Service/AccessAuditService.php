@@ -36,7 +36,32 @@ final class AccessAuditService
         'ROLE_QM',
         'ROLE_TRESORIER',
         'ROLE_APMBS',
+        'ROLE_MAILING',
         'ROLE_READ_EVERYWHERE',
+        'ROLE_CREATE_EVERYWHERE',
+        'ROLE_UPDATE_EVERYWHERE',
+        'ROLE_DELETE_EVERYWHERE',
+    ];
+
+    /**
+     * Roles that bypass group-scope checks in voters:
+     * - ROLE_ADMIN: short-circuits every NetBSVoter via specialRule().
+     * - ROLE_SG: short-circuits every FichierVoter via specialRule().
+     * - ROLE_*_EVERYWHERE: short-circuits the matching CRUD operation in
+     *   NetBSVoter::voteOnAttribute regardless of scope.
+     *
+     * A user holding any of these (directly, via a fonction, via an
+     * autorisation, or via an ancestor role) can access every group, so the
+     * group-scope audit must surface them even when no autorisation targets
+     * the audited group.
+     */
+    public const GLOBAL_OVERRIDE_ROLES = [
+        'ROLE_ADMIN',
+        'ROLE_SG',
+        'ROLE_READ_EVERYWHERE',
+        'ROLE_CREATE_EVERYWHERE',
+        'ROLE_UPDATE_EVERYWHERE',
+        'ROLE_DELETE_EVERYWHERE',
     ];
 
     /**
@@ -222,27 +247,47 @@ final class AccessAuditService
             $ancestorNames[] = $r->getRole();
         }
 
-        /** @var array<int, array{user: BaseUser, grants: list<AccessGrant>}> $byUser */
+        return new ScopeAccessReport($role, $this->toEntries($this->collectAccessForRoleNames($ancestorNames)));
+    }
+
+    /**
+     * Returns the byUser map (keyed by spl_object_id) of all users effectively
+     * holding any role in $names — including the path (direct / fonction /
+     * autorisation) by which they hold it. The role lists in the returned
+     * grants are filtered to the input names so the caller sees exactly which
+     * of the requested roles each grant contributes.
+     *
+     * @param  string[] $names Role names to match against direct roles, fonction
+     *                         roles, and autorisation roles. Typically a role and
+     *                         its ancestors (since an ancestor's children expand
+     *                         down to grant the role per BaseUser::getAllRoles).
+     * @return array<int, array{user: BaseUser, grants: list<AccessGrant>}>
+     */
+    private function collectAccessForRoleNames(array $names): array
+    {
         $byUser = [];
+        if (empty($names)) {
+            return $byUser;
+        }
 
         // 1. Direct holders.
         $userRepo = $this->em->getRepository($this->secureConfig->getUserClass());
         $directHolders = $userRepo->createQueryBuilder('u')
             ->innerJoin('u.roles', 'r')
             ->where('r.role IN (:names)')
-            ->setParameter('names', $ancestorNames)
+            ->setParameter('names', $names)
             ->distinct()
             ->getQuery()->getResult();
 
         foreach ($directHolders as $u) {
-            $heldAncestors = $this->filterToAncestors($u->getDirectRoles(), $ancestorNames);
+            $held = $this->filterToAncestors($u->getDirectRoles(), $names);
             $byUser[spl_object_id($u)] = [
                 'user'   => $u,
                 'grants' => [new AccessGrant(
                     provenance: Provenance::DIRECT_ROLE,
                     sourceFonction: null,
-                    roles: $heldAncestors,
-                    explicitRoleNames: $this->roleNames($heldAncestors),
+                    roles: $held,
+                    explicitRoleNames: $this->roleNames($held),
                     scope: null,
                 )],
             ];
@@ -261,7 +306,7 @@ final class AccessAuditService
             ->where('fr.role IN (:names)')
             ->andWhere('a.dateDebut < :now')
             ->andWhere('a.dateFin > :now OR a.dateFin IS NULL')
-            ->setParameter('names', $ancestorNames)
+            ->setParameter('names', $names)
             ->setParameter('now', $now)
             ->getQuery()->getResult();
 
@@ -273,13 +318,13 @@ final class AccessAuditService
                 continue;
             }
             $uid = spl_object_id($u);
-            $heldAncestors = $this->filterToAncestors($a->getFonction()->getRoles(), $ancestorNames);
+            $held = $this->filterToAncestors($a->getFonction()->getRoles(), $names);
             $byUser[$uid] ??= ['user' => $u, 'grants' => []];
             $byUser[$uid]['grants'][] = new AccessGrant(
                 provenance: Provenance::FONCTION_ROLE,
                 sourceFonction: $a->getFonction(),
-                roles: $heldAncestors,
-                explicitRoleNames: $this->roleNames($heldAncestors),
+                roles: $held,
+                explicitRoleNames: $this->roleNames($held),
                 scope: $a->getGroupe(),
                 sourceId: $a->getId(),
             );
@@ -290,7 +335,7 @@ final class AccessAuditService
         $autorisations = $autoRepo->createQueryBuilder('o')
             ->innerJoin('o.roles', 'aor')
             ->where('aor.role IN (:names)')
-            ->setParameter('names', $ancestorNames)
+            ->setParameter('names', $names)
             ->getQuery()->getResult();
 
         foreach ($autorisations as $o) {
@@ -298,25 +343,29 @@ final class AccessAuditService
             if ($u === null) {
                 continue;
             }
-            $heldAncestors = $this->filterToAncestors($o->getRoles()->toArray(), $ancestorNames);
+            $held = $this->filterToAncestors($o->getRoles()->toArray(), $names);
             $uid = spl_object_id($u);
             $byUser[$uid] ??= ['user' => $u, 'grants' => []];
             $byUser[$uid]['grants'][] = new AccessGrant(
                 provenance: Provenance::AUTORISATION,
                 sourceFonction: null,
-                roles: $heldAncestors,
-                explicitRoleNames: $this->roleNames($heldAncestors),
+                roles: $held,
+                explicitRoleNames: $this->roleNames($held),
                 scope: $o->getGroupe(),
                 sourceId: $o->getId(),
             );
         }
 
-        $entries = array_map(
+        return $byUser;
+    }
+
+    /** @param array<int, array{user: BaseUser, grants: list<AccessGrant>}> $byUser */
+    private function toEntries(array $byUser): array
+    {
+        return array_map(
             fn($row) => new ScopeAccessEntry($row['user'], $row['grants']),
             array_values($byUser),
         );
-
-        return new ScopeAccessReport($role, $entries);
     }
 
     /**
@@ -384,12 +433,43 @@ final class AccessAuditService
             );
         }
 
-        $entries = array_map(
-            fn($row) => new ScopeAccessEntry($row['user'], $row['grants']),
-            array_values($byUser),
-        );
+        // Global-override holders: anyone with ROLE_ADMIN, ROLE_SG, or a
+        // ROLE_*_EVERYWHERE can access every group, including this one, even
+        // without an autorisation or attribution on the parent chain.
+        foreach ($this->collectAccessForRoleNames($this->globalOverrideAncestorNames()) as $uid => $row) {
+            $byUser[$uid] ??= ['user' => $row['user'], 'grants' => []];
+            foreach ($row['grants'] as $g) {
+                $byUser[$uid]['grants'][] = $g;
+            }
+        }
 
-        return new ScopeAccessReport($groupe, $entries);
+        return new ScopeAccessReport($groupe, $this->toEntries($byUser));
+    }
+
+    /**
+     * Names of the global-override roles plus all their ancestors. An ancestor
+     * grants the override role via children expansion in BaseUser::getAllRoles,
+     * so a user holding an ancestor effectively holds the override.
+     *
+     * @return string[]
+     */
+    private function globalOverrideAncestorNames(): array
+    {
+        $roleRepo = $this->em->getRepository($this->secureConfig->getRoleClass());
+        if ($roleRepo === null) {
+            return [];
+        }
+        $names = [];
+        foreach (self::GLOBAL_OVERRIDE_ROLES as $name) {
+            $role = $roleRepo->findOneBy(['role' => $name]);
+            if ($role === null) {
+                continue;
+            }
+            for ($r = $role; $r !== null; $r = $r->getParent()) {
+                $names[$r->getRole()] = true;
+            }
+        }
+        return array_keys($names);
     }
 
     /** @param BaseGroupe[] $groupes */
