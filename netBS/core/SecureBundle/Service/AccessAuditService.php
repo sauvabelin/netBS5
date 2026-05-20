@@ -127,22 +127,22 @@ final class AccessAuditService
 
     private function auditRoleScope(BaseRole $role): ScopeAccessReport
     {
-        // All role names this scope covers (role + descendants).
-        $roleNames = array_values(array_unique(array_map(
-            fn(BaseRole $r) => $r->getRole(),
-            $role->getChildrenRecursive(),
-        )));
+        // Walk UP the role tree: holding the role itself or any ancestor effectively
+        // grants the audited role (per BaseUser::getAllRoles, which expands children).
+        $ancestorNames = [];
+        for ($r = $role; $r !== null; $r = $r->getParent()) {
+            $ancestorNames[] = $r->getRole();
+        }
 
         /** @var array<int, array{user: BaseUser, grants: list<AccessGrant>}> $byUser */
         $byUser = [];
 
         // 1. Direct holders.
-        $userClass = $this->secureConfig->getUserClass();
-        $userRepo = $this->em->getRepository($userClass);
+        $userRepo = $this->em->getRepository($this->secureConfig->getUserClass());
         $directHolders = $userRepo->createQueryBuilder('u')
             ->innerJoin('u.roles', 'r')
             ->where('r.role IN (:names)')
-            ->setParameter('names', $roleNames)
+            ->setParameter('names', $ancestorNames)
             ->distinct()
             ->getQuery()->getResult();
 
@@ -152,7 +152,7 @@ final class AccessAuditService
                 'grants' => [new AccessGrant(
                     provenance: Provenance::DIRECT_ROLE,
                     sourceFonction: null,
-                    roles: [$role],
+                    roles: $this->filterToAncestors($u->getDirectRoles(), $ancestorNames),
                     scope: null,
                 )],
             ];
@@ -160,15 +160,14 @@ final class AccessAuditService
 
         // 2. Fonction holders (via active attributions).
         $now = new \DateTime();
-        $attrClass = $this->fichierConfig->getAttributionClass();
-        $attrRepo = $this->em->getRepository($attrClass);
+        $attrRepo = $this->em->getRepository($this->fichierConfig->getAttributionClass());
         $attributions = $attrRepo->createQueryBuilder('a')
             ->innerJoin('a.fonction', 'f')
             ->innerJoin('f.roles', 'fr')
             ->where('fr.role IN (:names)')
             ->andWhere('a.dateDebut <= :now')
             ->andWhere('a.dateFin >= :now OR a.dateFin IS NULL')
-            ->setParameter('names', $roleNames)
+            ->setParameter('names', $ancestorNames)
             ->setParameter('now', $now)
             ->getQuery()->getResult();
 
@@ -182,20 +181,18 @@ final class AccessAuditService
             $byUser[$uid]['grants'][] = new AccessGrant(
                 provenance: Provenance::FONCTION_ROLE,
                 sourceFonction: $a->getFonction(),
-                roles: [$role],
+                roles: $this->filterToAncestors($a->getFonction()->getRoles(), $ancestorNames),
                 scope: $a->getGroupe(),
                 sourceId: $a->getId(),
             );
         }
 
-        // 3. Autorisation holders.
-        $autoClass = $this->secureConfig->getAutorisationClass();
-        $autoRepo = $this->em->getRepository($autoClass);
-        // Alias 'or' is a reserved keyword in DQL — use 'aor' instead.
+        // 3. Autorisation holders. Alias 'or' is reserved in DQL; use 'aor'.
+        $autoRepo = $this->em->getRepository($this->secureConfig->getAutorisationClass());
         $autorisations = $autoRepo->createQueryBuilder('o')
             ->innerJoin('o.roles', 'aor')
             ->where('aor.role IN (:names)')
-            ->setParameter('names', $roleNames)
+            ->setParameter('names', $ancestorNames)
             ->getQuery()->getResult();
 
         foreach ($autorisations as $o) {
@@ -208,7 +205,7 @@ final class AccessAuditService
             $byUser[$uid]['grants'][] = new AccessGrant(
                 provenance: Provenance::AUTORISATION,
                 sourceFonction: null,
-                roles: [$role],
+                roles: $this->filterToAncestors($o->getRoles()->toArray(), $ancestorNames),
                 scope: $o->getGroupe(),
                 sourceId: $o->getId(),
             );
@@ -220,6 +217,22 @@ final class AccessAuditService
         );
 
         return new ScopeAccessReport($role, $entries);
+    }
+
+    /**
+     * @param  iterable<BaseRole> $roles
+     * @param  string[]           $ancestorNames
+     * @return BaseRole[]
+     */
+    private function filterToAncestors(iterable $roles, array $ancestorNames): array
+    {
+        $out = [];
+        foreach ($roles as $r) {
+            if (in_array($r->getRole(), $ancestorNames, true)) {
+                $out[] = $r;
+            }
+        }
+        return $out;
     }
 
     private function auditGroupeScope(BaseGroupe $groupe): ScopeAccessReport
