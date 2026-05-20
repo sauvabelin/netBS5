@@ -23,6 +23,15 @@ home:
     path: /netBS
     permanent: true
 
-auth:
-  resource: '@NetBSAuthBundle/Resources/config/routing.yml'
+# AuthBundle routes are split by audience: the OIDC endpoints are named by
+# Hydra config (URLS_LOGIN, URLS_CONSENT, …) and must resolve at the root,
+# whereas the admin CRUD belongs under the netBS admin tree.
+auth_oidc:
+  resource: '@NetBSAuthBundle/Controller/Identity/'
+  type: attribute
   prefix: /
+
+auth_admin:
+  resource: '@NetBSAuthBundle/Controller/Admin/'
+  type: attribute
+  prefix: /netBS/secure/administration/authentification

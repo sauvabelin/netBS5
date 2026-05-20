@@ -23,7 +23,7 @@ use Symfony\Contracts\HttpClient\Exception\HttpExceptionInterface;
  * response, and on explicit regeneration when we send a generated secret as
  * part of the PUT body.
  */
-#[Route('/netBS/secure/administration/authentification/clients')]
+#[Route('/clients')]
 final class OidcClientController extends AbstractController
 {
     public function __construct(
