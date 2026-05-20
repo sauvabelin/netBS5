@@ -148,6 +148,33 @@ final class ClaimsAssemblerTest extends TestCase
         $this->assertSame(['sub' => 'alice'], $claims);
     }
 
+    public function testBSUserOptionalClaimsAreFilteredByAllowedClaims(): void
+    {
+        // Policy returns the full BSUser-derived claim set (as the real
+        // IdentityClientPolicy now does). The client only opts into a
+        // subset via `metadata.allowed_claims` — everything else must be
+        // dropped before reaching the RP.
+        $assembler = $this->makeAssembler(
+            allowedClaims: ['sub', 'nextcloud_account', 'nextcloud_quota'],
+            policy: $this->policyReturning([
+                'nextcloud_account' => true,
+                'nextcloud_admin'   => true,
+                'nextcloud_quota'   => 10485760,
+                'wiki_account'      => true,
+                'wiki_admin'        => false,
+            ]),
+        );
+
+        $claims = $assembler->assemble($this->makeIdentity(), 'test-client');
+
+        $this->assertSame('alice', $claims['sub']);
+        $this->assertTrue($claims['nextcloud_account']);
+        $this->assertSame(10485760, $claims['nextcloud_quota']);
+        $this->assertArrayNotHasKey('nextcloud_admin', $claims);
+        $this->assertArrayNotHasKey('wiki_account', $claims);
+        $this->assertArrayNotHasKey('wiki_admin', $claims);
+    }
+
     public function testNullAdditionalClaimsAreDroppedSilently(): void
     {
         $assembler = $this->makeAssembler(

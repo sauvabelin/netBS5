@@ -11,11 +11,21 @@ namespace NetBS\AuthBundle\Service;
 final class OidcEndpoints
 {
     private const CLAIM_CATALOGUE = [
+        // Universal identity claims, emitted for every client (subject to
+        // per-client `metadata.allowed_claims` opt-in via the admin form).
         'sub',
         'preferred_username',
         'email',
         'name',
         'groups',
+        // Optional per-user RP-related claims. The policy emits these
+        // uniformly for every consent; the per-client allow-list decides
+        // which ones actually reach the RP.
+        'nextcloud_account',
+        'nextcloud_admin',
+        'nextcloud_quota',
+        'wiki_account',
+        'wiki_admin',
     ];
 
     public function __construct(private readonly string $issuer)

@@ -93,14 +93,33 @@ final class IdentityClientPolicy implements IdentityClientPolicyInterface
     }
 
     /**
-     * Hook for emitting additional per-client claims beyond the universal
-     * identity ones. The IdP itself emits no RP-specific claims — RPs derive
-     * any authorisation signals they need from `groups` (or from their own
-     * local config). Kept for interface compatibility and as an extension
-     * point for future configurable claim sources.
+     * Emits the full set of per-user RP-related claims unconditionally.
+     *
+     * The policy is intentionally generic: it does NOT branch on $clientId,
+     * and it does NOT decide which claims a given client is "allowed" to see.
+     * That decision lives in ClaimsAssembler::allowedClaimsFor(), which reads
+     * `metadata.allowed_claims` from the Hydra client and filters this map
+     * down to the opt-in subset. To stop a claim leaking to a given RP,
+     * uncheck it on the admin "Allowed claims" form.
+     *
+     * Privacy note: every claim is computed for every user on every consent
+     * (and on every refresh hook). The values are cheap (already-hydrated
+     * BSUser scalar fields), and the assembler's filter is what ultimately
+     * controls what leaves the IdP.
      */
     public function additionalClaimsFor(IdentityDTO $identity, string $clientId): array
     {
-        return [];
+        $user = $this->loadUser($identity->sub);
+        if ($user === null) {
+            return [];
+        }
+
+        return [
+            'nextcloud_account' => $user->hasNextcloudAccount(),
+            'nextcloud_admin'   => $user->isNextcloudAdmin(),
+            'nextcloud_quota'   => $user->getNextcloudQuota(),
+            'wiki_account'      => $user->hasWikiAccount(),
+            'wiki_admin'        => $user->isWikiAdmin(),
+        ];
     }
 }

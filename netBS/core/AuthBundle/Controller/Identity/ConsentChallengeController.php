@@ -81,7 +81,10 @@ final class ConsentChallengeController extends AbstractController
         // and is not disabled; per-RP authorisation (which users may sign in
         // to which client) lives in the RP itself — e.g. Nextcloud user_oidc's
         // "required group" setting, the Wiki OIDC plugin's allow-list, etc.
-        // Every decision is logged.
+        // Per-RP optional claims (nextcloud_admin, nextcloud_quota, wiki_*,
+        // etc.) are emitted uniformly by the policy and then filtered down
+        // per-client by `metadata.allowed_claims` on the Hydra client, edited
+        // via the OIDC admin form. Every decision is logged.
         if (!$this->policy->canAccess($identity, $clientId)) {
             return $this->rejectAndRedirect($consentChallenge, 'access_denied', "User does not have access to {$clientId}", [
                 'subject'   => $subject,
