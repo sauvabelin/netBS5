@@ -29,11 +29,21 @@
             </div>
         </div>
 
+        {# Per-role counts derived from the matrix #}
+        {% set role_counts = {} %}
+        {% for role in sensitive_roles %}
+            {% set c = 0 %}
+            {% for row in matrix.rows %}
+                {% if row.cells[role] is defined %}{% set c = c + 1 %}{% endif %}
+            {% endfor %}
+            {% set role_counts = role_counts|merge({(role): c}) %}
+        {% endfor %}
+
         <h5 class="mb-2">Rôles sensibles</h5>
         <p class="text-muted small mb-3">Nombre d'utilisateurs ayant effectivement accès via chaque rôle. Cliquer pour voir le détail.</p>
         <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-3 mb-3">
             {% for role in sensitive_roles %}
-                {% set count = sensitive_role_counts[role] ?? 0 %}
+                {% set count = role_counts[role] %}
                 <div class="col">
                     <a href="{{ path('netbs.secure.audit.scope_role', {role: role}) }}"
                        class="card text-decoration-none h-100 {{ count > 0 ? 'border-danger' : '' }}">
@@ -48,6 +58,65 @@
                     </a>
                 </div>
             {% endfor %}
+        </div>
+
+        <div class="card">
+            <div class="card-header"><strong>Matrice des accès sensibles</strong>
+                <span class="text-muted small">— {{ matrix.rows|length }} utilisateur{% if matrix.rows|length != 1 %}s{% endif %}</span>
+            </div>
+            <div class="card-body p-0">
+                {% if matrix.rows is empty %}
+                    <div class="alert alert-info m-3 mb-0">Aucun utilisateur n'a de rôle sensible.</div>
+                {% else %}
+                    <div class="table-responsive">
+                        <table class="table table-sm table-hover align-middle mb-0">
+                            <thead>
+                                <tr>
+                                    <th scope="col" class="ps-3">Utilisateur</th>
+                                    {% for role in matrix.roles %}
+                                        <th scope="col" class="text-center">
+                                            <a href="{{ path('netbs.secure.audit.scope_role', {role: role}) }}"
+                                               class="text-decoration-none text-reset small">{{ role|replace({'ROLE_': ''}) }}</a>
+                                        </th>
+                                    {% endfor %}
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for row in matrix.rows %}
+                                    <tr>
+                                        <th scope="row" class="ps-3 fw-normal">
+                                            <a href="{{ path('netbs.secure.audit.user_show', {id: row.user.id}) }}"
+                                               class="text-decoration-none">{{ row.user.username }}</a>
+                                        </th>
+                                        {% for role in matrix.roles %}
+                                            {% set grants = row.cells[role]|default([]) %}
+                                            <td class="text-center">
+                                                {% if grants is not empty %}
+                                                    {# Provenance hint: D (direct), F (fonction), A (autorisation). #}
+                                                    {% set provs = [] %}
+                                                    {% for g in grants %}
+                                                        {% set letter = g.provenance.value == 'direct_role' ? 'D'
+                                                                       : g.provenance.value == 'fonction_role' ? 'F' : 'A' %}
+                                                        {% if letter not in provs %}{% set provs = provs|merge([letter]) %}{% endif %}
+                                                    {% endfor %}
+                                                    <span class="badge bg-danger" title="{{ provs|join(' + ') }}">{{ provs|join('') }}</span>
+                                                {% else %}
+                                                    <span class="text-muted">·</span>
+                                                {% endif %}
+                                            </td>
+                                        {% endfor %}
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="card-footer small text-muted">
+                        Légende&nbsp;: <span class="badge bg-danger">D</span> rôle direct ·
+                        <span class="badge bg-danger">F</span> via fonction ·
+                        <span class="badge bg-danger">A</span> via autorisation
+                    </div>
+                {% endif %}
+            </div>
         </div>
 
     </div>

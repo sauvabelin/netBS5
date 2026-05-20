@@ -38,20 +38,38 @@ final class AccessAuditService
     ];
 
     /**
-     * Returns an array keyed by sensitive role name with the count of users
-     * effectively holding that role (any path). Missing roles map to 0.
+     * Builds a "who has the keys" matrix: rows are users holding at least one
+     * sensitive role, columns are the sensitive roles. Each cell is the list
+     * of AccessGrants by which that user holds that role (empty = no access).
      *
-     * @return array<string, int>
+     * @return array{
+     *     roles: string[],
+     *     rows: list<array{user: BaseUser, cells: array<string, list<AccessGrant>>}>
+     * }
      */
-    public function countUsersForSensitiveRoles(): array
+    public function buildSensitiveRoleMatrix(): array
     {
         $repo = $this->em->getRepository($this->secureConfig->getRoleClass());
-        $counts = [];
+        $byUid = [];
+
         foreach (self::SENSITIVE_ROLES as $name) {
             $role = $repo->findOneBy(['role' => $name]);
-            $counts[$name] = $role === null ? 0 : count($this->auditRoleScope($role)->entries);
+            if ($role === null) {
+                continue;
+            }
+            foreach ($this->auditRoleScope($role)->entries as $entry) {
+                $uid = $entry->user->getId();
+                $byUid[$uid] ??= ['user' => $entry->user, 'cells' => []];
+                $byUid[$uid]['cells'][$name] = $entry->grants;
+            }
         }
-        return $counts;
+
+        usort($byUid, fn($a, $b) => strcmp(
+            (string) $a['user']->getUsername(),
+            (string) $b['user']->getUsername(),
+        ));
+
+        return ['roles' => self::SENSITIVE_ROLES, 'rows' => array_values($byUid)];
     }
 
     public function auditUser(BaseUser $user): UserAccessReport
