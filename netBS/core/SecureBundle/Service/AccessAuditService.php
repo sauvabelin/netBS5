@@ -131,6 +131,7 @@ final class AccessAuditService
             provenance: Provenance::DIRECT_ROLE,
             sourceFonction: null,
             roles: $this->expand($direct),
+            explicitRoleNames: $this->roleNames($direct),
             scope: null,
         )];
     }
@@ -150,6 +151,7 @@ final class AccessAuditService
                 provenance: Provenance::FONCTION_ROLE,
                 sourceFonction: $fonction,
                 roles: $this->expand($fonction->getRoles()),
+                explicitRoleNames: $this->roleNames($fonction->getRoles()),
                 scope: $attribution->getGroupe(),
                 sourceId: $attribution->getId(),
             );
@@ -166,11 +168,25 @@ final class AccessAuditService
                 provenance: Provenance::AUTORISATION,
                 sourceFonction: null,
                 roles: $this->expand($autorisation->getRoles()),
+                explicitRoleNames: $this->roleNames($autorisation->getRoles()),
                 scope: $autorisation->getGroupe(),
                 sourceId: $autorisation->getId(),
             );
         }
         return $grants;
+    }
+
+    /**
+     * @param  iterable<BaseRole> $roles
+     * @return string[]
+     */
+    private function roleNames(iterable $roles): array
+    {
+        $names = [];
+        foreach ($roles as $r) {
+            $names[] = $r->getRole();
+        }
+        return $names;
     }
 
     /**
@@ -218,12 +234,14 @@ final class AccessAuditService
             ->getQuery()->getResult();
 
         foreach ($directHolders as $u) {
+            $heldAncestors = $this->filterToAncestors($u->getDirectRoles(), $ancestorNames);
             $byUser[spl_object_id($u)] = [
                 'user'   => $u,
                 'grants' => [new AccessGrant(
                     provenance: Provenance::DIRECT_ROLE,
                     sourceFonction: null,
-                    roles: $this->filterToAncestors($u->getDirectRoles(), $ancestorNames),
+                    roles: $heldAncestors,
+                    explicitRoleNames: $this->roleNames($heldAncestors),
                     scope: null,
                 )],
             ];
@@ -252,11 +270,13 @@ final class AccessAuditService
                 continue;
             }
             $uid = spl_object_id($u);
+            $heldAncestors = $this->filterToAncestors($a->getFonction()->getRoles(), $ancestorNames);
             $byUser[$uid] ??= ['user' => $u, 'grants' => []];
             $byUser[$uid]['grants'][] = new AccessGrant(
                 provenance: Provenance::FONCTION_ROLE,
                 sourceFonction: $a->getFonction(),
-                roles: $this->filterToAncestors($a->getFonction()->getRoles(), $ancestorNames),
+                roles: $heldAncestors,
+                explicitRoleNames: $this->roleNames($heldAncestors),
                 scope: $a->getGroupe(),
                 sourceId: $a->getId(),
             );
@@ -275,12 +295,14 @@ final class AccessAuditService
             if ($u === null) {
                 continue;
             }
+            $heldAncestors = $this->filterToAncestors($o->getRoles()->toArray(), $ancestorNames);
             $uid = spl_object_id($u);
             $byUser[$uid] ??= ['user' => $u, 'grants' => []];
             $byUser[$uid]['grants'][] = new AccessGrant(
                 provenance: Provenance::AUTORISATION,
                 sourceFonction: null,
-                roles: $this->filterToAncestors($o->getRoles()->toArray(), $ancestorNames),
+                roles: $heldAncestors,
+                explicitRoleNames: $this->roleNames($heldAncestors),
                 scope: $o->getGroupe(),
                 sourceId: $o->getId(),
             );
@@ -332,6 +354,7 @@ final class AccessAuditService
                 provenance: Provenance::AUTORISATION,
                 sourceFonction: null,
                 roles: $this->expand($autorisation->getRoles()),
+                explicitRoleNames: $this->roleNames($autorisation->getRoles()),
                 scope: $autorisation->getGroupe(),
                 sourceId: $autorisation->getId(),
             );
@@ -342,12 +365,14 @@ final class AccessAuditService
             if ($u === null) {
                 continue;
             }
+            $fonction = $attribution->getFonction();
             $uid = spl_object_id($u);
             $byUser[$uid] ??= ['user' => $u, 'grants' => []];
             $byUser[$uid]['grants'][] = new AccessGrant(
                 provenance: Provenance::FONCTION_ROLE,
-                sourceFonction: $attribution->getFonction(),
-                roles: $this->expand($attribution->getFonction()->getRoles()),
+                sourceFonction: $fonction,
+                roles: $this->expand($fonction->getRoles()),
+                explicitRoleNames: $this->roleNames($fonction->getRoles()),
                 scope: $attribution->getGroupe(),
                 sourceId: $attribution->getId(),
             );

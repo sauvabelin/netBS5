@@ -30,22 +30,21 @@
         </div>
 
         <h5 class="mb-2">Rôles sensibles</h5>
-        <p class="text-muted small mb-3">Utilisateurs ayant effectivement accès via chaque rôle. <strong>Explicite</strong>&nbsp;: le rôle est listé directement, par fonction ou par autorisation. <strong>Hérité</strong>&nbsp;: obtenu via un rôle ancêtre (typiquement ROLE_ADMIN).</p>
-        <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-3 mb-3">
+        <div class="row row-cols-2 row-cols-md-3 row-cols-lg-6 g-2 mb-3">
             {% for role in sensitive_roles %}
                 {% set explicit = matrix.counts.explicit[role] ?? 0 %}
                 {% set inherited = matrix.counts.inherited[role] ?? 0 %}
+                {% set has_any = explicit > 0 or inherited > 0 %}
                 <div class="col">
                     <a href="{{ path('netbs.secure.audit.scope_role', {role: role}) }}"
-                       class="card text-decoration-none h-100 {{ explicit > 0 ? 'border-danger' : '' }}">
-                        <div class="card-body">
-                            <div class="text-muted small">{{ role }}</div>
-                            <div class="d-flex align-items-baseline gap-3">
-                                <span class="h4 mb-0 {{ explicit > 0 ? 'text-danger' : 'text-muted' }}">{{ explicit }}</span>
-                                <span class="small text-muted">explicite{% if explicit != 1 %}s{% endif %}</span>
-                                <span class="text-muted">·</span>
-                                <span class="h6 mb-0 text-muted">{{ inherited }}</span>
-                                <span class="small text-muted">hérité{% if inherited != 1 %}s{% endif %}</span>
+                       class="card text-decoration-none h-100 {{ has_any ? 'border-danger' : '' }}">
+                        <div class="card-body py-2 px-3">
+                            <div class="text-muted small text-truncate">{{ role|replace({'ROLE_': ''}) }}</div>
+                            <div class="text-danger">
+                                <span class="h5 mb-0">{{ explicit }}</span>
+                                <span class="small">·</span>
+                                <span class="h6 mb-0">{{ inherited }}</span>
+                                <span class="small">hérité{% if inherited != 1 %}s{% endif %}</span>
                             </div>
                         </div>
                     </a>
@@ -90,11 +89,7 @@
                                                     {# Aggregate provenances of grants that hold the role explicitly. #}
                                                     {% set provs = [] %}
                                                     {% for g in cell.grants %}
-                                                        {% set holds_role_explicit = false %}
-                                                        {% for r in g.roles %}
-                                                            {% if r.role == role %}{% set holds_role_explicit = true %}{% endif %}
-                                                        {% endfor %}
-                                                        {% if holds_role_explicit %}
+                                                        {% if role in g.explicitRoleNames %}
                                                             {% set letter = g.provenance.value == 'direct_role' ? 'D'
                                                                            : g.provenance.value == 'fonction_role' ? 'F' : 'A' %}
                                                             {% if letter not in provs %}{% set provs = provs|merge([letter]) %}{% endif %}
@@ -102,7 +97,7 @@
                                                     {% endfor %}
                                                     <span class="badge bg-danger" title="Explicite — {{ provs|join(' + ') }}">{{ provs|join('') }}</span>
                                                 {% else %}
-                                                    <span class="badge bg-secondary opacity-75" title="Hérité d'un rôle ancêtre">I</span>
+                                                    <span class="badge bg-danger opacity-50" title="Hérité d'un rôle ancêtre">hérité</span>
                                                 {% endif %}
                                             </td>
                                         {% endfor %}
@@ -115,7 +110,7 @@
                         Légende&nbsp;: <span class="badge bg-danger">D</span> rôle direct ·
                         <span class="badge bg-danger">F</span> via fonction ·
                         <span class="badge bg-danger">A</span> via autorisation ·
-                        <span class="badge bg-secondary opacity-75">I</span> hérité (ancêtre)
+                        <span class="badge bg-danger opacity-50">hérité</span> via un rôle ancêtre
                     </div>
                 {% endif %}
             </div>

@@ -22,10 +22,16 @@
                 <span class="ms-2 badge bg-light text-dark border">Global</span>
             {% endif %}
         </div>
-        <div>
+        <div class="text-end">
             {% for role in grant.roles %}
                 {% set is_sensitive = role.role in sensitive_roles %}
-                <span class="badge {{ is_sensitive ? 'bg-danger' : 'bg-secondary' }}">{{ role.role }}</span>
+                {% set is_explicit = role.role in grant.explicitRoleNames %}
+                {% if is_explicit %}
+                    <span class="badge {{ is_sensitive ? 'bg-danger' : 'bg-secondary' }}">{{ role.role }}</span>
+                {% else %}
+                    <span class="badge {{ is_sensitive ? 'bg-danger' : 'bg-secondary' }} opacity-50"
+                          title="Hérité d'un rôle ancêtre">{{ role.role }} <small>(hérité)</small></span>
+                {% endif %}
             {% endfor %}
         </div>
     </div>
