@@ -19,6 +19,18 @@
     {% endif %}
 {%- endblock form_start %}
 
+{# Match the client-side validation styling from assets/lib/form_validation.js:
+   a single <div class="invalid-feedback d-block"> per error, with no badge.
+   Root-form errors are rendered by the form_start banner above, so suppress
+   them here to avoid double-display when a template also calls form_errors(form). #}
+{% block form_errors -%}
+    {%- if errors|length > 0 and form is not rootform -%}
+        {%- for error in errors -%}
+            <div class="invalid-feedback d-block">{{ error.message }}</div>
+        {%- endfor -%}
+    {%- endif -%}
+{%- endblock form_errors %}
+
 {%- block widget_attributes -%}
     {% set class = attr.class is defined ? attr.class ~ ' input-sm' : 'input-sm' %}
     {% set attr = attr|merge({class: class}) %}
