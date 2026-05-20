@@ -264,8 +264,10 @@ final class AccessAuditService
             ->setParameter('now', $now)
             ->getQuery()->getResult();
 
+        $usersByMembre = $this->usersByMembreId($attributions);
+
         foreach ($attributions as $a) {
-            $u = $a->getMembre()?->getUser();
+            $u = $usersByMembre[$a->getMembre()?->getId()] ?? null;
             if ($u === null) {
                 continue;
             }
@@ -360,8 +362,11 @@ final class AccessAuditService
             );
         }
 
-        foreach ($this->findAttributionsForGroupes($chain) as $attribution) {
-            $u = $attribution->getMembre()?->getUser();
+        $chainAttributions = $this->findAttributionsForGroupes($chain);
+        $usersByMembre = $this->usersByMembreId($chainAttributions);
+
+        foreach ($chainAttributions as $attribution) {
+            $u = $usersByMembre[$attribution->getMembre()?->getId()] ?? null;
             if ($u === null) {
                 continue;
             }
@@ -400,6 +405,41 @@ final class AccessAuditService
             ->where('o.groupe IN (:groupes)')
             ->setParameter('groupes', $groupes)
             ->getQuery()->getResult();
+    }
+
+    /**
+     * Looks up users by their membre id. BaseMembre has no inverse pointer to
+     * User, so we query in one batch and return a map keyed by membre id.
+     *
+     * @param  iterable<\NetBS\FichierBundle\Mapping\BaseAttribution> $attributions
+     * @return array<int, BaseUser>
+     */
+    private function usersByMembreId(iterable $attributions): array
+    {
+        $membreIds = [];
+        foreach ($attributions as $a) {
+            $m = $a->getMembre();
+            if ($m !== null) {
+                $membreIds[$m->getId()] = true;
+            }
+        }
+        if (empty($membreIds)) {
+            return [];
+        }
+        $repo = $this->em->getRepository($this->secureConfig->getUserClass());
+        $users = $repo->createQueryBuilder('u')
+            ->where('IDENTITY(u.membre) IN (:ids)')
+            ->setParameter('ids', array_keys($membreIds))
+            ->getQuery()->getResult();
+
+        $map = [];
+        foreach ($users as $u) {
+            $m = $u->getMembre();
+            if ($m !== null) {
+                $map[$m->getId()] = $u;
+            }
+        }
+        return $map;
     }
 
     /** @param BaseGroupe[] $groupes */
