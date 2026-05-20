@@ -33,6 +33,7 @@ final class AccessAuditService
         'ROLE_ADMIN',
         'ROLE_COMMANDANT',
         'ROLE_SG',
+        'ROLE_QM',
         'ROLE_TRESORIER',
         'ROLE_APMBS',
         'ROLE_READ_EVERYWHERE',
