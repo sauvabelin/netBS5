@@ -28,7 +28,6 @@ final class AccessAuditService
         private readonly \NetBS\FichierBundle\Service\FichierConfig $fichierConfig,
     ) {}
 
-    /** Hard-coded curated list — same set already special-cased in DebugUserRolesCommand. */
     public const SENSITIVE_ROLES = [
         'ROLE_ADMIN',
         'ROLE_COMMANDANT',
@@ -44,16 +43,9 @@ final class AccessAuditService
     ];
 
     /**
-     * Roles that bypass group-scope checks in voters:
-     * - ROLE_ADMIN: short-circuits every NetBSVoter via specialRule().
-     * - ROLE_SG: short-circuits every FichierVoter via specialRule().
-     * - ROLE_*_EVERYWHERE: short-circuits the matching CRUD operation in
-     *   NetBSVoter::voteOnAttribute regardless of scope.
-     *
-     * A user holding any of these (directly, via a fonction, via an
-     * autorisation, or via an ancestor role) can access every group, so the
-     * group-scope audit must surface them even when no autorisation targets
-     * the audited group.
+     * Roles that bypass group-scope checks in voters: ROLE_ADMIN
+     * (NetBSVoter::specialRule), ROLE_SG (FichierVoter::specialRule), and
+     * ROLE_*_EVERYWHERE (NetBSVoter::voteOnAttribute, line 60).
      */
     public const GLOBAL_OVERRIDE_ROLES = [
         'ROLE_ADMIN',
@@ -240,27 +232,32 @@ final class AccessAuditService
 
     private function auditRoleScope(BaseRole $role): ScopeAccessReport
     {
-        // Walk UP the role tree: holding the role itself or any ancestor effectively
-        // grants the audited role (per BaseUser::getAllRoles, which expands children).
-        $ancestorNames = [];
-        for ($r = $role; $r !== null; $r = $r->getParent()) {
-            $ancestorNames[] = $r->getRole();
-        }
-
-        return new ScopeAccessReport($role, $this->toEntries($this->collectAccessForRoleNames($ancestorNames)));
+        // Holding any ancestor effectively grants the role, since BaseUser::getAllRoles expands children.
+        return new ScopeAccessReport(
+            $role,
+            $this->toEntries($this->collectAccessForRoleNames($this->ancestorNamesOf($role))),
+        );
     }
 
     /**
-     * Returns the byUser map (keyed by spl_object_id) of all users effectively
-     * holding any role in $names — including the path (direct / fonction /
-     * autorisation) by which they hold it. The role lists in the returned
-     * grants are filtered to the input names so the caller sees exactly which
-     * of the requested roles each grant contributes.
+     * @return string[] Names of $role itself plus all ancestors walking up via getParent().
+     */
+    private function ancestorNamesOf(BaseRole $role): array
+    {
+        $names = [];
+        for ($r = $role; $r !== null; $r = $r->getParent()) {
+            $names[] = $r->getRole();
+        }
+        return $names;
+    }
+
+    /**
+     * Users effectively holding any role in $names, with the grant path
+     * (direct / fonction / autorisation) by which they hold it. Grant role
+     * lists are filtered to $names so callers see exactly which requested
+     * roles each grant contributes.
      *
-     * @param  string[] $names Role names to match against direct roles, fonction
-     *                         roles, and autorisation roles. Typically a role and
-     *                         its ancestors (since an ancestor's children expand
-     *                         down to grant the role per BaseUser::getAllRoles).
+     * @param  string[] $names
      * @return array<int, array{user: BaseUser, grants: list<AccessGrant>}>
      */
     private function collectAccessForRoleNames(array $names): array
@@ -433,26 +430,29 @@ final class AccessAuditService
             );
         }
 
-        // Global-override holders: anyone with ROLE_ADMIN, ROLE_SG, or a
-        // ROLE_*_EVERYWHERE can access every group, including this one, even
-        // without an autorisation or attribution on the parent chain.
+        // Holders of any GLOBAL_OVERRIDE_ROLES role have access to every group, even with no
+        // autorisation/attribution on the parent chain. Dedup against the chain pass: a single
+        // attribution or autorisation can match both passes and would otherwise be reported twice.
         foreach ($this->collectAccessForRoleNames($this->globalOverrideAncestorNames()) as $uid => $row) {
             $byUser[$uid] ??= ['user' => $row['user'], 'grants' => []];
+            $seen = [];
+            foreach ($byUser[$uid]['grants'] as $existing) {
+                $seen[$existing->provenance->value . ':' . ($existing->sourceId ?? '')] = true;
+            }
             foreach ($row['grants'] as $g) {
+                $key = $g->provenance->value . ':' . ($g->sourceId ?? '');
+                if (isset($seen[$key])) {
+                    continue;
+                }
                 $byUser[$uid]['grants'][] = $g;
+                $seen[$key] = true;
             }
         }
 
         return new ScopeAccessReport($groupe, $this->toEntries($byUser));
     }
 
-    /**
-     * Names of the global-override roles plus all their ancestors. An ancestor
-     * grants the override role via children expansion in BaseUser::getAllRoles,
-     * so a user holding an ancestor effectively holds the override.
-     *
-     * @return string[]
-     */
+    /** @return string[] Global-override role names plus all their ancestors. */
     private function globalOverrideAncestorNames(): array
     {
         $roleRepo = $this->em->getRepository($this->secureConfig->getRoleClass());
@@ -460,13 +460,9 @@ final class AccessAuditService
             return [];
         }
         $names = [];
-        foreach (self::GLOBAL_OVERRIDE_ROLES as $name) {
-            $role = $roleRepo->findOneBy(['role' => $name]);
-            if ($role === null) {
-                continue;
-            }
-            for ($r = $role; $r !== null; $r = $r->getParent()) {
-                $names[$r->getRole()] = true;
+        foreach ($roleRepo->findBy(['role' => self::GLOBAL_OVERRIDE_ROLES]) as $role) {
+            foreach ($this->ancestorNamesOf($role) as $n) {
+                $names[$n] = true;
             }
         }
         return array_keys($names);
