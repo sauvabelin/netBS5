@@ -4,14 +4,29 @@ declare(strict_types=1);
 
 namespace NetBS\SecureBundle\Service;
 
+use NetBS\FichierBundle\Mapping\BaseGroupe;
 use NetBS\SecureBundle\Audit\AccessGrant;
 use NetBS\SecureBundle\Audit\Provenance;
+use NetBS\SecureBundle\Audit\ScopeAccessEntry;
+use NetBS\SecureBundle\Audit\ScopeAccessReport;
 use NetBS\SecureBundle\Audit\UserAccessReport;
 use NetBS\SecureBundle\Mapping\BaseRole;
 use NetBS\SecureBundle\Mapping\BaseUser;
 
 final class AccessAuditService
 {
+    /** @var \Closure(BaseGroupe): iterable|null  Test seam: returns Autorisation[] for a Groupe. */
+    private ?\Closure $autorisationFinder = null;
+
+    /** @var \Closure(BaseGroupe): iterable|null  Test seam: returns Attribution[] for a Groupe. */
+    private ?\Closure $attributionFinder = null;
+
+    public function __construct(
+        private readonly \Doctrine\ORM\EntityManagerInterface $em,
+        private readonly \NetBS\SecureBundle\Service\SecureConfig $secureConfig,
+        private readonly \NetBS\FichierBundle\Service\FichierConfig $fichierConfig,
+    ) {}
+
     /** Hard-coded curated list — same set already special-cased in DebugUserRolesCommand. */
     public const SENSITIVE_ROLES = [
         'ROLE_ADMIN',
@@ -100,5 +115,93 @@ final class AccessAuditService
             }
         }
         return array_values($out);
+    }
+
+    public function auditScope(BaseGroupe|BaseRole $scope): ScopeAccessReport
+    {
+        if ($scope instanceof BaseGroupe) {
+            return $this->auditGroupeScope($scope);
+        }
+        // Role branch — Task 4 will implement. Empty stub for now.
+        return new ScopeAccessReport($scope, []);
+    }
+
+    private function auditGroupeScope(BaseGroupe $groupe): ScopeAccessReport
+    {
+        // Walk parent chain: leaf -> ... -> root.
+        $chain = [];
+        for ($g = $groupe; $g !== null; $g = $g->getParent()) {
+            $chain[] = $g;
+        }
+
+        /** @var array<int, array{user: BaseUser, grants: list<AccessGrant>}> $byUser */
+        $byUser = [];
+
+        foreach ($chain as $g) {
+            foreach ($this->findAutorisationsForGroupe($g) as $autorisation) {
+                $u = $autorisation->getUser();
+                if ($u === null) {
+                    continue;
+                }
+                $uid = spl_object_id($u);
+                $byUser[$uid] ??= ['user' => $u, 'grants' => []];
+                $byUser[$uid]['grants'][] = new AccessGrant(
+                    provenance: Provenance::AUTORISATION,
+                    sourceFonction: null,
+                    roles: $this->expand($autorisation->getRoles()),
+                    scope: $autorisation->getGroupe(),
+                    sourceId: $autorisation->getId(),
+                );
+            }
+
+            foreach ($this->findAttributionsForGroupe($g) as $attribution) {
+                $u = $attribution->getMembre()?->getUser();
+                if ($u === null) {
+                    continue;
+                }
+                $uid = spl_object_id($u);
+                $byUser[$uid] ??= ['user' => $u, 'grants' => []];
+                $byUser[$uid]['grants'][] = new AccessGrant(
+                    provenance: Provenance::FONCTION_ROLE,
+                    sourceFonction: $attribution->getFonction(),
+                    roles: $this->expand($attribution->getFonction()->getRoles()),
+                    scope: $attribution->getGroupe(),
+                    sourceId: $attribution->getId(),
+                );
+            }
+        }
+
+        $entries = array_map(
+            fn($row) => new ScopeAccessEntry($row['user'], $row['grants']),
+            array_values($byUser),
+        );
+
+        return new ScopeAccessReport($groupe, $entries);
+    }
+
+    private function findAutorisationsForGroupe(BaseGroupe $g): iterable
+    {
+        if ($this->autorisationFinder !== null) {
+            return ($this->autorisationFinder)($g);
+        }
+        $repo = $this->em->getRepository($this->secureConfig->getAutorisationClass());
+        return $repo->findBy(['groupe' => $g]);
+    }
+
+    private function findAttributionsForGroupe(BaseGroupe $g): iterable
+    {
+        if ($this->attributionFinder !== null) {
+            return ($this->attributionFinder)($g);
+        }
+        $now = new \DateTime();
+        $class = $this->fichierConfig->getAttributionClass();
+        $repo = $this->em->getRepository($class);
+        return $repo->createQueryBuilder('a')
+            ->where('a.groupe = :g')
+            ->andWhere('a.dateDebut <= :now')
+            ->andWhere('a.dateFin >= :now OR a.dateFin IS NULL')
+            ->setParameter('g', $g)
+            ->setParameter('now', $now)
+            ->getQuery()->getResult();
     }
 }

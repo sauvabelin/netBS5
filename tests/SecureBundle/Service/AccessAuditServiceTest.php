@@ -61,7 +61,7 @@ class AccessAuditServiceTest extends TestCase
         $user->addAutorisation($autorisation);
 
         // Act
-        $report = (new AccessAuditService())->auditUser($user);
+        $report = $this->makeService()->auditUser($user);
 
         // Assert: 3 grants total
         $this->assertCount(3, $report->grants);
@@ -116,7 +116,7 @@ class AccessAuditServiceTest extends TestCase
         $user->setMembre($membre);
         // No direct roles, no autorisations
 
-        $report = (new AccessAuditService())->auditUser($user);
+        $report = $this->makeService()->auditUser($user);
 
         $this->assertCount(1, $report->grants);
 
@@ -138,7 +138,7 @@ class AccessAuditServiceTest extends TestCase
         $user->setUsername('recursiveuser');
         $user->addRole($parent);
 
-        $report = (new AccessAuditService())->auditUser($user);
+        $report = $this->makeService()->auditUser($user);
 
         $this->assertCount(1, $report->grants);
         $grant = $report->grants[0];
@@ -146,5 +146,81 @@ class AccessAuditServiceTest extends TestCase
         $roleNames = array_map(fn($r) => $r->getRole(), $grant->roles);
         $this->assertContains('ROLE_PARENT', $roleNames);
         $this->assertContains('ROLE_CHILD', $roleNames);
+    }
+
+    public function test_audits_scope_groupe_walks_parent_chain(): void
+    {
+        $root = $this->makeGroupe('root');
+        $mid  = $this->makeGroupe('mid');
+        $leaf = $this->makeGroupe('leaf');
+        $mid->setParent($root);
+        $leaf->setParent($mid);
+
+        $userOnRoot = new BSUser();
+        $userOnRoot->setUsername('on_root');
+        $autoRoot = new Autorisation();
+        $autoRoot->setUser($userOnRoot);
+        $autoRoot->setGroupe($root);
+        $autoRoot->getRoles()->add($this->makeRole('ROLE_X'));
+        $userOnRoot->addAutorisation($autoRoot);
+
+        $userOnLeaf = new BSUser();
+        $userOnLeaf->setUsername('on_leaf');
+        $autoLeaf = new Autorisation();
+        $autoLeaf->setUser($userOnLeaf);
+        $autoLeaf->setGroupe($leaf);
+        $autoLeaf->getRoles()->add($this->makeRole('ROLE_Y'));
+        $userOnLeaf->addAutorisation($autoLeaf);
+
+        $service = $this->makeServiceWithFinders(
+            autorisations: [
+                $root->getNom() => [$autoRoot],
+                $mid->getNom()  => [],
+                $leaf->getNom() => [$autoLeaf],
+            ],
+            attributions: [],
+        );
+
+        $report = $service->auditScope($leaf);
+
+        $usernames = array_map(fn($entry) => $entry->user->getUsername(), $report->entries);
+        sort($usernames);
+        $this->assertSame(['on_leaf', 'on_root'], $usernames);
+    }
+
+    private function makeService(): AccessAuditService
+    {
+        return new AccessAuditService(
+            $this->createMock(\Doctrine\ORM\EntityManagerInterface::class),
+            $this->createMock(\NetBS\SecureBundle\Service\SecureConfig::class),
+            $this->createMock(\NetBS\FichierBundle\Service\FichierConfig::class),
+        );
+    }
+
+    private function makeServiceWithFinders(array $autorisations, array $attributions): AccessAuditService
+    {
+        $service = $this->makeService();
+
+        $autoRef = new \ReflectionProperty(AccessAuditService::class, 'autorisationFinder');
+        $autoRef->setAccessible(true);
+        $autoRef->setValue($service, fn(\NetBS\FichierBundle\Mapping\BaseGroupe $g) => $autorisations[$g->getNom()] ?? []);
+
+        $attrRef = new \ReflectionProperty(AccessAuditService::class, 'attributionFinder');
+        $attrRef->setAccessible(true);
+        $attrRef->setValue($service, fn(\NetBS\FichierBundle\Mapping\BaseGroupe $g) => $attributions[$g->getNom()] ?? []);
+
+        return $service;
+    }
+
+    private function makeGroupe(string $nom): BSGroupe
+    {
+        $g = new BSGroupe();
+        $g->setNom($nom);
+        return $g;
+    }
+
+    private function makeRole(string $role): Role
+    {
+        return (new Role())->setRole($role);
     }
 }
