@@ -148,25 +148,28 @@ class DoctrineUserAccountSubscriber implements EventSubscriber
 
         $username = StrUtil::slugify($membre->getPrenom()) . "." . StrUtil::slugify($membre->getFamille()->getNom());
 
-        // If a user with this auto-derived username already exists, skip
-        // creating an account entirely and flash a warning so the admin
-        // knows. They can then either attach the existing user to this
-        // membre or create a new user manually with a non-colliding handle.
-        $userRepo = $manager->getRepository(BSUser::class);
-        if ($userRepo->findOneBy(['username' => $username]) !== null) {
-            $session = $this->requestStack->getSession();
-            if (method_exists($session, 'getFlashBag')) {
-                $session->getFlashBag()->add(
-                    'warning',
-                    sprintf(
-                        "Le membre %s %s a été créé sans compte utilisateur : un compte « %s » existe déjà. " .
-                        "Vous pouvez attacher le compte existant à ce membre, ou créer manuellement un nouveau compte avec un identifiant différent.",
-                        $membre->getPrenom(),
-                        $membre->getFamille()->getNom(),
-                        $username
-                    )
-                );
-            }
+        // Look up including soft-deleted users — a soft-deleted user with this
+        // username would still trip the UNIQUE index on insert.
+        $filters = $manager->getFilters();
+        $filterWasEnabled = $filters->isEnabled('softdeleteable');
+        if ($filterWasEnabled) $filters->disable('softdeleteable');
+        try {
+            $collision = $manager->getRepository(BSUser::class)->findOneBy(['username' => $username]);
+        } finally {
+            if ($filterWasEnabled) $filters->enable('softdeleteable');
+        }
+
+        if ($collision !== null) {
+            $this->requestStack->getSession()->getFlashBag()->add(
+                'warning',
+                sprintf(
+                    "Le membre %s %s a été créé sans compte utilisateur : un compte « %s » existe déjà. " .
+                    "Vous pouvez attacher le compte existant à ce membre, ou créer manuellement un nouveau compte avec un identifiant différent.",
+                    $membre->getPrenom(),
+                    $membre->getFamille()->getNom(),
+                    $username
+                )
+            );
             return;
         }
 

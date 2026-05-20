@@ -29,13 +29,10 @@ class DatabaseExceptionListener
             return;
         }
 
-        $session = $this->requestStack->getSession();
-        if (method_exists($session, 'getFlashBag')) {
-            $session->getFlashBag()->add('error',
-                "Une contrainte de base de données a empêché l'enregistrement. " .
-                "Si le problème persiste, contactez un administrateur."
-            );
-        }
+        $this->requestStack->getSession()->getFlashBag()->add('error',
+            "Une contrainte de base de données a empêché l'enregistrement. " .
+            "Si le problème persiste, contactez un administrateur."
+        );
 
         // 422 so Turbo re-renders the response body in place instead of navigating.
         $event->setResponse(new Response(
