@@ -3,44 +3,44 @@
 # not declared here.
 roles:
     ROLE_SG:
-        description: "Secrétaire général. ACCÈS GLOBAL au fichier : court-circuite tous les voters Fichier (Membre, Famille, Groupe, Attribution, Distinction) via FichierVoter::specialRule. Seul rôle autorisé à accéder à l'historique d'audit (/audit-log) et à la corbeille (/trash), et à créer/modifier des attributions et obtentions de distinction. Parent des quatre rôles ROLE_*_EVERYWHERE."
+        description: "Accès complet au fichier sur tous les groupes. Seul à voir l'historique d'audit et la corbeille."
         poids: 80000
         children:
             ROLE_CREATE_EVERYWHERE:
-                description: "ACCÈS GLOBAL : crée des entités du fichier (membres, familles, groupes, distinctions, fonctions, catégories, types) dans n'importe quel groupe sans autorisation explicite. Court-circuite GroupeVoter pour l'opération 'create'. Requis pour /distinction/new, /groupe/new, /fonction/new, /mass-adder. Parent de ROLE_CREATE."
+                description: "Création de membres, familles, groupes et autres entités dans n'importe quel groupe."
                 poids: 100
                 children:
                     ROLE_CREATE:
-                        description: "Crée des entités du fichier dans un groupe pour lequel l'utilisateur a une autorisation (Autorisation OU Fonction). Le voter exige que l'autorisation porte un rôle dont le nom contient 'CREATE' — typiquement ROLE_CREATE lui-même ou ROLE_CREATE_ATTRIBUTION."
+                        description: "Création d'entités dans les groupes où l'utilisateur a une autorisation."
                         poids: 50
                     ROLE_CREATE_ATTRIBUTION:
-                        description: "Permet de créer des attributions (membre × fonction × groupe) dans un groupe autorisé. Voté par AttributionVoter."
+                        description: "Attribution de fonctions à des membres dans les groupes autorisés."
                         poids: 60
 
             ROLE_READ_EVERYWHERE:
-                description: "ACCÈS GLOBAL en lecture sur tout le fichier : court-circuite GroupeVoter pour l'opération 'read'. Débloque les listes automatiques (/listes-automatiques) et l'accès au menu 'Listes' en sidebar. Parent de ROLE_READ."
+                description: "Consultation de tous les groupes. Débloque les listes automatiques."
                 poids: 100
                 children:
                     ROLE_READ:
-                        description: "Lit les entités d'un groupe pour lequel l'utilisateur a une autorisation. Rôle le plus distribué — accordé par presque toutes les fonctions via leur attribution. Le voter exige que l'autorisation porte un rôle dont le nom contient 'READ'."
+                        description: "Consultation des groupes où l'utilisateur a une autorisation."
                         poids: 50
 
             ROLE_UPDATE_EVERYWHERE:
-                description: "ACCÈS GLOBAL en mise à jour : court-circuite GroupeVoter pour l'opération 'update'. Débloque l'éditeur de masse (/mass-updater). Parent de ROLE_UPDATE."
+                description: "Modification de n'importe quelle entité du fichier. Débloque l'éditeur de masse."
                 poids: 100
                 children:
                     ROLE_UPDATE:
-                        description: "Met à jour les entités d'un groupe pour lequel l'utilisateur a une autorisation. Le voter exige que l'autorisation porte un rôle dont le nom contient 'UPDATE'."
+                        description: "Modification des entités dans les groupes autorisés."
                         poids: 50
 
             ROLE_DELETE_EVERYWHERE:
-                description: "ACCÈS GLOBAL en suppression : court-circuite GroupeVoter pour l'opération 'delete'. Parent de ROLE_DELETE."
+                description: "Suppression de n'importe quelle entité du fichier."
                 poids: 100
                 children:
                     ROLE_DELETE:
-                        description: "Supprime les entités d'un groupe pour lequel l'utilisateur a une autorisation. Le voter exige que l'autorisation porte un rôle dont le nom contient 'DELETE'. Suppression douce (soft-delete) : restauration possible depuis la corbeille (ROLE_SG)."
+                        description: "Suppression des entités dans les groupes autorisés. Restauration possible via la corbeille."
                         poids: 50
 
     ROLE_IT:
-        description: "Responsable informatique. Rôle de tagging — n'octroie aucune permission métier par lui-même, sert à identifier l'équipe IT (typiquement pour mailings et listes automatiques). Le pouvoir admin réel passe par ROLE_ADMIN."
+        description: "Étiquette servant aux mailings et listes automatiques. Aucun droit propre."
         poids: 80000
