@@ -62,7 +62,6 @@ final class IdentityUserResolverTest extends TestCase
         $this->assertNotNull($dto);
         $this->assertSame('alice', $dto->sub);
         $this->assertSame('alice@example.com', $dto->email);
-        $this->assertTrue($dto->emailVerified);
         $this->assertSame(['testers'], $dto->groups);
         $this->assertFalse($dto->isDisabled);
         $this->assertSame(1, $groupCalls, 'group provider should be called exactly once');

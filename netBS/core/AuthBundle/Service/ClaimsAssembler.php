@@ -29,9 +29,7 @@ final class ClaimsAssembler
         'sub',
         'preferred_username',
         'email',
-        'email_verified',
         'name',
-        'updated_at',
         'groups',
     ];
 
@@ -56,16 +54,14 @@ final class ClaimsAssembler
             'sub'                => $identity->sub,
             'preferred_username' => $identity->preferredUsername,
             'name'               => $identity->displayName,
-            'updated_at'         => $identity->updatedAt->getTimestamp(),
             'groups'             => $identity->groups,
         ];
 
-        // email / email_verified are a coherent pair: emit BOTH or NEITHER.
-        // Emitting `email_verified: false` without `email` would mislead RPs
-        // into thinking the user has an unverified address on file.
+        // No `email_verified` companion — netBS has no verification mechanism,
+        // so emitting that claim would be dishonest. RPs that need verified
+        // email should request a stronger out-of-band check.
         if ($identity->email !== null) {
             $standard['email'] = $identity->email;
-            $standard['email_verified'] = $identity->emailVerified;
         }
 
         $additional = $this->policy->additionalClaimsFor($identity, $clientId);

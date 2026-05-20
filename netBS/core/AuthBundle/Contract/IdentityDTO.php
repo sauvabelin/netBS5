@@ -17,11 +17,9 @@ final readonly class IdentityDTO
         public string $sub,
         public string $preferredUsername,
         public ?string $email,
-        public bool $emailVerified,
         public string $displayName,
         public array $groups,
         public bool $isDisabled,
-        public \DateTimeImmutable $updatedAt,
     ) {
     }
 }

@@ -36,11 +36,9 @@ final class IdentityUserResolver implements IdentityUserResolverInterface
             sub: $user->getUsername(),
             preferredUsername: $user->getUsername(),
             email: $email,
-            emailVerified: $email !== null,
             displayName: $displayName,
             groups: $this->groupProvider->groupsFor($user),
             isDisabled: !$user->getIsActive(),
-            updatedAt: new \DateTimeImmutable(),
         );
     }
 }

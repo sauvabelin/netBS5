@@ -11,9 +11,9 @@ use NetBS\AuthBundle\Service\HydraAdminClient;
 use PHPUnit\Framework\TestCase;
 
 /**
- * Covers the two security/correctness fixes in ClaimsAssembler:
+ * Covers the security/correctness rules in ClaimsAssembler:
  *  1. Policy-supplied claims must never override standard identity claims.
- *  2. email / email_verified must be a coherent pair (both or neither).
+ *  2. email is omitted when the user has no email address on file.
  */
 final class ClaimsAssemblerTest extends TestCase
 {
@@ -45,11 +45,9 @@ final class ClaimsAssemblerTest extends TestCase
             sub: 'alice',
             preferredUsername: 'alice',
             email: $email,
-            emailVerified: $email !== null,
             displayName: 'Alice Example',
             groups: ['users'],
             isDisabled: false,
-            updatedAt: new \DateTimeImmutable('2024-01-01T00:00:00Z'),
         );
     }
 
@@ -84,7 +82,7 @@ final class ClaimsAssemblerTest extends TestCase
     public function testPolicyCannotOverrideStandardEmail(): void
     {
         $assembler = $this->makeAssembler(
-            allowedClaims: ['sub', 'email', 'email_verified'],
+            allowedClaims: ['sub', 'email'],
             policy: $this->policyReturning(['email' => 'spoof@evil.example']),
         );
 
@@ -112,10 +110,10 @@ final class ClaimsAssemblerTest extends TestCase
         $this->assertSame('5GB', $claims['nextcloud_quota']);
     }
 
-    public function testUserWithoutEmailEmitsNeitherEmailNorEmailVerified(): void
+    public function testUserWithoutEmailOmitsTheEmailClaim(): void
     {
         $assembler = $this->makeAssembler(
-            allowedClaims: ['sub', 'email', 'email_verified', 'preferred_username'],
+            allowedClaims: ['sub', 'email', 'preferred_username'],
             policy: $this->policyReturning([]),
         );
 
@@ -124,24 +122,18 @@ final class ClaimsAssemblerTest extends TestCase
         $this->assertArrayHasKey('sub', $claims);
         $this->assertArrayHasKey('preferred_username', $claims);
         $this->assertArrayNotHasKey('email', $claims, 'email must be omitted when null');
-        $this->assertArrayNotHasKey(
-            'email_verified',
-            $claims,
-            'email_verified must be omitted when email is null (coherent-pair rule)',
-        );
     }
 
-    public function testUserWithEmailEmitsBothEmailAndEmailVerified(): void
+    public function testUserWithEmailEmitsTheEmailClaim(): void
     {
         $assembler = $this->makeAssembler(
-            allowedClaims: ['sub', 'email', 'email_verified'],
+            allowedClaims: ['sub', 'email'],
             policy: $this->policyReturning([]),
         );
 
         $claims = $assembler->assemble($this->makeIdentity(), 'test-client');
 
         $this->assertSame('alice@example.com', $claims['email']);
-        $this->assertTrue($claims['email_verified']);
     }
 
     public function testAllowedClaimsFilterRestrictsOutput(): void
