@@ -5,10 +5,14 @@ declare(strict_types=1);
 namespace NetBS\SecureBundle\Controller;
 
 use Doctrine\ORM\EntityManagerInterface;
+use NetBS\FichierBundle\Mapping\BaseGroupe;
 use NetBS\FichierBundle\Service\FichierConfig;
+use NetBS\SecureBundle\Form\AuditPickType;
+use NetBS\SecureBundle\Mapping\BaseUser;
 use NetBS\SecureBundle\Service\AccessAuditService;
 use NetBS\SecureBundle\Service\SecureConfig;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
@@ -24,9 +28,26 @@ final class AuditController extends AbstractController
     ) {}
 
     #[Route('/utilisateurs/audit', name: 'netbs.secure.audit.index')]
-    public function index(): Response
+    public function index(Request $request): Response
     {
+        $form = $this->createForm(AuditPickType::class);
+        $form->handleRequest($request);
+
+        if ($form->isSubmitted() && $form->isValid()) {
+            $data = $form->getData();
+            $user = $data['user'] ?? null;
+            $groupe = $data['groupe'] ?? null;
+
+            if ($user instanceof BaseUser) {
+                return $this->redirectToRoute('netbs.secure.audit.user_show', ['id' => $user->getId()]);
+            }
+            if ($groupe instanceof BaseGroupe) {
+                return $this->redirectToRoute('netbs.secure.audit.scope_groupe', ['id' => $groupe->getId()]);
+            }
+        }
+
         return $this->render('@NetBSSecure/audit/index.html.twig', [
+            'form'            => $form->createView(),
             'sensitive_roles' => AccessAuditService::SENSITIVE_ROLES,
         ]);
     }
