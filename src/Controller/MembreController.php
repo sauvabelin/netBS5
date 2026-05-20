@@ -3,6 +3,7 @@
 namespace App\Controller;
 
 use Doctrine\ORM\EntityManagerInterface;
+use NetBS\CoreBundle\Controller\Trait\HandlesFormPersistenceTrait;
 use NetBS\FichierBundle\Mapping\BaseFamille;
 use App\Entity\BSUser;
 use App\Form\CirculaireMembreType;
@@ -17,6 +18,8 @@ use Symfony\Component\Serializer\SerializerInterface;
 
 class MembreController extends AbstractController
 {
+    use HandlesFormPersistenceTrait;
+
     /**
      * @param Request $request
      * @return Response
@@ -39,13 +42,16 @@ class MembreController extends AbstractController
 
         $options = ['validation_groups' => $selectedFamilyId ? ['default'] : ['default', 'noFamily']];
         $infos->numero      = $previousNumber + 1;
-        $form               = $this->createForm(CirculaireMembreType::class, $infos, $options);
-        $form->handleRequest($request);
-
+        // Resolve famille BEFORE handleRequest so the group sequence ('noFamily')
+        // sees the right state for validation. On the failure path we must NOT
+        // call generateFamille() — it mutates $infos->famille and would skip the
+        // 'noFamily' validation group on the next submit, hiding required-field errors.
         if(!empty($selectedFamilyId)) {
             $infos->famille = $em->find($config->getFamilleClass(), intval($selectedFamilyId));
         }
-        else $infos->generateFamille();
+
+        $form               = $this->createForm(CirculaireMembreType::class, $infos, $options);
+        $form->handleRequest($request);
 
         if($form->isSubmitted() && $form->isValid()) {
 
@@ -58,9 +64,14 @@ class MembreController extends AbstractController
             $famille->addMembre($membre);
 
             $em->persist($famille);
-            $em->flush();
 
-            return $this->redirect($this->generateUrl('netbs.fichier.membre.page_membre', array('id' => $membre->getId())));
+            // DB constraint violations (e.g. UNIQUE on the auto-generated
+            // BSUser.username) turn into a form-level error and the response
+            // becomes 422 — the form re-renders with input intact and the
+            // alert banner explains what went wrong.
+            if ($this->flushOrAttachConstraintError($em, $form, $request)) {
+                return $this->redirect($this->generateUrl('netbs.fichier.membre.page_membre', array('id' => $membre->getId())));
+            }
         }
 
         return $this->render('membre/nouveau.html.twig', array(

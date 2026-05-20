@@ -16,6 +16,7 @@ use App\Entity\LatestCreatedAccount;
 use App\Message\NextcloudGroupNotification;
 use NetBS\CoreBundle\Entity\Parameter;
 use NetBS\SecureBundle\Entity\Role;
+use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Component\Mailer\MailerInterface;
 use Symfony\Component\Messenger\MessageBusInterface;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
@@ -40,8 +41,12 @@ class DoctrineUserAccountSubscriber implements EventSubscriber
 
     private $adabsId  = null;
 
-    public function __construct(UserPasswordHasherInterface $encoder, MailerInterface $mailer, MessageBusInterface $bus)
-    {
+    public function __construct(
+        UserPasswordHasherInterface $encoder,
+        MailerInterface $mailer,
+        MessageBusInterface $bus,
+        private readonly RequestStack $requestStack,
+    ) {
         $this->encoder  = $encoder;
         $this->mailer   = $mailer;
         $this->bus = $bus;
@@ -141,16 +146,33 @@ class DoctrineUserAccountSubscriber implements EventSubscriber
         if($this->roleUser === null)
             $this->roleUser = $manager->getRepository(Role::class)->findOneBy(array('role' => 'ROLE_USER'));
 
-        $username   = StrUtil::slugify($membre->getPrenom()) . "." . StrUtil::slugify($membre->getFamille()->getNom());
+        $username = StrUtil::slugify($membre->getPrenom()) . "." . StrUtil::slugify($membre->getFamille()->getNom());
+
+        // If a user with this auto-derived username already exists, skip
+        // creating an account entirely and flash a warning so the admin
+        // knows. They can then either attach the existing user to this
+        // membre or create a new user manually with a non-colliding handle.
+        $userRepo = $manager->getRepository(BSUser::class);
+        if ($userRepo->findOneBy(['username' => $username]) !== null) {
+            $session = $this->requestStack->getSession();
+            if (method_exists($session, 'getFlashBag')) {
+                $session->getFlashBag()->add(
+                    'warning',
+                    sprintf(
+                        "Le membre %s %s a été créé sans compte utilisateur : un compte « %s » existe déjà. " .
+                        "Vous pouvez attacher le compte existant à ce membre, ou créer manuellement un nouveau compte avec un identifiant différent.",
+                        $membre->getPrenom(),
+                        $membre->getFamille()->getNom(),
+                        $username
+                    )
+                );
+            }
+            return;
+        }
+
         //$password   = StrUtil::randomString();
         $password   = $username . "-" . $membre->getNaissance()->format("d-m-Y");
         $user       = new BSUser();
-        $i          = 1;
-
-        /*
-        while($manager->getRepository('SauvabelinBundle:BSUser')->findOneBy(array('username' => $username)))
-            $username   = $username . $i++;
-        */
 
         $user->setNewPasswordRequired(true);
         $user->setMembre($membre);

@@ -2,18 +2,14 @@
 
 namespace App\Form;
 
-use Doctrine\ORM\EntityRepository;
+use NetBS\CoreBundle\Form\Type\AjaxSelect2DocumentType;
 use NetBS\CoreBundle\Form\Type\DateMaskType;
 use NetBS\CoreBundle\Form\Type\MaskType;
-use NetBS\CoreBundle\Form\Type\Select2DocumentType;
 use NetBS\CoreBundle\Form\Type\SexeType;
 use NetBS\CoreBundle\Form\Type\TelephoneMaskType;
-use NetBS\CoreBundle\Service\ParameterManager;
 use NetBS\CoreBundle\Utils\Countries;
-use NetBS\FichierBundle\Entity\Fonction;
 use NetBS\FichierBundle\Entity\Geniteur;
-use NetBS\FichierBundle\Select2\GroupeProvider;
-use App\Entity\BSGroupe;
+use NetBS\FichierBundle\Service\FichierConfig;
 use App\Model\CirculaireMembre;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
@@ -26,19 +22,15 @@ use Symfony\Component\OptionsResolver\OptionsResolver;
 
 class CirculaireMembreType extends AbstractType
 {
-    private $params;
+    private FichierConfig $config;
 
-    public function __construct(ParameterManager $params)
+    public function __construct(FichierConfig $config)
     {
-        $this->params = $params;
+        $this->config = $config;
     }
 
     public function buildForm(FormBuilderInterface $builder, array $options)
     {
-        $select2provider = new GroupeProvider();
-        $louveteauxId = $this->params->getValue('bs', 'fonction.louveteau_id');
-        $eclaireurId = $this->params->getValue('bs', 'fonction.eclaireur_id');
-
         $builder
             ->add('familleId', HiddenType::class)
             ->add('numero', NumberType::class, array('label' => "Numéro BS", 'required' => false))
@@ -59,21 +51,13 @@ class CirculaireMembreType extends AbstractType
             ->add('email', EmailType::class, array('label' => 'Email', 'required' => false))
             ->add('telephone', TelephoneMaskType::class, array('label' => 'Téléphone', 'required' => false))
             ->add('natel', TelephoneMaskType::class, array('label' => 'Natel', 'required' => false))
-            ->add('fonction', Select2DocumentType::class, array(
-                'class'         => Fonction::class,
-                'choice_label'  => 'nom',
-                'label'         => 'Fonction',
-                'query_builder' => function(EntityRepository $repository) use ($louveteauxId, $eclaireurId) {
-                    $query = $repository->createQueryBuilder('f');
-                    return $query->where($query->expr()->in('f.id', [$louveteauxId, $eclaireurId]));
-                }
+            ->add('fonction', AjaxSelect2DocumentType::class, array(
+                'label' => 'Fonction',
+                'class' => $this->config->getFonctionClass(),
             ))
-            ->add('groupe', Select2DocumentType::class, array(
-                'choice_label'  => function(BSGroupe $groupe) use ($select2provider) {
-                    return $select2provider->toString($groupe);
-                },
-                'class'         => BSGroupe::class,
-                'label'         => 'Unité'
+            ->add('groupe', AjaxSelect2DocumentType::class, array(
+                'label' => 'Unité',
+                'class' => $this->config->getGroupeClass(),
             ))
             ->add('r1statut', ChoiceType::class, [
                 'label'     => 'Statut',
