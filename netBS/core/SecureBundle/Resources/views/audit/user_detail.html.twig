@@ -1,0 +1,65 @@
+{% extends '@NetBSCore/layout/backend.layout.twig' %}
+
+{% block title %}Audit — {{ report.user.username }}{% endblock %}
+
+{% block main %}
+    <div class="container-fluid">
+
+        {% include '@NetBSCore/includes/header.include.twig' with {
+            header: "Audit — " ~ report.user.username,
+            subHeader: "Droits effectifs de cet utilisateur"
+        } %}
+
+        {% set direct_grants = report.grants|filter(g => g.provenance.value == 'direct_role') %}
+        {% set fonction_grants = report.grants|filter(g => g.provenance.value == 'fonction_role') %}
+        {% set autorisation_grants = report.grants|filter(g => g.provenance.value == 'autorisation') %}
+
+        <div class="card mb-3">
+            <div class="card-header">
+                <strong>{{ report.user.username }}</strong>
+                <a href="{{ path('netbs.secure.audit.index') }}" class="float-end btn btn-sm btn-link">← retour</a>
+            </div>
+            <div class="card-body d-flex flex-wrap justify-content-between align-items-center gap-2">
+                <div>
+                    <span class="badge bg-danger me-2">{{ report.sensitiveRoleCount }} rôle{% if report.sensitiveRoleCount != 1 %}s{% endif %} sensible{% if report.sensitiveRoleCount != 1 %}s{% endif %}</span>
+                    <span class="badge bg-info">{{ report.scopeCount }} périmètre{% if report.scopeCount != 1 %}s{% endif %}</span>
+                </div>
+                {% include '@NetBSSecure/audit/_sensitive_toggle.html.twig' %}
+            </div>
+        </div>
+
+        <div id="auditGrants">
+            {% if report.grants is empty %}
+                <div class="alert alert-info">Aucun accès enregistré.</div>
+            {% endif %}
+
+            {% if direct_grants is not empty %}
+                <h6 class="text-muted mt-3 mb-2">Rôles directs</h6>
+                <div class="list-group mb-3">
+                    {% for grant in direct_grants %}
+                        {% include '@NetBSSecure/audit/_grant_row.html.twig' with {grant: grant, sensitive_roles: sensitive_roles} only %}
+                    {% endfor %}
+                </div>
+            {% endif %}
+
+            {% if fonction_grants is not empty %}
+                <h6 class="text-muted mt-3 mb-2">Fonctions ({{ fonction_grants|length }})</h6>
+                <div class="list-group mb-3">
+                    {% for grant in fonction_grants %}
+                        {% include '@NetBSSecure/audit/_grant_row.html.twig' with {grant: grant, sensitive_roles: sensitive_roles} only %}
+                    {% endfor %}
+                </div>
+            {% endif %}
+
+            {% if autorisation_grants is not empty %}
+                <h6 class="text-muted mt-3 mb-2">Autorisations ({{ autorisation_grants|length }})</h6>
+                <div class="list-group mb-3">
+                    {% for grant in autorisation_grants %}
+                        {% include '@NetBSSecure/audit/_grant_row.html.twig' with {grant: grant, sensitive_roles: sensitive_roles} only %}
+                    {% endfor %}
+                </div>
+            {% endif %}
+        </div>
+
+    </div>
+{% endblock %}

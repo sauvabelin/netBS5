@@ -8,6 +8,22 @@ services:
         autowire: true
         autoconfigure: true
 
+    # Auto-tag any class implementing RoleTreeSourceInterface so RoleTreeSyncer
+    # collects them through its tagged iterator.
+    _instanceof:
+        NetBS\SecureBundle\Service\RoleTreeSourceInterface:
+            tags: ['netbs.role_tree_source']
+
+    NetBS\SecureBundle\Service\SystemRoleTreeSource: ~
+
+    NetBS\SecureBundle\Service\RoleTreeSyncer:
+        arguments:
+            $sources: !tagged_iterator netbs.role_tree_source
+
+    NetBS\SecureBundle\Command\SyncRolesCommand: ~
+
+    NetBS\SecureBundle\Command\DebugUserRolesCommand: ~
+
     NetBS\SecureBundle\Controller\:
         resource: '../../Controller'
         tags: ['controller.service_arguments']
@@ -19,6 +35,8 @@ services:
     NetBS\SecureBundle\DataFixtures\:
         resource: '../../DataFixtures'
         tags: ['doctrine.fixture.orm']
+
+    NetBS\SecureBundle\Service\AccessAuditService: ~
 
     NetBS\SecureBundle\Service\UserManager: ~
 
@@ -61,6 +79,10 @@ services:
     NetBS\SecureBundle\Form\AutorisationType:
         tags:
         - { name: form.type }
+
+    NetBS\SecureBundle\Form\AuditPickType:
+        tags:
+            - { name: form.type }
 
     NetBS\SecureBundle\Helper\UserHelper:
         tags:

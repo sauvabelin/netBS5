@@ -6,54 +6,19 @@ use Doctrine\Bundle\FixturesBundle\FixtureGroupInterface;
 use Doctrine\Common\DataFixtures\AbstractFixture;
 use Doctrine\Common\DataFixtures\OrderedFixtureInterface;
 use Doctrine\Persistence\ObjectManager;
-use NetBS\SecureBundle\Entity\Role;
-use NetBS\SecureBundle\Service\SecureConfig;
-use Symfony\Component\Yaml\Yaml;
 
+/**
+ * SecureBundle's LoadRolesData (order 1) already calls RoleTreeSyncer, which
+ * walks every tagged source — including FichierBundle's FichierRoleTreeSource.
+ * So this fixture has nothing left to do; it's kept as an empty stub to
+ * preserve any ordering expectations downstream fixtures might have.
+ */
 class LoadRolesData extends AbstractFixture implements OrderedFixtureInterface, FixtureGroupInterface
 {
-    protected $secureConfig;
-
-    public function __construct(SecureConfig $config) {
-        $this->secureConfig = $config;
-    }
-
     public function load(ObjectManager $manager): void
     {
-        $config = Yaml::parse(file_get_contents(__DIR__ . "/../Resources/security/roles.yml"));
-        $roles  = $this->loadRole($config['roles'], $manager);
-
-        foreach($roles as $role) {
-
-            $role->setParent($this->getReference('ROLE_ADMIN', Role::class));
-            $manager->persist($role);
-        }
-
-        $manager->flush();
-    }
-
-    public function loadRole(array $data, ObjectManager $manager) {
-
-        $roleClass  = $this->secureConfig->getRoleClass();
-        $roles  = [];
-
-        foreach($data as $name => $params) {
-
-            $role   = new $roleClass($name, $params['poids'], $params['description']);
-
-            if(isset($params['children'])) {
-
-                $childs = $this->loadRole($params['children'], $manager);
-
-                foreach($childs as $child)
-                    $role->addChild($child);
-            }
-
-            $manager->persist($role);
-            $roles[] = $role;
-        }
-
-        return $roles;
+        // No-op: roles are reconciled via the shared RoleTreeSyncer service,
+        // invoked from SecureBundle's LoadRolesData (order 1).
     }
 
     public static function getGroups(): array

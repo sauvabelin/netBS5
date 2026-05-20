@@ -1,0 +1,20 @@
+{# Sensitive-only filter switch. Pair with a wrapper id="auditGrants" containing
+   .audit-grant rows that carry a data-has-sensitive="0|1" attribute. #}
+<div class="form-check form-switch m-0">
+    <input class="form-check-input" type="checkbox" id="auditSensitiveOnly">
+    <label class="form-check-label small" for="auditSensitiveOnly">Afficher uniquement les rôles sensibles</label>
+</div>
+<style>
+    #auditGrants.audit-sensitive-only .audit-grant[data-has-sensitive="0"] { display: none; }
+</style>
+<script>
+    (function () {
+        const toggle = document.getElementById('auditSensitiveOnly');
+        const grants = document.getElementById('auditGrants');
+        if (toggle && grants) {
+            toggle.addEventListener('change', () => {
+                grants.classList.toggle('audit-sensitive-only', toggle.checked);
+            });
+        }
+    })();
+</script>

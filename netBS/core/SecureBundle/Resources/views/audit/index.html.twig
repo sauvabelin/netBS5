@@ -1,0 +1,118 @@
+{% extends '@NetBSCore/layout/backend.layout.twig' %}
+
+{% block title %}Audit des accès{% endblock %}
+
+{% block main %}
+    <div class="container-fluid">
+
+        {% include '@NetBSCore/includes/header.include.twig' with {
+            header: "Audit des accès",
+            subHeader: "Contrôler les droits attribués aux utilisateurs"
+        } %}
+
+        <div class="card mb-3">
+            <div class="card-header"><strong>Sélectionner une cible à auditer</strong></div>
+            <div class="card-body">
+                {{ form_start(form) }}
+                <div class="row">
+                    <div class="col-md-6">
+                        <p class="text-muted small mb-2">Auditer un utilisateur — tous ses rôles, fonctions et autorisations.</p>
+                        {{ form_row(form.user) }}
+                    </div>
+                    <div class="col-md-6">
+                        <p class="text-muted small mb-2">Auditer un groupe — tous les utilisateurs qui y ont accès (parents inclus).</p>
+                        {{ form_row(form.groupe) }}
+                    </div>
+                </div>
+                <button type="submit" class="btn btn-primary">Auditer</button>
+                {{ form_end(form) }}
+            </div>
+        </div>
+
+        <h5 class="mb-2">Rôles sensibles</h5>
+        <div class="row row-cols-2 row-cols-md-3 row-cols-lg-6 g-2 mb-3">
+            {% for role in sensitive_roles %}
+                {% set explicit = matrix.counts.explicit[role] ?? 0 %}
+                {% set inherited = matrix.counts.inherited[role] ?? 0 %}
+                {% set has_any = explicit > 0 or inherited > 0 %}
+                <div class="col">
+                    <a href="{{ path('netbs.secure.audit.scope_role', {role: role}) }}"
+                       class="card text-decoration-none h-100 {{ has_any ? 'border-danger' : '' }}">
+                        <div class="card-body py-2 px-3">
+                            <div class="text-muted small text-truncate">{{ role|replace({'ROLE_': ''}) }}</div>
+                            <div class="text-danger d-flex align-items-baseline gap-2">
+                                <span class="h3 fw-bold mb-0">{{ explicit }}</span>
+                                <span class="h4 fw-bold mb-0">({{ inherited }})</span>
+                            </div>
+                        </div>
+                    </a>
+                </div>
+            {% endfor %}
+        </div>
+
+        <div class="card">
+            <div class="card-header"><strong>Matrice des accès sensibles</strong>
+                <span class="text-muted small">— {{ matrix.rows|length }} utilisateur{% if matrix.rows|length != 1 %}s{% endif %}</span>
+            </div>
+            <div class="card-body p-0">
+                {% if matrix.rows is empty %}
+                    <div class="alert alert-info m-3 mb-0">Aucun utilisateur n'a de rôle sensible.</div>
+                {% else %}
+                    <div class="table-responsive">
+                        <table class="table table-sm table-hover align-middle mb-0">
+                            <thead>
+                                <tr>
+                                    <th scope="col" class="ps-3">Utilisateur</th>
+                                    {% for role in matrix.roles %}
+                                        <th scope="col" class="text-center">
+                                            <a href="{{ path('netbs.secure.audit.scope_role', {role: role}) }}"
+                                               class="text-decoration-none text-reset small">{{ role|replace({'ROLE_': ''}) }}</a>
+                                        </th>
+                                    {% endfor %}
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for row in matrix.rows %}
+                                    <tr>
+                                        <th scope="row" class="ps-3 fw-normal">
+                                            <a href="{{ path('netbs.secure.audit.user_show', {id: row.user.id}) }}"
+                                               class="text-decoration-none">{{ row.user.username }}</a>
+                                        </th>
+                                        {% for role in matrix.roles %}
+                                            {% set cell = row.cells[role]|default(null) %}
+                                            <td class="text-center">
+                                                {% if cell is null %}
+                                                    <span class="text-muted">·</span>
+                                                {% elseif cell.explicit %}
+                                                    {# Aggregate provenances of grants that hold the role explicitly. #}
+                                                    {% set provs = [] %}
+                                                    {% for g in cell.grants %}
+                                                        {% if role in g.explicitRoleNames %}
+                                                            {% set letter = g.provenance.value == 'direct_role' ? 'D'
+                                                                           : g.provenance.value == 'fonction_role' ? 'F' : 'A' %}
+                                                            {% if letter not in provs %}{% set provs = provs|merge([letter]) %}{% endif %}
+                                                        {% endif %}
+                                                    {% endfor %}
+                                                    <span class="badge bg-danger" title="Explicite — {{ provs|join(' + ') }}">{{ provs|join('') }}</span>
+                                                {% else %}
+                                                    <span class="badge bg-danger" title="Hérité d'un rôle ancêtre">I</span>
+                                                {% endif %}
+                                            </td>
+                                        {% endfor %}
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="card-footer small text-muted">
+                        Légende&nbsp;: <span class="badge bg-danger">D</span> rôle direct ·
+                        <span class="badge bg-danger">F</span> via fonction ·
+                        <span class="badge bg-danger">A</span> via autorisation ·
+                        <span class="badge bg-danger">I</span> hérité
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+
+    </div>
+{% endblock %}

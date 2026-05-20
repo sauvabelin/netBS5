@@ -1,99 +1,102 @@
 roles:
+    ROLE_APMBS:
+        description: "Gestion des réservations de cabanes."
+        poids: 900
     ROLE_COMMANDANT:
-        description: "Role du commandant"
+        description: "Accès complet au fichier."
         poids: 1000
         children:
             ROLE_QM:
-                description: "Role du QM"
+                description: "Accès complet au fichier."
                 poids: 990
                 children:
                     ROLE_MEMBRE_EDC:
-                        description: "membre de l'EDC"
+                        description: ""
                         poids: 980
                     ROLE_TRESORIER:
-                        description: "Trésorier"
+                        description: "Gestion des factures, paiements, rappels et cotisations."
                         poids: 980
                     ROLE_MAILING:
-                        description: "Gestionnaire des listes de diffusion"
+                        description: "Gestion des listes de diffusion et de leurs membres."
                         poids: 980
                     ROLE_RESPONSABLE_COMM:
-                        description: "Responsable communication"
+                        description: ""
                         poids: 980
                         children:
                             ROLE_RESPONSABLE_PUBLICATIONS:
                                 poids: 800
-                                description: "Responsable publications"
+                                description: ""
                     ROLE_RESPONSABLE_FORMATION_EXTERNE:
-                        description: "Responsable formation externe"
+                        description: ""
                         poids: 980
                     ROLE_RESPONSABLE_FORMATION_INTERNE:
-                        description: "Responsable formation interne"
+                        description: ""
                         poids: 980
                     ROLE_RESPONSABLE_LOCAUX:
-                        description: "Responsable des locaux"
+                        description: ""
                         poids: 980
                     ROLE_COACH:
-                        description: "Responsable formation externe"
+                        description: ""
                         poids: 980
                     ROLE_CHEF_MAT:
-                        description: "Chef mat'"
+                        description: ""
                         poids: 800
                         children:
                             ROLE_CHEF_MAT_ADJOINT:
                                 poids: 700
-                                description: "Chef mat' adjoint"
+                                description: ""
                     ROLE_CHEF_TENTES:
-                        description: "Chef tentes"
+                        description: ""
                         poids: 800
                         children:
                             ROLE_CHEF_TENTES_ADJOINT:
                                 poids: 700
-                                description: "Chef tentes adjoint"
+                                description: ""
                     ROLE_RESPONSABLE_ECONOMAT:
-                        description: "Responsable de l'économat"
+                        description: ""
                         poids: 800
                         children:
                             ROLE_RESPONSABLE_ECONOMAT_ADJOINT:
                                 poids: 700
-                                description: "Chef économat adjoint"
+                                description: ""
             ROLE_CB:
-                description: "Chef de branche"
+                description: "Accès aux membres de la branche via les autorisations attachées à la fonction."
                 poids: 980
                 children:
                     ROLE_CB_ADJ:
-                        description: "Chef de branche adjoint"
+                        description: "Accès aux membres de la branche via les autorisations attachées à la fonction."
                         poids: 950
                         children:
                             ROLE_CHEF_MEUTE:
-                                description: "Chef de meute"
+                                description: "Accès aux louveteaux via les autorisations attachées à la fonction."
                                 poids: 300
                                 children:
                                     ROLE_CHEF_MEUTE_ADJOINT:
-                                        description: "adjoint chef de meute"
+                                        description: "Accès aux louveteaux via les autorisations attachées à la fonction."
                                         poids: 250
 
 
             ROLE_CHEF_CLAN:
-                description: "Chef de clan"
+                description: "Accès aux membres du clan via les autorisations attachées à la fonction."
                 poids: 650
                 children:
                     ROLE_MEMBRE_CLAN:
                         poids: 100
-                        description: "Membre d'un clan"
+                        description: ""
             ROLE_CHEF_EQUIPE:
-                description: "Chef d'équipe"
+                description: "Accès aux membres de l'équipe via les autorisations attachées à la fonction."
                 poids: 650
                 children:
                     ROLE_ADJOINT_CHEF_EQUIPE:
-                        description: "Adjoint chef d'équipe"
+                        description: "Accès aux membres de l'équipe via les autorisations attachées à la fonction."
                         poids: 500
             ROLE_CHEF_CE:
-                description: "Chef de camp d'été"
+                description: "Accès aux membres du camp via les autorisations attachées à la fonction."
                 poids: 300
                 children:
                     ROLE_ADJOINT_CHEF_CE:
-                        description: "Adjoint chef de camp d'été"
+                        description: "Accès aux membres du camp via les autorisations attachées à la fonction."
                         poids: 250
             ROLE_CHEF_SAINT_GEORGES:
-                description: "Chef de la St-Georges"
+                description: ""
                 poids: 300
