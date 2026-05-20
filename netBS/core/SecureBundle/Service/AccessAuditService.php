@@ -122,8 +122,104 @@ final class AccessAuditService
         if ($scope instanceof BaseGroupe) {
             return $this->auditGroupeScope($scope);
         }
-        // Role branch — Task 4 will implement. Empty stub for now.
-        return new ScopeAccessReport($scope, []);
+        return $this->auditRoleScope($scope);
+    }
+
+    private function auditRoleScope(BaseRole $role): ScopeAccessReport
+    {
+        // All role names this scope covers (role + descendants).
+        $roleNames = array_values(array_unique(array_map(
+            fn(BaseRole $r) => $r->getRole(),
+            $role->getChildrenRecursive(),
+        )));
+
+        /** @var array<int, array{user: BaseUser, grants: list<AccessGrant>}> $byUser */
+        $byUser = [];
+
+        // 1. Direct holders.
+        $userClass = $this->secureConfig->getUserClass();
+        $userRepo = $this->em->getRepository($userClass);
+        $directHolders = $userRepo->createQueryBuilder('u')
+            ->innerJoin('u.roles', 'r')
+            ->where('r.role IN (:names)')
+            ->setParameter('names', $roleNames)
+            ->distinct()
+            ->getQuery()->getResult();
+
+        foreach ($directHolders as $u) {
+            $byUser[spl_object_id($u)] = [
+                'user'   => $u,
+                'grants' => [new AccessGrant(
+                    provenance: Provenance::DIRECT_ROLE,
+                    sourceFonction: null,
+                    roles: [$role],
+                    scope: null,
+                )],
+            ];
+        }
+
+        // 2. Fonction holders (via active attributions).
+        $now = new \DateTime();
+        $attrClass = $this->fichierConfig->getAttributionClass();
+        $attrRepo = $this->em->getRepository($attrClass);
+        $attributions = $attrRepo->createQueryBuilder('a')
+            ->innerJoin('a.fonction', 'f')
+            ->innerJoin('f.roles', 'fr')
+            ->where('fr.role IN (:names)')
+            ->andWhere('a.dateDebut <= :now')
+            ->andWhere('a.dateFin >= :now OR a.dateFin IS NULL')
+            ->setParameter('names', $roleNames)
+            ->setParameter('now', $now)
+            ->getQuery()->getResult();
+
+        foreach ($attributions as $a) {
+            $u = $a->getMembre()?->getUser();
+            if ($u === null) {
+                continue;
+            }
+            $uid = spl_object_id($u);
+            $byUser[$uid] ??= ['user' => $u, 'grants' => []];
+            $byUser[$uid]['grants'][] = new AccessGrant(
+                provenance: Provenance::FONCTION_ROLE,
+                sourceFonction: $a->getFonction(),
+                roles: [$role],
+                scope: $a->getGroupe(),
+                sourceId: $a->getId(),
+            );
+        }
+
+        // 3. Autorisation holders.
+        $autoClass = $this->secureConfig->getAutorisationClass();
+        $autoRepo = $this->em->getRepository($autoClass);
+        // Alias 'or' is a reserved keyword in DQL — use 'aor' instead.
+        $autorisations = $autoRepo->createQueryBuilder('o')
+            ->innerJoin('o.roles', 'aor')
+            ->where('aor.role IN (:names)')
+            ->setParameter('names', $roleNames)
+            ->getQuery()->getResult();
+
+        foreach ($autorisations as $o) {
+            $u = $o->getUser();
+            if ($u === null) {
+                continue;
+            }
+            $uid = spl_object_id($u);
+            $byUser[$uid] ??= ['user' => $u, 'grants' => []];
+            $byUser[$uid]['grants'][] = new AccessGrant(
+                provenance: Provenance::AUTORISATION,
+                sourceFonction: null,
+                roles: [$role],
+                scope: $o->getGroupe(),
+                sourceId: $o->getId(),
+            );
+        }
+
+        $entries = array_map(
+            fn($row) => new ScopeAccessEntry($row['user'], $row['grants']),
+            array_values($byUser),
+        );
+
+        return new ScopeAccessReport($role, $entries);
     }
 
     private function auditGroupeScope(BaseGroupe $groupe): ScopeAccessReport
