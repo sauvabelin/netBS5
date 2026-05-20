@@ -1,4 +1,7 @@
 roles:
+    ROLE_APMBS:
+        description: "Membre de l'APMBS"
+        poids: 900
     ROLE_COMMANDANT:
         description: "Role du commandant"
         poids: 1000
