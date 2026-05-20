@@ -80,6 +80,10 @@ services:
         tags:
         - { name: form.type }
 
+    NetBS\SecureBundle\Form\AuditPickType:
+        tags:
+            - { name: form.type }
+
     NetBS\SecureBundle\Helper\UserHelper:
         tags:
             - { name: netbs.helper }
