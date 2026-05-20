@@ -142,6 +142,13 @@ services:
     tags:
       - { name: doctrine.event_listener, event: postLoad }
 
+  # Bumps a 200 form re-render to 422 so Turbo natively swaps the page.
+  # Paired with App\Form\Extension\InvalidFormStatusExtension which marks
+  # the request when any root form was submitted-and-invalid.
+  App\EventListener\InvalidFormStatusListener:
+    tags:
+      - { name: kernel.event_listener, event: kernel.response, priority: -10 }
+
   App\Service\NextcloudApiCall:
     arguments:
       $ncUrl: "%env(NEXTCLOUD_BASE_URI)%"

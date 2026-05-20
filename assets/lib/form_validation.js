@@ -7,13 +7,23 @@ export function validateForm(form) {
     let first = null;
     for (const el of form.elements) {
         if (!el.willValidate || el.checkValidity()) continue;
+        // A required <select> with zero selectable options can never be made valid
+        // by the user. Let it through so the server can render a meaningful error
+        // instead of silently blocking the submit.
+        if (el.tagName === 'SELECT' && !el.multiple && !hasSelectableOption(el)) continue;
         if (!first) first = el;
         markInvalid(el);
     }
 
+    if (!first) return true;
+
     first.focus({ preventScroll: true });
     first.scrollIntoView({ block: 'center', behavior: 'smooth' });
     return false;
+}
+
+function hasSelectableOption(select) {
+    return Array.from(select.options).some((opt) => opt.value !== '');
 }
 
 function clearValidationErrors(form) {
@@ -100,4 +110,8 @@ export function initGlobalFormValidation() {
             e.stopPropagation();
         }
     }, true);
+
+    // Server-side validation errors are surfaced via HTTP 422 responses, set
+    // globally by App\EventListener\InvalidFormStatusListener. Turbo natively
+    // re-renders 4xx responses, so no client-side body-swap is needed.
 }

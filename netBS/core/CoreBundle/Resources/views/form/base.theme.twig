@@ -1,6 +1,24 @@
 
 {% use "bootstrap_4_layout.html.twig" %}
 
+{# Auto-render form-level errors right after the opening <form> tag so any
+   error attached to the form root (e.g. by a post-persist constraint handler)
+   is always visible. Per-field errors continue to render below their field
+   via the bootstrap theme's form_row. #}
+{% block form_start -%}
+    {{- parent() -}}
+    {% if form.vars.errors|length > 0 %}
+        <div class="alert alert-danger" role="alert">
+            <strong>Le formulaire contient des erreurs :</strong>
+            <ul class="mb-0">
+                {% for error in form.vars.errors %}
+                    <li>{{ error.message }}</li>
+                {% endfor %}
+            </ul>
+        </div>
+    {% endif %}
+{%- endblock form_start %}
+
 {%- block widget_attributes -%}
     {% set class = attr.class is defined ? attr.class ~ ' input-sm' : 'input-sm' %}
     {% set attr = attr|merge({class: class}) %}
@@ -45,13 +63,14 @@
 {# select 2 stuff #}
 {% block ajax_select2_document_widget %}
 
+    {# `form.vars.value` is the ID string after the view transformer ran (the
+       norm/view data on the *field* is the ID, not the entity). For multiple,
+       it's a comma-separated string like "1,2,3". For single, just "63". #}
     {% set dataCheck = [] %}
-    {% if form.vars.multiple %}
-        {% for item in form.vars.data %}
-            {% set dataCheck = dataCheck|merge([item.id]) %}
-        {% endfor %}
-    {% elseif form.vars.data %}
-        {% set dataCheck = [form.vars.data.id] %}
+    {% if form.vars.multiple and form.vars.value %}
+        {% set dataCheck = form.vars.value|split(',') %}
+    {% elseif form.vars.value is not empty %}
+        {% set dataCheck = [form.vars.value] %}
     {% endif %}
 
     <div data-controller="select2"
