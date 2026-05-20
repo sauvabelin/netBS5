@@ -3,15 +3,14 @@
 namespace NetBS\CoreBundle\EventListener;
 
 use Doctrine\DBAL\Exception\DriverException;
-use Symfony\Component\HttpFoundation\RedirectResponse;
-use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Event\ExceptionEvent;
 use Symfony\Component\HttpFoundation\RequestStack;
 
 /**
- * Catches database constraint violations (NOT NULL, UNIQUE, FK) and
- * redirects back with a flash error instead of showing a 500 page.
+ * Safety net for uncaught DB constraint violations (SQLSTATE 23xxx). Returns
+ * 422 — never redirects, so the browser keeps the user's form data in history.
+ * Controllers should prefer HandlesFormPersistenceTrait for forms they own.
  */
 class DatabaseExceptionListener
 {
@@ -31,12 +30,15 @@ class DatabaseExceptionListener
         }
 
         $this->requestStack->getSession()->getFlashBag()->add('error',
-            "Les données saisies ne sont pas valides. Veuillez vérifier que tous les champs obligatoires sont remplis."
+            "Une contrainte de base de données a empêché l'enregistrement. " .
+            "Si le problème persiste, contactez un administrateur."
         );
 
-        $event->setResponse(new RedirectResponse(
-            $this->refererOrCurrentUrl($event->getRequest()),
-            Response::HTTP_SEE_OTHER
+        // 422 so Turbo re-renders the response body in place instead of navigating.
+        $event->setResponse(new Response(
+            $this->renderErrorBody($dbException->getMessage()),
+            Response::HTTP_UNPROCESSABLE_ENTITY,
+            ['Content-Type' => 'text/html; charset=utf-8'],
         ));
     }
 
@@ -56,8 +58,21 @@ class DatabaseExceptionListener
         return $sqlState !== null && str_starts_with($sqlState, '23');
     }
 
-    private function refererOrCurrentUrl(Request $request): string
+    private function renderErrorBody(string $detail): string
     {
-        return $request->headers->get('referer') ?: $request->getUri();
+        $escaped = htmlspecialchars($detail, ENT_QUOTES | ENT_HTML5, 'UTF-8');
+        return <<<HTML
+            <!doctype html>
+            <html lang="fr">
+            <head><meta charset="utf-8"><title>Erreur de base de données</title></head>
+            <body>
+                <h1>Erreur de base de données</h1>
+                <p>Une contrainte de base de données a empêché l'enregistrement.
+                   Cliquez sur le bouton « précédent » de votre navigateur pour
+                   retrouver le formulaire et corriger les valeurs.</p>
+                <pre style="white-space:pre-wrap">{$escaped}</pre>
+            </body>
+            </html>
+            HTML;
     }
 }
