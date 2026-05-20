@@ -62,6 +62,7 @@
                           action="{{ path('auth.admin.oidc_clients.delete', { slug: client.slug }) }}"
                           data-turbo-confirm="Permanently delete this client?"
                           class="m-0">
+                        <input type="hidden" name="_token" value="{{ csrf_token('oidc_client_delete_' ~ client.slug) }}">
                         <button type="submit" class="btn btn-outline-danger">
                             <i class="fas fa-trash"></i> Delete
                         </button>

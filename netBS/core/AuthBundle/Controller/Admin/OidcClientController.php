@@ -51,9 +51,13 @@ final class OidcClientController extends AbstractController
     }
 
     #[Route('/new', name: 'auth.admin.oidc_clients.create', methods: ['POST'])]
-    public function create(): Response
+    public function create(Request $request): Response
     {
         $this->denyAccessUnlessGranted('ROLE_ADMIN');
+
+        if (!$this->isCsrfTokenValid('oidc_client_create', (string) $request->request->get('_token'))) {
+            throw $this->createAccessDeniedException('Invalid CSRF token.');
+        }
 
         $slug = $this->generateSlug();
         $dto = new OidcClientDto();
@@ -121,9 +125,13 @@ final class OidcClientController extends AbstractController
     }
 
     #[Route('/{slug}/regenerate-secret', name: 'auth.admin.oidc_clients.regenerate_secret', methods: ['POST'])]
-    public function regenerateSecret(string $slug): Response
+    public function regenerateSecret(string $slug, Request $request): Response
     {
         $this->denyAccessUnlessGranted('ROLE_ADMIN');
+
+        if (!$this->isCsrfTokenValid('oidc_client_regenerate_' . $slug, (string) $request->request->get('_token'))) {
+            throw $this->createAccessDeniedException('Invalid CSRF token.');
+        }
 
         $hydraClient = $this->hydra->getOAuthClient($slug);
         if ($hydraClient === null) {
@@ -147,9 +155,13 @@ final class OidcClientController extends AbstractController
     }
 
     #[Route('/{slug}/delete', name: 'auth.admin.oidc_clients.delete', methods: ['POST'])]
-    public function delete(string $slug): Response
+    public function delete(string $slug, Request $request): Response
     {
         $this->denyAccessUnlessGranted('ROLE_ADMIN');
+
+        if (!$this->isCsrfTokenValid('oidc_client_delete_' . $slug, (string) $request->request->get('_token'))) {
+            throw $this->createAccessDeniedException('Invalid CSRF token.');
+        }
 
         try {
             $this->hydra->deleteOAuthClient($slug);

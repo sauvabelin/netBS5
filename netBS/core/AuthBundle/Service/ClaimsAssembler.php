@@ -20,6 +20,21 @@ final class ClaimsAssembler
     /** @var array<string, list<string>|null> client_id => allowed claims, or null when client is missing */
     private array $cache = [];
 
+    /**
+     * Claim names owned by the standard identity set. Policies must not return
+     * these keys — we reject collisions loudly rather than letting a policy
+     * silently overwrite a user's `sub`, `email`, etc.
+     */
+    private const RESERVED_CLAIMS = [
+        'sub',
+        'preferred_username',
+        'email',
+        'email_verified',
+        'name',
+        'updated_at',
+        'groups',
+    ];
+
     public function __construct(
         private readonly HydraAdminClient $hydra,
         private readonly IdentityClientPolicyInterface $policy,
@@ -40,22 +55,45 @@ final class ClaimsAssembler
         $standard = [
             'sub'                => $identity->sub,
             'preferred_username' => $identity->preferredUsername,
-            'email'              => $identity->email,
-            'email_verified'     => $identity->emailVerified,
             'name'               => $identity->displayName,
             'updated_at'         => $identity->updatedAt->getTimestamp(),
             'groups'             => $identity->groups,
         ];
 
+        // email / email_verified are a coherent pair: emit BOTH or NEITHER.
+        // Emitting `email_verified: false` without `email` would mislead RPs
+        // into thinking the user has an unverified address on file.
+        if ($identity->email !== null) {
+            $standard['email'] = $identity->email;
+            $standard['email_verified'] = $identity->emailVerified;
+        }
+
         $additional = $this->policy->additionalClaimsFor($identity, $clientId);
 
-        $all = $additional + $standard;
-        // Hydra rejects id_token claims whose value is null; drop them so the
-        // accept-consent call doesn't fail when optional fields are unset.
-        return array_filter(
-            array_intersect_key($all, $allowedMap),
+        // Policies opt in to claims; nulls are dropped so a policy returning
+        // `'foo' => null` for "not applicable" doesn't surface as a null claim.
+        $additional = array_filter(
+            $additional,
             static fn ($v) => $v !== null,
         );
+
+        // Reject collisions on reserved claims: a policy must never override
+        // standard identity claims (CVE-class risk: rebinding `sub`).
+        $collisions = array_intersect(array_keys($additional), self::RESERVED_CLAIMS);
+        if ($collisions !== []) {
+            throw new \LogicException(sprintf(
+                'IdentityClientPolicy for client "%s" returned reserved claim(s): %s. '
+                . 'Standard identity claims cannot be overridden by a policy.',
+                $clientId,
+                implode(', ', $collisions),
+            ));
+        }
+
+        // Standard wins on (non-reserved) key merge as a defence-in-depth;
+        // the collision check above already guarantees disjointness.
+        $all = $standard + $additional;
+
+        return array_intersect_key($all, $allowedMap);
     }
 
     /**

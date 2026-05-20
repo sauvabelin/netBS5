@@ -1,0 +1,27 @@
+{% extends '@NetBSAuth/layout/auth.layout.twig' %}
+
+{% block title %}{% if oidc_client and oidc_client.client_name %}Se déconnecter de{% else %}Se déconnecter{% endif %}{% endblock %}
+
+{% block card_body %}
+    <p>
+        {% if oidc_client and oidc_client.client_name %}
+            Vous êtes sur le point de vous déconnecter de
+            <strong>{{ oidc_client.client_name }}</strong>{% if subject is defined and subject %}
+            (compte : <strong>{{ subject }}</strong>){% endif %}.
+        {% else %}
+            Êtes-vous sûr·e de vouloir vous déconnecter{% if subject is defined and subject %}
+            (compte : <strong>{{ subject }}</strong>){% endif %} ?
+        {% endif %}
+    </p>
+
+    <form method="POST" action="{{ path('oidc_logout') }}" data-turbo="false">
+        <input type="hidden" name="_token" value="{{ csrf_token(csrfTokenId) }}">
+        {% if logoutChallenge %}
+            <input type="hidden" name="logout_challenge" value="{{ logoutChallenge }}">
+        {% endif %}
+        <div class="d-grid gap-2">
+            <button type="submit" class="btn btn-danger">Oui, me déconnecter</button>
+            <a href="{{ path('netbs.core.home.dashboard') }}" class="btn btn-secondary">Annuler</a>
+        </div>
+    </form>
+{% endblock %}

@@ -1,15 +1,30 @@
-{% extends '@NetBSCore/layout/backend.layout.twig' %}
+{% extends '@NetBSAuth/layout/auth.layout.twig' %}
 
 {% block title %}Erreur d'authentification{% endblock %}
 
-{% block main %}
-<div class="container my-5">
-    <h1>Accès refusé</h1>
-    <p>Vous n'avez pas accès à cette application.</p>
-    {% if errorDescription %}
-        <p class="text-muted small">{{ errorDescription }}</p>
+{% block card_body %}
+    <h6 class="text-danger text-center">Accès refusé</h6>
+    <p>{{ userMessage }}</p>
+    <p class="text-muted small">Si vous pensez qu'il s'agit d'une erreur, contactez un administrateur.</p>
+    <p class="text-muted small mb-0">Code : <code>{{ errorCode }}</code></p>
+
+    {# Raw upstream details are attacker-controllable (Hydra forwards whatever the
+       caller put in the query string). Show them ONLY in dev so they help local
+       debugging without becoming a phishing surface in production. #}
+    {% if devDetails is not null %}
+        <hr>
+        <details class="mt-3">
+            <summary class="text-muted small">Détails bruts upstream (dev uniquement — non fiables)</summary>
+            <dl class="row small text-muted mt-2">
+                <dt class="col-sm-4">error</dt><dd class="col-sm-8"><code>{{ devDetails.error }}</code></dd>
+                <dt class="col-sm-4">error_description</dt><dd class="col-sm-8"><code>{{ devDetails.error_description }}</code></dd>
+                <dt class="col-sm-4">error_hint</dt><dd class="col-sm-8"><code>{{ devDetails.error_hint }}</code></dd>
+                <dt class="col-sm-4">error_debug</dt><dd class="col-sm-8"><code>{{ devDetails.error_debug }}</code></dd>
+            </dl>
+        </details>
     {% endif %}
-    <p>Si vous pensez qu'il s'agit d'une erreur, contactez un administrateur.</p>
-    <a href="{{ path('netbs.core.home.dashboard') }}" class="btn btn-primary">Retour à netBS</a>
-</div>
+
+    <div class="d-grid gap-2 mt-4">
+        <a href="{{ path('netbs.core.home.dashboard') }}" class="btn btn-primary">Retour à netBS</a>
+    </div>
 {% endblock %}

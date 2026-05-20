@@ -71,9 +71,13 @@ class BSUser extends BaseUser
      * Symfony firewall to look up users at login. The immutable username
      * remains the OIDC `sub` and the system-wide identifier.
      *
+     * Enforced NOT NULL at the schema level (see
+     * Version20260519110000_login_username_not_null) — the unique index would
+     * otherwise allow an unbounded number of NULL rows, breaking the lookup.
+     *
      * @var string|null
      */
-    #[ORM\Column(name: 'login_username', type: 'string', length: 255, nullable: true, unique: true)]
+    #[ORM\Column(name: 'login_username', type: 'string', length: 255, nullable: false, unique: true)]
     #[Assert\Length(max: 255)]
     protected ?string $loginUsername = null;
 
@@ -101,12 +105,32 @@ class BSUser extends BaseUser
         return $this;
     }
 
+    /**
+     * Sets the permanent backend identifier.
+     *
+     * Invariant: `username` is the immutable OIDC subject and the system-wide
+     * row identifier. It is set exactly once, at entity creation. For editable
+     * display / login handles, use {@see setLoginUsername()} instead.
+     *
+     * Calling this method again with the same value is allowed (idempotent).
+     * Calling it with a different value once `username` has been set throws —
+     * silently no-oping (the previous behaviour) hid bugs in fixture loaders,
+     * admin tools and data importers.
+     *
+     * @throws \LogicException when attempting to change an already-set username.
+     */
     public function setUsername($username)
     {
-        // Permanent backend identifier — set once at creation. Subsequent calls
-        // are no-ops so legacy callsites keep working without mutating the row.
         if ($this->username !== null && $this->username !== '') {
-            return $this;
+            if ($this->username === $username) {
+                return $this;
+            }
+            throw new \LogicException(sprintf(
+                'BSUser::setUsername(): username is immutable once set (current="%s", attempted="%s"). '
+                . 'Use setLoginUsername() to change the editable login handle.',
+                $this->username,
+                (string) $username
+            ));
         }
         parent::setUsername($username);
 

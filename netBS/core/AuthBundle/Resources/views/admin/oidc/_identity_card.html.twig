@@ -31,6 +31,7 @@
                           action="{{ path('auth.admin.oidc_clients.regenerate_secret', { slug: client.slug }) }}"
                           data-turbo-confirm="Regenerate the secret? The previous one will be invalidated."
                           class="m-0">
+                        <input type="hidden" name="_token" value="{{ csrf_token('oidc_client_regenerate_' ~ client.slug) }}">
                         <button type="submit" class="btn btn-sm btn-outline-warning">
                             <i class="fas fa-sync"></i> Regenerate secret
                         </button>

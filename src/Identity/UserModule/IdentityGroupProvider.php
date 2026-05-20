@@ -5,22 +5,22 @@ declare(strict_types=1);
 namespace App\Identity\UserModule;
 
 use App\Entity\BSUser;
-use NetBS\AuthBundle\Contract\IdentityDTO;
 use NetBS\AuthBundle\Contract\IdentityGroupProviderInterface;
-use Doctrine\ORM\EntityManagerInterface;
 
 final class IdentityGroupProvider implements IdentityGroupProviderInterface
 {
-    public function __construct(private readonly EntityManagerInterface $em)
+    /**
+     * @param object $user The already-loaded BSUser. Typed `object` to satisfy
+     *                     the contract; we narrow at runtime. The resolver
+     *                     passes the entity it just fetched, so this method
+     *                     does no DB work of its own.
+     */
+    public function groupsFor(object $user): array
     {
-    }
-
-    public function groupsFor(IdentityDTO $identity): array
-    {
-        $user = $this->em->getRepository(BSUser::class)->findOneBy(['username' => $identity->sub]);
         if (!$user instanceof BSUser) {
             return [];
         }
+
         $membre = $user->getMembre();
         if ($membre === null) {
             return [];

@@ -50,28 +50,53 @@ final class RoleTreeSyncer
         $report = new RoleSyncReport();
         $repo = $this->em->getRepository(Role::class);
 
-        // Self-heal first: collapse any duplicate role rows that share a name.
-        // Idempotent — does nothing on an already-clean DB.
-        $report->dedupedFrom += $this->dedupeRoleRowsByName();
+        $connection = $this->em->getConnection();
+        $connection->beginTransaction();
 
-        foreach ($sorted as $source) {
-            $data = Yaml::parseFile($source->getYamlPath())['roles'] ?? [];
+        try {
+            // Self-heal first: collapse any duplicate role rows that share a name.
+            // Idempotent — does nothing on an already-clean DB.
+            $report->dedupedFrom += $this->dedupeRoleRowsByName();
 
-            $rootParent = null;
-            if ($source->getRootParent() !== null) {
-                $rootParent = $repo->findOneBy(['role' => $source->getRootParent()]);
-                if ($rootParent === null) {
+            foreach ($sorted as $source) {
+                $path = $source->getYamlPath();
+                $parsed = Yaml::parseFile($path);
+
+                if (!is_array($parsed) || !array_key_exists('roles', $parsed) || !is_array($parsed['roles'])) {
                     throw new \RuntimeException(sprintf(
-                        'Cannot sync %s: required root parent role "%s" not found in database. '
-                        . 'Ensure the source that creates it (lower getOrder) runs first.',
-                        $source->getYamlPath(),
-                        $source->getRootParent()
+                        'Cannot sync %s (%s): YAML must be a mapping with a top-level "roles:" key whose value is a mapping. '
+                        . 'Got %s.',
+                        $source::class,
+                        $path,
+                        is_array($parsed) ? 'no "roles" key (or non-array value)' : 'non-array root'
                     ));
                 }
+
+                $data = $parsed['roles'];
+
+                $rootParent = null;
+                if ($source->getRootParent() !== null) {
+                    $rootParent = $repo->findOneBy(['role' => $source->getRootParent()]);
+                    if ($rootParent === null) {
+                        throw new \RuntimeException(sprintf(
+                            'Cannot sync %s: required root parent role "%s" not found in database. '
+                            . 'Ensure the source that creates it (lower getOrder) runs first.',
+                            $path,
+                            $source->getRootParent()
+                        ));
+                    }
+                }
+
+                $this->syncTree($data, $rootParent, $report);
+                $this->em->flush();
             }
 
-            $this->syncTree($data, $rootParent, $report);
-            $this->em->flush();
+            $connection->commit();
+        } catch (\Throwable $e) {
+            if ($connection->isTransactionActive()) {
+                $connection->rollBack();
+            }
+            throw $e;
         }
 
         return $report;
