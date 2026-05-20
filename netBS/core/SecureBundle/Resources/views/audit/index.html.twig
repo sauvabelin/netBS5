@@ -96,7 +96,7 @@
                                                     {% endfor %}
                                                     <span class="badge bg-danger" title="Explicite — {{ provs|join(' + ') }}">{{ provs|join('') }}</span>
                                                 {% else %}
-                                                    <span class="badge bg-danger opacity-50" title="Hérité d'un rôle ancêtre">hérité</span>
+                                                    <span class="badge bg-danger" title="Hérité d'un rôle ancêtre">I</span>
                                                 {% endif %}
                                             </td>
                                         {% endfor %}
@@ -109,7 +109,7 @@
                         Légende&nbsp;: <span class="badge bg-danger">D</span> rôle direct ·
                         <span class="badge bg-danger">F</span> via fonction ·
                         <span class="badge bg-danger">A</span> via autorisation ·
-                        <span class="badge bg-danger opacity-50">hérité</span> via un rôle ancêtre
+                        <span class="badge bg-danger">I</span> hérité
                     </div>
                 {% endif %}
             </div>
