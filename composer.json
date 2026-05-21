@@ -81,10 +81,7 @@
             "NetBS\\ListBundle\\": "netBS/core/ListBundle",
             "Ovesco\\FacturationBundle\\": "netBS/ovesco/FacturationBundle",
             "Iacopo\\MailingBundle\\": "netBS/iacopo/MailingBundle"
-        },
-        "classmap": [
-            "netBS/core/SecureBundle/Audit/AccessAudit.php"
-        ]
+        }
     },
     "autoload-dev": {
         "psr-4": {
