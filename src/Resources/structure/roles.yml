@@ -74,8 +74,6 @@ roles:
                                     ROLE_CHEF_MEUTE_ADJOINT:
                                         description: "Accès aux louveteaux via les autorisations attachées à la fonction."
                                         poids: 250
-
-
             ROLE_CHEF_CLAN:
                 description: "Accès aux membres du clan via les autorisations attachées à la fonction."
                 poids: 650

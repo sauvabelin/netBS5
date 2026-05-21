@@ -40,7 +40,6 @@ roles:
                     ROLE_DELETE:
                         description: "Suppression des entités dans les groupes autorisés. Restauration possible via la corbeille."
                         poids: 50
-
     ROLE_IT:
         description: "Étiquette servant aux mailings et listes automatiques. Aucun droit propre."
         poids: 80000

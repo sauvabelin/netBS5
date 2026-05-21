@@ -171,6 +171,13 @@ services:
   App\Service\AppRoleTreeSource:
     tags: ['netbs.role_tree_source']
 
+  # Override the file-domain graft target so ROLE_QM inherits the full SG +
+  # CRUD-EVERYWHERE subtree (audit, trash, mass editor, etc.).
+  NetBS\FichierBundle\Service\FichierRoleTreeSource:
+    arguments:
+      $rootParent: 'ROLE_QM'
+    tags: ['netbs.role_tree_source']
+
 imports:
   - { resource: "@NetBSCoreBundle/Resources/config/services.yml" }
   - { resource: "@NetBSFichierBundle/Resources/config/services.yml" }

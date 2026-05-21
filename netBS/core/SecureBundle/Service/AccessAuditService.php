@@ -31,8 +31,8 @@ final class AccessAuditService
     public const SENSITIVE_ROLES = [
         'ROLE_ADMIN',
         'ROLE_COMMANDANT',
-        'ROLE_SG',
         'ROLE_QM',
+        'ROLE_SG',
         'ROLE_TRESORIER',
         'ROLE_APMBS',
         'ROLE_MAILING',

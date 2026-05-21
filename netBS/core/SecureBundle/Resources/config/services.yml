@@ -24,6 +24,8 @@ services:
 
     NetBS\SecureBundle\Command\DebugUserRolesCommand: ~
 
+    NetBS\SecureBundle\Command\DebugRoleTreeCommand: ~
+
     NetBS\SecureBundle\Controller\:
         resource: '../../Controller'
         tags: ['controller.service_arguments']
