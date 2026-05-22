@@ -10,6 +10,3 @@ framework:
                     consumer: '%env(MESSENGER_CONSUMER_NAME)%'
             failed:
                 dsn: 'doctrine://default?queue_name=failed'
-
-        routing:
-            'App\Message\NextcloudGroupNotification': async
