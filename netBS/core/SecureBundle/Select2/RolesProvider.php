@@ -38,7 +38,16 @@ class RolesProvider implements Select2ProviderInterface
      */
     public function toString($item)
     {
-        return $item->getRole() . " - " . $item->getDescription();
+        return $item->getRole();
+    }
+
+    /**
+     * Subtitle displayed below the role name in select2 dropdowns; not used in tags.
+     * @param BaseRole $item
+     */
+    public function toSubtitle($item): ?string
+    {
+        return $item->getDescription();
     }
 
     /**

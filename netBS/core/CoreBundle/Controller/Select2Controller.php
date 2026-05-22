@@ -41,7 +41,14 @@ class Select2Controller extends AbstractController
             }
 
             if ($ok) {
-                $results[] = ['id' => $provider->toId($item), 'text' => $provider->toString($item)];
+                $row = ['id' => $provider->toId($item), 'text' => $provider->toString($item)];
+                if (method_exists($provider, 'toSubtitle')) {
+                    $subtitle = $provider->toSubtitle($item);
+                    if ($subtitle !== null && $subtitle !== '') {
+                        $row['subtitle'] = $subtitle;
+                    }
+                }
+                $results[] = $row;
             }
         }
 

@@ -1,8 +1,8 @@
 roles:
     ROLE_ADMIN:
-        description: "Role administrateur système"
+        description: "Accès complet à toute l'application, sans restriction de groupe."
         poids: 10000000
         children:
             ROLE_USER:
-                description: "Autorisation d'accès à l'application"
+                description: "Accès minimal nécessaire pour se connecter."
                 poids: 1

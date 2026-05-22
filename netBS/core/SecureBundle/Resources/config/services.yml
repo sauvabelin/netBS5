@@ -24,6 +24,8 @@ services:
 
     NetBS\SecureBundle\Command\DebugUserRolesCommand: ~
 
+    NetBS\SecureBundle\Command\DebugRoleTreeCommand: ~
+
     NetBS\SecureBundle\Controller\:
         resource: '../../Controller'
         tags: ['controller.service_arguments']
@@ -35,6 +37,8 @@ services:
     NetBS\SecureBundle\DataFixtures\:
         resource: '../../DataFixtures'
         tags: ['doctrine.fixture.orm']
+
+    NetBS\SecureBundle\Service\AccessAuditService: ~
 
     NetBS\SecureBundle\Service\UserManager: ~
 
@@ -77,6 +81,10 @@ services:
     NetBS\SecureBundle\Form\AutorisationType:
         tags:
         - { name: form.type }
+
+    NetBS\SecureBundle\Form\AuditPickType:
+        tags:
+            - { name: form.type }
 
     NetBS\SecureBundle\Helper\UserHelper:
         tags:

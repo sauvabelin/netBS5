@@ -3,44 +3,43 @@
 # not declared here.
 roles:
     ROLE_SG:
-        description: "Secrétaire général"
+        description: "Accès complet au fichier sur tous les groupes. Seul à voir l'historique d'audit et la corbeille."
         poids: 80000
         children:
             ROLE_CREATE_EVERYWHERE:
-                description: "Permet de créer des entités partout dans le fichier"
+                description: "Création de membres, familles, groupes et autres entités dans n'importe quel groupe."
                 poids: 100
                 children:
                     ROLE_CREATE:
-                        description: "Permet de créer des entités dans un groupe"
+                        description: "Création d'entités dans les groupes où l'utilisateur a une autorisation."
                         poids: 50
                     ROLE_CREATE_ATTRIBUTION:
-                        description: "Permet de créer des attributions"
+                        description: "Attribution de fonctions à des membres dans les groupes autorisés."
                         poids: 60
 
             ROLE_READ_EVERYWHERE:
-                description: "Permet de consulter des entités partout dans le fichier"
+                description: "Consultation de tous les groupes. Débloque les listes automatiques."
                 poids: 100
                 children:
                     ROLE_READ:
-                        description: "Permet de voir les entités d'un groupe"
+                        description: "Consultation des groupes où l'utilisateur a une autorisation."
                         poids: 50
 
             ROLE_UPDATE_EVERYWHERE:
-                description: "Permet de mettre à jour des entités partout dans le fichier"
+                description: "Modification de n'importe quelle entité du fichier. Débloque l'éditeur de masse."
                 poids: 100
                 children:
                     ROLE_UPDATE:
-                        description: "Permet de mettre à jour les entités d'un groupe"
+                        description: "Modification des entités dans les groupes autorisés."
                         poids: 50
 
             ROLE_DELETE_EVERYWHERE:
-                description: "Permet de supprimer des entités partout dans le fichier"
+                description: "Suppression de n'importe quelle entité du fichier."
                 poids: 100
                 children:
                     ROLE_DELETE:
-                        description: "Permet de supprimer les entités d'un groupe"
+                        description: "Suppression des entités dans les groupes autorisés. Restauration possible via la corbeille."
                         poids: 50
-
     ROLE_IT:
-        description: "Responsable IT"
+        description: "Étiquette servant aux mailings et listes automatiques. Aucun droit propre."
         poids: 80000
