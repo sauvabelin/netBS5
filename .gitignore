@@ -42,4 +42,7 @@ docs
 ###< symfonycasts/sass-bundle ###
 
 .superpowers/
-/TODO.local.md
+
+# Local working notes / TODO drafts (not committed)
+TODO.local.md
+*.todo.local.md

@@ -42,6 +42,13 @@ services:
 
     NetBS\FichierBundle\Service\MesUnitesResolver: ~
 
+    # Picked up by SecureBundle's RoleTreeSyncer via the netbs.role_tree_source
+    # tag. The tag is set explicitly here because Symfony's _instanceof rule
+    # only applies within the services.yml file that declares it, and the rule
+    # lives in SecureBundle.
+    NetBS\FichierBundle\Service\FichierRoleTreeSource:
+        tags: ['netbs.role_tree_source']
+
     NetBS\FichierBundle\Searcher\ActiveAttributionBinder:
         tags:
             - { name: netbs.searcher.binder }

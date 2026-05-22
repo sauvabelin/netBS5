@@ -7,53 +7,31 @@ use Doctrine\Common\DataFixtures\AbstractFixture;
 use Doctrine\Common\DataFixtures\OrderedFixtureInterface;
 use Doctrine\Persistence\ObjectManager;
 use NetBS\SecureBundle\Entity\Role;
-use NetBS\SecureBundle\Service\SecureConfig;
-use Symfony\Component\Yaml\Yaml;
+use NetBS\SecureBundle\Service\RoleTreeSyncer;
 
+/**
+ * Thin fixture that delegates to {@see RoleTreeSyncer}. The syncer walks
+ * every `RoleTreeSourceInterface` registered in the container, so this
+ * fixture has no role-data of its own anymore — it just calls into the
+ * shared reconciliation path that the `netbs:roles:sync` command also uses.
+ *
+ * Order 1 keeps the reference-setting step early enough for other fixtures
+ * (e.g. LoadUserData) to consume the `ROLE_ADMIN` reference.
+ */
 class LoadRolesData extends AbstractFixture implements OrderedFixtureInterface, FixtureGroupInterface
 {
-    private $secureConfig;
-
-    public function __construct(SecureConfig $config) {
-        $this->secureConfig = $config;
+    public function __construct(private readonly RoleTreeSyncer $syncer)
+    {
     }
 
     public function load(ObjectManager $manager): void
     {
-        $config = Yaml::parse(file_get_contents(__DIR__ . "/../Resources/security/system_roles.yml"));
-        $roles  = $this->loadRole($config['roles'], $manager);
+        $this->syncer->syncAll();
 
-        foreach($roles as $role)
-            $manager->persist($role);
-
-        $manager->flush();
-
-        $this->addReference('ROLE_ADMIN', $manager->getRepository(Role::class)->findOneBy(array('role' => 'ROLE_ADMIN')));
-    }
-
-    public function loadRole(array $data, ObjectManager $manager) {
-
-        $rc     = $this->secureConfig->getRoleClass();
-
-        $roles  = [];
-
-        foreach($data as $name => $params) {
-
-            $role   = new $rc($name, $params['poids'], isset($params['description']) ? $params['description'] : '');
-
-            if(isset($params['children'])) {
-
-                $childs = $this->loadRole($params['children'], $manager);
-
-                foreach($childs as $child)
-                    $role->addChild($child);
-            }
-
-            $manager->persist($role);
-            $roles[] = $role;
+        $admin = $manager->getRepository(Role::class)->findOneBy(['role' => 'ROLE_ADMIN']);
+        if ($admin !== null) {
+            $this->addReference('ROLE_ADMIN', $admin);
         }
-
-        return $roles;
     }
 
     public static function getGroups(): array

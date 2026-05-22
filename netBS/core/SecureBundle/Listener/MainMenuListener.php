@@ -46,7 +46,8 @@ class MainMenuListener
             $subMenu
                 ->addSubLink('Gestion', 'netbs.secure.user.list_users')
                 ->addSubLink('Nouveau', 'netbs.secure.user.add_user')
-                ->addSubLink('Autorisations', 'netbs.secure.autorisation.list');
+                ->addSubLink('Autorisations', 'netbs.secure.autorisation.list')
+                ->addSubLink('Audit des accès', 'netbs.secure.audit.index');
         }
     }
 }

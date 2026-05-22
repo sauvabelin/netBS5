@@ -15,6 +15,7 @@ use App\Entity\BSUser;
 use App\Entity\LatestCreatedAccount;
 use NetBS\CoreBundle\Entity\Parameter;
 use NetBS\SecureBundle\Entity\Role;
+use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Component\Mailer\MailerInterface;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 
@@ -36,8 +37,11 @@ class DoctrineUserAccountSubscriber implements EventSubscriber
 
     private $adabsId  = null;
 
-    public function __construct(UserPasswordHasherInterface $encoder, MailerInterface $mailer)
-    {
+    public function __construct(
+        UserPasswordHasherInterface $encoder,
+        MailerInterface $mailer,
+        private readonly RequestStack $requestStack,
+    ) {
         $this->encoder  = $encoder;
         $this->mailer   = $mailer;
     }
@@ -136,16 +140,36 @@ class DoctrineUserAccountSubscriber implements EventSubscriber
         if($this->roleUser === null)
             $this->roleUser = $manager->getRepository(Role::class)->findOneBy(array('role' => 'ROLE_USER'));
 
-        $username   = StrUtil::slugify($membre->getPrenom()) . "." . StrUtil::slugify($membre->getFamille()->getNom());
+        $username = StrUtil::slugify($membre->getPrenom()) . "." . StrUtil::slugify($membre->getFamille()->getNom());
+
+        // Look up including soft-deleted users — a soft-deleted user with this
+        // username would still trip the UNIQUE index on insert.
+        $filters = $manager->getFilters();
+        $filterWasEnabled = $filters->isEnabled('softdeleteable');
+        if ($filterWasEnabled) $filters->disable('softdeleteable');
+        try {
+            $collision = $manager->getRepository(BSUser::class)->findOneBy(['username' => $username]);
+        } finally {
+            if ($filterWasEnabled) $filters->enable('softdeleteable');
+        }
+
+        if ($collision !== null) {
+            $this->requestStack->getSession()->getFlashBag()->add(
+                'warning',
+                sprintf(
+                    "Le membre %s %s a été créé sans compte utilisateur : un compte « %s » existe déjà. " .
+                    "Vous pouvez attacher le compte existant à ce membre, ou créer manuellement un nouveau compte avec un identifiant différent.",
+                    $membre->getPrenom(),
+                    $membre->getFamille()->getNom(),
+                    $username
+                )
+            );
+            return;
+        }
+
         //$password   = StrUtil::randomString();
         $password   = $username . "-" . $membre->getNaissance()->format("d-m-Y");
         $user       = new BSUser();
-        $i          = 1;
-
-        /*
-        while($manager->getRepository('SauvabelinBundle:BSUser')->findOneBy(array('username' => $username)))
-            $username   = $username . $i++;
-        */
 
         $user->setNewPasswordRequired(true);
         $user->setMembre($membre);

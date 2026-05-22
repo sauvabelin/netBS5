@@ -138,6 +138,13 @@ services:
     tags:
       - { name: doctrine.event_listener, event: postLoad }
 
+  # Bumps a 200 form re-render to 422 so Turbo natively swaps the page.
+  # Paired with App\Form\Extension\InvalidFormStatusExtension which marks
+  # the request when any root form was submitted-and-invalid.
+  App\EventListener\InvalidFormStatusListener:
+    tags:
+      - { name: kernel.event_listener, event: kernel.response, priority: -10 }
+
   App\Service\GoogleCalendarManager:
     arguments:
       $serviceAccountJson: "%env(json:GOOGLE_SERVICE_ACCOUNT_JSON)%"
@@ -146,6 +153,19 @@ services:
   App\Service\APMBSFactureExporter:
     arguments:
       $manager: "@doctrine.orm.default_entity_manager"
+
+  # Picked up by SecureBundle's RoleTreeSyncer via the netbs.role_tree_source tag.
+  # The tag is set explicitly because SecureBundle's _instanceof rule only
+  # applies within its own services.yml file.
+  App\Service\AppRoleTreeSource:
+    tags: ['netbs.role_tree_source']
+
+  # Override the file-domain graft target so ROLE_QM inherits the full SG +
+  # CRUD-EVERYWHERE subtree (audit, trash, mass editor, etc.).
+  NetBS\FichierBundle\Service\FichierRoleTreeSource:
+    arguments:
+      $rootParent: 'ROLE_QM'
+    tags: ['netbs.role_tree_source']
 
 imports:
   - { resource: "@NetBSCoreBundle/Resources/config/services.yml" }
