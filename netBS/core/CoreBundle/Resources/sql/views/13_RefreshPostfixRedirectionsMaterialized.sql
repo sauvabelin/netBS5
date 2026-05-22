@@ -1,7 +1,7 @@
 -- Refresh postfix_redirections_materialized from mailing_list_destinations_resolved.
--- Postfix queries postfix_redirections_view (08) which reads this table — refresh
+-- Postfix queries v_postfix_virtual_alias (08) which reads this table — refresh
 -- must run after any change to mailing lists / users / attributions.
-CREATE OR REPLACE PROCEDURE refresh_postfix_redirections_materialized()
+CREATE OR REPLACE PROCEDURE RefreshPostfixRedirectionsMaterialized()
 BEGIN
     TRUNCATE TABLE postfix_redirections_materialized;
     INSERT INTO postfix_redirections_materialized
