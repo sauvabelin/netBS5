@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace NetBS\AuthBundle\Service;
+namespace App\Identity\UserModule;
 
 use App\Entity\BSUser;
 use NetBS\AuthBundle\Contract\IdentityClientPolicyInterface;
@@ -11,7 +11,7 @@ use Doctrine\ORM\EntityManagerInterface;
 use Psr\Log\LoggerInterface;
 use Psr\Log\NullLogger;
 
-final class IdentityClientPolicy implements IdentityClientPolicyInterface
+final class AppIdentityClientPolicy implements IdentityClientPolicyInterface
 {
     private readonly LoggerInterface $logger;
 

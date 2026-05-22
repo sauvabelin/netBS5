@@ -95,21 +95,45 @@ final class ConsentChallengeController extends AbstractController
 
         try {
             $idTokenClaims = $this->claims->assemble($identity, $clientId);
-        } catch (\InvalidArgumentException $e) {
-            // ClaimsAssembler throws when the client_id is unknown to it
-            // (Hydra has a client we don't, e.g. drift between clients.yaml
-            // and Hydra state). Reject the consent cleanly rather than
-            // 500-ing the user-facing browser redirect.
-            $this->logger->error('oidc.consent: ClaimsAssembler rejected unknown client', [
-                'client_id' => $clientId,
-                'subject' => $subject,
-                'error' => $e->getMessage(),
-            ]);
+        } catch (\InvalidArgumentException | \LogicException $e) {
+            // ClaimsAssembler throws two different exceptions for two very
+            // different conditions, so map each to the right OIDC error:
+            //   - InvalidArgumentException -> Hydra has a client we don't
+            //     know about (drift between clients.yaml and Hydra state).
+            //     This is a client-registration problem; surface as
+            //     `invalid_client` so the operator sees the right cause.
+            //   - LogicException -> a policy returned a reserved claim
+            //     (`sub`, `email`, …) and ClaimsAssembler refused to let
+            //     the policy override standard identity claims. This is a
+            //     bug in our own policy code, not a client problem; surface
+            //     as `server_error` so the user is told something is wrong
+            //     on our end (and we log it loudly for the operator).
+            if ($e instanceof \LogicException) {
+                $oidcError = 'server_error';
+                $description = 'Identity provider policy error. Please contact an administrator.';
+                $reason = 'policy_reserved_claim_collision';
+                $this->logger->error('oidc.consent: ClaimsAssembler rejected policy output', [
+                    'client_id' => $clientId,
+                    'subject' => $subject,
+                    'error' => $e->getMessage(),
+                    'reason' => $reason,
+                ]);
+            } else {
+                $oidcError = 'invalid_client';
+                $description = 'Client is not registered with the identity provider.';
+                $reason = 'unknown_client';
+                $this->logger->error('oidc.consent: ClaimsAssembler rejected unknown client', [
+                    'client_id' => $clientId,
+                    'subject' => $subject,
+                    'error' => $e->getMessage(),
+                    'reason' => $reason,
+                ]);
+            }
 
-            return $this->rejectAndRedirect($consentChallenge, 'invalid_client', 'Client is not registered with the identity provider.', [
+            return $this->rejectAndRedirect($consentChallenge, $oidcError, $description, [
                 'subject'   => $subject,
                 'client_id' => $clientId,
-                'reason'    => 'unknown_client',
+                'reason'    => $reason,
             ]);
         }
 

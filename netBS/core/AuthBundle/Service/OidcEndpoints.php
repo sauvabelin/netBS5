@@ -18,9 +18,8 @@ final class OidcEndpoints
         'email',
         'name',
         'groups',
-        // Optional per-user RP-related claims. The policy emits these
-        // uniformly for every consent; the per-client allow-list decides
-        // which ones actually reach the RP.
+        // Optional BSUser-derived claims. Policy emits them uniformly;
+        // per-client `metadata.allowed_claims` decides which reach each RP.
         'nextcloud_account',
         'nextcloud_admin',
         'nextcloud_quota',

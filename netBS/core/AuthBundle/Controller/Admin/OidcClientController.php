@@ -7,12 +7,12 @@ namespace NetBS\AuthBundle\Controller\Admin;
 use NetBS\AuthBundle\Dto\OidcClientDto;
 use NetBS\AuthBundle\Form\OidcClientType;
 use NetBS\AuthBundle\Service\HydraAdminClient;
+use NetBS\AuthBundle\Service\HydraClientException;
 use Psr\Log\LoggerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
-use Symfony\Contracts\HttpClient\Exception\HttpExceptionInterface;
 
 /**
  * Hydra-backed OAuth client admin. There is no local persistence — every
@@ -39,9 +39,14 @@ final class OidcClientController extends AbstractController
 
         try {
             $clients = $this->hydra->listOAuthClients();
-        } catch (HttpExceptionInterface $e) {
-            $this->logger->error('Hydra listOAuthClients failed', ['exception' => $e->getMessage()]);
-            $this->addFlash('error', 'Could not list OAuth clients: ' . $e->getMessage());
+        } catch (HydraClientException $e) {
+            $this->logger->error('Hydra listOAuthClients failed', [
+                'method' => $e->method,
+                'url' => $e->url,
+                'status' => $e->statusCode,
+                'response_excerpt' => $e->responseExcerpt,
+            ]);
+            $this->addFlash('error', 'Could not list OAuth clients.');
             $clients = [];
         }
 
@@ -68,9 +73,14 @@ final class OidcClientController extends AbstractController
 
         try {
             $created = $this->hydra->createOAuthClient($dto->toHydraPayload($plaintext));
-        } catch (HttpExceptionInterface $e) {
-            $this->logger->error('Hydra createOAuthClient failed', ['exception' => $e->getMessage()]);
-            $this->addFlash('error', 'Hydra create failed: ' . $e->getMessage());
+        } catch (HydraClientException $e) {
+            $this->logger->error('Hydra createOAuthClient failed', [
+                'method' => $e->method,
+                'url' => $e->url,
+                'status' => $e->statusCode,
+                'response_excerpt' => $e->responseExcerpt,
+            ]);
+            $this->addFlash('error', 'Could not create OAuth client.');
             return $this->redirectToRoute('auth.admin.oidc_clients.index');
         }
 
@@ -107,9 +117,14 @@ final class OidcClientController extends AbstractController
                     $this->hydra->updateOAuthClient($slug, $dto->toHydraPayload());
                     $this->addFlash('success', 'Client updated.');
                     return $this->redirectToRoute('auth.admin.oidc_clients.index');
-                } catch (HttpExceptionInterface $e) {
-                    $this->logger->error('Hydra updateOAuthClient failed', ['exception' => $e->getMessage()]);
-                    $this->addFlash('error', 'Hydra update failed: ' . $e->getMessage());
+                } catch (HydraClientException $e) {
+                    $this->logger->error('Hydra updateOAuthClient failed', [
+                        'method' => $e->method,
+                        'url' => $e->url,
+                        'status' => $e->statusCode,
+                        'response_excerpt' => $e->responseExcerpt,
+                    ]);
+                    $this->addFlash('error', 'Could not update OAuth client.');
                 }
             } else {
                 $this->addFlash('error', 'The form contains errors. Please fix them and try again.');
@@ -143,8 +158,14 @@ final class OidcClientController extends AbstractController
 
         try {
             $this->hydra->updateOAuthClient($slug, $dto->toHydraPayload($plaintext));
-        } catch (HttpExceptionInterface $e) {
-            $this->addFlash('error', 'Hydra error: ' . $e->getMessage());
+        } catch (HydraClientException $e) {
+            $this->logger->error('Hydra regenerateSecret failed', [
+                'method' => $e->method,
+                'url' => $e->url,
+                'status' => $e->statusCode,
+                'response_excerpt' => $e->responseExcerpt,
+            ]);
+            $this->addFlash('error', 'Could not regenerate the client secret.');
             return $this->redirectToRoute('auth.admin.oidc_clients.edit', ['slug' => $slug]);
         }
 
@@ -165,8 +186,14 @@ final class OidcClientController extends AbstractController
 
         try {
             $this->hydra->deleteOAuthClient($slug);
-        } catch (HttpExceptionInterface $e) {
-            $this->addFlash('error', 'Hydra delete failed: ' . $e->getMessage());
+        } catch (HydraClientException $e) {
+            $this->logger->error('Hydra deleteOAuthClient failed', [
+                'method' => $e->method,
+                'url' => $e->url,
+                'status' => $e->statusCode,
+                'response_excerpt' => $e->responseExcerpt,
+            ]);
+            $this->addFlash('error', 'Could not delete OAuth client.');
             return $this->redirectToRoute('auth.admin.oidc_clients.edit', ['slug' => $slug]);
         }
 

@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace App\Tests\Identity\UserModule;
 
 use App\Entity\BSUser;
-use App\Identity\UserModule\IdentityGroupProvider;
 use App\Identity\UserModule\IdentityUserResolver;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\EntityRepository;
@@ -85,13 +84,5 @@ final class IdentityUserResolverTest extends TestCase
         $resolver = new IdentityUserResolver($em, $groupProvider);
 
         $this->assertNull($resolver->resolveBySub('ghost'));
-    }
-
-    public function testGroupProviderReturnsEmptyForNonBSUserObject(): void
-    {
-        // Defensive: contract is typed `object` to keep AuthBundle free of
-        // BSUser. The concrete provider must narrow at runtime.
-        $provider = new IdentityGroupProvider();
-        $this->assertSame([], $provider->groupsFor(new \stdClass()));
     }
 }

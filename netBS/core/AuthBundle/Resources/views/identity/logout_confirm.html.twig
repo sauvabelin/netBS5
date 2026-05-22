@@ -3,7 +3,28 @@
 {% block title %}{% if oidc_client and oidc_client.client_name %}Se déconnecter de{% else %}Se déconnecter{% endif %}{% endblock %}
 
 {% block card_body %}
-    {% if subjectMismatch is defined and subjectMismatch %}
+    {% if mismatchRefused is defined and mismatchRefused %}
+        {# A Hydra logout request was received for a different account than
+           the one currently signed in locally. Refuse the request entirely:
+           clicking through would let an attacker terminate the victim's
+           federated session (confused-deputy / drive-by logout). #}
+        <p>
+            Cette demande de déconnexion ne concerne pas le compte avec lequel
+            vous êtes actuellement connecté·e.
+        </p>
+        <p>
+            Vous êtes connecté·e en tant que <strong>{{ localSubject }}</strong>,
+            mais la demande concerne <strong>{{ subject }}</strong>. Pour des
+            raisons de sécurité, cette opération a été refusée.
+        </p>
+        <p>
+            Si vous souhaitez vous déconnecter de <strong>{{ subject }}</strong>,
+            connectez-vous d'abord avec ce compte.
+        </p>
+        <div class="d-grid gap-2">
+            <a href="{{ path('netbs.core.home.dashboard') }}" class="btn btn-secondary">Retour au tableau de bord</a>
+        </div>
+    {% elseif subjectMismatch is defined and subjectMismatch %}
         <p>
             {% if oidc_client and oidc_client.client_name %}
                 Une demande de déconnexion concernant le compte

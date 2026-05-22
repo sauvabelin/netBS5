@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace NetBS\AuthBundle\Controller\Identity;
 
 use NetBS\AuthBundle\Service\HydraAdminClient;
+use NetBS\AuthBundle\Service\HydraClientException;
 use Psr\Log\LoggerInterface;
 use Psr\Log\NullLogger;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -30,7 +31,19 @@ use Symfony\Component\Routing\Attribute\Route;
  */
 final class LogoutController extends AbstractController
 {
-    private const CSRF_TOKEN_ID = 'oidc_logout';
+    /**
+     * CSRF token id used by the plain "log me out of netBS" POST form (no
+     * Hydra challenge). Distinct from the per-challenge id used below so a
+     * token minted for one flow cannot be replayed against the other.
+     */
+    private const CSRF_TOKEN_ID_LOCAL = 'oidc_logout_local';
+
+    /**
+     * Per-challenge CSRF token id prefix. The full id is
+     * `oidc_logout_challenge_<challenge>` so each Hydra logout round-trip has
+     * its own token namespace.
+     */
+    private const CSRF_TOKEN_ID_CHALLENGE_PREFIX = 'oidc_logout_challenge_';
 
     private readonly LoggerInterface $logger;
 
@@ -50,8 +63,9 @@ final class LogoutController extends AbstractController
         // No challenge: this is a plain "log me out of netBS" hit. Treat as
         // a same-origin confirm-then-logout, never auto-act on GET.
         if ($logoutChallenge === '') {
+            $csrfTokenId = self::CSRF_TOKEN_ID_LOCAL;
             if ($request->isMethod('POST')) {
-                if (!$this->isCsrfTokenValid(self::CSRF_TOKEN_ID, (string) $request->request->get('_token'))) {
+                if (!$this->isCsrfTokenValid($csrfTokenId, (string) $request->request->get('_token'))) {
                     throw $this->createAccessDeniedException('Invalid CSRF token.');
                 }
                 $this->security->logout(validateCsrfToken: false);
@@ -60,15 +74,23 @@ final class LogoutController extends AbstractController
 
             return $this->render('@NetBSAuth/identity/logout_confirm.html.twig', [
                 'logoutChallenge' => null,
-                'csrfTokenId'     => self::CSRF_TOKEN_ID,
+                'csrfTokenId'     => $csrfTokenId,
             ]);
         }
 
+        // Distinct token id per challenge: a CSRF token minted for the plain
+        // logout flow above cannot be replayed here, and tokens are scoped to
+        // the specific challenge the form was rendered with.
+        $csrfTokenId = self::CSRF_TOKEN_ID_CHALLENGE_PREFIX . $logoutChallenge;
+
         // Fetch the logout request up front so we can show the user which
-        // session is about to be terminated and verify the subject.
+        // session is about to be terminated and verify the subject. We only
+        // catch HydraClientException here — programmer errors (TypeError,
+        // autoloader failures, etc.) must bubble up to Symfony's exception
+        // listener so they don't get swallowed as "challenge expired".
         try {
             $logoutRequest = $this->hydra->getLogoutRequest($logoutChallenge);
-        } catch (\Throwable $e) {
+        } catch (HydraClientException $e) {
             $this->logger->warning('Hydra getLogoutRequest failed', [
                 'challenge' => $logoutChallenge,
                 'exception' => $e->getMessage(),
@@ -82,12 +104,12 @@ final class LogoutController extends AbstractController
 
         // The Hydra session and the local netBS session are independent. If
         // they disagree on identity (e.g. user is locally `iacopo` but Hydra
-        // still has a session for `admin` from a previous login), accepting
-        // Hydra's logout only terminates Hydra's session — it does NOT touch
-        // the local session. The original subject-match check rejected this
-        // benign multi-account case; we now allow it but skip the local
-        // logout when subjects differ. Since we never end the local session
-        // on mismatch, the drive-by-logout-challenge attack vector vanishes.
+        // still has a session for `admin`), accepting Hydra's logout while
+        // the local user is signed in lets an attacker weaponise the local
+        // session: they craft a logout_challenge for VICTIM, trick a logged-in
+        // netBS user into POSTing it, and Hydra terminates the victim's
+        // session + all federated RPs — all under cover of a perfectly valid
+        // CSRF token. We refuse the request entirely in that case.
         $subjectMismatch = (
             $currentSubject !== null
             && $hydraSubject !== ''
@@ -95,50 +117,71 @@ final class LogoutController extends AbstractController
         );
 
         if ($request->isMethod('POST')) {
-            if (!$this->isCsrfTokenValid(self::CSRF_TOKEN_ID, (string) $request->request->get('_token'))) {
+            if (!$this->isCsrfTokenValid($csrfTokenId, (string) $request->request->get('_token'))) {
                 throw $this->createAccessDeniedException('Invalid CSRF token.');
             }
 
             if ($subjectMismatch) {
-                // Hydra's session belongs to a different identity than the
-                // one logged in locally. Accept Hydra's logout (kills its
-                // session for $hydraSubject and notifies RPs) but leave the
-                // local session alone — it isn't this user's to terminate.
-                $this->logger->warning('oidc.logout: subject mismatch but accepted (local untouched)', [
+                // Confused-deputy refusal: a local user is authenticated but
+                // the Hydra logout_challenge was issued for a DIFFERENT
+                // subject. We must NOT accept the logout — doing so would
+                // let the attacker terminate the victim's Hydra session +
+                // back-channel-logout RPs by tricking any logged-in admin
+                // into clicking the confirmation form. Render an error page
+                // explaining the situation; do not call acceptLogoutRequest.
+                $this->logger->warning('oidc.logout: refused - subject mismatch with active local session', [
                     'challenge'      => $logoutChallenge,
                     'hydra_subject'  => $hydraSubject,
                     'session_subject'=> $currentSubject,
-                    'decision'       => 'accept_hydra_only',
+                    'decision'       => 'refuse',
+                    'reason'         => 'subject_mismatch_with_local_user',
                 ]);
-            } else {
-                // 1) Kill the local session FIRST. If anything below explodes the
-                //    safer state is "logged out locally" rather than "still
-                //    logged in but a stack trace on screen".
-                $this->security->logout(validateCsrfToken: false);
+
+                return $this->render('@NetBSAuth/identity/logout_confirm.html.twig', [
+                    'logoutChallenge'   => $logoutChallenge,
+                    'csrfTokenId'       => $csrfTokenId,
+                    'subject'           => $hydraSubject,
+                    'oidc_client'       => (isset($logoutRequest['client']) && \is_array($logoutRequest['client']))
+                        ? $logoutRequest['client']
+                        : null,
+                    'subjectMismatch'   => true,
+                    'localSubject'      => $currentSubject,
+                    'mismatchRefused'   => true,
+                ]);
             }
+
+            // 1) Kill the local session FIRST. If anything below explodes the
+            //    safer state is "logged out locally" rather than "still
+            //    logged in but a stack trace on screen".
+            $this->security->logout(validateCsrfToken: false);
 
             // 2) Now tell Hydra to finalise its end of the logout. Failures
             //    are logged but don't bubble up — the user already saw the
-            //    Logout button work from their perspective.
+            //    Logout button work from their perspective. We narrow the
+            //    catch to HydraClientException so genuine programmer errors
+            //    still surface to Symfony's exception listener.
             try {
                 $accept = $this->hydra->acceptLogoutRequest($logoutChallenge);
                 if (isset($accept['redirect_to']) && \is_string($accept['redirect_to']) && $accept['redirect_to'] !== '') {
                     return new RedirectResponse($accept['redirect_to']);
                 }
-            } catch (\Throwable $e) {
+            } catch (HydraClientException $e) {
                 $this->logger->error('Hydra acceptLogoutRequest failed', [
                     'challenge'        => $logoutChallenge,
                     'subject'          => $hydraSubject,
-                    'subject_mismatch' => $subjectMismatch,
                     'exception'        => $e->getMessage(),
                 ]);
+                // Tell the user that the local part worked but the SSO server
+                // didn't acknowledge — they may need to log out manually from
+                // other federated services.
+                $this->addFlash(
+                    'warning',
+                    'Local logout succeeded but the SSO server did not respond. '
+                    . 'You may still be signed in to other connected services.'
+                );
             }
 
-            // After a mismatch the user is still logged in locally — send
-            // them to the dashboard instead of the login page.
-            return $this->redirectToRoute(
-                $subjectMismatch ? 'netbs.core.home.dashboard' : 'netbs.secure.login.login'
-            );
+            return $this->redirectToRoute('netbs.secure.login.login');
         }
 
         // Hydra returns the OAuth client that initiated the logout under
@@ -151,11 +194,12 @@ final class LogoutController extends AbstractController
 
         return $this->render('@NetBSAuth/identity/logout_confirm.html.twig', [
             'logoutChallenge' => $logoutChallenge,
-            'csrfTokenId'     => self::CSRF_TOKEN_ID,
+            'csrfTokenId'     => $csrfTokenId,
             'subject'         => $hydraSubject,
             'oidc_client'     => $oidcClient,
             'subjectMismatch' => $subjectMismatch,
             'localSubject'    => $currentSubject,
+            'mismatchRefused' => false,
         ]);
     }
 }

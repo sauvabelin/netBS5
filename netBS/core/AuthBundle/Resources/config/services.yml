@@ -15,10 +15,6 @@ services:
       $hydraAdminUrl: '%env(HYDRA_ADMIN_URL)%'
       $logger: '@logger'
 
-  # Contract → concrete policy (lives in bundle)
-  NetBS\AuthBundle\Contract\IdentityClientPolicyInterface:
-    alias: NetBS\AuthBundle\Service\IdentityClientPolicy
-
   NetBS\AuthBundle\Service\OidcEndpoints:
     arguments:
       $issuer: '%env(HYDRA_ISSUER)%'

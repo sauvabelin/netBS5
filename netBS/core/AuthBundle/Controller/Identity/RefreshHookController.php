@@ -55,7 +55,20 @@ final class RefreshHookController extends AbstractController
             return new JsonResponse(['error' => 'unauthorized'], Response::HTTP_UNAUTHORIZED);
         }
 
-        $payload = json_decode($request->getContent(), true, flags: \JSON_THROW_ON_ERROR);
+        try {
+            $payload = json_decode($request->getContent(), true, flags: \JSON_THROW_ON_ERROR);
+        } catch (\JsonException $e) {
+            // Malformed body — return a structured 400 rather than letting the
+            // JsonException bubble up to a 500. Hydra retries on 5xx but treats
+            // 4xx as a permanent rejection, which is the correct semantics for
+            // "we cannot parse what you sent".
+            $this->logger->warning('oidc.refresh_hook: malformed JSON body', [
+                'remote_addr' => $request->getClientIp(),
+                'error' => $e->getMessage(),
+            ]);
+
+            return new JsonResponse(['error' => 'invalid_request'], Response::HTTP_BAD_REQUEST);
+        }
 
         $subject = $payload['subject'] ?? null;
         $clientId = $payload['client_id'] ?? ($payload['client']['client_id'] ?? null);

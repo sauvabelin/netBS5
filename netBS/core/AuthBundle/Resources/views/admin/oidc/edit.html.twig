@@ -50,6 +50,7 @@
                 {% do form.redirectUris.setRendered() %}
                 {% do form.postLogoutRedirectUris.setRendered() %}
                 {{ form_row(form.backchannelLogoutUri) }}
+                {{ form_row(form.logoUri) }}
                 {{ form_row(form.allowedClaims) }}
 
                 <div class="mt-3">

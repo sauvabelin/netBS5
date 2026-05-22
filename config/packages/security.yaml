@@ -30,7 +30,7 @@ security:
             jwt: ~
 
         oidc:
-            pattern: ^/oidc-(login|consent|logout|error)
+            pattern: ^/oidc-(login|consent|logout|error|refresh-hook)
             provider: database
             context: netbs   # share session with the netbs firewall so login carries over
             form_login:

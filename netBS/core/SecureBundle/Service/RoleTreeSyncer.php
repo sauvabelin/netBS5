@@ -129,7 +129,9 @@ final class RoleTreeSyncer
                     $role->setDescription($description);
                     $changed = true;
                 }
-                if ($parent !== null && ($role->getParent()?->getRole() !== $parent->getRole())) {
+                // Reparent in both directions: a YAML edit may attach a role to
+                // a new parent, or promote it to root by removing its parent.
+                if ($role->getParent()?->getRole() !== $parent?->getRole()) {
                     $role->setParent($parent);
                     $changed = true;
                 }

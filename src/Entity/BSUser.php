@@ -72,8 +72,8 @@ class BSUser extends BaseUser
      * remains the OIDC `sub` and the system-wide identifier.
      *
      * Enforced NOT NULL at the schema level (see
-     * Version20260519110000_login_username_not_null) — the unique index would
-     * otherwise allow an unbounded number of NULL rows, breaking the lookup.
+     * Version0006_add_login_username) — the unique index would otherwise
+     * allow an unbounded number of NULL rows, breaking the lookup.
      *
      * @var string|null
      */

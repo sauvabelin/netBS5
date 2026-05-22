@@ -137,6 +137,16 @@ final class HydraAdminClient
             return $response->toArray();
         } catch (TransportExceptionInterface $e) {
             $this->failTransport('GET', $url, $e);
+        } catch (HttpClientExceptionInterface $e) {
+            // toArray() can throw on non-2xx (already guarded above) or when
+            // the response body fails to decode as JSON. Re-wrap uniformly so
+            // callers only ever see HydraClientException.
+            $this->logger->warning('hydra.client: response decoding failed', [
+                'method' => 'GET',
+                'url' => $url,
+                'error' => $e->getMessage(),
+            ]);
+            throw new HydraClientException('GET', $url, 0, $e->getMessage(), $e);
         }
     }
 

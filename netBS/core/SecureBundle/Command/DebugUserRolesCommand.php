@@ -5,7 +5,8 @@ declare(strict_types=1);
 namespace NetBS\SecureBundle\Command;
 
 use Doctrine\ORM\EntityManagerInterface;
-use App\Entity\BSUser;
+use NetBS\SecureBundle\Mapping\BaseUser;
+use NetBS\SecureBundle\Service\SecureConfig;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
@@ -15,8 +16,10 @@ use Symfony\Component\Console\Output\OutputInterface;
 #[AsCommand(name: 'netbs:debug:user-roles')]
 final class DebugUserRolesCommand extends Command
 {
-    public function __construct(private readonly EntityManagerInterface $em)
-    {
+    public function __construct(
+        private readonly EntityManagerInterface $em,
+        private readonly SecureConfig $secureConfig,
+    ) {
         parent::__construct();
     }
 
@@ -28,15 +31,29 @@ final class DebugUserRolesCommand extends Command
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $username = $input->getArgument('username');
-        $user = $this->em->getRepository(BSUser::class)->findOneBy(['loginUsername' => $username])
-            ?? $this->em->getRepository(BSUser::class)->findOneBy(['username' => $username]);
+        $userClass = $this->secureConfig->getUserClass();
+        $repo = $this->em->getRepository($userClass);
 
-        if (!$user) {
+        // Some app-level user classes (e.g. BSUser) add a `loginUsername`
+        // alternative identifier. Probe via class metadata so the bundle
+        // command works on installs that only expose `username`.
+        $metadata = $this->em->getClassMetadata($userClass);
+
+        $user = null;
+        if ($metadata->hasField('loginUsername')) {
+            $user = $repo->findOneBy(['loginUsername' => $username]);
+        }
+        $user ??= $repo->findOneBy(['username' => $username]);
+
+        if (!$user instanceof BaseUser) {
             $output->writeln("<error>User '$username' not found.</error>");
             return Command::FAILURE;
         }
 
-        $output->writeln("User: {$user->getLoginUsername()} (id={$user->getId()})");
+        $loginLabel = $metadata->hasField('loginUsername') && method_exists($user, 'getLoginUsername')
+            ? $user->getLoginUsername()
+            : $user->getUsername();
+        $output->writeln("User: {$loginLabel} (id={$user->getId()})");
         $output->writeln("\nDirect roles:");
         foreach ($user->getDirectRoles() as $r) {
             $output->writeln("  - " . $r->getRole());

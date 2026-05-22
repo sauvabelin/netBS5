@@ -15,6 +15,7 @@ use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 use Symfony\Component\Validator\Constraints\Count;
 use Symfony\Component\Validator\Constraints\NotBlank;
+use Symfony\Component\Validator\Constraints\Url;
 
 final class OidcClientType extends AbstractType
 {
@@ -63,6 +64,8 @@ final class OidcClientType extends AbstractType
                 'label' => 'Logo URL',
                 'help'  => 'Shown on the netBS login page when this client initiates a sign-in.',
                 'required' => false,
+                'default_protocol' => 'https',
+                'constraints' => [new Url(['protocols' => ['https']])],
             ])
             ->add('allowedClaims', ChoiceType::class, [
                 'label' => 'Allowed claims',

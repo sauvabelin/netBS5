@@ -6,7 +6,6 @@ namespace NetBS\AuthBundle\Service;
 
 use Psr\Log\LoggerInterface;
 use Symfony\Component\HttpFoundation\RequestStack;
-use Symfony\Contracts\HttpClient\Exception\ExceptionInterface;
 
 /**
  * Resolves the OIDC client context, if any, for the current login attempt.
@@ -48,10 +47,14 @@ final class LoginContextProvider
 
         try {
             $loginRequest = $this->hydra->getLoginRequest($challenge);
-        } catch (ExceptionInterface $e) {
-            // Challenge expired or unknown: render the plain login form.
+        } catch (HydraClientException $e) {
+            // Challenge expired or unknown (or any other Hydra failure):
+            // render the plain login form.
             $this->logger->warning('Hydra getLoginRequest failed for login challenge', [
-                'exception' => $e->getMessage(),
+                'method' => $e->method,
+                'url' => $e->url,
+                'status' => $e->statusCode,
+                'response_excerpt' => $e->responseExcerpt,
             ]);
             return null;
         }
