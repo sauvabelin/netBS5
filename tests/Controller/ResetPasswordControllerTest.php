@@ -73,25 +73,27 @@ class ResetPasswordControllerTest extends WebTestCase
         $this->assertEmailCount(0);
     }
 
-    public function test_request_throttled_repeat_for_same_user_sends_only_first_email(): void
+    public function test_resubmit_issues_a_fresh_email_and_invalidates_the_old_token(): void
     {
         $client = static::createClient();
         $client->enableProfiler();
-        $user = $this->createUser($client, 'reset-test-throttled', 'reset-test-throttled@example.test');
+        $user = $this->createUser($client, 'reset-test-resubmit', 'reset-test-resubmit@example.test');
 
         $crawler = $client->request('GET', self::REQUEST_URL);
         $form = $crawler->selectButton('Envoyer le lien')->form();
         $form['reset_password_request_form[username]'] = $user->getUsername();
         $client->submit($form);
-        // Per-request profile: this submit dispatched the email.
         $this->assertEmailCount(1);
 
         $crawler = $client->request('GET', self::REQUEST_URL);
         $form = $crawler->selectButton('Envoyer le lien')->form();
         $form['reset_password_request_form[username]'] = $user->getUsername();
         $client->submit($form);
-        // Second submit hits the bundle's per-user throttle: no new email.
-        $this->assertEmailCount(0);
+        // Re-submit invalidates the prior token and emails a fresh link
+        // (GitHub-style; anti-abuse is the per-IP limiter, not a per-user
+        // throttle). The profile for the latest request shows exactly one
+        // new email.
+        $this->assertEmailCount(1);
     }
 
     private function createUser(KernelBrowser $client, string $username, ?string $email): BSUser

@@ -9,6 +9,7 @@ use NetBS\SecureBundle\Event\PasswordResetRequestedEvent;
 use NetBS\SecureBundle\Form\ChangePasswordType;
 use NetBS\SecureBundle\Form\ResetPasswordRequestFormType;
 use NetBS\SecureBundle\Model\ChangePassword;
+use NetBS\SecureBundle\Repository\ResetPasswordRequestRepository;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\DependencyInjection\Attribute\Autowire;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
@@ -30,6 +31,7 @@ class ResetPasswordController extends AbstractController
 
     public function __construct(
         private readonly ResetPasswordHelperInterface $resetPasswordHelper,
+        private readonly ResetPasswordRequestRepository $resetPasswordRequests,
         private readonly EntityManagerInterface $em,
         private readonly EventDispatcherInterface $dispatcher,
         private readonly MailerInterface $mailer,
@@ -121,6 +123,11 @@ class ResetPasswordController extends AbstractController
             usleep(random_int(0, 80_000));
             return;
         }
+
+        // GitHub-style: drop any pending tokens for this user before issuing a
+        // fresh one, so a re-submit (e.g. user lost the first email) always
+        // produces a new working link. Anti-abuse stays on the per-IP limiter.
+        $this->resetPasswordRequests->removeRequests($user);
 
         try {
             $resetToken = $this->resetPasswordHelper->generateResetToken($user);
