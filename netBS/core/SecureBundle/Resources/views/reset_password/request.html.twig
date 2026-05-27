@@ -1,0 +1,15 @@
+{% extends '@NetBSCore/layout/base.layout.twig' %}
+
+{% block bodyClass %}be-splash-screen{% endblock %}
+
+{% block body %}
+<div class="container" style="max-width:480px;margin:3rem auto;">
+    <h1>Mot de passe oublié</h1>
+    <p>Saisissez votre nom d'utilisateur. Si un compte y est associé et qu'une adresse email est enregistrée, un lien de réinitialisation vous sera envoyé.</p>
+    {{ form_start(requestForm) }}
+        {{ form_row(requestForm.username) }}
+        <button type="submit" class="btn btn-primary">Envoyer le lien</button>
+        <a href="{{ path('netbs.secure.login.login') }}" class="btn btn-link">Retour</a>
+    {{ form_end(requestForm) }}
+</div>
+{% endblock %}
