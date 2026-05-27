@@ -46,6 +46,10 @@ services:
 
     NetBS\SecureBundle\EventSubscriber\PasswordResetLoggingSubscriber: ~
 
+    NetBS\SecureBundle\EventSubscriber\TrackLoginTimeListener: ~
+
+    NetBS\SecureBundle\EventSubscriber\SessionInvalidationListener: ~
+
     NetBS\SecureBundle\Service\SecureConfig:
         arguments:
             - "%netbs.secure.config%"
