@@ -63,10 +63,8 @@
                             </div>
 
                         </div>
-                        <div class="col-6">
-                            {#
-                            <a href="#">Mot de passe oublié?</a>
-                            #}
+                        <div class="col-6 text-end">
+                            <a href="{{ path('netbs.secure.password_reset.request') }}">Mot de passe oublié&nbsp;?</a>
                         </div>
                     </div>
                     <button data-bs-dismiss="modal" class="btn btn-primary w-100">Connexion</button>
