@@ -42,6 +42,8 @@ services:
 
     NetBS\SecureBundle\Service\UserManager: ~
 
+    NetBS\SecureBundle\Repository\ResetPasswordRequestRepository: ~
+
     NetBS\SecureBundle\Service\SecureConfig:
         arguments:
             - "%netbs.secure.config%"
