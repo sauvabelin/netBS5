@@ -51,6 +51,9 @@ class BSUser extends BaseUser
     #[ORM\Column(name: 'new_password_required', type: 'boolean')]
     protected $newPasswordRequired  = false;
 
+    #[ORM\Column(name: 'password_changed_at', type: 'datetime_immutable', nullable: true)]
+    protected ?\DateTimeImmutable $passwordChangedAt = null;
+
     /**
      * @var bool
      */
@@ -197,6 +200,17 @@ class BSUser extends BaseUser
     public function setNewPasswordRequired($newPasswordRequired)
     {
         $this->newPasswordRequired = $newPasswordRequired;
+    }
+
+    public function getPasswordChangedAt(): ?\DateTimeImmutable
+    {
+        return $this->passwordChangedAt;
+    }
+
+    public function setPasswordChangedAt(?\DateTimeImmutable $when): self
+    {
+        $this->passwordChangedAt = $when;
+        return $this;
     }
 
     /**
