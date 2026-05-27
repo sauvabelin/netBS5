@@ -17,6 +17,12 @@ framework:
     php_errors:
         log: true
 
+    rate_limiter:
+        password_reset_request:
+            policy: 'sliding_window'
+            limit: 5
+            interval: '15 minutes'
+
 when@test:
     framework:
         test: true
