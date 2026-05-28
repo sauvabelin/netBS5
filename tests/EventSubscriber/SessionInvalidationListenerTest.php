@@ -42,6 +42,35 @@ class SessionInvalidationListenerTest extends TestCase
         $this->assertEmpty($session->all(), 'Session should have been invalidated (cleared).');
     }
 
+    public function test_session_logged_in_same_second_as_password_change_is_invalidated(): void
+    {
+        $changedAt = new \DateTimeImmutable('2026-05-01 10:00:00');
+        $user = new BSUser();
+        $user->setPasswordChangedAt($changedAt);
+
+        $session = new Session(new MockArraySessionStorage());
+        $session->start();
+        $session->set(SessionInvalidationListener::LOGIN_TIME_KEY, $changedAt->getTimestamp());
+
+        $security = $this->createMock(Security::class);
+        $security->method('getUser')->willReturn($user);
+
+        $listener = new SessionInvalidationListener($security);
+
+        $request = Request::create('/');
+        $request->setSession($session);
+
+        $event = new RequestEvent(
+            $this->createMock(HttpKernelInterface::class),
+            $request,
+            HttpKernelInterface::MAIN_REQUEST,
+        );
+
+        $listener->onRequest($event);
+
+        $this->assertEmpty($session->all(), 'Same-second session must be invalidated (second-resolution race).');
+    }
+
     public function test_fresh_session_is_left_alone(): void
     {
         $user = new BSUser();

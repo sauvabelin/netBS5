@@ -22,6 +22,10 @@ framework:
             policy: 'sliding_window'
             limit: 5
             interval: '15 minutes'
+        password_reset_user:
+            policy: 'sliding_window'
+            limit: 3
+            interval: '1 hour'
 
 when@test:
     framework:
@@ -30,4 +34,6 @@ when@test:
             storage_factory_id: session.storage.factory.mock_file
         rate_limiter:
             password_reset_request:
+                policy: 'no_limit'
+            password_reset_user:
                 policy: 'no_limit'

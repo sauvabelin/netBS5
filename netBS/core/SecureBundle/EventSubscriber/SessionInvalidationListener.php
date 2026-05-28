@@ -46,7 +46,9 @@ class SessionInvalidationListener implements EventSubscriberInterface
             return;
         }
 
-        if ($loginTs < $changedAt->getTimestamp()) {
+        // <= so a session that logged in within the same second as the password
+        // change is also invalidated — both timestamps are second-resolution.
+        if ($loginTs <= $changedAt->getTimestamp()) {
             $session->invalidate();
         }
     }
