@@ -2,20 +2,16 @@
 
 namespace NetBS\SecureBundle\Model;
 
+use NetBS\SecureBundle\Validator\Constraints\StrongPassword;
 use Symfony\Component\Security\Core\Validator\Constraints as Assert;
 
 class ChangePassword
 {
-    /**
-     * @var string
-     */
     #[Assert\UserPassword(message: 'Mot de passe incorrect')]
-    protected $oldPassword;
+    protected ?string $oldPassword = null;
 
-    /**
-     * @var string
-     */
-    protected $newPassword;
+    #[StrongPassword]
+    protected ?string $newPassword = null;
 
     /**
      * @param string $oldPassword

@@ -2,12 +2,12 @@
 
 namespace App\Model;
 
+use NetBS\SecureBundle\Validator\Constraints\StrongPassword;
+
 class AdminChangePassword
 {
-    /**
-     * @var string
-     */
-    private $password;
+    #[StrongPassword]
+    private ?string $password = null;
 
     /**
      * @var boolean
