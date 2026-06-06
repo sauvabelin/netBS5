@@ -6,6 +6,7 @@
 <div class="container" style="max-width:480px;margin:3rem auto;">
     <h1>Choisir un nouveau mot de passe</h1>
     {{ form_start(resetForm) }}
+        {{ form_errors(resetForm) }}
         {{ form_row(resetForm.new_password) }}
         <button type="submit" class="btn btn-primary">Enregistrer</button>
     {{ form_end(resetForm) }}

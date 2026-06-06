@@ -46,6 +46,11 @@ class UserController extends AbstractController
                 $user->setNewPasswordRequired(true);
 
             $user->setPassword($manager->encodePassword($user, $data->getPassword()));
+            // Stamp the change so SessionInvalidationListener logs out the target
+            // user's other sessions (and invalidates their old remember-me cookie).
+            if ($user instanceof BSUser) {
+                $user->setPasswordChangedAt(new \DateTimeImmutable());
+            }
             $manager->updateUser($user);
 
             return Modal::ack("Mot de passe modifié");

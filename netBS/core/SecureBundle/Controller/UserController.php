@@ -2,6 +2,7 @@
 
 namespace NetBS\SecureBundle\Controller;
 
+use App\Entity\BSUser;
 use Doctrine\ORM\EntityManagerInterface;
 use NetBS\CoreBundle\Block\CardBlock;
 use NetBS\CoreBundle\Block\LayoutManager;
@@ -133,6 +134,11 @@ class UserController extends AbstractController
             $password       = $encoder->hashPassword($user, $newPassword);
 
             $user->setPassword($password);
+            // Stamp the change so SessionInvalidationListener logs out the user's
+            // other sessions (and invalidates the old remember-me cookie).
+            if ($user instanceof BSUser) {
+                $user->setPasswordChangedAt(new \DateTimeImmutable());
+            }
             $manager->updateUser($user);
 
             $dispatcher->dispatch(new UserPasswordChangeEvent($user, $newPassword), UserPasswordChangeEvent::NAME);

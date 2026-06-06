@@ -7,6 +7,7 @@ use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Extension\Core\Type\PasswordType;
 use Symfony\Component\Form\Extension\Core\Type\RepeatedType;
 use Symfony\Component\Form\FormBuilderInterface;
+use Symfony\Component\Form\FormInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 
 class ChangePasswordType extends AbstractType
@@ -30,6 +31,11 @@ class ChangePasswordType extends AbstractType
         $resolver->setDefaults([
             'data_class'      => ChangePassword::class,
             'require_current' => true,
+            // The UserPassword check on oldPassword lives in the 'current_password'
+            // group; only enable it when the current-password field is collected.
+            'validation_groups' => static fn (FormInterface $form) => $form->getConfig()->getOption('require_current')
+                ? ['Default', 'current_password']
+                : ['Default'],
         ]);
 
         $resolver->setAllowedTypes('require_current', 'bool');

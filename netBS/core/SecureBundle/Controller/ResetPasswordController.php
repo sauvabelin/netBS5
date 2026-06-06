@@ -205,6 +205,10 @@ class ResetPasswordController extends AbstractController
                 'user_id' => $user->getId(),
                 'exception' => $e->getMessage(),
             ]);
+            // generateResetToken() already committed the token row; since no email
+            // went out, drop it so we don't leave a live but unusable token behind
+            // (and so a failed send is indistinguishable from the unknown-user path).
+            $this->resetPasswordRequests->removeRequests($user);
             return;
         }
 
