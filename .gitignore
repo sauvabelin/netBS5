@@ -44,5 +44,6 @@ docs
 .superpowers/
 
 # Local working notes / TODO drafts (not committed)
+/TODO.md
 TODO.local.md
 *.todo.local.md
