@@ -118,6 +118,9 @@ class ResetPasswordController extends AbstractController
 
         return $this->render('@NetBSSecure/reset_password/reset.html.twig', [
             'resetForm' => $form->createView(),
+            // Surfaced into a hidden autocomplete="username" field so password
+            // managers can bind the new password to the right account entry.
+            'username'  => $user->getUserIdentifier(),
         ]);
     }
 

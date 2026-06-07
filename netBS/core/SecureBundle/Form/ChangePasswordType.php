@@ -15,14 +15,20 @@ class ChangePasswordType extends AbstractType
     public function buildForm(FormBuilderInterface $builder, array $options)
     {
         if ($options['require_current']) {
-            $builder->add('old_password', PasswordType::class, ['label' => 'Mot de passe actuel']);
+            $builder->add('old_password', PasswordType::class, [
+                'label' => 'Mot de passe actuel',
+                'attr'  => ['autocomplete' => 'current-password'],
+            ]);
         }
 
+        // autocomplete="new-password" tells password managers (Proton Pass, etc.)
+        // these are the value to capture, not a current-password prompt — without
+        // it the "Répéter" field is easily misread.
         $builder->add('new_password', RepeatedType::class, [
             'type'            => PasswordType::class,
             'invalid_message' => 'Les mots de passe ne sont pas identiques',
-            'first_options'   => ['label' => 'Nouveau mot de passe'],
-            'second_options'  => ['label' => 'Répéter'],
+            'first_options'   => ['label' => 'Nouveau mot de passe', 'attr' => ['autocomplete' => 'new-password']],
+            'second_options'  => ['label' => 'Répéter', 'attr' => ['autocomplete' => 'new-password']],
         ]);
     }
 
