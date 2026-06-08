@@ -1,0 +1,7 @@
+doctrine:
+    dbal:
+        # Run the suite against an isolated <dbname>_test database so tests never
+        # read or write dev/prod data. dbname_suffix is applied to whatever
+        # DATABASE_URL resolves to, so `netbs5` becomes `netbs5_test`. TEST_TOKEN
+        # lets parallel runners (paratest) each get their own database.
+        dbname_suffix: '_test%env(default::TEST_TOKEN)%'
