@@ -1,0 +1,5 @@
+{# Hidden identity field so password managers (Proton Pass, etc.) can bind the
+   new password to the right account entry — on a page that otherwise holds only
+   password fields they have nothing to update against. The caller supplies the
+   value, since the token-based reset flow has no authenticated app.user. #}
+<input type="text" name="username" value="{{ username }}" autocomplete="username" readonly hidden>

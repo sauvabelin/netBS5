@@ -7,11 +7,7 @@
     <h1>Choisir un nouveau mot de passe</h1>
     {{ form_start(resetForm) }}
         {{ form_errors(resetForm) }}
-        {# Hidden identity field so password managers (Proton Pass, etc.) can bind
-           the new password to the right account entry. The reset form is keyed on
-           the session token server-side, so the username is otherwise absent from
-           the page and managers have nothing to update against. #}
-        <input type="text" name="username" value="{{ username }}" autocomplete="username" readonly hidden>
+        {% include '@NetBSSecure/_username_field.html.twig' with { username: username } only %}
         {{ form_row(resetForm.new_password) }}
         <button type="submit" class="btn btn-primary">Enregistrer</button>
     {{ form_end(resetForm) }}

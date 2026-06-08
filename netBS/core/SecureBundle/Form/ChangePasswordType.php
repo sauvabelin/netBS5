@@ -21,9 +21,8 @@ class ChangePasswordType extends AbstractType
             ]);
         }
 
-        // autocomplete="new-password" tells password managers (Proton Pass, etc.)
-        // these are the value to capture, not a current-password prompt — without
-        // it the "Répéter" field is easily misread.
+        // autocomplete="new-password" stops password managers misreading the
+        // "Répéter" field as a current-password prompt.
         $builder->add('new_password', RepeatedType::class, [
             'type'            => PasswordType::class,
             'invalid_message' => 'Les mots de passe ne sont pas identiques',
