@@ -2,7 +2,7 @@
 
 namespace NetBS\SecureBundle\EventSubscriber;
 
-use App\Entity\BSUser;
+use NetBS\SecureBundle\Mapping\BaseUser;
 use Symfony\Bundle\SecurityBundle\Security;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 use Symfony\Component\HttpKernel\Event\RequestEvent;
@@ -26,7 +26,7 @@ class SessionInvalidationListener implements EventSubscriberInterface
         }
 
         $user = $this->security->getUser();
-        if (!$user instanceof BSUser) {
+        if (!$user instanceof BaseUser) {
             return;
         }
 
