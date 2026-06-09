@@ -44,6 +44,12 @@ jobs:
 
       - uses: ramsey/composer-install@v3
 
+      # base.layout.twig reads var/sass/main.output.css at render time, so every
+      # full-page render 500s without it. Poseidon builds it during dev setup;
+      # CI must do it explicitly.
+      - name: Build CSS (sass)
+        run: php bin/console sass:build
+
       - name: Create test database
         run: mysql -h 127.0.0.1 -u root -proot -e "CREATE DATABASE IF NOT EXISTS netbs5_test CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci"
 
