@@ -28,6 +28,10 @@
     <coverage processUncoveredFiles="true">
         <include>
             <directory suffix=".php">src</directory>
+            <!-- The reset/password feature under test lives in SecureBundle, not
+                 src/. Without this the coverage report excludes the very code the
+                 suite exercises. -->
+            <directory suffix=".php">netBS/core/SecureBundle</directory>
         </include>
     </coverage>
 

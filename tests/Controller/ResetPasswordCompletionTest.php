@@ -107,6 +107,45 @@ class ResetPasswordCompletionTest extends WebTestCase
         );
     }
 
+    public function test_a_forged_token_is_rejected(): void
+    {
+        $client = static::createClient();
+
+        // Syntactically valid per the route requirement ([A-Za-z0-9_\-]+) but
+        // never issued: must not open the reset form.
+        $client->request('GET', '/netBS/secure/reset-password/' . str_repeat('a', 40));
+        $client->followRedirect();   // -> /reset-password (stores token in session)
+        $client->followRedirect();   // -> /forgot-password (token does not resolve)
+
+        $this->assertSelectorExists('form input[name="reset_password_request_form[username]"]');
+    }
+
+    public function test_an_expired_token_is_rejected(): void
+    {
+        $client = static::createClient();
+        $client->enableProfiler();
+        $user = $this->createUser($client, 'reset-expired-user', 'reset-expired@example.test');
+
+        $token = $this->requestResetAndExtractToken($client, $user->getUsername());
+
+        // Backdate the just-issued request so the bundle reports it expired
+        // (isExpired() compares expiresAt against the clock); the selector/token
+        // still resolve, so this exercises the expiry branch specifically.
+        $em      = $client->getContainer()->get('doctrine.orm.entity_manager');
+        $fresh   = $em->getRepository(BSUser::class)->findOneBy(['username' => $user->getUsername()]);
+        $request = $em->getRepository(ResetPasswordRequest::class)->findOneBy(['user' => $fresh]);
+        $ref     = new \ReflectionProperty($request, 'expiresAt');
+        $ref->setAccessible(true);
+        $ref->setValue($request, new \DateTimeImmutable('-1 hour'));
+        $em->flush();
+
+        $client->request('GET', '/netBS/secure/reset-password/' . $token);
+        $client->followRedirect();   // -> /reset-password
+        $client->followRedirect();   // -> /forgot-password (expired)
+
+        $this->assertSelectorExists('form input[name="reset_password_request_form[username]"]');
+    }
+
     private function requestResetAndExtractToken(KernelBrowser $client, string $username): string
     {
         $crawler = $client->request('GET', self::REQUEST_URL);

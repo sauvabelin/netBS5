@@ -79,24 +79,52 @@ class ResetPasswordControllerTest extends WebTestCase
         $client->enableProfiler();
         $user = $this->createUser($client, 'reset-test-resubmit', 'reset-test-resubmit@example.test');
 
-        $crawler = $client->request('GET', self::REQUEST_URL);
-        $form = $crawler->selectButton('Envoyer le lien')->form();
-        $form['reset_password_request_form[username]'] = $user->getUsername();
-        $client->submit($form);
-        $this->assertEmailCount(1);
+        // Re-submit issues a brand-new link (GitHub-style; anti-abuse is the
+        // per-IP limiter, not a per-user throttle). Each request emits exactly
+        // one email, and the two tokens must differ.
+        $token1 = $this->requestAndExtractToken($client, $user->getUsername());
+        $token2 = $this->requestAndExtractToken($client, $user->getUsername());
+        $this->assertNotSame($token1, $token2, 're-submit must mint a fresh token');
 
-        $crawler = $client->request('GET', self::REQUEST_URL);
-        $form = $crawler->selectButton('Envoyer le lien')->form();
-        $form['reset_password_request_form[username]'] = $user->getUsername();
-        $client->submit($form);
-        // Re-submit invalidates the prior token and emails a fresh link
-        // (GitHub-style; anti-abuse is the per-IP limiter, not a per-user
-        // throttle). The profile for the latest request shows exactly one
-        // new email.
-        $this->assertEmailCount(1);
+        // The old token must no longer resolve: using it bounces back to the
+        // request form instead of opening the reset form. (Without this, "old
+        // token invalidated" was only asserted by the test's name.)
+        $client->request('GET', '/netBS/secure/reset-password/' . $token1);
+        $client->followRedirect();   // -> /reset-password (reads session token)
+        $client->followRedirect();   // -> /forgot-password (token invalid)
+        $this->assertSelectorExists('form input[name="reset_password_request_form[username]"]');
     }
 
-    private function createUser(KernelBrowser $client, string $username, ?string $email): BSUser
+    public function test_request_inactive_user_sends_no_email(): void
+    {
+        $client = static::createClient();
+        $user = $this->createUser($client, 'reset-test-inactive', 'reset-test-inactive@example.test', active: false);
+
+        $crawler = $client->request('GET', self::REQUEST_URL);
+        $form = $crawler->selectButton('Envoyer le lien')->form();
+        $form['reset_password_request_form[username]'] = $user->getUsername();
+        $client->submit($form);
+
+        $client->followRedirect();
+        $this->assertSelectorTextContains('body', self::GENERIC_BANNER);
+        $this->assertEmailCount(0);
+    }
+
+    private function requestAndExtractToken(KernelBrowser $client, string $username): string
+    {
+        $crawler = $client->request('GET', self::REQUEST_URL);
+        $form = $crawler->selectButton('Envoyer le lien')->form();
+        $form['reset_password_request_form[username]'] = $username;
+        $client->submit($form);
+
+        $this->assertEmailCount(1);
+        $body = $this->getMailerMessage(0)->getHtmlBody();
+        $this->assertSame(1, preg_match('#/reset-password/([A-Za-z0-9_\-]+)#', $body, $m), 'email must contain a reset link');
+
+        return $m[1];
+    }
+
+    private function createUser(KernelBrowser $client, string $username, ?string $email, bool $active = true): BSUser
     {
         /** @var EntityManagerInterface $em */
         $em = $client->getContainer()->get('doctrine.orm.entity_manager');
@@ -117,6 +145,7 @@ class ResetPasswordControllerTest extends WebTestCase
         $user = new BSUser();
         $user->setUsername($username);
         $user->setEmail($email);
+        $user->setIsActive($active);
         $user->setPassword('placeholder-hash');
         $em->persist($user);
         $em->flush();
