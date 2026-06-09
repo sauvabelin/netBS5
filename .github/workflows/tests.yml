@@ -50,4 +50,11 @@ jobs:
       - name: Provision test database (schema + roles + params + admin)
         run: php bin/console netbs:install --purge=true --dummy=false --no-interaction
 
+      # The Symfony PHPUnit bridge installs PHPUnit via Composer on first run.
+      # setup-php wires the Actions token into Composer's global config and that
+      # sub-invocation rejects it ("oauth token contains invalid characters").
+      # All deps are public, so drop the token.
+      - name: Drop Composer GitHub token (public deps; unblocks the phpunit bridge)
+        run: composer config --global --unset github-oauth.github.com || true
+
       - run: php bin/phpunit
