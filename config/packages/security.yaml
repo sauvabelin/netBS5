@@ -48,6 +48,8 @@ security:
         - { path: ^/api/v1/netBS/gettoken, roles: PUBLIC_ACCESS }
         - { path: ^/api/v1/netBS, roles: IS_AUTHENTICATED_FULLY }
         - { path: ^/netBS/secure/login, roles: PUBLIC_ACCESS }
+        - { path: ^/netBS/secure/forgot-password, roles: PUBLIC_ACCESS }
+        - { path: ^/netBS/secure/reset-password, roles: PUBLIC_ACCESS }
         - { path: ^/netBS/secure/user/my-account, roles: ROLE_USER }
         - { path: ^/netBS/secure, roles: ROLE_ADMIN }
         - { path: ^/netBS, roles: [IS_AUTHENTICATED_FULLY, ROLE_USER] }

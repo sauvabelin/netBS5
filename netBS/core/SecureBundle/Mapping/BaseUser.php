@@ -79,6 +79,13 @@ class BaseUser implements
     protected $salt;
 
     /**
+     * Watermark for session invalidation: any session whose login predates this
+     * value is logged out by SessionInvalidationListener.
+     */
+    #[ORM\Column(name: 'password_changed_at', type: 'datetime_immutable', nullable: true)]
+    protected ?\DateTimeImmutable $passwordChangedAt = null;
+
+    /**
      * @var BaseRole[]
      */
     protected $roles;
@@ -180,6 +187,17 @@ class BaseUser implements
     public function getPassword(): ?string
     {
         return $this->password;
+    }
+
+    public function getPasswordChangedAt(): ?\DateTimeImmutable
+    {
+        return $this->passwordChangedAt;
+    }
+
+    public function setPasswordChangedAt(?\DateTimeImmutable $when): self
+    {
+        $this->passwordChangedAt = $when;
+        return $this;
     }
 
     /**

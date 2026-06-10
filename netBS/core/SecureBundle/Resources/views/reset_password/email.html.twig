@@ -1,0 +1,10 @@
+<p>Bonjour {{ user }},</p>
+
+<p>Vous avez demandé la réinitialisation de votre mot de passe netBS.
+Cliquez sur le lien suivant dans l'heure qui vient&nbsp;:</p>
+
+<p><a href="{{ url('netbs.secure.password_reset.reset_form', { token: resetToken.token }) }}">{{ url('netbs.secure.password_reset.reset_form', { token: resetToken.token }) }}</a></p>
+
+<p>Si ce n'était pas vous, ignorez ce message&nbsp;: aucun changement n'a été effectué.</p>
+
+<p>La Team IT</p>

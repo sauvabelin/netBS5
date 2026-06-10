@@ -1,0 +1,15 @@
+{% extends '@NetBSCore/layout/base.layout.twig' %}
+
+{% block bodyClass %}be-splash-screen{% endblock %}
+
+{% block body %}
+<div class="container" style="max-width:480px;margin:3rem auto;">
+    <h1>Vérifiez votre boîte mail</h1>
+    <p>Si un compte correspond à ce nom d'utilisateur et qu'une adresse email est enregistrée, un lien de réinitialisation a été envoyé. Le lien expire dans 1 heure.</p>
+    <div class="alert alert-info" role="alert">
+        Vous n'avez reçu aucun email&nbsp;? Écrivez à
+        <a href="mailto:it@sauvabelin.ch">it@sauvabelin.ch</a>.
+    </div>
+    <p><a href="{{ path('netbs.secure.login.login') }}">Retour à la connexion</a></p>
+</div>
+{% endblock %}
