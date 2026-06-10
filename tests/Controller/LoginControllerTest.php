@@ -74,4 +74,25 @@ class LoginControllerTest extends WebTestCase
             'the login form must re-populate the username after a failed attempt'
         );
     }
+
+    public function test_login_without_a_csrf_token_is_rejected(): void
+    {
+        $client = static::createClient();
+        $this->persistUser($client, 'login-test-csrf', 'login-csrf@example.test', self::PASSWORD, ['ROLE_USER']);
+
+        // Raw POST that bypasses the rendered form, so no _csrf_token is sent.
+        // With CSRF enforced these otherwise-valid credentials must be refused.
+        $client->request('POST', self::LOGIN_URL, [
+            '_username' => 'login-test-csrf',
+            '_password' => self::PASSWORD,
+        ]);
+
+        $this->assertResponseRedirects();
+        $client->followRedirect();
+        $this->assertStringContainsString(
+            '/secure/login',
+            $client->getRequest()->getUri(),
+            'a login submitted without a valid CSRF token must be rejected'
+        );
+    }
 }

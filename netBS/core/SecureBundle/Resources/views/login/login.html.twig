@@ -41,6 +41,8 @@
             <div class="card-body">
                 <form action="{{ path('netbs.secure.login.login') }}" method="POST" data-turbo="false">
 
+                    <input type="hidden" name="_csrf_token" value="{{ csrf_token('authenticate') }}">
+
                     <div class="form-group">
                         <label for="username" class="form-label visually-hidden">Nom d'utilisateur</label>
                         <div class="input-group">
