@@ -36,6 +36,7 @@ security:
                 login_path: netbs.secure.login.login
                 check_path: netbs.secure.login.login
                 default_target_path: netbs.core.home.dashboard
+                enable_csrf: true
             remember_me:
                 secret: '%kernel.secret%'
                 lifetime: 604800
