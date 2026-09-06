@@ -1,0 +1,85 @@
+{#
+    Shared layout for OIDC / auth-flow pages (logout confirmation, error,
+    future consent screens, ...).
+
+    Modeled on SecureBundle's login.html.twig: a fullscreen splash with a
+    centered card. Crucially, it skips the backend layout — no sidebar, no
+    header — so it renders correctly when no local session exists (e.g.
+    Hydra-initiated logout where `app.user` is already null).
+
+    Subclasses override:
+      - title       — page title (default: "Authentification")
+      - card_header — logo + heading (default: OIDC-client branding when
+                      `oidc_client` is passed in, NetBS logo otherwise)
+      - card_body   — main content (no default)
+      - card_footer — area below the card (default: copyright line)
+
+    Optional template variables:
+      - oidc_client — Hydra client metadata array with `client_name` and
+                      optionally `logo_uri`. When set, the default header
+                      shows the client's logo and "<title> à <client_name>".
+#}
+{# Default to undefined so subclasses don't need to pass it. #}
+{% set oidc_client = oidc_client ?? null %}
+{% extends '@NetBSCore/layout/base.layout.twig' %}
+
+{% block bodyClass %}be-splash-screen{% endblock %}
+
+{% block body %}
+
+    {% set authlayoutstyle %}
+        <style>
+            body {
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                background: var(--bs-tertiary-bg);
+            }
+
+            .card {
+                width: 100%;
+                min-width: 330px;
+                max-width: 480px;
+                padding: 0.5rem;
+            }
+
+            .card-title {
+                padding: 1rem 0 0.5rem 0;
+            }
+        </style>
+    {% endset %}
+
+    {{ registerStyle(authlayoutstyle) }}
+
+    <div>
+        <div class="card">
+            <div class="card-header text-center">
+                {% block card_header %}
+                    {% if oidc_client and oidc_client.client_name %}
+                        {% if oidc_client.logo_uri %}
+                            <img src="{{ oidc_client.logo_uri }}" alt="{{ oidc_client.client_name }}" height="64" class="logo-img">
+                        {% else %}
+                            <img src="{{ asset('bundles/netbscore/img/logo.png') }}" alt="logo" width="64" height="64" class="logo-img">
+                        {% endif %}
+                        <h5 class="card-title">{{ block('title') }} <strong>{{ oidc_client.client_name }}</strong></h5>
+                        <p class="text-muted small mb-0">via {{ param('app', 'name') }}</p>
+                    {% else %}
+                        <img src="{{ asset('bundles/netbscore/img/logo.png') }}" alt="logo" width="64" height="64" class="logo-img">
+                        <h5 class="card-title">{{ block('title') }}</h5>
+                    {% endif %}
+                {% endblock %}
+            </div>
+
+            <div class="card-body">
+                {% block card_body %}{% endblock %}
+            </div>
+        </div>
+
+        {% block card_footer %}
+            <p class="text-muted text-center">&copy; {{ "now"|date('Y') }} - {{ param('app', 'organization') }}</p>
+        {% endblock %}
+    </div>
+
+{% endblock %}
+
+{% block title %}Authentification{% endblock %}

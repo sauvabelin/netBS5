@@ -154,6 +154,16 @@ services:
     arguments:
       $manager: "@doctrine.orm.default_entity_manager"
 
+  # Identity contracts implemented by app-specific glue in src/Identity/UserModule/
+  NetBS\AuthBundle\Contract\IdentityUserResolverInterface:
+    alias: App\Identity\UserModule\IdentityUserResolver
+
+  NetBS\AuthBundle\Contract\IdentityGroupProviderInterface:
+    alias: App\Identity\UserModule\IdentityGroupProvider
+
+  NetBS\AuthBundle\Contract\IdentityClientPolicyInterface:
+    alias: App\Identity\UserModule\AppIdentityClientPolicy
+
   # Picked up by SecureBundle's RoleTreeSyncer via the netbs.role_tree_source tag.
   # The tag is set explicitly because SecureBundle's _instanceof rule only
   # applies within its own services.yml file.

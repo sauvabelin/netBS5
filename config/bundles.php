@@ -19,6 +19,7 @@ return [
     NetBS\FichierBundle\NetBSFichierBundle::class => ['all' => true],
     NetBS\ListBundle\NetBSListBundle::class => ['all' => true],
     NetBS\SecureBundle\NetBSSecureBundle::class => ['all' => true],
+    NetBS\AuthBundle\NetBSAuthBundle::class => ['all' => true],
     Ovesco\FacturationBundle\OvescoFacturationBundle::class => ['all' => true],
     Liip\ImagineBundle\LiipImagineBundle::class => ['all' => true],
     Iacopo\MailingBundle\IacopoMailingBundle::class => ['all' => true],
