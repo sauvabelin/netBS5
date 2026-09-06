@@ -47,6 +47,7 @@ security:
                 login_path: netbs.secure.login.login
                 check_path: netbs.secure.login.login
                 default_target_path: netbs.core.home.dashboard
+                enable_csrf: true
                 success_handler: NetBS\AuthBundle\Security\OidcAwareLoginSuccessHandler
             remember_me:
                 secret: '%kernel.secret%'
@@ -60,6 +61,8 @@ security:
         - { path: ^/api/v1/netBS/gettoken, roles: PUBLIC_ACCESS }
         - { path: ^/api/v1/netBS, roles: IS_AUTHENTICATED_FULLY }
         - { path: ^/netBS/secure/login, roles: PUBLIC_ACCESS }
+        - { path: ^/netBS/secure/forgot-password, roles: PUBLIC_ACCESS }
+        - { path: ^/netBS/secure/reset-password, roles: PUBLIC_ACCESS }
         - { path: ^/oidc-login, roles: IS_AUTHENTICATED_FULLY }
         - { path: ^/oidc-consent, roles: IS_AUTHENTICATED_FULLY }
         - { path: ^/oidc-refresh-hook, roles: PUBLIC_ACCESS }

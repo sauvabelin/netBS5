@@ -13,12 +13,10 @@ use NetBS\SecureBundle\Mapping\BaseUser;
 use App\Entity\BSMembre;
 use App\Entity\BSUser;
 use App\Entity\LatestCreatedAccount;
-use App\Message\NextcloudGroupNotification;
 use NetBS\CoreBundle\Entity\Parameter;
 use NetBS\SecureBundle\Entity\Role;
 use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Component\Mailer\MailerInterface;
-use Symfony\Component\Messenger\MessageBusInterface;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 
 /**
@@ -33,8 +31,6 @@ class DoctrineUserAccountSubscriber implements EventSubscriber
 
     private $mailer;
 
-    private $bus;
-
     private $fnWeight = null;
 
     private $roleUser = null;
@@ -44,12 +40,10 @@ class DoctrineUserAccountSubscriber implements EventSubscriber
     public function __construct(
         UserPasswordHasherInterface $encoder,
         MailerInterface $mailer,
-        MessageBusInterface $bus,
         private readonly RequestStack $requestStack,
     ) {
         $this->encoder  = $encoder;
         $this->mailer   = $mailer;
-        $this->bus = $bus;
     }
 
     /**
@@ -198,14 +192,5 @@ class DoctrineUserAccountSubscriber implements EventSubscriber
 
         $manager->persist($user);
         $manager->flush();
-
-        // Notify nextcloud of new groups memberships
-        foreach ($membre->getActivesAttributions() as $attr) {
-            $this->bus->dispatch(new NextcloudGroupNotification(
-                $user->getId(),
-                $attr->getGroupeId(),
-                $attr->getFonctionId(),
-                'join'));
-        }
     }
 }

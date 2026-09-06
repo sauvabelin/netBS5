@@ -1,0 +1,66 @@
+name: tests
+
+on:
+  push:
+    branches: [master, main]
+  pull_request:
+
+concurrency:
+  group: tests-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  phpunit:
+    name: PHPUnit (PHP 8.3, MariaDB 11)
+    runs-on: ubuntu-latest
+
+    services:
+      mariadb:
+        image: mariadb:11
+        env:
+          MARIADB_ROOT_PASSWORD: root
+        ports: ["3306:3306"]
+        options: >-
+          --health-cmd="healthcheck.sh --connect --innodb_initialized"
+          --health-interval=10s --health-timeout=5s --health-retries=15
+
+    env:
+      APP_ENV: test
+      # dbname_suffix (config/packages/test/doctrine.yaml) appends _test, so the
+      # suite runs against netbs5_test — created below.
+      DATABASE_URL: "mysql://root:root@127.0.0.1:3306/netbs5?serverVersion=11.4.0-MariaDB&charset=utf8mb4"
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.3'
+          extensions: pdo_mysql, intl, gd, zip, bcmath, opcache, redis
+          coverage: none
+
+      - uses: ramsey/composer-install@v3
+
+      # base.layout.twig reads var/sass/main.output.css at render time, so every
+      # full-page render 500s without it. Poseidon builds it during dev setup;
+      # CI must do it explicitly.
+      - name: Build CSS (sass)
+        run: php bin/console sass:build
+
+      - name: Create test database
+        run: mysql -h 127.0.0.1 -u root -proot -e "CREATE DATABASE IF NOT EXISTS netbs5_test CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci"
+
+      - name: Provision test database (schema + roles + params + admin)
+        run: php bin/console netbs:install --purge=true --dummy=false --no-interaction
+
+      # The Symfony PHPUnit bridge installs PHPUnit via Composer on first run.
+      # setup-php wires the Actions token into Composer's global config and that
+      # sub-invocation rejects it ("oauth token contains invalid characters").
+      # All deps are public, so drop the token.
+      - name: Drop Composer GitHub token (public deps; unblocks the phpunit bridge)
+        run: composer config --global --unset github-oauth.github.com || true
+
+      - run: php bin/phpunit

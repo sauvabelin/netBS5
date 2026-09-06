@@ -6,6 +6,7 @@ use NetBS\CoreBundle\Form\Type\AjaxSelect2DocumentType;
 use NetBS\CoreBundle\Form\Type\Select2DocumentType;
 use NetBS\FichierBundle\Service\FichierConfig;
 use NetBS\SecureBundle\Service\SecureConfig;
+use NetBS\SecureBundle\Validator\Constraints\StrongPassword;
 use NetBS\SecureBundle\Voter\CRUD;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Extension\Core\Type\EmailType;
@@ -48,7 +49,10 @@ class UserType extends AbstractType
 
             $builder->add('password', RepeatedType::class, array(
                 'type' => PasswordType::class,
-                'first_options' => ['label' => 'Mot de passe'],
+                // Constraint on the form field (not the entity property, which holds
+                // the hash post-creation): validates the raw password before the
+                // controller re-hashes it. Same policy as every other entry point.
+                'first_options' => ['label' => 'Mot de passe', 'constraints' => [new StrongPassword()]],
                 'second_options' => ['label' => 'Répéter le mot de passe']
             ));
         }

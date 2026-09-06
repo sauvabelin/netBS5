@@ -133,6 +133,11 @@ class UserController extends AbstractController
             $password       = $encoder->hashPassword($user, $newPassword);
 
             $user->setPassword($password);
+            // Stamp the change so SessionInvalidationListener logs out the user's
+            // other sessions (and invalidates the old remember-me cookie).
+            if ($user instanceof BaseUser) {
+                $user->setPasswordChangedAt(new \DateTimeImmutable());
+            }
             $manager->updateUser($user);
 
             $dispatcher->dispatch(new UserPasswordChangeEvent($user, $newPassword), UserPasswordChangeEvent::NAME);

@@ -12,6 +12,8 @@
         <ini name="display_errors" value="1" />
         <ini name="error_reporting" value="-1" />
         <server name="APP_ENV" value="test" force="true" />
+        <server name="KERNEL_CLASS" value="App\Kernel" force="true" />
+        <server name="MAILER_DSN" value="null://null" force="true" />
         <server name="SHELL_VERBOSITY" value="-1" />
         <server name="SYMFONY_PHPUNIT_REMOVE" value="" />
         <server name="SYMFONY_PHPUNIT_VERSION" value="9.5" />
@@ -26,6 +28,10 @@
     <coverage processUncoveredFiles="true">
         <include>
             <directory suffix=".php">src</directory>
+            <!-- The reset/password feature under test lives in SecureBundle, not
+                 src/. Without this the coverage report excludes the very code the
+                 suite exercises. -->
+            <directory suffix=".php">netBS/core/SecureBundle</directory>
         </include>
     </coverage>
 

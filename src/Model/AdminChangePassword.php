@@ -2,46 +2,31 @@
 
 namespace App\Model;
 
+use NetBS\SecureBundle\Validator\Constraints\StrongPassword;
+
 class AdminChangePassword
 {
-    /**
-     * @var string
-     */
-    private $password;
+    #[StrongPassword]
+    private ?string $password = null;
 
-    /**
-     * @var boolean
-     */
-    private $forceChange;
+    private bool $forceChange = false;
 
-    /**
-     * @return string
-     */
-    public function getPassword()
+    public function getPassword(): ?string
     {
         return $this->password;
     }
 
-    /**
-     * @param string $password
-     */
-    public function setPassword($password)
+    public function setPassword(?string $password): void
     {
         $this->password = $password;
     }
 
-    /**
-     * @return bool
-     */
-    public function isForceChange()
+    public function isForceChange(): bool
     {
         return $this->forceChange;
     }
 
-    /**
-     * @param bool $forceChange
-     */
-    public function setForceChange($forceChange)
+    public function setForceChange(bool $forceChange): void
     {
         $this->forceChange = $forceChange;
     }

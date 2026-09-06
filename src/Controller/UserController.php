@@ -11,6 +11,7 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 use Symfony\Component\Routing\Annotation\Route;
+use Symfony\Component\Security\Http\Attribute\IsGranted;
 
 /**
  * Class UserController
@@ -29,6 +30,13 @@ class UserController extends AbstractController
      * @param Request $request
      * @return \Symfony\Component\HttpFoundation\Response
      */
+    // Changing *another* account's password is an admin-only operation: this
+    // endpoint is reached only from the ROLE_ADMIN-gated user list, and its
+    // sibling user-management actions live under ^/netBS/secure (ROLE_ADMIN).
+    // It sits under ^/netBS/bs though, which only requires ROLE_USER, so the
+    // guard has to be explicit here or any logged-in user could reset anyone's
+    // password.
+    #[IsGranted('ROLE_ADMIN')]
     #[Route('/user/admin-change-password/{id}', name: 'sauvabelin.user.admin_change_password_modal')]
     public function modalAdminChangePasswordAction(Request $request, $id, UserManager $manager) {
         /** @var BSUser $user */
@@ -46,6 +54,11 @@ class UserController extends AbstractController
                 $user->setNewPasswordRequired(true);
 
             $user->setPassword($manager->encodePassword($user, $data->getPassword()));
+            // Stamp the change so SessionInvalidationListener logs out the target
+            // user's other sessions (and invalidates their old remember-me cookie).
+            if ($user instanceof BSUser) {
+                $user->setPasswordChangedAt(new \DateTimeImmutable());
+            }
             $manager->updateUser($user);
 
             return Modal::ack("Mot de passe modifié");

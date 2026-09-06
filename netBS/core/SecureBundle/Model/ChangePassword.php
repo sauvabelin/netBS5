@@ -2,20 +2,21 @@
 
 namespace NetBS\SecureBundle\Model;
 
+use NetBS\SecureBundle\Validator\Constraints\StrongPassword;
 use Symfony\Component\Security\Core\Validator\Constraints as Assert;
 
 class ChangePassword
 {
-    /**
-     * @var string
-     */
-    #[Assert\UserPassword(message: 'Mot de passe incorrect')]
-    protected $oldPassword;
+    // Only validated when the form actually collects the current password
+    // (require_current). UserPasswordValidator flags a null/empty value as
+    // invalid outright, so without this group the reset flow — which never
+    // sets oldPassword — would always fail. ChangePasswordType selects the
+    // group from require_current.
+    #[Assert\UserPassword(message: 'Mot de passe incorrect', groups: ['current_password'])]
+    protected ?string $oldPassword = null;
 
-    /**
-     * @var string
-     */
-    protected $newPassword;
+    #[StrongPassword]
+    protected ?string $newPassword = null;
 
     /**
      * @param string $oldPassword

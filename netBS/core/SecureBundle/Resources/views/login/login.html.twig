@@ -51,15 +51,25 @@
             <div class="card-body">
                 <form action="{{ path('netbs.secure.login.login') }}" method="POST" data-turbo="false">
 
+                    <input type="hidden" name="_csrf_token" value="{{ csrf_token('authenticate') }}">
+
                     <div class="form-group">
+                        <label for="username" class="form-label visually-hidden">Nom d'utilisateur</label>
                         <div class="input-group">
-                            <input id="username" name="_username" type="text" placeholder="Nom d'utilisateur" class="form-control">
+                            <input id="username" name="_username" type="text"
+                                   value="{{ last_username }}"
+                                   autocomplete="username" autocapitalize="none" autocorrect="off"
+                                   spellcheck="false" required autofocus
+                                   placeholder="Nom d'utilisateur" class="form-control">
                         </div>
                     </div>
 
                     <div class="form-group">
+                        <label for="password" class="form-label visually-hidden">Mot de passe</label>
                         <div class="input-group">
-                            <input id="password" name="_password" type="password" placeholder="Mot de passe" class="form-control">
+                            <input id="password" name="_password" type="password"
+                                   autocomplete="current-password" required
+                                   placeholder="Mot de passe" class="form-control">
                         </div>
                     </div>
 
@@ -73,13 +83,11 @@
                             </div>
 
                         </div>
-                        <div class="col-6">
-                            {#
-                            <a href="#">Mot de passe oublié?</a>
-                            #}
+                        <div class="col-6 text-end">
+                            <a href="{{ path('netbs.secure.password_reset.request') }}">Mot de passe oublié&nbsp;?</a>
                         </div>
                     </div>
-                    <button data-bs-dismiss="modal" class="btn btn-primary w-100">Connexion</button>
+                    <button type="submit" class="btn btn-primary w-100">Connexion</button>
 
                     {% if error %}
                         <p class="text-danger text-center">{{ error.messageKey|trans(error.messageData, 'security') }}</p>

@@ -13,8 +13,8 @@ use Symfony\Contracts\Cache\ItemInterface;
 class DashboardCalendarController extends AbstractController
 {
     private const CALENDARS = [
-        ['id' => '2nfd0g1ej2s09gkd1ueve0arfk@group.calendar.google.com', 'color' => '#D81B60'],
-        ['id' => 'tjbbst9e15hg28n4rcg8pl99nk@group.calendar.google.com', 'color' => '#33B679'],
+        ['id' => '706fea8db7fe9bb741630446da593d4c9819d996a5095225d2fd4bc68fbfc939@group.calendar.google.com', 'color' => '#D81B60'],
+        ['id' => '82b4c83a11da29dc821b3f85b26346268e516a9213395dfd15b843449e128aea@group.calendar.google.com', 'color' => '#33B679'],
         ['id' => '5760d9cb4dd28bef5f7addcc721ba1a621254bfd8b148f847ec39de37358005c@group.calendar.google.com', 'color' => '#3788d8'],
     ];
 
