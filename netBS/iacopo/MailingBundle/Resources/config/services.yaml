@@ -8,6 +8,11 @@ services:
     resource: '../../*'
     exclude: '../../{Entity,Tests}'
 
+  Iacopo\MailingBundle\Api\PostfixMapController:
+    arguments:
+      $expectedToken: '%env(POSTFIX_MAP_TOKEN)%'
+    tags: ['controller.service_arguments']
+
   # Data Fixtures
   Iacopo\MailingBundle\DataFixtures\:
     resource: '../../DataFixtures'
