@@ -12,7 +12,8 @@ use Symfony\Component\Routing\Attribute\Route;
 
 /**
  * Serves the Postfix virtual alias map to the mail node, which pulls it on a
- * cron and installs it with `postmap lmdb:` (see bin/postfix/sync-postfix-map.sh).
+ * cron and installs it with `postmap lmdb:` (see sync-netbs-map.sh in the
+ * sauvabelin/mailserver repo).
  *
  * Lives outside every firewall (not under /netBS or /api/v1/netBS): the only
  * client is a machine holding the shared token, checked below.
