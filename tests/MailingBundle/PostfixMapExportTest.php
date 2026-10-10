@@ -15,6 +15,7 @@ use PHPUnit\Framework\TestCase;
 use Psr\Log\NullLogger;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Tester\CommandTester;
+use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\HttpFoundation\Request;
 
 class PostfixMapExportTest extends TestCase
@@ -58,13 +59,13 @@ class PostfixMapExportTest extends TestCase
         try {
             $tester = new CommandTester(new ExportPostfixMapCommand($this->builder([
                 [$this->list(1, 'Chefs', 'chefs@sauvabelin.ch'), ['alice@example.com']],
-            ])));
+            ]), new Filesystem()));
             $this->assertSame(Command::SUCCESS, $tester->execute(['--output' => $path]));
             $this->assertStringContainsString("chefs@sauvabelin.ch\talice@example.com\n", file_get_contents($path));
             $this->assertSame(['virtual'], array_values(array_diff(scandir($dir), ['.', '..'])), 'no temp file left behind');
 
             // A failing/empty DB must not clobber the last good map.
-            $tester = new CommandTester(new ExportPostfixMapCommand($this->builder([])));
+            $tester = new CommandTester(new ExportPostfixMapCommand($this->builder([]), new Filesystem()));
             $this->assertSame(Command::FAILURE, $tester->execute(['--output' => $path]));
             $this->assertStringContainsString('chefs@sauvabelin.ch', file_get_contents($path));
 

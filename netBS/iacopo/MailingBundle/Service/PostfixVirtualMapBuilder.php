@@ -67,7 +67,7 @@ class PostfixVirtualMapBuilder
 
                 // postmap rejects keys without a value; leaving the address out
                 // makes Postfix reject mail to it instead.
-                if (empty($targets)) {
+                if ($targets === []) {
                     $warnings[] = sprintf('%s: %s has no recipients, left out of the map', $listLabel, $source);
                     continue;
                 }

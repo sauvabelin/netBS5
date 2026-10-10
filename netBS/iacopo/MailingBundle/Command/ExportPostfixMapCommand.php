@@ -11,6 +11,8 @@ use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Style\SymfonyStyle;
+use Symfony\Component\Filesystem\Exception\IOException;
+use Symfony\Component\Filesystem\Filesystem;
 
 #[AsCommand(
     name: 'netbs:mailing:export-postfix',
@@ -20,6 +22,7 @@ final class ExportPostfixMapCommand extends Command
 {
     public function __construct(
         private readonly PostfixVirtualMapBuilder $builder,
+        private readonly Filesystem $filesystem,
     ) {
         parent::__construct();
     }
@@ -54,13 +57,12 @@ final class ExportPostfixMapCommand extends Command
             return Command::SUCCESS;
         }
 
-        // Write next to the target and rename, so readers never see a partial file.
-        $tmp = @tempnam(\dirname($path), '.postfix-map-');
-        if ($tmp === false || file_put_contents($tmp, $map->render()) === false || !chmod($tmp, 0644) || !rename($tmp, $path)) {
-            if ($tmp !== false) {
-                @unlink($tmp);
-            }
-            $io->error(sprintf('Could not write %s', $path));
+        // dumpFile writes a temp file and renames it, so readers never see a partial map.
+        try {
+            $this->filesystem->dumpFile($path, $map->render());
+            $this->filesystem->chmod($path, 0644);
+        } catch (IOException $e) {
+            $io->error($e->getMessage());
             return Command::FAILURE;
         }
 

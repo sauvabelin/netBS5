@@ -37,8 +37,8 @@ final class PostfixMapController
             return $this->text('server misconfigured', Response::HTTP_INTERNAL_SERVER_ERROR);
         }
 
-        $presented = (string) preg_replace('/^Bearer\s+/i', '', (string) $request->headers->get('Authorization', ''));
-        if ($presented === '' || !hash_equals($this->expectedToken, $presented)) {
+        $presented = (string) preg_replace('/^Bearer\s+/i', '', $request->headers->get('Authorization', ''));
+        if (!hash_equals($this->expectedToken, $presented)) {
             $this->logger->warning('mailing.postfix_map: rejected - bad or missing token', [
                 'remote_addr' => $request->getClientIp(),
             ]);
