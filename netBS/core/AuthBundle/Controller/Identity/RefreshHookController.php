@@ -102,21 +102,7 @@ final class RefreshHookController extends AbstractController
             $grantedScopes = null;
         }
 
-        try {
-            $idTokenClaims = $this->claims->assemble($identity, $clientId, $grantedScopes);
-        } catch (\InvalidArgumentException $e) {
-            // ClaimsAssembler throws when the client_id is unknown to it —
-            // i.e. Hydra has a client the IdP doesn't recognize. Refuse the
-            // refresh rather than handing Hydra a partial/empty session that
-            // would invalidate the user's tokens silently.
-            $this->logger->error('oidc.refresh_hook: ClaimsAssembler rejected unknown client', [
-                'subject' => $subject,
-                'client_id' => $clientId,
-                'error' => $e->getMessage(),
-            ]);
-
-            return new JsonResponse(['error' => 'invalid_client'], Response::HTTP_BAD_REQUEST);
-        }
+        $idTokenClaims = $this->claims->assemble($identity, $grantedScopes);
 
         $this->logger->info('oidc.refresh_hook: accepted', [
             'subject' => $subject,
@@ -127,7 +113,7 @@ final class RefreshHookController extends AbstractController
         // PHP array would encode as `[]` and fail the whole refresh grant.
         return new JsonResponse([
             'session' => [
-                'id_token' => empty($idTokenClaims) ? (object) [] : $idTokenClaims,
+                'id_token' => $idTokenClaims,
                 'access_token' => (object) [],
             ],
         ]);

@@ -77,14 +77,9 @@ final class ConsentChallengeController extends AbstractController
             ]);
         }
 
-        // Identity-validity gate. The IdP only checks that the user exists
-        // and is not disabled; per-RP authorisation (which users may sign in
-        // to which client) lives in the RP itself — e.g. Nextcloud user_oidc's
-        // "required group" setting, the Wiki OIDC plugin's allow-list, etc.
-        // Per-RP optional claims (nextcloud_admin, nextcloud_quota, wiki_*,
-        // etc.) are emitted uniformly by the policy and then filtered down
-        // per-client by `metadata.allowed_claims` on the Hydra client, edited
-        // via the OIDC admin form. Every decision is logged.
+        // Access gate: the user exists, isn't disabled, and has the account
+        // flag the client requires (`metadata.required_flag`, set on the OIDC
+        // admin form). Every decision is logged.
         if (!$this->policy->canAccess($identity, $clientId)) {
             return $this->rejectAndRedirect($consentChallenge, 'access_denied', "User does not have access to {$clientId}", [
                 'subject'   => $subject,
@@ -93,49 +88,7 @@ final class ConsentChallengeController extends AbstractController
             ]);
         }
 
-        try {
-            $idTokenClaims = $this->claims->assemble($identity, $clientId, \is_array($requestedScopes) ? $requestedScopes : []);
-        } catch (\InvalidArgumentException | \LogicException $e) {
-            // ClaimsAssembler throws two different exceptions for two very
-            // different conditions, so map each to the right OIDC error:
-            //   - InvalidArgumentException -> Hydra has a client we don't
-            //     know about (drift between clients.yaml and Hydra state).
-            //     This is a client-registration problem; surface as
-            //     `invalid_client` so the operator sees the right cause.
-            //   - LogicException -> a policy returned a reserved claim
-            //     (`sub`, `email`, …) and ClaimsAssembler refused to let
-            //     the policy override standard identity claims. This is a
-            //     bug in our own policy code, not a client problem; surface
-            //     as `server_error` so the user is told something is wrong
-            //     on our end (and we log it loudly for the operator).
-            if ($e instanceof \LogicException) {
-                $oidcError = 'server_error';
-                $description = 'Identity provider policy error. Please contact an administrator.';
-                $reason = 'policy_reserved_claim_collision';
-                $this->logger->error('oidc.consent: ClaimsAssembler rejected policy output', [
-                    'client_id' => $clientId,
-                    'subject' => $subject,
-                    'error' => $e->getMessage(),
-                    'reason' => $reason,
-                ]);
-            } else {
-                $oidcError = 'invalid_client';
-                $description = 'Client is not registered with the identity provider.';
-                $reason = 'unknown_client';
-                $this->logger->error('oidc.consent: ClaimsAssembler rejected unknown client', [
-                    'client_id' => $clientId,
-                    'subject' => $subject,
-                    'error' => $e->getMessage(),
-                    'reason' => $reason,
-                ]);
-            }
-
-            return $this->rejectAndRedirect($consentChallenge, $oidcError, $description, [
-                'subject'   => $subject,
-                'client_id' => $clientId,
-                'reason'    => $reason,
-            ]);
-        }
+        $idTokenClaims = $this->claims->assemble($identity, \is_array($requestedScopes) ? $requestedScopes : []);
 
         $accept = $this->hydra->acceptConsentRequest($consentChallenge, [
             'grant_scope' => $requestedScopes,
@@ -143,11 +96,10 @@ final class ConsentChallengeController extends AbstractController
             'remember' => true,
             'remember_for' => 3600 * 12,
             // Hydra's session schema defines id_token/access_token as JSON
-            // objects (maps). Empty PHP arrays JSON-encode as `[]` (a JSON
-            // array) which Hydra rejects with "error is unrecognizable" —
-            // cast to object so they serialize as `{}` when empty.
+            // objects (maps). An empty PHP array JSON-encodes as `[]`, which
+            // Hydra rejects — so the always-empty access_token is an object.
             'session' => [
-                'id_token' => empty($idTokenClaims) ? (object) [] : $idTokenClaims,
+                'id_token' => $idTokenClaims,
                 'access_token' => (object) [],
             ],
         ]);

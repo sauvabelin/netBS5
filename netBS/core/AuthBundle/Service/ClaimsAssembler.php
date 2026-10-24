@@ -4,138 +4,51 @@ declare(strict_types=1);
 
 namespace NetBS\AuthBundle\Service;
 
-use NetBS\AuthBundle\Contract\IdentityClientPolicyInterface;
 use NetBS\AuthBundle\Contract\IdentityDTO;
 
 /**
  * Builds the claim set for an OIDC ID token / userinfo response.
  *
- * Hydra is the source of truth for OAuth clients. Allowed claims live in the
- * client's `metadata.allowed_claims` array; we read them on demand via the
- * admin API. A per-instance memoisation keeps repeated lookups for the same
- * client within one HTTP request to a single network call.
+ * OIDC is kept to login only: the standard identity claims, each released by
+ * its scope (OIDC Core 5.4). `sub` is always released. Groups, admin rights
+ * and quota reach the apps through the LDAP directory, never through tokens.
  */
 final class ClaimsAssembler
 {
-    /** @var array<string, list<string>|null> client_id => allowed claims, or null when client is missing */
-    private array $cache = [];
-
-    /**
-     * Claim names owned by the standard identity set. Policies must not return
-     * these keys — we reject collisions loudly rather than letting a policy
-     * silently overwrite a user's `sub`, `email`, etc. `groups` is reserved
-     * although never emitted: group membership comes from LDAP only.
-     */
-    private const RESERVED_CLAIMS = [
-        'sub',
-        'preferred_username',
-        'email',
-        'name',
-        'groups',
-    ];
-
-    /**
-     * Standard claims and the scope that releases each (OIDC Core 5.4). `sub`
-     * is always released. Claims not listed here (policy claims like
-     * nextcloud_*, wiki_*) have no scope and are governed by the client's
-     * allowed_claims alone.
-     */
     private const SCOPE_OF_CLAIM = [
         'preferred_username' => 'profile',
         'name'               => 'profile',
         'email'              => 'email',
     ];
 
-    public function __construct(
-        private readonly HydraAdminClient $hydra,
-        private readonly IdentityClientPolicyInterface $policy,
-    ) {
-    }
-
     /**
      * @param list<string>|null $grantedScopes scopes granted to this token;
      *                                         null skips scope filtering
      * @return array<string, mixed>
      */
-    public function assemble(IdentityDTO $identity, string $clientId, ?array $grantedScopes): array
+    public function assemble(IdentityDTO $identity, ?array $grantedScopes): array
     {
-        $allowed = $this->allowedClaimsFor($clientId);
-        if ($allowed === null) {
-            throw new \InvalidArgumentException("Unknown client: {$clientId}");
-        }
-        $allowedMap = array_flip($allowed);
-
-        $standard = [
+        $claims = [
             'sub'                => $identity->sub,
             'preferred_username' => $identity->preferredUsername,
             'name'               => $identity->displayName,
         ];
 
         // No `email_verified` companion — netBS has no verification mechanism,
-        // so emitting that claim would be dishonest. RPs that need verified
-        // email should request a stronger out-of-band check.
+        // so emitting that claim would be dishonest.
         if ($identity->email !== null) {
-            $standard['email'] = $identity->email;
+            $claims['email'] = $identity->email;
         }
 
-        $additional = $this->policy->additionalClaimsFor($identity, $clientId);
+        if ($grantedScopes === null) {
+            return $claims;
+        }
 
-        // Policies opt in to claims; nulls are dropped so a policy returning
-        // `'foo' => null` for "not applicable" doesn't surface as a null claim.
-        $additional = array_filter(
-            $additional,
-            static fn ($v) => $v !== null,
+        return array_filter(
+            $claims,
+            static fn (string $claim) => !isset(self::SCOPE_OF_CLAIM[$claim])
+                || \in_array(self::SCOPE_OF_CLAIM[$claim], $grantedScopes, true),
+            \ARRAY_FILTER_USE_KEY,
         );
-
-        // Reject collisions on reserved claims: a policy must never override
-        // standard identity claims (CVE-class risk: rebinding `sub`).
-        $collisions = array_intersect(array_keys($additional), self::RESERVED_CLAIMS);
-        if ($collisions !== []) {
-            throw new \LogicException(sprintf(
-                'IdentityClientPolicy for client "%s" returned reserved claim(s): %s. '
-                . 'Standard identity claims cannot be overridden by a policy.',
-                $clientId,
-                implode(', ', $collisions),
-            ));
-        }
-
-        // Standard wins on (non-reserved) key merge as a defence-in-depth;
-        // the collision check above already guarantees disjointness.
-        $all = $standard + $additional;
-
-        $claims = array_intersect_key($all, $allowedMap);
-
-        if ($grantedScopes !== null) {
-            $claims = array_filter(
-                $claims,
-                static fn (string $claim) => !isset(self::SCOPE_OF_CLAIM[$claim])
-                    || \in_array(self::SCOPE_OF_CLAIM[$claim], $grantedScopes, true),
-                \ARRAY_FILTER_USE_KEY,
-            );
-        }
-
-        return $claims;
-    }
-
-    /**
-     * @return list<string>|null `null` when the client is unknown to Hydra.
-     */
-    private function allowedClaimsFor(string $clientId): ?array
-    {
-        if (array_key_exists($clientId, $this->cache)) {
-            return $this->cache[$clientId];
-        }
-
-        $client = $this->hydra->getOAuthClient($clientId);
-        if ($client === null) {
-            return $this->cache[$clientId] = null;
-        }
-
-        $raw = $client['metadata']['allowed_claims'] ?? [];
-        $claims = is_array($raw)
-            ? array_values(array_map(static fn ($v) => (string) $v, $raw))
-            : [];
-
-        return $this->cache[$clientId] = $claims;
     }
 }

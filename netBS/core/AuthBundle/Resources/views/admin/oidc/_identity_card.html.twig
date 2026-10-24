@@ -45,27 +45,6 @@
             <dt class="col-sm-3">Discovery</dt>
             <dd class="col-sm-9">{{ macros.copyable(endpoints.discovery) }}</dd>
 
-            <dt class="col-sm-3">Authorization</dt>
-            <dd class="col-sm-9">{{ macros.copyable(endpoints.authorization) }}</dd>
-
-            <dt class="col-sm-3">Token</dt>
-            <dd class="col-sm-9">{{ macros.copyable(endpoints.token) }}</dd>
-
-            <dt class="col-sm-3">Userinfo</dt>
-            <dd class="col-sm-9">{{ macros.copyable(endpoints.userinfo) }}</dd>
-
-            <dt class="col-sm-3">JWKS</dt>
-            <dd class="col-sm-9">{{ macros.copyable(endpoints.jwks) }}</dd>
-
-            <dt class="col-sm-3">Logout</dt>
-            <dd class="col-sm-9">{{ macros.copyable(endpoints.logout) }}</dd>
-
-            <dt class="col-sm-3">Allowed claims</dt>
-            <dd class="col-sm-9">
-                {% for claim in client.allowedClaims %}
-                    <span class="badge text-bg-secondary me-1">{{ claim }}</span>
-                {% endfor %}
-            </dd>
         </dl>
     </div>
 </div>

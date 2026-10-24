@@ -20,11 +20,6 @@ final class OidcEndpointsExtension extends AbstractExtension
             new TwigFunction('oidc_endpoints', fn (): array => [
                 'issuer'        => $this->endpoints->issuer(),
                 'discovery'     => $this->endpoints->discovery(),
-                'authorization' => $this->endpoints->authorization(),
-                'token'         => $this->endpoints->token(),
-                'userinfo'      => $this->endpoints->userinfo(),
-                'jwks'          => $this->endpoints->jwks(),
-                'logout'        => $this->endpoints->logout(),
             ]),
         ];
     }

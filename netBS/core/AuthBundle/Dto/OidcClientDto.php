@@ -50,9 +50,6 @@ final class OidcClientDto
 
     public string $scopes = 'openid profile email';
 
-    /** @var list<string> */
-    public array $allowedClaims = ['sub', 'preferred_username', 'email', 'name'];
-
     /** One of {@see REQUIRED_FLAGS}, or null when any active user may sign in. */
     public ?string $requiredFlag = null;
 
@@ -84,7 +81,6 @@ final class OidcClientDto
             ? (string) $hydra['logo_uri']
             : null;
         $dto->scopes                 = (string) ($hydra['scope'] ?? 'openid profile email');
-        $dto->allowedClaims          = self::stringList($hydra['metadata']['allowed_claims'] ?? $dto->allowedClaims);
         $requiredFlag                = $hydra['metadata']['required_flag'] ?? null;
         $dto->requiredFlag           = \in_array($requiredFlag, self::REQUIRED_FLAGS, true) ? $requiredFlag : null;
         $dto->hydraOriginal          = $hydra;
@@ -109,7 +105,8 @@ final class OidcClientDto
         ];
 
         $metadata = \is_array($payload['metadata'] ?? null) ? $payload['metadata'] : [];
-        $metadata['allowed_claims'] = array_values($this->allowedClaims);
+        // Leftover from per-client claim lists; claims now follow scopes only.
+        unset($metadata['allowed_claims']);
         if ($this->requiredFlag !== null) {
             $metadata['required_flag'] = $this->requiredFlag;
         } else {

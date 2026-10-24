@@ -9,7 +9,6 @@ use NetBS\AuthBundle\Contract\IdentityDTO;
 use NetBS\AuthBundle\Contract\IdentityUserResolverInterface;
 use NetBS\AuthBundle\Controller\Identity\RefreshHookController;
 use NetBS\AuthBundle\Service\ClaimsAssembler;
-use NetBS\AuthBundle\Service\HydraAdminClient;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -32,7 +31,6 @@ final class RefreshHookControllerTest extends TestCase
         string $expectedSecret = self::VALID_SECRET,
         ?IdentityDTO $resolverReturns = null,
         bool $policyAllows = true,
-        ?array $allowedClaims = ['sub', 'preferred_username'],
     ): RefreshHookController {
         $resolver = new class($resolverReturns) implements IdentityUserResolverInterface {
             public function __construct(private readonly ?IdentityDTO $dto) {}
@@ -48,25 +46,12 @@ final class RefreshHookControllerTest extends TestCase
             {
                 return $this->allows;
             }
-            public function additionalClaimsFor(IdentityDTO $identity, string $clientId): array
-            {
-                return [];
-            }
         };
-
-        // ClaimsAssembler talks HTTP via HydraAdminClient; we seed its
-        // per-client allowed-claims cache by reflection (same pattern used by
-        // ClaimsAssemblerTest) so no network is touched.
-        $hydra = (new \ReflectionClass(HydraAdminClient::class))->newInstanceWithoutConstructor();
-        $claims = new ClaimsAssembler($hydra, $policy);
-        $cacheProp = new \ReflectionProperty(ClaimsAssembler::class, 'cache');
-        $cacheProp->setAccessible(true);
-        $cacheProp->setValue($claims, ['acme-client' => $allowedClaims ?? []]);
 
         return new RefreshHookController(
             $resolver,
             $policy,
-            $claims,
+            new ClaimsAssembler(),
             $expectedSecret,
         );
     }
@@ -131,7 +116,6 @@ final class RefreshHookControllerTest extends TestCase
         $controller = $this->makeController(
             resolverReturns: $this->makeIdentity(),
             policyAllows: true,
-            allowedClaims: ['sub', 'preferred_username'],
         );
 
         $response = $controller(
@@ -152,9 +136,9 @@ final class RefreshHookControllerTest extends TestCase
     {
         // Hydra decodes the session claims into Go maps; a JSON array (`[]`,
         // what an empty PHP array encodes to) fails every refresh grant.
+        // The id_token always carries `sub`, so only access_token is empty.
         $controller = $this->makeController(
             resolverReturns: $this->makeIdentity(),
-            allowedClaims: [],
         );
 
         $response = $controller(
@@ -166,14 +150,12 @@ final class RefreshHookControllerTest extends TestCase
 
         $this->assertSame(Response::HTTP_OK, $response->getStatusCode());
         $this->assertStringContainsString('"access_token":{}', (string) $response->getContent());
-        $this->assertStringContainsString('"id_token":{}', (string) $response->getContent());
     }
 
     public function testClaimsFollowGrantedScopesFromHookPayload(): void
     {
         $controller = $this->makeController(
             resolverReturns: $this->makeIdentity(),
-            allowedClaims: ['sub', 'preferred_username', 'email'],
         );
 
         $response = $controller(
@@ -198,7 +180,6 @@ final class RefreshHookControllerTest extends TestCase
         // accepts either shape; verify the nested fallback works.
         $controller = $this->makeController(
             resolverReturns: $this->makeIdentity(),
-            allowedClaims: ['sub'],
         );
 
         $response = $controller(

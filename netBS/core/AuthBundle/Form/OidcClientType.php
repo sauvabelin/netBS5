@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace NetBS\AuthBundle\Form;
 
 use NetBS\AuthBundle\Dto\OidcClientDto;
-use NetBS\AuthBundle\Service\OidcEndpoints;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
 use Symfony\Component\Form\Extension\Core\Type\CollectionType;
@@ -19,15 +18,8 @@ use Symfony\Component\Validator\Constraints\Url;
 
 final class OidcClientType extends AbstractType
 {
-    public function __construct(private readonly OidcEndpoints $endpoints)
-    {
-    }
-
     public function buildForm(FormBuilderInterface $builder, array $options): void
     {
-        $catalogue = $this->endpoints->claimCatalogue();
-        $claimChoices = array_combine($catalogue, $catalogue);
-
         $builder
             ->add('name', TextType::class, [
                 'label' => 'Name',
@@ -66,12 +58,6 @@ final class OidcClientType extends AbstractType
                 'required' => false,
                 'default_protocol' => 'https',
                 'constraints' => [new Url(['protocols' => ['http', 'https']])],
-            ])
-            ->add('allowedClaims', ChoiceType::class, [
-                'label' => 'Allowed claims',
-                'choices' => $claimChoices,
-                'multiple' => true,
-                'expanded' => true,
             ])
             ->add('requiredFlag', ChoiceType::class, [
                 'label' => 'Required account flag',

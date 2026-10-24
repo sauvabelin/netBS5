@@ -37,7 +37,6 @@ final class OidcClientDtoTest extends TestCase
     {
         $dto = OidcClientDto::fromHydra($this->existingClient());
         $dto->name = 'Stammbox renamed';
-        $dto->allowedClaims = ['sub', 'email'];
 
         $payload = $dto->toHydraPayload();
 
@@ -45,7 +44,7 @@ final class OidcClientDtoTest extends TestCase
         $this->assertSame('client_secret_basic', $payload['token_endpoint_auth_method']);
         $this->assertTrue($payload['skip_consent']);
         $this->assertSame('1h', $payload['authorization_code_grant_access_token_lifespan']);
-        $this->assertSame(['sub', 'email'], $payload['metadata']['allowed_claims']);
+        $this->assertArrayNotHasKey('allowed_claims', $payload['metadata'], 'dead per-client claim lists are dropped');
         $this->assertSame('keep me', $payload['metadata']['note']);
         $this->assertSame('nextcloud_account', $payload['metadata']['required_flag']);
         $this->assertArrayNotHasKey('created_at', $payload);
