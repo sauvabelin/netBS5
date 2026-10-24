@@ -20,7 +20,7 @@ trait DirectoryFixturesTrait
      * (doesn't), plus GC of type B. One active nextcloud user is attributed
      * in GB.
      *
-     * @return array{ga: int, gb: int, gc: int}
+     * @return array{ga: int, gb: int, gc: int, fonction: int, membre: int, user: int, attribution: int}
      */
     private function seedGroupeTree(): array
     {
@@ -31,24 +31,47 @@ trait DirectoryFixturesTrait
         $gb = $this->groupe('dirproj-GB', $typeB, $ga);
         $gc = $this->groupe('dirproj-GC', $typeB, null);
 
-        $fonction = $this->insert('netbs_fichier_fonctions', ['nom' => 'dirproj-fonction', 'abbreviation' => 'dp', 'compte_dans_parent' => 0]);
+        $fonction = $this->insert('netbs_fichier_fonctions', ['nom' => 'dirproj-fonction', 'abbreviation' => 'dp']);
         $membre = $this->insert('sauvabelin_netbs_membres', [
             'naissance' => '2010-01-01', 'inscription' => '2020-01-01', 'statut' => 'inscrit',
             'nom' => 'Projection', 'prenom' => 'Dir', 'sexe' => 'm',
             'createdAt' => $this->now(), 'updatedAt' => $this->now(),
         ]);
-        $this->insert('sauvabelin_netbs_users', [
-            'membre_id' => $membre, 'nextcloud_account' => 1, 'nextcloud_admin' => 0, 'nextcloud_quota' => 0,
-            'wiki_account' => 0, 'new_password_required' => 0, 'wiki_admin' => 0,
-            'login_username' => 'dirproj.user', 'username' => 'dirproj.user', 'password' => 'x',
-            'isActive' => 1, 'dateAdded' => $this->now(),
-        ]);
-        $this->insert('netbs_fichier_attributions', [
+        $user = $this->seedUser('dirproj.user', ['membre_id' => $membre]);
+        $attribution = $this->insert('netbs_fichier_attributions', [
             'membre_id' => $membre, 'groupe_id' => $gb, 'fonction_id' => $fonction,
             'dateDebut' => '2020-01-01', 'createdAt' => $this->now(), 'updatedAt' => $this->now(),
         ]);
 
-        return ['ga' => $ga, 'gb' => $gb, 'gc' => $gc];
+        return ['ga' => $ga, 'gb' => $gb, 'gc' => $gc, 'fonction' => $fonction, 'membre' => $membre, 'user' => $user, 'attribution' => $attribution];
+    }
+
+    /** Active account with nextcloud_account = 1, unless $overrides says otherwise. */
+    private function seedUser(string $username, array $overrides = []): int
+    {
+        return $this->insert('sauvabelin_netbs_users', $overrides + [
+            'membre_id' => null, 'nextcloud_account' => 1, 'nextcloud_admin' => 0, 'nextcloud_quota' => 0,
+            'wiki_account' => 0, 'new_password_required' => 0, 'wiki_admin' => 0,
+            'login_username' => $username, 'username' => $username, 'password' => 'x',
+            'isActive' => 1, 'dateAdded' => $this->now(),
+        ]);
+    }
+
+    private function grantUserRole(int $userId, string $role): void
+    {
+        $this->db->insert('bsuser_role', ['bsuser_id' => $userId, 'role_id' => $this->role($role)]);
+    }
+
+    private function grantFonctionRole(int $fonctionId, string $role): void
+    {
+        $this->db->insert('fonction_role', ['fonction_id' => $fonctionId, 'role_id' => $this->role($role)]);
+    }
+
+    /** Id of the role, created if the test DB doesn't have it yet. */
+    private function role(string $name): int
+    {
+        $id = $this->db->fetchOne('SELECT id FROM netbs_secure_roles WHERE role = ?', [$name]);
+        return $id !== false ? (int) $id : $this->insert('netbs_secure_roles', ['role' => $name, 'poids' => 0, 'description' => '']);
     }
 
     private function groupe(string $nom, int $type, ?int $parent): int

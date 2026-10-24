@@ -1,0 +1,11 @@
+# Admin rights in the apps fed by the LDAP directory, published as the
+# groups nextcloud-admins / wiki-admins (DirectoryProjection::ROLE_GROUPS).
+# True roots (see DirectoryRoleTreeSource): no other role, not even
+# ROLE_ADMIN, implies them; grant them explicitly on a user or a fonction.
+roles:
+    ROLE_NEXTCLOUD_ADMIN:
+        description: "Administrateur de la Stammbox (Nextcloud)."
+        poids: 900
+    ROLE_WIKI_ADMIN:
+        description: "Administrateur du wiki."
+        poids: 900

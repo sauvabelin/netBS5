@@ -3,7 +3,6 @@
 namespace NetBS\FichierBundle\Form;
 
 use NetBS\CoreBundle\Form\Type\AjaxSelect2DocumentType;
-use NetBS\CoreBundle\Form\Type\SwitchType;
 use NetBS\FichierBundle\Service\FichierConfig;
 use NetBS\FichierBundle\Utils\Form\RemarquesUtils;
 use NetBS\SecureBundle\Entity\Role;
@@ -32,7 +31,6 @@ class FonctionType extends AbstractType
             ->add('nom', TextType::class, array('label' => 'Nom'))
             ->add('abbreviation', TextType::class, array('label' => 'Abbreviation'))
             ->add('poids', NumberType::class, array('label' => 'Poids'))
-            ->add('compteDansParent', SwitchType::class, array('label' => 'Compte dans le groupe parent'))
             ->add('roles', AjaxSelect2DocumentType::class, array(
                 'label'     => 'Rôles liés',
                 'class'     => $this->secureConfig->getRoleClass(),

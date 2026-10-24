@@ -26,7 +26,7 @@ final class DirectorySyncTest extends TestCase
         );
 
         self::assertSame([], $report->errors);
-        self::assertTrue($this->lldap->hasAttribute);
+        self::assertSame(['netbs-id', 'netbs-role'], $this->lldap->attributes);
         self::assertSame(['alice', 'bob'], $this->lldap->membersOf(DirectorySync::MANAGED_USERS_GROUP));
         self::assertSame(['alice'], $this->lldap->membersOf('Troupe X'));
     }
@@ -42,30 +42,21 @@ final class DirectorySyncTest extends TestCase
         self::assertSame([], $report->changes);
     }
 
-    public function testMembershipRenameAndRemovalFollowNetbs(): void
+    public function testUsersGroupsAndMembershipFollowNetbs(): void
     {
         $this->sync([$this->user('alice'), $this->user('bob')], [
             new DirectoryGroup(10, 'Troupe X', ['alice']),
             new DirectoryGroup(11, 'Meute Y', ['bob']),
         ]);
 
-        $this->sync([$this->user('alice'), $this->user('bob')], [
+        $this->sync([$this->user('bob')], [
             new DirectoryGroup(10, 'Troupe X renamed', ['bob']),
         ]);
 
+        self::assertArrayNotHasKey('alice', $this->lldap->users);
         self::assertSame(['bob'], $this->lldap->membersOf('Troupe X renamed'));
         self::assertNull($this->lldap->groupId('Meute Y'));
         self::assertNull($this->lldap->groupId('Troupe X'));
-    }
-
-    public function testRemovedUserIsDeleted(): void
-    {
-        $this->sync([$this->user('alice'), $this->user('bob')], []);
-
-        $report = $this->sync([$this->user('alice')], []);
-
-        self::assertContains('delete user bob', $report->changes);
-        self::assertArrayNotHasKey('bob', $this->lldap->users);
     }
 
     public function testUnmanagedEntriesAreLeftAlone(): void
@@ -89,7 +80,7 @@ final class DirectorySyncTest extends TestCase
         self::assertContains('create user alice', $report->changes);
         self::assertContains('add alice to "Troupe X"', $report->changes);
         self::assertSame([], $this->lldap->users);
-        self::assertFalse($this->lldap->hasAttribute);
+        self::assertSame([], $this->lldap->attributes);
     }
 
     public function testFailedOperationIsReportedAndSyncContinues(): void
@@ -102,9 +93,31 @@ final class DirectorySyncTest extends TestCase
         self::assertSame(['bob'], $this->lldap->membersOf('Troupe X'));
     }
 
+    public function testRoleGroupsAreTaggedAndMatchedByRole(): void
+    {
+        $this->lldap->attributes = ['netbs-id'];
+        $this->sync([$this->user('alice')], [
+            new DirectoryGroup(10, 'Troupe X', []),
+            new DirectoryGroup(null, 'wiki-admins', ['alice'], 'ROLE_WIKI_ADMIN'),
+        ]);
+        $id = $this->lldap->groupId('wiki-admins');
+        self::assertSame(['netbs-id', 'netbs-role'], $this->lldap->attributes);
+        self::assertSame('ROLE_WIKI_ADMIN', $this->lldap->groups[$id]['netbsRole']);
+        self::assertSame(['alice'], $this->lldap->membersOf('wiki-admins'));
+
+        // Renamed in code, emptied: same lldap group, kept even with no members.
+        $this->sync([$this->user('alice')], [
+            new DirectoryGroup(10, 'Troupe X', []),
+            new DirectoryGroup(null, 'wiki-admin', [], 'ROLE_WIKI_ADMIN'),
+        ]);
+        self::assertSame($id, $this->lldap->groupId('wiki-admin'));
+        self::assertSame([], $this->lldap->membersOf('wiki-admin'));
+        self::assertNotNull($this->lldap->groupId('Troupe X'));
+    }
+
     /**
      * @param DirectoryUser[] $users
-     * @param DirectoryGroup[] $groups
+     * @param DirectoryGroup[] $groups groupe groups and role groups
      */
     private function sync(array $users, array $groups, bool $dryRun = false)
     {
@@ -113,10 +126,15 @@ final class DirectorySyncTest extends TestCase
             $usersByUid[$user->uid] = $user;
         }
         $groupsById = [];
+        $roleGroups = [];
         foreach ($groups as $group) {
-            $groupsById[$group->netbsId] = $group;
+            if ($group->role !== null) {
+                $roleGroups[$group->role] = $group;
+            } else {
+                $groupsById[$group->netbsId] = $group;
+            }
         }
-        return (new DirectorySync($this->lldap))->sync($usersByUid, $groupsById, $dryRun);
+        return (new DirectorySync($this->lldap))->sync($usersByUid, $groupsById, $roleGroups, $dryRun);
     }
 
     private function user(string $uid): DirectoryUser

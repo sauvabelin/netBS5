@@ -41,9 +41,15 @@ final class LldapClient implements LldapClientInterface
 
         return array_map(static function (array $group): array {
             $netbsId = null;
+            $netbsRole = null;
             foreach ($group['attributes'] as $attribute) {
-                if ($attribute['name'] === DirectorySync::NETBS_ID_ATTRIBUTE && $attribute['value'] !== []) {
+                if ($attribute['value'] === []) {
+                    continue;
+                }
+                if ($attribute['name'] === DirectorySync::NETBS_ID_ATTRIBUTE) {
                     $netbsId = (int) $attribute['value'][0];
+                } elseif ($attribute['name'] === DirectorySync::NETBS_ROLE_ATTRIBUTE) {
+                    $netbsRole = (string) $attribute['value'][0];
                 }
             }
 
@@ -51,6 +57,7 @@ final class LldapClient implements LldapClientInterface
                 'id' => $group['id'],
                 'displayName' => $group['displayName'],
                 'netbsId' => $netbsId,
+                'netbsRole' => $netbsRole,
                 'members' => array_column($group['users'], 'id'),
             ];
         }, $data['groups']);
@@ -64,9 +71,19 @@ final class LldapClient implements LldapClientInterface
 
     public function addIntegerGroupAttribute(string $name): void
     {
+        $this->addGroupAttribute($name, 'INTEGER');
+    }
+
+    public function addStringGroupAttribute(string $name): void
+    {
+        $this->addGroupAttribute($name, 'STRING');
+    }
+
+    private function addGroupAttribute(string $name, string $type): void
+    {
         $this->graphql(
-            'mutation($name: String!) { addGroupAttribute(name: $name, attributeType: INTEGER, isList: false, isVisible: true, isEditable: false) { ok } }',
-            ['name' => $name],
+            'mutation($name: String!, $type: AttributeType!) { addGroupAttribute(name: $name, attributeType: $type, isList: false, isVisible: true, isEditable: false) { ok } }',
+            ['name' => $name, 'type' => $type],
         );
     }
 
@@ -91,11 +108,14 @@ final class LldapClient implements LldapClientInterface
         $this->graphql('mutation($id: String!) { deleteUser(userId: $id) { ok } }', ['id' => $uid]);
     }
 
-    public function createGroup(string $displayName, ?int $netbsId): int
+    public function createGroup(string $displayName, ?int $netbsId, ?string $netbsRole = null): int
     {
-        $request = ['displayName' => $displayName];
+        $request = ['displayName' => $displayName, 'attributes' => []];
         if ($netbsId !== null) {
-            $request['attributes'] = [['name' => DirectorySync::NETBS_ID_ATTRIBUTE, 'value' => [(string) $netbsId]]];
+            $request['attributes'][] = ['name' => DirectorySync::NETBS_ID_ATTRIBUTE, 'value' => [(string) $netbsId]];
+        }
+        if ($netbsRole !== null) {
+            $request['attributes'][] = ['name' => DirectorySync::NETBS_ROLE_ATTRIBUTE, 'value' => [$netbsRole]];
         }
 
         $data = $this->graphql(

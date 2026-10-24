@@ -43,9 +43,9 @@ final class LdapSyncCommand extends Command
             $io->error($e->getMessage());
             return Command::FAILURE;
         }
-        $io->writeln(sprintf('netBS: %d users, %d groups', count($snapshot['users']), count($snapshot['groups'])));
+        $io->writeln(sprintf('netBS: %d users, %d groups, %d role groups', count($snapshot['users']), count($snapshot['groups']), count($snapshot['roleGroups'])));
 
-        $report = $this->sync->sync($snapshot['users'], $snapshot['groups'], $dryRun);
+        $report = $this->sync->sync($snapshot['users'], $snapshot['groups'], $snapshot['roleGroups'], $dryRun);
 
         if ($report->changes !== []) {
             $io->listing($report->changes);

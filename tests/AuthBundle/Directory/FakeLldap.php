@@ -12,9 +12,10 @@ use NetBS\AuthBundle\Directory\LldapClientInterface;
 final class FakeLldap implements LldapClientInterface
 {
     public array $users = [];
-    /** @var array<int, array{id: int, displayName: string, netbsId: ?int, members: string[]}> */
+    /** @var array<int, array{id: int, displayName: string, netbsId: ?int, netbsRole: ?string, members: string[]}> */
     public array $groups = [];
-    public bool $hasAttribute = false;
+    /** @var string[] group attribute names, in creation order */
+    public array $attributes = [];
     public ?string $failOnCreateUser = null;
     private int $nextGroupId = 1;
 
@@ -48,12 +49,17 @@ final class FakeLldap implements LldapClientInterface
 
     public function hasGroupAttribute(string $name): bool
     {
-        return $this->hasAttribute;
+        return in_array($name, $this->attributes, true);
     }
 
     public function addIntegerGroupAttribute(string $name): void
     {
-        $this->hasAttribute = true;
+        $this->attributes[] = $name;
+    }
+
+    public function addStringGroupAttribute(string $name): void
+    {
+        $this->attributes[] = $name;
     }
 
     public function createUser(DirectoryUser $user): void
@@ -77,10 +83,10 @@ final class FakeLldap implements LldapClientInterface
         }
     }
 
-    public function createGroup(string $displayName, ?int $netbsId): int
+    public function createGroup(string $displayName, ?int $netbsId, ?string $netbsRole = null): int
     {
         $id = $this->nextGroupId++;
-        $this->groups[$id] = ['id' => $id, 'displayName' => $displayName, 'netbsId' => $netbsId, 'members' => []];
+        $this->groups[$id] = ['id' => $id, 'displayName' => $displayName, 'netbsId' => $netbsId, 'netbsRole' => $netbsRole, 'members' => []];
         return $id;
     }
 

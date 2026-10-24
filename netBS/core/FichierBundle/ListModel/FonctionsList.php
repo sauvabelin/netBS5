@@ -3,7 +3,6 @@
 namespace NetBS\FichierBundle\ListModel;
 
 use NetBS\CoreBundle\Form\Type\AjaxSelect2DocumentType;
-use NetBS\CoreBundle\Form\Type\SwitchType;
 use NetBS\CoreBundle\ListModel\Column\XEditableColumn;
 use NetBS\FichierBundle\Utils\Traits\FichierConfigTrait;
 use NetBS\ListBundle\Model\BaseListModel;
@@ -68,10 +67,6 @@ class FonctionsList extends BaseListModel
             ->addColumn('Poids', null, XEditableColumn::class, array(
                 XEditableColumn::TYPE_CLASS => NumberType::class,
                 XEditableColumn::PROPERTY   => 'poids'
-            ))
-            ->addColumn('Compte dans le groupe parent', null, XEditableColumn::class, array(
-                XEditableColumn::TYPE_CLASS => SwitchType::class,
-                XEditableColumn::PROPERTY   => 'compteDansParent'
             ))
             ->addColumn('Autorisation liées', null, XEditableColumn::class, array(
                 XEditableColumn::TYPE_CLASS => AjaxSelect2DocumentType::class,

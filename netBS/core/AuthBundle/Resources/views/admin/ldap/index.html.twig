@@ -28,16 +28,14 @@
                         <p class="mb-2">
                             Les groupes de l'annuaire se règlent dans
                             <a href="{{ path('netbs.fichier.groupe_type.page_groupe_types') }}">Types de groupes</a>
-                            (« Crée un groupe », « Sous-groupes ») et
-                            <a href="{{ path('netbs.fichier.fonction.page_fonctions') }}">Fonctions</a>
-                            (« Compte dans le groupe parent »). Cette page montre le résultat sans rien écrire ;
+                            (« Crée un groupe », « Sous-groupes »). Cette page montre le résultat sans rien écrire ;
                             les changements s'appliquent à la prochaine synchronisation.
                         </p>
 
                         {% if notConfigured is not null %}
                             <div id="ldap-not-configured" class="alert alert-warning mb-0">{{ notConfigured }}</div>
                         {% else %}
-                            <p class="mb-0 text-muted">{{ users|length }} utilisateur(s), {{ groups|length }} groupe(s).</p>
+                            <p class="mb-0 text-muted">{{ userCount }} utilisateur(s), {{ groupRows|length }} groupe(s).</p>
                         {% endif %}
                     </div>
                 </div>
@@ -65,12 +63,8 @@
                                 {% if report.changes is empty %}
                                     <p class="text-muted mb-0">L'annuaire est à jour.</p>
                                 {% else %}
-                                    <details>
-                                        <summary>{{ report.changes|length }} changement(s)</summary>
-                                        <ul class="mt-2 mb-0" style="max-height: 24rem; overflow-y: auto">
-                                            {% for change in report.changes %}<li><code>{{ change }}</code></li>{% endfor %}
-                                        </ul>
-                                    </details>
+                                    <p>{{ report.changes|length }} changement(s)</p>
+                                    {{ render_list('netbs.auth.ldap.changes', 'netbs', {changes: changeRows}) }}
                                 {% endif %}
                             {% endif %}
                         </div>
@@ -80,51 +74,14 @@
 
             <div class="row mt-3">
                 <div class="col-12">
-                    <div class="card card-table">
+                    <div class="card card-table" id="ldap-groups"
+                         data-controller="ldap-members"
+                         data-ldap-members-url-value="{{ path('auth.admin.ldap.members', {key: '__KEY__'}) }}">
                         <div class="card-header">
                             <h5 class="card-title mb-0">Groupes</h5>
                         </div>
                         <div class="card-body">
-                            <table class="table table-striped mb-0">
-                                <thead>
-                                    <tr>
-                                        <th>Groupe</th>
-                                        <th>Type</th>
-                                        <th>Sous-groupes</th>
-                                        <th>Membres</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {% for netbsId, group in groups %}
-                                        {% set groupe = groupes[netbsId] ?? null %}
-                                        <tr data-group-id="{{ netbsId }}">
-                                            <td>
-                                                {% if groupe %}
-                                                    <a href="{{ path('netbs.fichier.groupe.page_groupe', { id: netbsId }) }}">{{ group.name }}</a>
-                                                {% else %}
-                                                    {{ group.name }}
-                                                {% endif %}
-                                            </td>
-                                            <td>{{ groupe ? groupe.groupeType.nom : '—' }}</td>
-                                            <td>{{ groupe ? sousGroupesLabels[groupe.groupeType.sousGroupes] : '—' }}</td>
-                                            <td>
-                                                {% if group.members is empty %}
-                                                    <span class="text-muted">0</span>
-                                                {% else %}
-                                                    <details>
-                                                        <summary>{{ group.members|length }}</summary>
-                                                        <ul class="mb-0">
-                                                            {% for uid in group.members %}
-                                                                <li>{{ users[uid].displayName }} <span class="text-muted">({{ uid }})</span></li>
-                                                            {% endfor %}
-                                                        </ul>
-                                                    </details>
-                                                {% endif %}
-                                            </td>
-                                        </tr>
-                                    {% endfor %}
-                                </tbody>
-                            </table>
+                            {{ render_list('netbs.auth.ldap.groups', 'netbs', {rows: groupRows}) }}
                         </div>
                     </div>
                 </div>

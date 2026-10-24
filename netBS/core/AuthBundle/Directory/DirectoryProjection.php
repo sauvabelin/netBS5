@@ -17,9 +17,17 @@ use NetBS\FichierBundle\Service\FichierConfig;
  *   - groups: one per groupe whose type is set to "crée un groupe" (Structure ›
  *     Types de groupes); members follow the type's "sous-groupes" mode, see
  *     {@see GroupeMemberResolver}. Membres without a directory user are dropped.
+ *   - role groups: one per {@see ROLE_GROUPS} entry, always present, holding
+ *     the directory users that hold the role ({@see DirectoryUser::$roles}).
  */
 final class DirectoryProjection
 {
+    /** Roles published as directory groups (role => lldap group name). */
+    public const ROLE_GROUPS = [
+        'ROLE_NEXTCLOUD_ADMIN' => 'nextcloud-admins',
+        'ROLE_WIKI_ADMIN' => 'wiki-admins',
+    ];
+
     public function __construct(
         private readonly EntityManagerInterface $em,
         private readonly FichierConfig $fichierConfig,
@@ -29,8 +37,8 @@ final class DirectoryProjection
     }
 
     /**
-     * @return array{users: array<string, DirectoryUser>, groups: array<int, DirectoryGroup>}
-     *               users keyed by uid, groups keyed by netBS groupe id
+     * @return array{users: array<string, DirectoryUser>, groups: array<int, DirectoryGroup>, roleGroups: array<string, DirectoryGroup>}
+     *               users keyed by uid, groups keyed by netBS groupe id, roleGroups keyed by role
      *
      * @throws DirectoryNotConfiguredException when no groupe would become a group
      */
@@ -49,7 +57,68 @@ final class DirectoryProjection
             throw new DirectoryNotConfiguredException();
         }
 
-        return ['users' => $users, 'groups' => $groups];
+        return ['users' => $users, 'groups' => $groups, 'roleGroups' => $this->roleGroups($users)];
+    }
+
+    /**
+     * Members of one group, computed without building the whole snapshot.
+     *
+     * @param string $key netBS groupe id, or a {@see ROLE_GROUPS} role
+     * @return list<DirectoryUser>|null sorted by display name; null when $key
+     *                                  is not a group of the directory
+     */
+    public function members(string $key): ?array
+    {
+        if (isset(self::ROLE_GROUPS[$key])) {
+            $members = array_filter($this->userProvider->directoryUsers(), fn (DirectoryUser $user) => in_array($key, $user->roles, true));
+        } elseif (ctype_digit($key)) {
+            /** @var BaseGroupe|null $groupe */
+            $groupe = $this->em->find($this->fichierConfig->getGroupeClass(), (int) $key);
+            if ($groupe === null || !$groupe->getGroupeType()->isCreeGroupe()) {
+                return null;
+            }
+            $membreIds = array_flip($this->resolver->membreIds($groupe, $groupe->getGroupeType()->getSousGroupes()));
+            $members = array_filter($this->userProvider->directoryUsers(), fn (DirectoryUser $user) => isset($membreIds[$user->membreId]));
+        } else {
+            return null;
+        }
+
+        usort($members, fn (DirectoryUser $a, DirectoryUser $b) => strcasecmp($a->displayName, $b->displayName));
+        return $members;
+    }
+
+    /**
+     * Group names end up in DNs. Nextcloud escapes these characters in DNs
+     * (`\28` for `(`, ...) and lldap can't find entries by such DNs, so they
+     * are replaced.
+     */
+    private static function dnSafe(string $name): string
+    {
+        return trim(strtr($name, [
+            '(' => '[', ')' => ']',
+            ',' => ' ', '=' => '-', '+' => '-', '<' => ' ', '>' => ' ', ';' => ' ',
+            '"' => "'", '#' => ' ', '*' => ' ', '\\' => ' ',
+        ]));
+    }
+
+    /**
+     * @param array<string, DirectoryUser> $users
+     * @return array<string, DirectoryGroup>
+     */
+    private function roleGroups(array $users): array
+    {
+        $groups = [];
+        foreach (self::ROLE_GROUPS as $role => $name) {
+            $members = [];
+            foreach ($users as $user) {
+                if (in_array($role, $user->roles, true)) {
+                    $members[] = $user->uid;
+                }
+            }
+            sort($members);
+            $groups[$role] = new DirectoryGroup(null, $name, $members, $role);
+        }
+        return $groups;
     }
 
     /**
@@ -71,7 +140,8 @@ final class DirectoryProjection
             ->getResult();
 
         $groups = [];
-        $seenNames = [];
+        // Role group names are reserved; a groupe using one gets the id suffix.
+        $seenNames = array_fill_keys(array_map('mb_strtolower', self::ROLE_GROUPS), true);
         foreach ($groupes as $groupe) {
             $members = [];
             foreach ($this->resolver->membreIds($groupe, $groupe->getGroupeType()->getSousGroupes()) as $membreId) {
@@ -82,9 +152,9 @@ final class DirectoryProjection
             }
 
             // lldap group names are unique; two netBS groupes can share a nom.
-            $name = trim($groupe->getNom());
+            $name = self::dnSafe(trim($groupe->getNom()));
             if (isset($seenNames[mb_strtolower($name)])) {
-                $name = sprintf('%s (%d)', $name, $groupe->getId());
+                $name = sprintf('%s [%d]', $name, $groupe->getId());
             }
             $seenNames[mb_strtolower($name)] = true;
 

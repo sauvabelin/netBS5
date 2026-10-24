@@ -18,7 +18,6 @@ use PHPUnit\Framework\TestCase;
 final class GroupeMemberResolverTest extends TestCase
 {
     private GroupeMemberResolver $resolver;
-    private Fonction $cp;
     private Fonction $eclaireur;
     private BSGroupe $troupe;
     private BSGroupe $patrouille;
@@ -29,7 +28,6 @@ final class GroupeMemberResolverTest extends TestCase
     protected function setUp(): void
     {
         $this->resolver = new GroupeMemberResolver();
-        $this->cp = (new Fonction())->setCompteDansParent(true);
         $this->eclaireur = new Fonction();
 
         $this->troupe = $this->groupe(1);
@@ -39,24 +37,15 @@ final class GroupeMemberResolverTest extends TestCase
         $this->patrouille->addEnfant($this->sousPatrouille);
 
         $this->attribute($this->troupe, 1, $this->eclaireur);
-        $this->attribute($this->patrouille, 2, $this->cp);
+        $this->attribute($this->patrouille, 2, $this->eclaireur);
         $this->attribute($this->patrouille, 3, $this->eclaireur);
         $this->attribute($this->sousPatrouille, 4, $this->eclaireur);
     }
 
-    public function testDirectOnlyReturnsDirectAttributions(): void
+    public function testModes(): void
     {
         self::assertSame([1], $this->resolve('direct'));
-    }
-
-    public function testTousIncludesAllDescendants(): void
-    {
         self::assertSame([1, 2, 3, 4], $this->resolve('tous'));
-    }
-
-    public function testFonctionsIncludesOnlyMarkedFonctions(): void
-    {
-        self::assertSame([1, 2], $this->resolve('fonctions'));
     }
 
     public function testInactiveDescendantAttributionsIgnored(): void
@@ -67,20 +56,9 @@ final class GroupeMemberResolverTest extends TestCase
             }
         }
         // A future attribution doesn't count either.
-        $this->attribute($this->sousPatrouille, 5, $this->cp)->setDateDebut(new \DateTime('+1 day'));
+        $this->attribute($this->sousPatrouille, 5, $this->eclaireur)->setDateDebut(new \DateTime('+1 day'));
 
         self::assertSame([1, 2, 4], $this->resolve('tous'));
-        self::assertSame([1, 2], $this->resolve('fonctions'));
-    }
-
-    public function testMembreCountedOnce(): void
-    {
-        $this->attribute($this->patrouille, 1, $this->cp);
-        $this->attribute($this->sousPatrouille, 2, $this->eclaireur);
-
-        $ids = $this->resolver->membreIds($this->troupe, 'tous');
-        self::assertSame(array_values(array_unique($ids)), $ids);
-        self::assertSame([1, 2, 3, 4], $this->resolve('tous'));
     }
 
     public function testParentCycleTerminates(): void

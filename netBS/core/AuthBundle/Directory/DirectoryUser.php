@@ -16,6 +16,8 @@ final class DirectoryUser
         public readonly string $lastName,
         /** netBS membre linked to the account, if any; not stored in lldap. */
         public readonly ?int $membreId = null,
+        /** @var string[] keys of {@see DirectoryProjection::ROLE_GROUPS} the user holds; not stored in lldap. */
+        public readonly array $roles = [],
     ) {
     }
 

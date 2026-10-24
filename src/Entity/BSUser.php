@@ -30,6 +30,7 @@ class BSUser extends BaseUser
 
     /**
      * @var bool
+     * @deprecated Replaced by ROLE_NEXTCLOUD_ADMIN / the nextcloud-admins LDAP group.
      */
     #[ORM\Column(name: 'nextcloud_admin', type: 'boolean')]
     protected $nextcloudAdmin   = false;
@@ -56,6 +57,8 @@ class BSUser extends BaseUser
 
     /**
      * @var bool
+     * @deprecated Replaced by ROLE_WIKI_ADMIN / the wiki-admins LDAP group; still
+     *             read by the wiki through the wiki_users view.
      */
     #[ORM\Column(name: 'wiki_admin', type: 'boolean')]
     protected $wikiAdmin    = false;

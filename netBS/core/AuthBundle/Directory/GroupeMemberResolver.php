@@ -34,13 +34,10 @@ final class GroupeMemberResolver
             $ids[$attribution->getMembre()->getId()] = true;
         }
 
-        if ($sousGroupes !== BaseGroupeType::SOUS_GROUPES_DIRECT) {
-            $onlyMarked = $sousGroupes === BaseGroupeType::SOUS_GROUPES_FONCTIONS;
+        if ($sousGroupes === BaseGroupeType::SOUS_GROUPES_TOUS) {
             foreach ($this->descendants($groupe) as $descendant) {
                 foreach ($descendant->getActivesAttributions() as $attribution) {
-                    if (!$onlyMarked || $attribution->getFonction()->isCompteDansParent()) {
-                        $ids[$attribution->getMembre()->getId()] = true;
-                    }
+                    $ids[$attribution->getMembre()->getId()] = true;
                 }
             }
         }

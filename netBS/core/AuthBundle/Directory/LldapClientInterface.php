@@ -12,7 +12,7 @@ namespace NetBS\AuthBundle\Directory;
  *   users:  [['id' => string, 'email' => string, 'displayName' => string,
  *             'firstName' => string, 'lastName' => string]]
  *   groups: [['id' => int, 'displayName' => string, 'netbsId' => ?int,
- *             'members' => string[]]]
+ *             'netbsRole' => ?string, 'members' => string[]]]
  */
 interface LldapClientInterface
 {
@@ -24,6 +24,8 @@ interface LldapClientInterface
 
     public function addIntegerGroupAttribute(string $name): void;
 
+    public function addStringGroupAttribute(string $name): void;
+
     public function createUser(DirectoryUser $user): void;
 
     public function updateUser(DirectoryUser $user): void;
@@ -31,7 +33,7 @@ interface LldapClientInterface
     public function deleteUser(string $uid): void;
 
     /** @return int the lldap id of the new group */
-    public function createGroup(string $displayName, ?int $netbsId): int;
+    public function createGroup(string $displayName, ?int $netbsId, ?string $netbsRole = null): int;
 
     public function renameGroup(int $groupId, string $displayName): void;
 

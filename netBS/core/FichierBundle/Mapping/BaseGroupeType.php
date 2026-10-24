@@ -14,9 +14,6 @@ class BaseGroupeType
     /** Sub-groupe expansion for directory groups: only direct attributions */
     const SOUS_GROUPES_DIRECT = 'direct';
 
-    /** ...plus sub-groupe attributions whose fonction counts in the parent */
-    const SOUS_GROUPES_FONCTIONS = 'fonctions';
-
     /** ...plus every sub-groupe attribution */
     const SOUS_GROUPES_TOUS = 'tous';
 
@@ -131,7 +128,6 @@ class BaseGroupeType
     {
         return [
             'Directs seulement'     => self::SOUS_GROUPES_DIRECT,
-            'Fonctions marquées'    => self::SOUS_GROUPES_FONCTIONS,
             'Tous'                  => self::SOUS_GROUPES_TOUS,
         ];
     }

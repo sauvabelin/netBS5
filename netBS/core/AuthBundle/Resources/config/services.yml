@@ -25,6 +25,15 @@ services:
   NetBS\AuthBundle\Directory\LldapClientInterface:
     alias: NetBS\AuthBundle\Directory\LldapClient
 
+  # LDAP page lists (Administration › Authentication › LDAP).
+  NetBS\AuthBundle\ListModel\LdapGroupListModel:
+    tags:
+      - { name: netbs.list.model }
+
+  NetBS\AuthBundle\ListModel\LdapChangeListModel:
+    tags:
+      - { name: netbs.list.model }
+
   NetBS\AuthBundle\Service\OidcEndpoints:
     arguments:
       $issuer: '%env(HYDRA_ISSUER)%'

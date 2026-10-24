@@ -10,13 +10,15 @@ namespace NetBS\AuthBundle\Directory;
  * Only touches what netBS owns, so lldap's built-in accounts and groups
  * (admin, lldap_admin, ...) are left alone:
  *   - users: members of the {@see MANAGED_USERS_GROUP} marker group
- *   - groups: groups carrying a {@see NETBS_ID_ATTRIBUTE} attribute
+ *   - groups: groups carrying a {@see NETBS_ID_ATTRIBUTE} (groupe groups) or
+ *     {@see NETBS_ROLE_ATTRIBUTE} (role groups) attribute
  * The marker group doubles as the LDAP filter services use to find netBS users.
  */
 final class DirectorySync
 {
     public const MANAGED_USERS_GROUP = 'netbs_users';
     public const NETBS_ID_ATTRIBUTE = 'netbs-id';
+    public const NETBS_ROLE_ATTRIBUTE = 'netbs-role';
 
     /** @var string[] */
     private array $changes = [];
@@ -33,8 +35,9 @@ final class DirectorySync
     /**
      * @param array<string, DirectoryUser> $users keyed by uid
      * @param array<int, DirectoryGroup> $groups keyed by netBS groupe id
+     * @param array<string, DirectoryGroup> $roleGroups keyed by role
      */
-    public function sync(array $users, array $groups, bool $dryRun): DirectorySyncReport
+    public function sync(array $users, array $groups, array $roleGroups, bool $dryRun): DirectorySyncReport
     {
         $this->changes = [];
         $this->errors = [];
@@ -43,6 +46,10 @@ final class DirectorySync
         if (!$this->client->hasGroupAttribute(self::NETBS_ID_ATTRIBUTE)) {
             $this->apply($dryRun, sprintf('add group attribute %s', self::NETBS_ID_ATTRIBUTE),
                 fn () => $this->client->addIntegerGroupAttribute(self::NETBS_ID_ATTRIBUTE));
+        }
+        if (!$this->client->hasGroupAttribute(self::NETBS_ROLE_ATTRIBUTE)) {
+            $this->apply($dryRun, sprintf('add group attribute %s', self::NETBS_ROLE_ATTRIBUTE),
+                fn () => $this->client->addStringGroupAttribute(self::NETBS_ROLE_ATTRIBUTE));
         }
 
         $currentGroups = $this->client->listGroups();
@@ -55,7 +62,14 @@ final class DirectorySync
         }
 
         $this->syncUsers($users, $managedUids, $markerId, $dryRun);
-        $this->syncGroups($groups, $currentGroups, $dryRun);
+        $desired = [];
+        foreach ($groups as $group) {
+            $desired[self::groupKey($group->netbsId, null)] = $group;
+        }
+        foreach ($roleGroups as $group) {
+            $desired[self::groupKey(null, $group->role)] = $group;
+        }
+        $this->syncGroups($desired, $currentGroups, $dryRun);
 
         return new DirectorySyncReport($this->changes, $this->errors);
     }
@@ -113,24 +127,30 @@ final class DirectorySync
         }
     }
 
+    /** Identifies a managed group across runs, whatever its name. */
+    private static function groupKey(?int $netbsId, ?string $role): string
+    {
+        return $role !== null ? "role:$role" : "id:$netbsId";
+    }
+
     /**
-     * @param array<int, DirectoryGroup> $groups
+     * @param array<string, DirectoryGroup> $groups keyed by {@see groupKey()}
      */
     private function syncGroups(array $groups, array $currentGroups, bool $dryRun): void
     {
         $managed = [];
         foreach ($currentGroups as $group) {
-            if ($group['netbsId'] !== null) {
-                $managed[$group['netbsId']] = $group;
+            if ($group['netbsId'] !== null || $group['netbsRole'] !== null) {
+                $managed[self::groupKey($group['netbsId'], $group['netbsRole'])] = $group;
             }
         }
 
-        foreach ($groups as $netbsId => $group) {
-            $current = $managed[$netbsId] ?? null;
+        foreach ($groups as $key => $group) {
+            $current = $managed[$key] ?? null;
 
             if ($current === null) {
                 $groupId = $this->apply($dryRun, sprintf('create group "%s"', $group->name),
-                    fn () => $this->client->createGroup($group->name, $netbsId));
+                    fn () => $this->client->createGroup($group->name, $group->netbsId, $group->role));
                 $currentMembers = [];
             } else {
                 $groupId = $current['id'];
@@ -159,8 +179,8 @@ final class DirectorySync
             }
         }
 
-        foreach ($managed as $netbsId => $current) {
-            if (!isset($groups[$netbsId])) {
+        foreach ($managed as $key => $current) {
+            if (!isset($groups[$key])) {
                 $this->apply($dryRun, sprintf('delete group "%s"', $current['displayName']),
                     fn () => $this->client->deleteGroup($current['id']));
             }

@@ -53,4 +53,34 @@ final class DirectoryProjectionTest extends KernelTestCase
         self::assertArrayNotHasKey($ids['gb'], $groups);
         self::assertArrayNotHasKey($ids['gc'], $groups);
     }
+
+    public function testRoleGroupsHoldDirectoryUsersWithTheRole(): void
+    {
+        $ids = $this->seedGroupeTree();
+        $this->grantUserRole($ids['user'], 'ROLE_NEXTCLOUD_ADMIN');
+        $this->grantUserRole($this->seedUser('dirproj.inactive', ['isActive' => 0]), 'ROLE_NEXTCLOUD_ADMIN');
+
+        $roleGroups = $this->projection->snapshot()['roleGroups'];
+
+        self::assertSame(['ROLE_NEXTCLOUD_ADMIN', 'ROLE_WIKI_ADMIN'], array_keys($roleGroups));
+        self::assertSame('nextcloud-admins', $roleGroups['ROLE_NEXTCLOUD_ADMIN']->name);
+        self::assertSame('ROLE_NEXTCLOUD_ADMIN', $roleGroups['ROLE_NEXTCLOUD_ADMIN']->role);
+        self::assertSame(['dirproj.user'], $roleGroups['ROLE_NEXTCLOUD_ADMIN']->members);
+        self::assertSame([], $roleGroups['ROLE_WIKI_ADMIN']->members, 'always present, even empty');
+    }
+
+    public function testGroupNamesAreDnSafeUniqueAndAvoidRoleGroupNames(): void
+    {
+        $ids = $this->seedGroupeTree();
+        $this->db->update('netbs_fichier_groupe_types', ['cree_groupe' => 1], ['nom' => 'dirproj-b']);
+        $this->db->update('sauvabelin_netbs_groupes', ['nom' => 'nextcloud-admins'], ['id' => $ids['ga']]);
+        $this->db->update('sauvabelin_netbs_groupes', ['nom' => 'Equipe (x), y'], ['id' => $ids['gb']]);
+        $this->db->update('sauvabelin_netbs_groupes', ['nom' => 'Equipe [x]  y'], ['id' => $ids['gc']]);
+
+        $groups = $this->projection->snapshot()['groups'];
+
+        self::assertSame(sprintf('nextcloud-admins [%d]', $ids['ga']), $groups[$ids['ga']]->name);
+        self::assertSame('Equipe [x]  y', $groups[$ids['gb']]->name);
+        self::assertSame(sprintf('Equipe [x]  y [%d]', $ids['gc']), $groups[$ids['gc']]->name);
+    }
 }
