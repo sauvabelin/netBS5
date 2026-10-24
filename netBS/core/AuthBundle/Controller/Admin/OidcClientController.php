@@ -125,6 +125,9 @@ final class OidcClientController extends AbstractController
                         'response_excerpt' => $e->responseExcerpt,
                     ]);
                     $this->addFlash('error', 'Could not update OAuth client.');
+                    // Turbo ignores a 200 answer to a form POST; an error
+                    // status makes it render the page and its flash.
+                    $status = Response::HTTP_BAD_GATEWAY;
                 }
             } else {
                 $this->addFlash('error', 'The form contains errors. Please fix them and try again.');

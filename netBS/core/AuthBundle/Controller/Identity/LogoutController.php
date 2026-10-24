@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace NetBS\AuthBundle\Controller\Identity;
 
+use NetBS\AuthBundle\Contract\Subject;
 use NetBS\AuthBundle\Security\LocalSessionTerminator;
 use NetBS\AuthBundle\Service\HydraAdminClient;
 use NetBS\AuthBundle\Service\HydraClientException;
@@ -100,7 +101,7 @@ final class LogoutController extends AbstractController
 
         $hydraSubject  = isset($logoutRequest['subject']) ? (string) $logoutRequest['subject'] : '';
         $currentUser   = $this->getUser();
-        $currentSubject = $currentUser?->getUserIdentifier();
+        $currentSubject = $currentUser !== null ? Subject::fromUsername($currentUser->getUserIdentifier()) : null;
 
         // The Hydra session and the local netBS session are independent. If
         // they disagree on identity (e.g. user is locally `iacopo` but Hydra

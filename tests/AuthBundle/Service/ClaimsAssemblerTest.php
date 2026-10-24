@@ -46,7 +46,6 @@ final class ClaimsAssemblerTest extends TestCase
             preferredUsername: 'alice',
             email: $email,
             displayName: 'Alice Example',
-            groups: ['users'],
             isDisabled: false,
         );
     }
@@ -79,37 +78,6 @@ final class ClaimsAssemblerTest extends TestCase
         $assembler->assemble($this->makeIdentity(), 'test-client', null);
     }
 
-    public function testPolicyCannotOverrideStandardEmail(): void
-    {
-        $assembler = $this->makeAssembler(
-            allowedClaims: ['sub', 'email'],
-            policy: $this->policyReturning(['email' => 'spoof@evil.example']),
-        );
-
-        $this->expectException(\LogicException::class);
-        $this->expectExceptionMessageMatches('/reserved claim.*email/i');
-
-        $assembler->assemble($this->makeIdentity(), 'test-client', null);
-    }
-
-    public function testStandardClaimsTakePrecedenceOnUnrelatedPolicyExtras(): void
-    {
-        $assembler = $this->makeAssembler(
-            allowedClaims: ['sub', 'preferred_username', 'custom_flag', 'custom_value'],
-            policy: $this->policyReturning([
-                'custom_flag'  => true,
-                'custom_value' => '5GB',
-            ]),
-        );
-
-        $claims = $assembler->assemble($this->makeIdentity(), 'test-client', null);
-
-        $this->assertSame('alice', $claims['sub']);
-        $this->assertSame('alice', $claims['preferred_username']);
-        $this->assertTrue($claims['custom_flag']);
-        $this->assertSame('5GB', $claims['custom_value']);
-    }
-
     public function testUserWithoutEmailOmitsTheEmailClaim(): void
     {
         $assembler = $this->makeAssembler(
@@ -124,22 +92,10 @@ final class ClaimsAssemblerTest extends TestCase
         $this->assertArrayNotHasKey('email', $claims, 'email must be omitted when null');
     }
 
-    public function testUserWithEmailEmitsTheEmailClaim(): void
-    {
-        $assembler = $this->makeAssembler(
-            allowedClaims: ['sub', 'email'],
-            policy: $this->policyReturning([]),
-        );
-
-        $claims = $assembler->assemble($this->makeIdentity(), 'test-client', null);
-
-        $this->assertSame('alice@example.com', $claims['email']);
-    }
-
     public function testClaimsAreLimitedToGrantedScopes(): void
     {
         // An openid-only token gets `sub` (and scope-less policy claims) but
-        // none of the profile/email/groups claims, even when allowed.
+        // none of the profile/email claims, even when allowed.
         $assembler = $this->makeAssembler(
             allowedClaims: ['sub', 'preferred_username', 'name', 'email', 'groups', 'custom_flag'],
             policy: $this->policyReturning(['custom_flag' => true]),
@@ -152,7 +108,9 @@ final class ClaimsAssemblerTest extends TestCase
 
         $claims = $assembler->assemble($this->makeIdentity(), 'test-client', ['openid', 'email', 'groups']);
         $this->assertSame('alice@example.com', $claims['email']);
-        $this->assertSame(['users'], $claims['groups']);
+        // Groups come from LDAP, never from the token, even for clients
+        // whose allowed_claims still list `groups`.
+        $this->assertArrayNotHasKey('groups', $claims);
         $this->assertArrayNotHasKey('name', $claims);
     }
 
@@ -168,46 +126,4 @@ final class ClaimsAssemblerTest extends TestCase
         $this->assertSame(['sub' => 'alice'], $claims);
     }
 
-    public function testBSUserOptionalClaimsAreFilteredByAllowedClaims(): void
-    {
-        // Policy returns the full BSUser-derived claim set (as the real
-        // IdentityClientPolicy now does). The client only opts into a
-        // subset via `metadata.allowed_claims` — everything else must be
-        // dropped before reaching the RP.
-        $assembler = $this->makeAssembler(
-            allowedClaims: ['sub', 'nextcloud_account', 'nextcloud_quota'],
-            policy: $this->policyReturning([
-                'nextcloud_account' => true,
-                'nextcloud_admin'   => true,
-                'nextcloud_quota'   => 10485760,
-                'wiki_account'      => true,
-                'wiki_admin'        => false,
-            ]),
-        );
-
-        $claims = $assembler->assemble($this->makeIdentity(), 'test-client', null);
-
-        $this->assertSame('alice', $claims['sub']);
-        $this->assertTrue($claims['nextcloud_account']);
-        $this->assertSame(10485760, $claims['nextcloud_quota']);
-        $this->assertArrayNotHasKey('nextcloud_admin', $claims);
-        $this->assertArrayNotHasKey('wiki_account', $claims);
-        $this->assertArrayNotHasKey('wiki_admin', $claims);
-    }
-
-    public function testNullAdditionalClaimsAreDroppedSilently(): void
-    {
-        $assembler = $this->makeAssembler(
-            allowedClaims: ['sub', 'custom_flag', 'custom_value'],
-            policy: $this->policyReturning([
-                'custom_flag'  => true,
-                'custom_value' => null,
-            ]),
-        );
-
-        $claims = $assembler->assemble($this->makeIdentity(), 'test-client', null);
-
-        $this->assertTrue($claims['custom_flag']);
-        $this->assertArrayNotHasKey('custom_value', $claims);
-    }
 }

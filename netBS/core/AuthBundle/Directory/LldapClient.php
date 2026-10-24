@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Ldap;
+namespace NetBS\AuthBundle\Directory;
 
 use Symfony\Component\HttpClient\HttpClient;
 use Symfony\Contracts\HttpClient\Exception\ExceptionInterface as HttpClientExceptionInterface;

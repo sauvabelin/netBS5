@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Tests\Ldap;
+namespace App\Tests\AuthBundle\Directory;
 
 use Doctrine\DBAL\Connection;
 

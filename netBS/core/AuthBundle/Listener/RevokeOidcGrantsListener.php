@@ -7,6 +7,7 @@ namespace NetBS\AuthBundle\Listener;
 use Doctrine\Bundle\DoctrineBundle\Attribute\AsDoctrineListener;
 use Doctrine\ORM\Event\PreUpdateEventArgs;
 use Doctrine\ORM\Events;
+use NetBS\AuthBundle\Contract\Subject;
 use NetBS\AuthBundle\Service\HydraAdminClient;
 use NetBS\AuthBundle\Service\HydraClientException;
 use NetBS\SecureBundle\Mapping\BaseUser;
@@ -46,9 +47,9 @@ final class RevokeOidcGrantsListener
         // passwordChangedAt, not password: every real change sets it, while a
         // transparent hash upgrade at login only touches password.
         if ($args->hasChangedField('passwordChangedAt')) {
-            $this->pending[$user->getUsername()] = 'password_changed';
+            $this->pending[Subject::fromUsername($user->getUsername())] = 'password_changed';
         } elseif ($args->hasChangedField('isActive') && $args->getOldValue('isActive') && !$args->getNewValue('isActive')) {
-            $this->pending[$user->getUsername()] = 'deactivated';
+            $this->pending[Subject::fromUsername($user->getUsername())] = 'deactivated';
         }
     }
 

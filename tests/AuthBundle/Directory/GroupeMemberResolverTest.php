@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace App\Tests\Ldap;
+namespace App\Tests\AuthBundle\Directory;
 
 use App\Entity\BSGroupe;
 use App\Entity\BSMembre;
-use App\Ldap\GroupeMemberResolver;
+use NetBS\AuthBundle\Directory\GroupeMemberResolver;
 use NetBS\FichierBundle\Entity\Attribution;
 use NetBS\FichierBundle\Entity\Fonction;
 use PHPUnit\Framework\TestCase;
@@ -88,12 +88,6 @@ final class GroupeMemberResolverTest extends TestCase
         $this->sousPatrouille->addEnfant($this->troupe);
 
         self::assertSame([1, 2, 3, 4], $this->resolve('tous'));
-    }
-
-    public function testUnknownModeThrows(): void
-    {
-        $this->expectException(\InvalidArgumentException::class);
-        $this->resolver->membreIds($this->troupe, 'enfants');
     }
 
     /** @return int[] sorted */

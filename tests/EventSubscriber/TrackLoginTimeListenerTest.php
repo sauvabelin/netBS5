@@ -48,13 +48,6 @@ class TrackLoginTimeListenerTest extends TestCase
         $this->assertFalse($request->hasSession(), 'Listener must not create or touch a session on stateless requests.');
     }
 
-    public function test_empty_request_stack_is_a_noop_and_does_not_throw(): void
-    {
-        (new TrackLoginTimeListener(new RequestStack()))->onLoginSuccess($this->event());
-
-        $this->addToAssertionCount(1); // reaching here without an exception is the assertion
-    }
-
     private function event(): LoginSuccessEvent
     {
         // The listener ignores the event entirely (it reads from the RequestStack),

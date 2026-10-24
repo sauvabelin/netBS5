@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Ldap;
+namespace NetBS\AuthBundle\Directory;
 
 /**
  * No groupe would become a directory group: no groupe type is set to "Crée un

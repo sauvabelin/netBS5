@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Ldap;
+namespace NetBS\AuthBundle\Directory;
 
 use NetBS\FichierBundle\Mapping\BaseGroupe;
 use NetBS\FichierBundle\Mapping\BaseGroupeType;

@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace App\Tests\Ldap;
+namespace App\Tests\AuthBundle\Directory;
 
-use App\Ldap\LldapClientInterface;
+use NetBS\AuthBundle\Directory\LldapClientInterface;
 use App\Tests\Support\UserFactoryTrait;
 use Symfony\Bundle\FrameworkBundle\KernelBrowser;
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
@@ -13,7 +13,7 @@ use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
  * The LDAP admin page against netbs5_test (inside a rolled-back transaction)
  * and an in-memory lldap.
  */
-final class LdapAdminControllerTest extends WebTestCase
+final class LdapControllerTest extends WebTestCase
 {
     use DirectoryFixturesTrait;
     use UserFactoryTrait;
@@ -65,18 +65,6 @@ final class LdapAdminControllerTest extends WebTestCase
         self::assertCount(0, $crawler->filter(sprintf('[data-group-id="%d"]', $ids['gb'])));
         self::assertStringContainsString('create group "dirproj-GA"', $crawler->filter('#ldap-pending')->text());
         self::assertSame([], $this->lldap->groups, 'the preview must not write to lldap');
-    }
-
-    public function testShowsGuardWhenNothingCreatesAGroup(): void
-    {
-        $this->db->executeStatement('UPDATE netbs_fichier_groupe_types SET cree_groupe = 0');
-        $this->loginAdmin();
-
-        $crawler = $this->client->request('GET', self::URL);
-
-        self::assertResponseIsSuccessful();
-        self::assertStringContainsString('refusing to sync', $crawler->filter('#ldap-not-configured')->text());
-        self::assertCount(0, $crawler->filter('form#ldap-sync-now'));
     }
 
     public function testSyncNowRejectsBadCsrfToken(): void

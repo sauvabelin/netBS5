@@ -35,7 +35,7 @@ final class OidcClientType extends AbstractType
             ])
             ->add('scopes', TextType::class, [
                 'label' => 'Scopes',
-                'help'  => 'Space-separated list, e.g. openid profile email groups',
+                'help'  => 'Space-separated list, e.g. openid profile email',
                 'constraints' => [new NotBlank()],
             ])
             ->add('redirectUris', CollectionType::class, [
@@ -65,7 +65,7 @@ final class OidcClientType extends AbstractType
                 'help'  => 'Shown on the netBS login page when this client initiates a sign-in.',
                 'required' => false,
                 'default_protocol' => 'https',
-                'constraints' => [new Url(['protocols' => ['https']])],
+                'constraints' => [new Url(['protocols' => ['http', 'https']])],
             ])
             ->add('allowedClaims', ChoiceType::class, [
                 'label' => 'Allowed claims',

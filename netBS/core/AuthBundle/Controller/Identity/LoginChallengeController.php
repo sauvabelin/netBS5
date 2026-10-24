@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace NetBS\AuthBundle\Controller\Identity;
 
+use NetBS\AuthBundle\Contract\Subject;
 use NetBS\AuthBundle\Listener\RecordAuthenticationTimeListener;
 use NetBS\AuthBundle\Security\LocalSessionTerminator;
 use NetBS\AuthBundle\Service\HydraAdminClient;
@@ -63,7 +64,7 @@ final class LoginChallengeController extends AbstractController
             throw new AccessDeniedException();
         }
 
-        $currentSub = $user->getUserIdentifier();
+        $currentSub = Subject::fromUsername($user->getUserIdentifier());
 
         // An admin impersonating someone (switch_user) must not be able to
         // obtain RP tokens in that person's name; nothing in the token would

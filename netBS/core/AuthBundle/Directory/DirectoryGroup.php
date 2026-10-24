@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Ldap;
+namespace NetBS\AuthBundle\Directory;
 
 final class DirectoryGroup
 {

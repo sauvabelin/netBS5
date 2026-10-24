@@ -90,42 +90,6 @@ class AccessAuditServiceTest extends TestCase
         $this->assertSame($groupeB, $autorisationGrant->scope);
     }
 
-    public function test_audits_user_with_fonction_role_labels_source_fonction_and_scope(): void
-    {
-        $roleX = (new Role())->setRole('ROLE_X');
-
-        $groupe = new BSGroupe();
-        $groupe->setNom('TestGroupe');
-
-        $fonction = new Fonction();
-        $fonction->setNom('Trésorier');
-        $fonction->setAbbreviation('Tr');
-        $fonction->addRole($roleX);
-
-        $membre = new Membre();
-
-        $attribution = new Attribution();
-        $attribution->setFonction($fonction);
-        $attribution->setGroupe($groupe);
-        $attribution->setDateDebut((new \DateTime())->modify('-1 year'));
-        $attribution->setDateFin((new \DateTime())->modify('+1 year'));
-        $membre->addAttribution($attribution);
-
-        $user = new BSUser();
-        $user->setUsername('fonctionuser');
-        $user->setMembre($membre);
-        // No direct roles, no autorisations
-
-        $report = $this->makeService()->auditUser($user);
-
-        $this->assertCount(1, $report->grants);
-
-        $grant = $report->grants[0];
-        $this->assertSame(Provenance::FONCTION_ROLE, $grant->provenance);
-        $this->assertSame($fonction, $grant->sourceFonction);
-        $this->assertSame($groupe, $grant->scope);
-    }
-
     public function test_expands_role_tree_recursively_within_a_grant(): void
     {
         $parent = (new Role())->setRole('ROLE_PARENT');

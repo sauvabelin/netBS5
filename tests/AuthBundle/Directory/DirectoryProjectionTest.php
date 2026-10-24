@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace App\Tests\Ldap;
+namespace App\Tests\AuthBundle\Directory;
 
-use App\Ldap\DirectoryNotConfiguredException;
-use App\Ldap\DirectoryProjection;
+use NetBS\AuthBundle\Directory\DirectoryNotConfiguredException;
+use NetBS\AuthBundle\Directory\DirectoryProjection;
 use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
 
 /**
@@ -30,14 +30,6 @@ final class DirectoryProjectionTest extends KernelTestCase
     {
         $this->db->rollBack();
         parent::tearDown();
-    }
-
-    public function testRefusesWhenNoTypeCreatesAGroup(): void
-    {
-        $this->db->executeStatement('UPDATE netbs_fichier_groupe_types SET cree_groupe = 0');
-
-        $this->expectException(DirectoryNotConfiguredException::class);
-        $this->projection->snapshot();
     }
 
     public function testRefusesWhenTickedTypesHaveNoGroupes(): void

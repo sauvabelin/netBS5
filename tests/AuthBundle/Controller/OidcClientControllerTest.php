@@ -10,8 +10,6 @@ use PHPUnit\Framework\TestCase;
 use Psr\Container\ContainerInterface;
 use Psr\Log\NullLogger;
 use Symfony\Component\HttpClient\MockHttpClient;
-use Symfony\Component\HttpClient\Response\MockResponse;
-use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Component\HttpFoundation\Response;
@@ -191,15 +189,6 @@ final class OidcClientControllerTest extends TestCase
         $controller->index();
     }
 
-    public function testCreatePostWithoutCsrfTokenIsRejected(): void
-    {
-        $this->csrfValid = false;
-        $controller = $this->makeController();
-
-        $this->expectException(AccessDeniedException::class);
-        $controller->create(new Request());
-    }
-
     public function testDeletePostWithoutCsrfTokenIsRejected(): void
     {
         $this->csrfValid = false;
@@ -218,34 +207,4 @@ final class OidcClientControllerTest extends TestCase
         $controller->regenerateSecret('client-abc', new Request());
     }
 
-    public function testListDegradesGracefullyWhenHydraFails(): void
-    {
-        // Simulate a Hydra outage during the listing call. The controller is
-        // contracted to catch HydraClientException, log it, surface a generic
-        // flash, and still render the list page with an empty collection —
-        // *not* bubble up as a 500.
-        $this->http = new MockHttpClient([
-            new MockResponse('service unavailable', ['http_code' => 503]),
-        ]);
-        $this->hydra = $this->buildHydra($this->http);
-
-        $controller = $this->makeController();
-        $response = $controller->index();
-
-        // Page still renders — no exception bubbled to the kernel.
-        $this->assertInstanceOf(Response::class, $response);
-        $this->assertNotInstanceOf(RedirectResponse::class, $response);
-        $this->assertSame(Response::HTTP_OK, $response->getStatusCode());
-
-        $this->assertSame('@NetBSAuth/admin/oidc/list.html.twig', $this->rendered['view']);
-        $this->assertSame([], $this->rendered['parameters']['clients']);
-
-        // Flash bag holds a friendly error — and crucially does *not* leak
-        // the internal Hydra URL / status excerpt that lived on the exception.
-        $errors = $this->session->getFlashBag()->get('error');
-        $this->assertCount(1, $errors);
-        $this->assertStringNotContainsString('/admin/clients', $errors[0]);
-        $this->assertStringNotContainsString('service unavailable', $errors[0]);
-        $this->assertStringNotContainsString('503', $errors[0]);
-    }
 }

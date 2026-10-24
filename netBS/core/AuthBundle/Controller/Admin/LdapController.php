@@ -2,20 +2,20 @@
 
 declare(strict_types=1);
 
-namespace App\Ldap\Controller;
+namespace NetBS\AuthBundle\Controller\Admin;
 
-use App\Entity\BSGroupe;
-use App\Ldap\DirectoryNotConfiguredException;
-use App\Ldap\DirectoryProjection;
-use App\Ldap\DirectorySync;
-use App\Ldap\LldapClientException;
 use Doctrine\ORM\EntityManagerInterface;
+use NetBS\AuthBundle\Directory\DirectoryNotConfiguredException;
+use NetBS\AuthBundle\Directory\DirectoryProjection;
+use NetBS\AuthBundle\Directory\DirectorySync;
+use NetBS\AuthBundle\Directory\LldapClientException;
+use NetBS\FichierBundle\Mapping\BaseGroupe;
 use NetBS\FichierBundle\Mapping\BaseGroupeType;
+use NetBS\FichierBundle\Service\FichierConfig;
 use Psr\Log\LoggerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
-use Symfony\Component\HttpKernel\Attribute\AsController;
 use Symfony\Component\Routing\Attribute\Route;
 
 /**
@@ -24,9 +24,8 @@ use Symfony\Component\Routing\Attribute\Route;
  * lets an admin apply it right away. The group rules themselves are edited on
  * Structure › Types de groupes and Fonctions.
  */
-#[AsController]
 #[Route('/ldap')]
-final class LdapAdminController extends AbstractController
+final class LdapController extends AbstractController
 {
     /** Errors shown as toasts after "sync now"; the rest are summarised. */
     private const MAX_ERROR_FLASHES = 5;
@@ -35,6 +34,7 @@ final class LdapAdminController extends AbstractController
         private readonly DirectoryProjection $projection,
         private readonly DirectorySync $sync,
         private readonly EntityManagerInterface $em,
+        private readonly FichierConfig $fichierConfig,
         private readonly LoggerInterface $logger,
     ) {
     }
@@ -47,7 +47,7 @@ final class LdapAdminController extends AbstractController
         try {
             $snapshot = $this->projection->snapshot();
         } catch (DirectoryNotConfiguredException $e) {
-            return $this->render('ldap/admin.html.twig', ['notConfigured' => $e->getMessage()]);
+            return $this->render('@NetBSAuth/admin/ldap/index.html.twig', ['notConfigured' => $e->getMessage()]);
         }
 
         $report = null;
@@ -59,16 +59,16 @@ final class LdapAdminController extends AbstractController
             $lldapError = $e->getMessage();
         }
 
-        /** @var array<int, BSGroupe> $groupes */
+        /** @var array<int, BaseGroupe> $groupes */
         $groupes = [];
-        foreach ($this->em->getRepository(BSGroupe::class)->findBy(['id' => array_keys($snapshot['groups'])]) as $groupe) {
+        foreach ($this->em->getRepository($this->fichierConfig->getGroupeClass())->findBy(['id' => array_keys($snapshot['groups'])]) as $groupe) {
             $groupes[$groupe->getId()] = $groupe;
         }
 
         $groups = $snapshot['groups'];
         uasort($groups, fn ($a, $b) => strcasecmp($a->name, $b->name));
 
-        return $this->render('ldap/admin.html.twig', [
+        return $this->render('@NetBSAuth/admin/ldap/index.html.twig', [
             'notConfigured' => null,
             'users'         => $snapshot['users'],
             'groups'        => $groups,

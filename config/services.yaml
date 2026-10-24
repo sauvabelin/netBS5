@@ -158,21 +158,11 @@ services:
   NetBS\AuthBundle\Contract\IdentityUserResolverInterface:
     alias: App\Identity\UserModule\IdentityUserResolver
 
-  NetBS\AuthBundle\Contract\IdentityGroupProviderInterface:
-    alias: App\Identity\UserModule\IdentityGroupProvider
+  NetBS\AuthBundle\Contract\DirectoryUserProviderInterface:
+    alias: App\Identity\UserModule\DirectoryUserProvider
 
   NetBS\AuthBundle\Contract\IdentityClientPolicyInterface:
     alias: App\Identity\UserModule\AppIdentityClientPolicy
-
-  # lldap directory sync (netbs:ldap:sync)
-  App\Ldap\LldapClient:
-    arguments:
-      $lldapUrl: '%env(LLDAP_URL)%'
-      $adminUsername: '%env(LLDAP_ADMIN_USERNAME)%'
-      $adminPassword: '%env(LLDAP_ADMIN_PASSWORD)%'
-
-  App\Ldap\LldapClientInterface:
-    alias: App\Ldap\LldapClient
 
   # Picked up by SecureBundle's RoleTreeSyncer via the netbs.role_tree_source tag.
   # The tag is set explicitly because SecureBundle's _instanceof rule only

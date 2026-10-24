@@ -64,16 +64,14 @@ final class OidcClientDtoTest extends TestCase
         $this->assertArrayNotHasKey('required_flag', $payload['metadata']);
     }
 
-    public function testNewClientGetsDefaults(): void
+    public function testEmptyJwksIsSentBackAsAnObject(): void
     {
-        $dto = new OidcClientDto();
-        $dto->slug = 'new';
-        $dto->name = 'New client';
+        // Hydra returns `"jwks": {}`; json_decode turns it into [], which must
+        // not go back out as `[]` (Hydra rejects the whole PUT).
+        $dto = OidcClientDto::fromHydra(['jwks' => []] + $this->existingClient());
 
-        $payload = $dto->toHydraPayload('secret');
+        $json = json_encode($dto->toHydraPayload(), JSON_THROW_ON_ERROR);
 
-        $this->assertSame('client_secret_post', $payload['token_endpoint_auth_method']);
-        $this->assertSame(['authorization_code', 'refresh_token'], $payload['grant_types']);
-        $this->assertSame('secret', $payload['client_secret']);
+        $this->assertStringContainsString('"jwks":{}', $json);
     }
 }

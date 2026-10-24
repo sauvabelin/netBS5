@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace App\Tests\Ldap;
+namespace App\Tests\AuthBundle\Directory;
 
-use App\Ldap\DirectoryGroup;
-use App\Ldap\DirectorySync;
-use App\Ldap\DirectoryUser;
+use NetBS\AuthBundle\Directory\DirectoryGroup;
+use NetBS\AuthBundle\Directory\DirectorySync;
+use NetBS\AuthBundle\Directory\DirectoryUser;
 use PHPUnit\Framework\TestCase;
 
 final class DirectorySyncTest extends TestCase

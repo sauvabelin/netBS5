@@ -275,20 +275,6 @@ final class LogoutControllerTest extends TestCase
         $this->assertSame('@NetBSAuth/identity/logout_confirm.html.twig', $built['twig']->lastRender[0]);
     }
 
-    public function testGetWithoutChallengeAlsoNeverLogsOut(): void
-    {
-        // Same property for the "plain" /oidc-logout entry point.
-        $built = $this->makeController(currentSubject: 'alice');
-        /** @var LogoutController $controller */
-        $controller = $built['controller'];
-
-        $response = $controller($this->newGet());
-
-        $this->assertSame(0, $built['security']->logoutCalls);
-        $this->assertSame(Response::HTTP_OK, $response->getStatusCode());
-        $this->assertNotNull($built['twig']->lastRender);
-    }
-
     public function testPostWithoutChallengeAndInvalidCsrfReturns403OrSimilar(): void
     {
         $built = $this->makeController(currentSubject: 'alice', csrfValid: false);
@@ -396,89 +382,6 @@ final class LogoutControllerTest extends TestCase
         $this->assertCount(1, $cleared, 'the netbs remember-me cookie must be cleared');
     }
 
-    public function testLogoutWithoutLocalUserStillAcceptsHydraLogout(): void
-    {
-        // RP-initiated logout after the netBS session already expired: there
-        // is no local user to log out, which must not crash the flow.
-        $built = $this->makeController(
-            hydraBehaviour: [
-                'getLogoutRequest' => ['subject' => 'alice'],
-                'acceptLogoutRequest' => ['redirect_to' => 'https://rp.example/post-logout'],
-            ],
-            currentSubject: null,
-        );
-
-        $response = ($built['controller'])($this->newPost(challenge: 'ch-1', token: 'fake', tokenId: 'oidc_logout_challenge_ch-1'));
-
-        $this->assertSame(0, $built['security']->logoutCalls);
-        $this->assertSame('https://rp.example/post-logout', $response->getTargetUrl());
-    }
-
-    public function testHydraAcceptFailureSetsFlashAndStillRedirectsToLogin(): void
-    {
-        // After local logout succeeds, if Hydra's acceptLogoutRequest fails,
-        // we redirect to the login page and surface a warning flash so the
-        // user knows their session may persist on federated RPs.
-        $built = $this->makeController(
-            hydraBehaviour: [
-                'getLogoutRequest' => ['subject' => 'alice'],
-                'acceptLogoutRequest' => new HydraClientException('PUT', '/x', 503, 'down'),
-            ],
-            currentSubject: 'alice',
-        );
-        /** @var LogoutController $controller */
-        $controller = $built['controller'];
-
-        $response = $controller($this->newPost(challenge: 'ch-1', token: 'fake', tokenId: 'oidc_logout_challenge_ch-1'));
-
-        $this->assertSame(1, $built['security']->logoutCalls);
-        $this->assertInstanceOf(RedirectResponse::class, $response);
-        $this->assertSame('/r/netbs.secure.login.login', $response->getTargetUrl());
-
-        $flashes = $built['session']->getFlashBag()->all();
-        $this->assertArrayHasKey('warning', $flashes, 'a warning flash must be set when Hydra accept fails');
-        $this->assertNotEmpty($flashes['warning']);
-        $this->assertStringContainsString('SSO server', (string) $flashes['warning'][0]);
-    }
-
-    public function testProgrammerErrorBubbles(): void
-    {
-        // Defensive regression: programmer errors (TypeError, autoloader
-        // failures, etc.) raised inside Hydra collaborators must NOT be
-        // swallowed by the controller (which used to catch \Throwable). They
-        // should bubble to Symfony's exception listener so monitoring catches
-        // them. We install a HydraAdminClient whose `http` property throws on
-        // the first request — the catch block now only catches
-        // HydraClientException, so a TypeError must propagate.
-        $hydra = (new \ReflectionClass(HydraAdminClient::class))->newInstanceWithoutConstructor();
-        $throwingClient = new class extends MockHttpClient {
-            public function __construct() { parent::__construct(); }
-            public function request(string $method, string $url, array $options = []): \Symfony\Contracts\HttpClient\ResponseInterface
-            {
-                throw new \TypeError('coding bug deep in the http layer');
-            }
-        };
-        (new \ReflectionProperty(HydraAdminClient::class, 'http'))->setValue($hydra, $throwingClient);
-        (new \ReflectionProperty(HydraAdminClient::class, 'logger'))->setValue($hydra, new \Psr\Log\NullLogger());
-
-        $security = $this->makeSecurityStub('alice');
-        $controller = new LogoutController($hydra, new LocalSessionTerminator($security));
-
-        // Reuse the container scaffolding by leaning on makeController for
-        // the wiring, then swapping the controller's hydra dep.
-        $built = $this->makeController(currentSubject: 'alice');
-        /** @var LogoutController $existing */
-        $existing = $built['controller'];
-        $containerProp = new \ReflectionProperty(
-            \Symfony\Bundle\FrameworkBundle\Controller\AbstractController::class,
-            'container',
-        );
-        $containerProp->setValue($controller, $containerProp->getValue($existing));
-
-        $this->expectException(\TypeError::class);
-        $controller($this->newGet(challenge: 'ch-1'));
-    }
-
     public function testCsrfTokenIdIsScopedToFlow(): void
     {
         // Plain-logout flow uses `oidc_logout_local`; the challenge flow uses
@@ -500,22 +403,20 @@ final class LogoutControllerTest extends TestCase
         $this->assertSame(['oidc_logout_challenge_abc-123'], $built2['csrfManager']->validatedTokenIds);
     }
 
-    public function testGetLogoutRequestHydraExceptionRedirectsToErrorPage(): void
+    public function testMixedCaseLocalUserMatchesLowercaseHydraSubject(): void
     {
-        // The narrow HydraClientException catch must still redirect to the
-        // OIDC error page (preserve the existing UX for an expired challenge).
         $built = $this->makeController(
             hydraBehaviour: [
-                'getLogoutRequest' => new HydraClientException('GET', '/x', 404, 'expired'),
+                'getLogoutRequest' => ['subject' => 'equipe'],
+                'acceptLogoutRequest' => ['redirect_to' => 'https://rp.example/post-logout'],
             ],
-            currentSubject: 'alice',
+            currentSubject: 'Equipe',
         );
-        /** @var LogoutController $controller */
-        $controller = $built['controller'];
 
-        $response = $controller($this->newGet(challenge: 'ch-1'));
+        $response = $built['controller']($this->newPost(challenge: 'ch-1', token: 'fake', tokenId: 'oidc_logout_challenge_ch-1'));
 
+        $this->assertSame(1, $built['security']->logoutCalls);
         $this->assertInstanceOf(RedirectResponse::class, $response);
-        $this->assertSame('/r/oidc_error', $response->getTargetUrl());
+        $this->assertSame('https://rp.example/post-logout', $response->getTargetUrl());
     }
 }

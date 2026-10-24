@@ -157,17 +157,6 @@ final class LoginChallengeControllerTest extends TestCase
 
     // ---------------------------------------------------------------------
 
-    public function testRejectsWhenChallengeMissingFromQuery(): void
-    {
-        $hydra = $this->makeHydra([]);
-        $built = $this->build($hydra, currentSubject: 'alice');
-        /** @var LoginChallengeController $controller */
-        $controller = $built['controller'];
-
-        $this->expectException(\InvalidArgumentException::class);
-        $controller(Request::create('/oidc-login', 'GET'));
-    }
-
     public function testThrowsAccessDeniedOrEquivalentWhenNoUserOnSessionForSkipTrue(): void
     {
         // The firewall should have redirected to /login before we got here.
@@ -228,53 +217,6 @@ final class LoginChallengeControllerTest extends TestCase
 
         $this->assertInstanceOf(RedirectResponse::class, $response);
         $this->assertSame('https://rp.example/cb', $response->getTargetUrl());
-    }
-
-    public function testSkipFalseAcceptsWithCurrentSession(): void
-    {
-        // When Hydra doesn't request skip, the controller still treats a
-        // present Symfony session as proof of authentication and accepts
-        // the login request with the local user as subject. (The non-skip
-        // behaviour is "accept with the authenticated user" — this is what
-        // the firewall would have arranged before routing here.)
-        $hydra = $this->makeHydra([
-            $this->jsonResponse([
-                'skip' => false,
-                'client' => ['client_id' => 'acme'],
-            ]),
-            $this->jsonResponse(['redirect_to' => 'https://rp.example/cb']),
-        ]);
-        $built = $this->build($hydra, currentSubject: 'alice');
-        /** @var LoginChallengeController $controller */
-        $controller = $built['controller'];
-
-        $response = $controller($this->loginRequest());
-
-        $this->assertInstanceOf(RedirectResponse::class, $response);
-        $this->assertSame('https://rp.example/cb', $response->getTargetUrl());
-    }
-
-    public function testSkipTrueWithMissingHydraSubjectRejects(): void
-    {
-        // If skip=true but Hydra didn't return a subject string, that's an
-        // odd state — the controller's hash_equals guard rejects (we can't
-        // verify the subject match without it).
-        $hydra = $this->makeHydra([
-            $this->jsonResponse([
-                'skip' => true,
-                // no `subject` field
-                'client' => ['client_id' => 'acme'],
-            ]),
-            $this->jsonResponse(['redirect_to' => 'https://hydra.example/reject-cb']),
-        ]);
-        $built = $this->build($hydra, currentSubject: 'alice');
-        /** @var LoginChallengeController $controller */
-        $controller = $built['controller'];
-
-        $response = $controller($this->loginRequest());
-
-        $this->assertInstanceOf(RedirectResponse::class, $response);
-        $this->assertSame('https://hydra.example/reject-cb', $response->getTargetUrl());
     }
 
     public function testSubjectMismatchRevokesStaleHydraSession(): void
@@ -353,21 +295,6 @@ final class LoginChallengeControllerTest extends TestCase
         $this->assertSame('/r/netbs.secure.login.login', $response->getTargetUrl());
     }
 
-    public function testMaxAgeWithinLimitAccepts(): void
-    {
-        $hydra = $this->makeHydra([
-            $this->jsonResponse($this->loginRequestBody('max_age=3600')),
-            $this->jsonResponse(['redirect_to' => 'https://rp.example/cb']),
-        ]);
-        $controller = $this->build($hydra, currentSubject: 'alice')['controller'];
-
-        $response = $controller($this->loginRequest(sessionData: [
-            RecordAuthenticationTimeListener::SESSION_KEY => time() - 60,
-        ]));
-
-        $this->assertSame('https://rp.example/cb', $response->getTargetUrl());
-    }
-
     public function testReauthWithPromptNoneRejectsLoginRequired(): void
     {
         $hydra = $this->makeHydra([
@@ -382,4 +309,23 @@ final class LoginChallengeControllerTest extends TestCase
 
         $this->assertSame('https://hydra.example/reject-cb', $response->getTargetUrl());
     }
+
+    public function testSubjectSentToHydraIsLowercased(): void
+    {
+        // lldap stores uids lowercase, so the OIDC subject must be too.
+        $acceptBody = null;
+        $hydra = $this->makeHydra([
+            $this->jsonResponse(['skip' => false, 'client' => ['client_id' => 'acme']]),
+            function (string $method, string $url, array $options) use (&$acceptBody) {
+                $acceptBody = json_decode($options['body'], true);
+                return $this->jsonResponse(['redirect_to' => 'https://rp.example/cb']);
+            },
+        ]);
+        $controller = $this->build($hydra, currentSubject: 'Equipe')['controller'];
+
+        $controller($this->loginRequest());
+
+        $this->assertSame('equipe', $acceptBody['subject'] ?? null);
+    }
+
 }

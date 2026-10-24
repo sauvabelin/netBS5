@@ -27,10 +27,10 @@ final class RevokeOidcGrantsListenerTest extends TestCase
         return new RevokeOidcGrantsListener($hydra, new \Psr\Log\NullLogger());
     }
 
-    private function update(RevokeOidcGrantsListener $listener, array $changeSet): void
+    private function update(RevokeOidcGrantsListener $listener, array $changeSet, string $username = 'alice'): void
     {
         $user = $this->createMock(BSUser::class);
-        $user->method('getUsername')->willReturn('alice');
+        $user->method('getUsername')->willReturn($username);
         $listener->preUpdate(new PreUpdateEventArgs($user, $this->createMock(EntityManagerInterface::class), $changeSet));
         $listener->postFlush();
     }
@@ -44,13 +44,21 @@ final class RevokeOidcGrantsListenerTest extends TestCase
         $this->assertSame(2, $this->http->getRequestsCount());
     }
 
-    public function testDeactivationRevokes(): void
+    public function testDeactivationRevokesUnderTheLowercaseSubject(): void
     {
-        $listener = $this->listener([new MockResponse('', ['http_code' => 204]), new MockResponse('', ['http_code' => 204])]);
+        $urls = [];
+        $record = function (string $method, string $url) use (&$urls) {
+            $urls[] = $url;
+            return new MockResponse('', ['http_code' => 204]);
+        };
+        $listener = $this->listener([$record, $record]);
 
-        $this->update($listener, ['isActive' => [true, false]]);
+        $this->update($listener, ['isActive' => [true, false]], 'Equipe');
 
-        $this->assertSame(2, $this->http->getRequestsCount());
+        $this->assertCount(2, $urls);
+        foreach ($urls as $url) {
+            $this->assertStringContainsString('subject=equipe', $url);
+        }
     }
 
     public function testUnrelatedChangesDoNothing(): void
@@ -70,4 +78,5 @@ final class RevokeOidcGrantsListenerTest extends TestCase
 
         $this->assertSame(1, $this->http->getRequestsCount());
     }
+
 }

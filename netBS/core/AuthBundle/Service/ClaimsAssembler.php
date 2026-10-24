@@ -23,7 +23,8 @@ final class ClaimsAssembler
     /**
      * Claim names owned by the standard identity set. Policies must not return
      * these keys — we reject collisions loudly rather than letting a policy
-     * silently overwrite a user's `sub`, `email`, etc.
+     * silently overwrite a user's `sub`, `email`, etc. `groups` is reserved
+     * although never emitted: group membership comes from LDAP only.
      */
     private const RESERVED_CLAIMS = [
         'sub',
@@ -34,16 +35,15 @@ final class ClaimsAssembler
     ];
 
     /**
-     * Standard claims and the scope that releases each (OIDC Core 5.4, plus
-     * the de-facto `groups` scope). `sub` is always released. Claims not
-     * listed here (policy claims like nextcloud_*, wiki_*) have no scope and
-     * are governed by the client's allowed_claims alone.
+     * Standard claims and the scope that releases each (OIDC Core 5.4). `sub`
+     * is always released. Claims not listed here (policy claims like
+     * nextcloud_*, wiki_*) have no scope and are governed by the client's
+     * allowed_claims alone.
      */
     private const SCOPE_OF_CLAIM = [
         'preferred_username' => 'profile',
         'name'               => 'profile',
         'email'              => 'email',
-        'groups'             => 'groups',
     ];
 
     public function __construct(
@@ -69,7 +69,6 @@ final class ClaimsAssembler
             'sub'                => $identity->sub,
             'preferred_username' => $identity->preferredUsername,
             'name'               => $identity->displayName,
-            'groups'             => $identity->groups,
         ];
 
         // No `email_verified` companion — netBS has no verification mechanism,

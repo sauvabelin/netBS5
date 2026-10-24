@@ -17,7 +17,6 @@ final class OidcEndpoints
         'preferred_username',
         'email',
         'name',
-        'groups',
         // Optional BSUser-derived claims. Policy emits them uniformly;
         // per-client `metadata.allowed_claims` decides which reach each RP.
         'nextcloud_account',

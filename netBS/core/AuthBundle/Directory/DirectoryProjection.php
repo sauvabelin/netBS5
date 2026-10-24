@@ -2,17 +2,18 @@
 
 declare(strict_types=1);
 
-namespace App\Ldap;
+namespace NetBS\AuthBundle\Directory;
 
-use App\Entity\BSGroupe;
-use App\Entity\BSUser;
 use Doctrine\ORM\EntityManagerInterface;
+use NetBS\AuthBundle\Contract\DirectoryUserProviderInterface;
+use NetBS\FichierBundle\Mapping\BaseGroupe;
+use NetBS\FichierBundle\Service\FichierConfig;
 
 /**
  * Computes what the LDAP directory should contain, from netBS data. This is
  * where the group rules live (previously the nextcloud_* SQL views).
  *
- *   - users: active accounts with nextcloud_account = 1
+ *   - users: whatever the app's {@see DirectoryUserProviderInterface} lists
  *   - groups: one per groupe whose type is set to "crée un groupe" (Structure ›
  *     Types de groupes); members follow the type's "sous-groupes" mode, see
  *     {@see GroupeMemberResolver}. Membres without a directory user are dropped.
@@ -21,6 +22,8 @@ final class DirectoryProjection
 {
     public function __construct(
         private readonly EntityManagerInterface $em,
+        private readonly FichierConfig $fichierConfig,
+        private readonly DirectoryUserProviderInterface $userProvider,
         private readonly GroupeMemberResolver $resolver,
     ) {
     }
@@ -33,30 +36,11 @@ final class DirectoryProjection
      */
     public function snapshot(): array
     {
-        /** @var BSUser[] $accounts */
-        $accounts = $this->em->createQueryBuilder()
-            ->select('u', 'm')
-            ->from(BSUser::class, 'u')
-            ->leftJoin('u.membre', 'm')
-            ->where('u.nextcloudAccount = true')
-            ->andWhere('u.isActive = true')
-            ->getQuery()
-            ->getResult();
-
-        $users = [];
+        $users = $this->userProvider->directoryUsers();
         $uidByMembre = [];
-        foreach ($accounts as $account) {
-            $membre = $account->getMembre();
-            $uid = mb_strtolower($account->getUsername());
-            $users[$uid] = new DirectoryUser(
-                uid: $uid,
-                email: $this->email($account, $uid),
-                displayName: $membre ? trim($membre->getFullName()) : $account->getUsername(),
-                firstName: $membre ? (string) $membre->getPrenom() : '',
-                lastName: $membre ? (string) $membre->_getNom() : '',
-            );
-            if ($membre !== null) {
-                $uidByMembre[$membre->getId()] = $uid;
+        foreach ($users as $uid => $user) {
+            if ($user->membreId !== null) {
+                $uidByMembre[$user->membreId] = $uid;
             }
         }
 
@@ -74,10 +58,10 @@ final class DirectoryProjection
      */
     private function groups(array $uidByMembre): array
     {
-        /** @var BSGroupe[] $groupes */
+        /** @var BaseGroupe[] $groupes */
         $groupes = $this->em->createQueryBuilder()
             ->select('g', 't', 'a', 'am')
-            ->from(BSGroupe::class, 'g')
+            ->from($this->fichierConfig->getGroupeClass(), 'g')
             ->join('g.groupeType', 't')
             ->leftJoin('g.attributions', 'a')
             ->leftJoin('a.membre', 'am')
@@ -107,15 +91,5 @@ final class DirectoryProjection
             $groups[$groupe->getId()] = new DirectoryGroup($groupe->getId(), $name, array_values($members));
         }
         return $groups;
-    }
-
-    /**
-     * lldap refuses users without an email, and most netBS accounts have none.
-     * Placeholder addresses use the reserved .invalid TLD so nothing is ever
-     * delivered to them.
-     */
-    private function email(BSUser $account, string $uid): string
-    {
-        return $account->getEmail() ?: $account->getEmailBS() ?: sprintf('%s@no-email.invalid', $uid);
     }
 }

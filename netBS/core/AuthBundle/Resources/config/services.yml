@@ -15,6 +15,16 @@ services:
       $hydraAdminUrl: '%env(HYDRA_ADMIN_URL)%'
       $logger: '@logger'
 
+  # lldap management API, written by the directory sync (netbs:ldap:sync).
+  NetBS\AuthBundle\Directory\LldapClient:
+    arguments:
+      $lldapUrl: '%env(LLDAP_URL)%'
+      $adminUsername: '%env(LLDAP_ADMIN_USERNAME)%'
+      $adminPassword: '%env(LLDAP_ADMIN_PASSWORD)%'
+
+  NetBS\AuthBundle\Directory\LldapClientInterface:
+    alias: NetBS\AuthBundle\Directory\LldapClient
+
   NetBS\AuthBundle\Service\OidcEndpoints:
     arguments:
       $issuer: '%env(HYDRA_ISSUER)%'

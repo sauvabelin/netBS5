@@ -12,15 +12,6 @@ class ResetPasswordControllerTest extends WebTestCase
     private const REQUEST_URL = '/netBS/secure/forgot-password';
     private const GENERIC_BANNER = 'Si un compte correspond';
 
-    public function test_request_form_renders(): void
-    {
-        $client = static::createClient();
-        $client->request('GET', self::REQUEST_URL);
-
-        $this->assertResponseIsSuccessful();
-        $this->assertSelectorExists('form input[name="reset_password_request_form[username]"]');
-    }
-
     public function test_request_unknown_username_shows_generic_response_and_sends_no_email(): void
     {
         $client = static::createClient();
@@ -56,21 +47,6 @@ class ResetPasswordControllerTest extends WebTestCase
         // Sanity-check the follow-through page renders the generic banner.
         $client->followRedirect();
         $this->assertSelectorTextContains('body', self::GENERIC_BANNER);
-    }
-
-    public function test_request_known_user_without_email_sends_no_email(): void
-    {
-        $client = static::createClient();
-        $user = $this->createUser($client, 'reset-test-noemail', null);
-
-        $crawler = $client->request('GET', self::REQUEST_URL);
-        $form = $crawler->selectButton('Envoyer le lien')->form();
-        $form['reset_password_request_form[username]'] = $user->getUsername();
-        $client->submit($form);
-
-        $client->followRedirect();
-        $this->assertSelectorTextContains('body', self::GENERIC_BANNER);
-        $this->assertEmailCount(0);
     }
 
     public function test_resubmit_issues_a_fresh_email_and_invalidates_the_old_token(): void

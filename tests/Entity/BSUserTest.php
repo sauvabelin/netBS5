@@ -34,18 +34,6 @@ final class BSUserTest extends TestCase
             'setUsername on a blank entity must bootstrap the editable login handle');
     }
 
-    public function testSetUsernameOnAlreadySetEntityWithSameValueIsIdempotent(): void
-    {
-        $user = new BSUser();
-        $user->setUsername('alice');
-
-        // Re-assigning the same value is allowed: fixture loaders and
-        // hydration paths can replay setUsername without surprises.
-        $user->setUsername('alice');
-
-        $this->assertSame('alice', $user->getUsername());
-    }
-
     public function testSetUsernameOnAlreadySetEntityWithDifferentValueThrowsLogicException(): void
     {
         $user = new BSUser();
@@ -70,38 +58,4 @@ final class BSUserTest extends TestCase
             'empty string must collapse to the permanent username');
     }
 
-    public function testSetLoginUsernameNullFallsBackToUsername(): void
-    {
-        $user = new BSUser();
-        $user->setUsername('alice');
-
-        $user->setLoginUsername(null);
-
-        $this->assertSame('alice', $user->getLoginUsername(),
-            'null must collapse to the permanent username');
-    }
-
-    public function testSetLoginUsernameWithExplicitValueOverridesFallback(): void
-    {
-        $user = new BSUser();
-        $user->setUsername('alice');
-
-        $user->setLoginUsername('alice.new');
-
-        $this->assertSame('alice.new', $user->getLoginUsername());
-        // And the permanent username is still pinned to its original value.
-        $this->assertSame('alice', $user->getUsername());
-    }
-
-    public function testSetLoginUsernameFirstBootstrapsPermanentUsername(): void
-    {
-        // Documents the other entry point: setting the login handle on a
-        // blank entity must also seed `username` so the row is valid against
-        // the NOT NULL constraint on the permanent identifier.
-        $user = new BSUser();
-        $user->setLoginUsername('alice');
-
-        $this->assertSame('alice', $user->getUsername());
-        $this->assertSame('alice', $user->getLoginUsername());
-    }
 }

@@ -40,9 +40,3 @@ auth_admin:
   resource: '@NetBSAuthBundle/Controller/Admin/'
   type: attribute
   prefix: /netBS/secure/administration/authentification
-
-# LDAP directory page, next to the OIDC clients under Administration › Authentication.
-ldap_admin:
-  resource: ../src/Ldap/Controller/
-  type: attribute
-  prefix: /netBS/secure/administration/authentification

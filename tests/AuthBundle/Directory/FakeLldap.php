@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace App\Tests\Ldap;
+namespace App\Tests\AuthBundle\Directory;
 
-use App\Ldap\DirectoryUser;
-use App\Ldap\LldapClientException;
-use App\Ldap\LldapClientInterface;
+use NetBS\AuthBundle\Directory\DirectoryUser;
+use NetBS\AuthBundle\Directory\LldapClientException;
+use NetBS\AuthBundle\Directory\LldapClientInterface;
 
 /** In-memory stand-in for lldap. */
 final class FakeLldap implements LldapClientInterface

@@ -28,6 +28,12 @@ final class OidcClientDto
      */
     private const READ_ONLY_FIELDS = ['created_at', 'updated_at', 'registration_access_token', 'registration_client_uri'];
 
+    /**
+     * Fields Hydra types as JSON objects. Decoded as PHP arrays, an empty one
+     * would be re-encoded as `[]` and Hydra rejects the whole request.
+     */
+    private const OBJECT_FIELDS = ['jwks', 'metadata'];
+
     public string $slug = '';
     public string $name = '';
 
@@ -131,6 +137,12 @@ final class OidcClientDto
 
         if ($plaintextSecret !== null && $plaintextSecret !== '') {
             $payload['client_secret'] = $plaintextSecret;
+        }
+
+        foreach (self::OBJECT_FIELDS as $field) {
+            if (($payload[$field] ?? null) === []) {
+                $payload[$field] = new \stdClass();
+            }
         }
 
         return $payload;

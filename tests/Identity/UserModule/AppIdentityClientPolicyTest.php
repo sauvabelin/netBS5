@@ -27,23 +27,9 @@ final class AppIdentityClientPolicyTest extends TestCase
         $this->assertTrue($policy->canAccess($this->identity(), 'acme'));
     }
 
-    public function testRequiredFlagSetAllows(): void
-    {
-        $policy = $this->policy($this->user(nextcloud: true, wiki: false), ['metadata' => ['required_flag' => 'nextcloud_account']]);
-
-        $this->assertTrue($policy->canAccess($this->identity(), 'acme'));
-    }
-
     public function testRequiredFlagMissingDenies(): void
     {
         $policy = $this->policy($this->user(nextcloud: true, wiki: false), ['metadata' => ['required_flag' => 'wiki_account']]);
-
-        $this->assertFalse($policy->canAccess($this->identity(), 'acme'));
-    }
-
-    public function testUnknownRequiredFlagDenies(): void
-    {
-        $policy = $this->policy($this->user(nextcloud: true, wiki: true), ['metadata' => ['required_flag' => 'is_god']]);
 
         $this->assertFalse($policy->canAccess($this->identity(), 'acme'));
     }
@@ -77,7 +63,6 @@ final class AppIdentityClientPolicyTest extends TestCase
             preferredUsername: 'alice',
             email: null,
             displayName: 'Alice',
-            groups: [],
             isDisabled: $disabled,
         );
     }

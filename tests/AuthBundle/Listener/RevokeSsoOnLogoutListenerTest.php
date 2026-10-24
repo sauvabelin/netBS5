@@ -26,14 +26,14 @@ final class RevokeSsoOnLogoutListenerTest extends TestCase
 
     private function event(Request $request): LogoutEvent
     {
-        return new LogoutEvent($request, new UsernamePasswordToken(new InMemoryUser('alice', null), 'netbs'));
+        return new LogoutEvent($request, new UsernamePasswordToken(new InMemoryUser('Equipe', null), 'netbs'));
     }
 
     public function testNetbsLogoutRevokesTheSubjectsLoginSessions(): void
     {
         $http = new MockHttpClient(function (string $method, string $url) {
             $this->assertSame('DELETE', $method);
-            $this->assertStringContainsString('/admin/oauth2/auth/sessions/login?subject=alice', $url);
+            $this->assertStringContainsString('/admin/oauth2/auth/sessions/login?subject=equipe', $url);
             return new MockResponse('', ['http_code' => 204]);
         });
 
@@ -59,4 +59,5 @@ final class RevokeSsoOnLogoutListenerTest extends TestCase
 
         $this->assertSame(1, $http->getRequestsCount());
     }
+
 }

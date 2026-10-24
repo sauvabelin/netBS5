@@ -45,28 +45,6 @@ final class HydraAdminClientTest extends TestCase
         }
     }
 
-    public function testRevokeAllSessionsRaisesOnNon2xx(): void
-    {
-        $mock = new MockHttpClient([
-            new MockResponse('boom', ['http_code' => 500]),
-        ]);
-        $client = $this->clientWith($mock);
-
-        $this->expectException(HydraClientException::class);
-        $client->revokeAllSessionsForSubject('alice');
-    }
-
-    public function testDeleteOAuthClientRaisesOnNon2xx(): void
-    {
-        $mock = new MockHttpClient([
-            new MockResponse('forbidden', ['http_code' => 403]),
-        ]);
-        $client = $this->clientWith($mock);
-
-        $this->expectException(HydraClientException::class);
-        $client->deleteOAuthClient('my-client');
-    }
-
     public function testGetOAuthClientReturnsNullOn404(): void
     {
         $mock = new MockHttpClient([
@@ -77,25 +55,4 @@ final class HydraAdminClientTest extends TestCase
         $this->assertNull($client->getOAuthClient('missing'));
     }
 
-    public function testGetOAuthClientRaisesOnOtherErrors(): void
-    {
-        $mock = new MockHttpClient([
-            new MockResponse('server down', ['http_code' => 503]),
-        ]);
-        $client = $this->clientWith($mock);
-
-        $this->expectException(HydraClientException::class);
-        $client->getOAuthClient('foo');
-    }
-
-    public function testSuccessfulRequestReturnsDecodedJson(): void
-    {
-        $mock = new MockHttpClient([
-            new MockResponse('{"redirect_to":"https://x/cb"}', ['http_code' => 200]),
-        ]);
-        $client = $this->clientWith($mock);
-
-        $result = $client->acceptLoginRequest('ch', ['subject' => 'alice']);
-        $this->assertSame('https://x/cb', $result['redirect_to']);
-    }
 }

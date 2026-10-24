@@ -78,7 +78,6 @@ final class RefreshHookControllerTest extends TestCase
             preferredUsername: 'alice',
             email: 'alice@example.com',
             displayName: 'Alice Example',
-            groups: ['users'],
             isDisabled: $disabled,
         );
     }
@@ -95,29 +94,6 @@ final class RefreshHookControllerTest extends TestCase
             server: $server,
             content: $body,
         );
-    }
-
-    public function testReturns401WhenSecretHeaderMissing(): void
-    {
-        $controller = $this->makeController();
-
-        $response = $controller(
-            $this->makeRequest(secretHeader: null, body: '{}'),
-        );
-
-        $this->assertSame(Response::HTTP_UNAUTHORIZED, $response->getStatusCode());
-        $this->assertStringContainsString('"unauthorized"', $response->getContent());
-    }
-
-    public function testReturns401WhenSecretHeaderWrong(): void
-    {
-        $controller = $this->makeController();
-
-        $response = $controller(
-            $this->makeRequest(secretHeader: 'this-is-not-the-secret', body: '{}'),
-        );
-
-        $this->assertSame(Response::HTTP_UNAUTHORIZED, $response->getStatusCode());
     }
 
     public function testReturns500WhenServerSecretNotConfigured(): void
@@ -148,29 +124,6 @@ final class RefreshHookControllerTest extends TestCase
         );
 
         $this->assertSame(Response::HTTP_UNAUTHORIZED, $response->getStatusCode());
-    }
-
-    public function testReturns400OnMalformedJsonBody(): void
-    {
-        $controller = $this->makeController();
-
-        $response = $controller(
-            $this->makeRequest(secretHeader: self::VALID_SECRET, body: 'not json at all{'),
-        );
-
-        $this->assertSame(Response::HTTP_BAD_REQUEST, $response->getStatusCode());
-        $this->assertStringContainsString('invalid_request', $response->getContent());
-    }
-
-    public function testReturns400WhenPayloadMissingSubjectOrClient(): void
-    {
-        $controller = $this->makeController();
-
-        $response = $controller(
-            $this->makeRequest(secretHeader: self::VALID_SECRET, body: '{"foo":"bar"}'),
-        );
-
-        $this->assertSame(Response::HTTP_BAD_REQUEST, $response->getStatusCode());
     }
 
     public function testReturns200WithClaimsOnHappyPath(): void

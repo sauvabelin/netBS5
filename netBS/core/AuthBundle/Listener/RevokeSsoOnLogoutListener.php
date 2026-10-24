@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace NetBS\AuthBundle\Listener;
 
+use NetBS\AuthBundle\Contract\Subject;
 use NetBS\AuthBundle\Service\HydraAdminClient;
 use NetBS\AuthBundle\Service\HydraClientException;
 use Psr\Log\LoggerInterface;
@@ -35,10 +36,11 @@ final class RevokeSsoOnLogoutListener
             return;
         }
 
-        $subject = $event->getToken()?->getUserIdentifier();
-        if ($subject === null || $subject === '') {
+        $identifier = $event->getToken()?->getUserIdentifier();
+        if ($identifier === null || $identifier === '') {
             return;
         }
+        $subject = Subject::fromUsername($identifier);
 
         try {
             $this->hydra->revokeLoginSessionsForSubject($subject);

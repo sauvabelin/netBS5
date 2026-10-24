@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace App\Ldap\Command;
+namespace NetBS\AuthBundle\Command;
 
-use App\Ldap\DirectoryNotConfiguredException;
-use App\Ldap\DirectoryProjection;
-use App\Ldap\DirectorySync;
+use NetBS\AuthBundle\Directory\DirectoryNotConfiguredException;
+use NetBS\AuthBundle\Directory\DirectoryProjection;
+use NetBS\AuthBundle\Directory\DirectorySync;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;

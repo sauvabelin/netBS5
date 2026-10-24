@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Ldap;
+namespace NetBS\AuthBundle\Directory;
 
 /**
  * Raised by {@see LldapClient} for transport failures, non-2xx responses and

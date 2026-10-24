@@ -7,18 +7,16 @@ namespace NetBS\AuthBundle\Contract;
 /**
  * Immutable identity DTO crossing the User → Identity boundary.
  * No open-ended custom-claims bag — new claims are added as explicit fields.
+ * No groups either: OIDC only does login and access decisions, group
+ * membership reaches the apps through the LDAP directory.
  */
 final readonly class IdentityDTO
 {
-    /**
-     * @param string[] $groups
-     */
     public function __construct(
         public string $sub,
         public string $preferredUsername,
         public ?string $email,
         public string $displayName,
-        public array $groups,
         public bool $isDisabled,
     ) {
     }
