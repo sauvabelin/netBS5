@@ -16,6 +16,11 @@ mailing:
   resource: '@IacopoMailingBundle/Resources/config/routing.yml'
   prefix: /netBS/mailing
 
+# Machine endpoint for the mail node; outside /netBS so no login firewall applies.
+mailing_export:
+  resource: '@IacopoMailingBundle/Api/'
+  type: attribute
+
 home:
   path: /
   controller: Symfony\Bundle\FrameworkBundle\Controller\RedirectController::urlRedirectAction
