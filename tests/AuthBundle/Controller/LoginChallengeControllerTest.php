@@ -46,14 +46,7 @@ final class LoginChallengeControllerTest extends TestCase
     private function makeHydra(array $responses, ?MockHttpClient &$mock = null): HydraAdminClient
     {
         $mock = new MockHttpClient($responses);
-        $client = (new \ReflectionClass(HydraAdminClient::class))->newInstanceWithoutConstructor();
-        $httpProp = new \ReflectionProperty(HydraAdminClient::class, 'http');
-        $httpProp->setAccessible(true);
-        $httpProp->setValue($client, $mock);
-        $loggerProp = new \ReflectionProperty(HydraAdminClient::class, 'logger');
-        $loggerProp->setAccessible(true);
-        $loggerProp->setValue($client, new \Psr\Log\NullLogger());
-        return $client;
+        return new HydraAdminClient($mock, new \Psr\Log\NullLogger());
     }
 
     private function jsonResponse(array $data): MockResponse
@@ -89,7 +82,7 @@ final class LoginChallengeControllerTest extends TestCase
                 return null;
             }
         };
-        $controller = new LoginChallengeController($hydra, new LocalSessionTerminator($security));
+        $controller = new LoginChallengeController($hydra, new LocalSessionTerminator($security), new \Psr\Log\NullLogger());
 
         $router = new class implements UrlGeneratorInterface {
             public function generate(string $name, array $parameters = [], int $referenceType = self::ABSOLUTE_PATH): string

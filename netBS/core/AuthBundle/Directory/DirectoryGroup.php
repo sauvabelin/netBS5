@@ -21,6 +21,16 @@ final class DirectoryGroup
         public readonly array $members,
         /** Role the group publishes; stored on the lldap group like $netbsId. */
         public readonly ?string $role = null,
+        /** Groupe type name, for display only. */
+        public readonly ?string $typeName = null,
+        /** Groupe type "sous-groupes" mode (BaseGroupeType::SOUS_GROUPES_*), for display only. */
+        public readonly ?string $sousGroupes = null,
     ) {
+    }
+
+    /** Identifies a managed group across runs, whatever its name. */
+    public static function key(?int $netbsId, ?string $role): string
+    {
+        return $role !== null ? "role:$role" : "id:$netbsId";
     }
 }

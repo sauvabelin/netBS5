@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Tests\AuthBundle\Directory;
 
 use NetBS\AuthBundle\Directory\DirectoryGroup;
+use NetBS\AuthBundle\Directory\DirectorySnapshot;
 use NetBS\AuthBundle\Directory\DirectorySync;
 use NetBS\AuthBundle\Directory\DirectoryUser;
 use PHPUnit\Framework\TestCase;
@@ -134,7 +135,7 @@ final class DirectorySyncTest extends TestCase
                 $groupsById[$group->netbsId] = $group;
             }
         }
-        return (new DirectorySync($this->lldap))->sync($usersByUid, $groupsById, $roleGroups, $dryRun);
+        return (new DirectorySync($this->lldap))->sync(new DirectorySnapshot($usersByUid, $groupsById, $roleGroups), $dryRun);
     }
 
     private function user(string $uid): DirectoryUser

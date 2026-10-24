@@ -80,10 +80,8 @@ final class AppIdentityClientPolicyTest extends TestCase
         $response = $hydraClient === null
             ? new MockResponse('', ['http_code' => 404])
             : new MockResponse(json_encode($hydraClient, JSON_THROW_ON_ERROR), ['http_code' => 200]);
-        $hydra = (new \ReflectionClass(HydraAdminClient::class))->newInstanceWithoutConstructor();
-        (new \ReflectionProperty(HydraAdminClient::class, 'http'))->setValue($hydra, new MockHttpClient([$response]));
-        (new \ReflectionProperty(HydraAdminClient::class, 'logger'))->setValue($hydra, new \Psr\Log\NullLogger());
+        $hydra = new HydraAdminClient(new MockHttpClient([$response]), new \Psr\Log\NullLogger());
 
-        return new AppIdentityClientPolicy($em, $hydra);
+        return new AppIdentityClientPolicy($em, $hydra, new \Psr\Log\NullLogger());
     }
 }

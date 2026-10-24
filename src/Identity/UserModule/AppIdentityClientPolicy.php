@@ -11,12 +11,9 @@ use NetBS\AuthBundle\Dto\OidcClientDto;
 use NetBS\AuthBundle\Service\HydraAdminClient;
 use Doctrine\ORM\EntityManagerInterface;
 use Psr\Log\LoggerInterface;
-use Psr\Log\NullLogger;
 
 final class AppIdentityClientPolicy implements IdentityClientPolicyInterface
 {
-    private readonly LoggerInterface $logger;
-
     /**
      * Per-request memo of BSUser lookups by `sub`, so repeated access checks
      * for the same identity cost one Doctrine fetch. The map is
@@ -34,9 +31,8 @@ final class AppIdentityClientPolicy implements IdentityClientPolicyInterface
     public function __construct(
         private readonly EntityManagerInterface $em,
         private readonly HydraAdminClient $hydra,
-        ?LoggerInterface $logger = null,
+        private readonly LoggerInterface $logger,
     ) {
-        $this->logger = $logger ?? new NullLogger();
     }
 
     private function loadUser(string $sub): ?BSUser

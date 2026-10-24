@@ -9,7 +9,6 @@ use NetBS\AuthBundle\Security\LocalSessionTerminator;
 use NetBS\AuthBundle\Service\HydraAdminClient;
 use NetBS\AuthBundle\Service\HydraClientException;
 use Psr\Log\LoggerInterface;
-use Psr\Log\NullLogger;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;
@@ -46,14 +45,11 @@ final class LogoutController extends AbstractController
      */
     private const CSRF_TOKEN_ID_CHALLENGE_PREFIX = 'oidc_logout_challenge_';
 
-    private readonly LoggerInterface $logger;
-
     public function __construct(
         private readonly HydraAdminClient $hydra,
         private readonly LocalSessionTerminator $localSession,
-        ?LoggerInterface $logger = null,
+        private readonly LoggerInterface $logger,
     ) {
-        $this->logger = $logger ?? new NullLogger();
     }
 
     #[Route('/oidc-logout', name: 'oidc_logout', methods: ['GET', 'POST'])]
@@ -94,7 +90,7 @@ final class LogoutController extends AbstractController
         } catch (HydraClientException $e) {
             $this->logger->warning('Hydra getLogoutRequest failed', [
                 'challenge' => $logoutChallenge,
-                'exception' => $e->getMessage(),
+                'exception' => $e,
             ]);
             return $this->redirectToRoute('oidc_error', ['error_description' => 'logout_challenge invalid or expired']);
         }
@@ -117,6 +113,20 @@ final class LogoutController extends AbstractController
             && $hydraSubject !== $currentSubject
         );
 
+        // Hydra returns the OAuth client that initiated the logout under
+        // `client` (when the logout was RP-initiated). Pass it through so the
+        // shared auth layout can render the client's branding — same logo/
+        // name treatment as the login page.
+        $confirmParams = [
+            'logoutChallenge' => $logoutChallenge,
+            'csrfTokenId'     => $csrfTokenId,
+            'subject'         => $hydraSubject,
+            'oidc_client'     => \is_array($logoutRequest['client'] ?? null) ? $logoutRequest['client'] : null,
+            'subjectMismatch' => $subjectMismatch,
+            'localSubject'    => $currentSubject,
+            'mismatchRefused' => false,
+        ];
+
         if ($request->isMethod('POST')) {
             if (!$this->isCsrfTokenValid($csrfTokenId, (string) $request->request->get('_token'))) {
                 throw $this->createAccessDeniedException('Invalid CSRF token.');
@@ -138,17 +148,7 @@ final class LogoutController extends AbstractController
                     'reason'         => 'subject_mismatch_with_local_user',
                 ]);
 
-                return $this->render('@NetBSAuth/identity/logout_confirm.html.twig', [
-                    'logoutChallenge'   => $logoutChallenge,
-                    'csrfTokenId'       => $csrfTokenId,
-                    'subject'           => $hydraSubject,
-                    'oidc_client'       => (isset($logoutRequest['client']) && \is_array($logoutRequest['client']))
-                        ? $logoutRequest['client']
-                        : null,
-                    'subjectMismatch'   => true,
-                    'localSubject'      => $currentSubject,
-                    'mismatchRefused'   => true,
-                ]);
+                return $this->render('@NetBSAuth/identity/logout_confirm.html.twig', ['mismatchRefused' => true] + $confirmParams);
             }
 
             // 1) Kill the local session FIRST. If anything below explodes the
@@ -170,7 +170,7 @@ final class LogoutController extends AbstractController
                 $this->logger->error('Hydra acceptLogoutRequest failed', [
                     'challenge'        => $logoutChallenge,
                     'subject'          => $hydraSubject,
-                    'exception'        => $e->getMessage(),
+                    'exception'        => $e,
                 ]);
                 // Tell the user that the local part worked but the SSO server
                 // didn't acknowledge — they may need to log out manually from
@@ -185,22 +185,6 @@ final class LogoutController extends AbstractController
             return $this->localSession->clearRememberMe($this->redirectToRoute('netbs.secure.login.login'));
         }
 
-        // Hydra returns the OAuth client that initiated the logout under
-        // `client` (when the logout was RP-initiated). Pass it through so the
-        // shared auth layout can render the client's branding — same logo/
-        // name treatment as the login page.
-        $oidcClient = (isset($logoutRequest['client']) && \is_array($logoutRequest['client']))
-            ? $logoutRequest['client']
-            : null;
-
-        return $this->render('@NetBSAuth/identity/logout_confirm.html.twig', [
-            'logoutChallenge' => $logoutChallenge,
-            'csrfTokenId'     => $csrfTokenId,
-            'subject'         => $hydraSubject,
-            'oidc_client'     => $oidcClient,
-            'subjectMismatch' => $subjectMismatch,
-            'localSubject'    => $currentSubject,
-            'mismatchRefused' => false,
-        ]);
+        return $this->render('@NetBSAuth/identity/logout_confirm.html.twig', $confirmParams);
     }
 }

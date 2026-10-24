@@ -37,12 +37,9 @@ final class DirectoryProjection
     }
 
     /**
-     * @return array{users: array<string, DirectoryUser>, groups: array<int, DirectoryGroup>, roleGroups: array<string, DirectoryGroup>}
-     *               users keyed by uid, groups keyed by netBS groupe id, roleGroups keyed by role
-     *
      * @throws DirectoryNotConfiguredException when no groupe would become a group
      */
-    public function snapshot(): array
+    public function snapshot(): DirectorySnapshot
     {
         $users = $this->userProvider->directoryUsers();
         $uidByMembre = [];
@@ -57,7 +54,7 @@ final class DirectoryProjection
             throw new DirectoryNotConfiguredException();
         }
 
-        return ['users' => $users, 'groups' => $groups, 'roleGroups' => $this->roleGroups($users)];
+        return new DirectorySnapshot($users, $groups, $this->roleGroups($users));
     }
 
     /**
@@ -70,7 +67,7 @@ final class DirectoryProjection
     public function members(string $key): ?array
     {
         if (isset(self::ROLE_GROUPS[$key])) {
-            $members = array_filter($this->userProvider->directoryUsers(), fn (DirectoryUser $user) => in_array($key, $user->roles, true));
+            $members = self::roleHolders($this->userProvider->directoryUsers(), $key);
         } elseif (ctype_digit($key)) {
             /** @var BaseGroupe|null $groupe */
             $groupe = $this->em->find($this->fichierConfig->getGroupeClass(), (int) $key);
@@ -109,16 +106,20 @@ final class DirectoryProjection
     {
         $groups = [];
         foreach (self::ROLE_GROUPS as $role => $name) {
-            $members = [];
-            foreach ($users as $user) {
-                if (in_array($role, $user->roles, true)) {
-                    $members[] = $user->uid;
-                }
-            }
+            $members = array_values(array_map(fn (DirectoryUser $user) => $user->uid, self::roleHolders($users, $role)));
             sort($members);
             $groups[$role] = new DirectoryGroup(null, $name, $members, $role);
         }
         return $groups;
+    }
+
+    /**
+     * @param array<string, DirectoryUser> $users
+     * @return array<string, DirectoryUser> the users holding $role, keys kept
+     */
+    private static function roleHolders(array $users, string $role): array
+    {
+        return array_filter($users, fn (DirectoryUser $user) => in_array($role, $user->roles, true));
     }
 
     /**
@@ -158,7 +159,13 @@ final class DirectoryProjection
             }
             $seenNames[mb_strtolower($name)] = true;
 
-            $groups[$groupe->getId()] = new DirectoryGroup($groupe->getId(), $name, array_values($members));
+            $groups[$groupe->getId()] = new DirectoryGroup(
+                $groupe->getId(),
+                $name,
+                array_values($members),
+                typeName: $groupe->getGroupeType()->getNom(),
+                sousGroupes: $groupe->getGroupeType()->getSousGroupes(),
+            );
         }
         return $groups;
     }

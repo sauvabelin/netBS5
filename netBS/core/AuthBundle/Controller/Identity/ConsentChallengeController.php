@@ -10,7 +10,6 @@ use NetBS\AuthBundle\Service\ClaimsAssembler;
 use NetBS\AuthBundle\Service\HydraAdminClient;
 use NetBS\AuthBundle\Service\HydraClientException;
 use Psr\Log\LoggerInterface;
-use Psr\Log\NullLogger;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;
@@ -19,16 +18,13 @@ use Symfony\Component\Routing\Attribute\Route;
 
 final class ConsentChallengeController extends AbstractController
 {
-    private readonly LoggerInterface $logger;
-
     public function __construct(
         private readonly HydraAdminClient $hydra,
         private readonly IdentityUserResolverInterface $userResolver,
         private readonly IdentityClientPolicyInterface $policy,
         private readonly ClaimsAssembler $claims,
-        ?LoggerInterface $logger = null,
+        private readonly LoggerInterface $logger,
     ) {
-        $this->logger = $logger ?? new NullLogger();
     }
 
     #[Route('/oidc-consent', name: 'oidc_consent', methods: ['GET'])]
@@ -88,20 +84,12 @@ final class ConsentChallengeController extends AbstractController
             ]);
         }
 
-        $idTokenClaims = $this->claims->assemble($identity, \is_array($requestedScopes) ? $requestedScopes : []);
-
         $accept = $this->hydra->acceptConsentRequest($consentChallenge, [
             'grant_scope' => $requestedScopes,
             'grant_access_token_audience' => $consentRequest['requested_access_token_audience'] ?? [],
             'remember' => true,
             'remember_for' => 3600 * 12,
-            // Hydra's session schema defines id_token/access_token as JSON
-            // objects (maps). An empty PHP array JSON-encodes as `[]`, which
-            // Hydra rejects — so the always-empty access_token is an object.
-            'session' => [
-                'id_token' => $idTokenClaims,
-                'access_token' => (object) [],
-            ],
+            'session' => $this->claims->hydraSession($identity, \is_array($requestedScopes) ? $requestedScopes : []),
         ]);
 
         $this->logger->info('oidc.consent: accepted', [

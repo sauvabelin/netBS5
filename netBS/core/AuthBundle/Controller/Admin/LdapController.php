@@ -4,17 +4,15 @@ declare(strict_types=1);
 
 namespace NetBS\AuthBundle\Controller\Admin;
 
-use Doctrine\ORM\EntityManagerInterface;
 use NetBS\AuthBundle\Directory\DirectoryNotConfiguredException;
 use NetBS\AuthBundle\Directory\DirectoryProjection;
+use NetBS\AuthBundle\Directory\DirectorySnapshot;
 use NetBS\AuthBundle\Directory\DirectorySync;
 use NetBS\AuthBundle\Directory\DirectoryUser;
 use NetBS\AuthBundle\Directory\LldapClientException;
 use NetBS\AuthBundle\ListModel\LdapChangeRow;
 use NetBS\AuthBundle\ListModel\LdapGroupRow;
-use NetBS\FichierBundle\Mapping\BaseGroupe;
 use NetBS\FichierBundle\Mapping\BaseGroupeType;
-use NetBS\FichierBundle\Service\FichierConfig;
 use Psr\Log\LoggerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -37,8 +35,6 @@ final class LdapController extends AbstractController
     public function __construct(
         private readonly DirectoryProjection $projection,
         private readonly DirectorySync $sync,
-        private readonly EntityManagerInterface $em,
-        private readonly FichierConfig $fichierConfig,
         private readonly LoggerInterface $logger,
     ) {
     }
@@ -57,7 +53,7 @@ final class LdapController extends AbstractController
         $report = null;
         $lldapError = null;
         try {
-            $report = $this->sync->sync($snapshot['users'], $snapshot['groups'], $snapshot['roleGroups'], true);
+            $report = $this->sync->sync($snapshot, true);
         } catch (LldapClientException $e) {
             $this->logger->error('LDAP preview: lldap unreachable', ['exception' => $e]);
             $lldapError = $e->getMessage();
@@ -70,7 +66,7 @@ final class LdapController extends AbstractController
 
         return $this->render('@NetBSAuth/admin/ldap/index.html.twig', [
             'notConfigured' => null,
-            'userCount'     => count($snapshot['users']),
+            'userCount'     => count($snapshot->users),
             'groupRows'     => $this->groupRows($snapshot),
             'changeRows'    => $changeRows,
             'report'        => $report,
@@ -100,30 +96,23 @@ final class LdapController extends AbstractController
      *
      * @return LdapGroupRow[]
      */
-    private function groupRows(array $snapshot): array
+    private function groupRows(DirectorySnapshot $snapshot): array
     {
         $rows = [];
-        foreach ($snapshot['roleGroups'] as $role => $group) {
+        foreach ($snapshot->roleGroups as $role => $group) {
             $rows[] = new LdapGroupRow($role, $group->name, null, "Rôle $role", '—', count($group->members));
         }
 
-        /** @var array<int, BaseGroupe> $groupes */
-        $groupes = [];
-        foreach ($this->em->getRepository($this->fichierConfig->getGroupeClass())->findBy(['id' => array_keys($snapshot['groups'])]) as $groupe) {
-            $groupes[$groupe->getId()] = $groupe;
-        }
         $sousGroupesLabels = array_flip(BaseGroupeType::getSousGroupesChoices());
-
-        $groups = $snapshot['groups'];
+        $groups = $snapshot->groups;
         uasort($groups, fn ($a, $b) => strcasecmp($a->name, $b->name));
         foreach ($groups as $netbsId => $group) {
-            $type = ($groupes[$netbsId] ?? null)?->getGroupeType();
             $rows[] = new LdapGroupRow(
                 (string) $netbsId,
                 $group->name,
                 $netbsId,
-                $type?->getNom() ?? '—',
-                $type ? $sousGroupesLabels[$type->getSousGroupes()] : '—',
+                $group->typeName ?? '—',
+                $sousGroupesLabels[$group->sousGroupes] ?? '—',
                 count($group->members),
             );
         }
@@ -141,7 +130,7 @@ final class LdapController extends AbstractController
 
         try {
             $snapshot = $this->projection->snapshot();
-            $report = $this->sync->sync($snapshot['users'], $snapshot['groups'], $snapshot['roleGroups'], false);
+            $report = $this->sync->sync($snapshot, false);
         } catch (DirectoryNotConfiguredException $e) {
             $this->addFlash('error', $e->getMessage());
             return $this->redirectToRoute('auth.admin.ldap.index');

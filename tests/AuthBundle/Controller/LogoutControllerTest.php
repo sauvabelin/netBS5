@@ -55,7 +55,7 @@ final class LogoutControllerTest extends TestCase
         $hydra = $this->makeHydraStub($hydraBehaviour);
         $security ??= $this->makeSecurityStub($currentSubject);
 
-        $controller = new LogoutController($hydra, new LocalSessionTerminator($security));
+        $controller = new LogoutController($hydra, new LocalSessionTerminator($security), new \Psr\Log\NullLogger());
 
         // Build the stub container.
         $twig = new class {
@@ -203,15 +203,7 @@ final class LogoutControllerTest extends TestCase
 
         $mock = new MockHttpClient($responses);
 
-        $client = (new \ReflectionClass(HydraAdminClient::class))->newInstanceWithoutConstructor();
-        $httpProp = new \ReflectionProperty(HydraAdminClient::class, 'http');
-        $httpProp->setAccessible(true);
-        $httpProp->setValue($client, $mock);
-        $loggerProp = new \ReflectionProperty(HydraAdminClient::class, 'logger');
-        $loggerProp->setAccessible(true);
-        $loggerProp->setValue($client, new \Psr\Log\NullLogger());
-
-        return $client;
+        return new HydraAdminClient($mock, new \Psr\Log\NullLogger());
     }
 
     private function makeSecurityStub(?string $currentSubject): Security

@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace NetBS\AuthBundle\Service;
 
-use Psr\Log\LoggerInterface;
 use Symfony\Component\HttpFoundation\RequestStack;
+use Symfony\Component\Security\Http\Util\TargetPathTrait;
 
 /**
  * Resolves the OIDC client context, if any, for the current login attempt.
@@ -17,10 +17,11 @@ use Symfony\Component\HttpFoundation\RequestStack;
  */
 final class LoginContextProvider
 {
+    use TargetPathTrait;
+
     public function __construct(
         private readonly RequestStack $requestStack,
         private readonly HydraAdminClient $hydra,
-        private readonly LoggerInterface $logger,
     ) {
     }
 
@@ -29,9 +30,8 @@ final class LoginContextProvider
      */
     public function currentClient(): ?array
     {
-        $session = $this->requestStack->getSession();
-        $targetPath = $session->get('_security.oidc.target_path');
-        if (!is_string($targetPath) || $targetPath === '') {
+        $targetPath = $this->getTargetPath($this->requestStack->getSession(), 'oidc');
+        if ($targetPath === null || $targetPath === '') {
             return null;
         }
 
@@ -47,15 +47,9 @@ final class LoginContextProvider
 
         try {
             $loginRequest = $this->hydra->getLoginRequest($challenge);
-        } catch (HydraClientException $e) {
-            // Challenge expired or unknown (or any other Hydra failure):
-            // render the plain login form.
-            $this->logger->warning('Hydra getLoginRequest failed for login challenge', [
-                'method' => $e->method,
-                'url' => $e->url,
-                'status' => $e->statusCode,
-                'response_excerpt' => $e->responseExcerpt,
-            ]);
+        } catch (HydraClientException) {
+            // Challenge expired or unknown (or any other Hydra failure; the
+            // client logged it): render the plain login form.
             return null;
         }
 

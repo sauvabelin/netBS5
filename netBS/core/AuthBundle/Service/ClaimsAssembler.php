@@ -51,4 +51,21 @@ final class ClaimsAssembler
             \ARRAY_FILTER_USE_KEY,
         );
     }
+
+    /**
+     * The token `session` Hydra takes on consent accept and from the refresh
+     * hook. Hydra decodes id_token/access_token as JSON objects (maps); an
+     * empty PHP array encodes as `[]`, which Hydra rejects, so the always-empty
+     * access_token is an object.
+     *
+     * @param list<string>|null $grantedScopes see {@see assemble()}
+     * @return array{id_token: array<string, mixed>, access_token: object}
+     */
+    public function hydraSession(IdentityDTO $identity, ?array $grantedScopes): array
+    {
+        return [
+            'id_token'     => $this->assemble($identity, $grantedScopes),
+            'access_token' => (object) [],
+        ];
+    }
 }

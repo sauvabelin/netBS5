@@ -14,18 +14,7 @@ final class HydraAdminClientTest extends TestCase
 {
     private function clientWith(MockHttpClient $mock): HydraAdminClient
     {
-        $client = (new \ReflectionClass(HydraAdminClient::class))
-            ->newInstanceWithoutConstructor();
-
-        $httpProp = new \ReflectionProperty(HydraAdminClient::class, 'http');
-        $httpProp->setAccessible(true);
-        $httpProp->setValue($client, $mock);
-
-        $loggerProp = new \ReflectionProperty(HydraAdminClient::class, 'logger');
-        $loggerProp->setAccessible(true);
-        $loggerProp->setValue($client, new \Psr\Log\NullLogger());
-
-        return $client;
+        return new HydraAdminClient($mock, new \Psr\Log\NullLogger());
     }
 
     public function testNon2xxThrowsHydraClientException(): void

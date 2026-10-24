@@ -46,7 +46,7 @@ final class DirectoryProjectionTest extends KernelTestCase
     {
         $ids = $this->seedGroupeTree();
 
-        $groups = $this->projection->snapshot()['groups'];
+        $groups = $this->projection->snapshot()->groups;
 
         self::assertArrayHasKey($ids['ga'], $groups);
         self::assertSame(['dirproj.user'], $groups[$ids['ga']]->members);
@@ -60,7 +60,7 @@ final class DirectoryProjectionTest extends KernelTestCase
         $this->grantUserRole($ids['user'], 'ROLE_NEXTCLOUD_ADMIN');
         $this->grantUserRole($this->seedUser('dirproj.inactive', ['isActive' => 0]), 'ROLE_NEXTCLOUD_ADMIN');
 
-        $roleGroups = $this->projection->snapshot()['roleGroups'];
+        $roleGroups = $this->projection->snapshot()->roleGroups;
 
         self::assertSame(['ROLE_NEXTCLOUD_ADMIN', 'ROLE_WIKI_ADMIN'], array_keys($roleGroups));
         self::assertSame('nextcloud-admins', $roleGroups['ROLE_NEXTCLOUD_ADMIN']->name);
@@ -77,7 +77,7 @@ final class DirectoryProjectionTest extends KernelTestCase
         $this->db->update('sauvabelin_netbs_groupes', ['nom' => 'Equipe (x), y'], ['id' => $ids['gb']]);
         $this->db->update('sauvabelin_netbs_groupes', ['nom' => 'Equipe [x]  y'], ['id' => $ids['gc']]);
 
-        $groups = $this->projection->snapshot()['groups'];
+        $groups = $this->projection->snapshot()->groups;
 
         self::assertSame(sprintf('nextcloud-admins [%d]', $ids['ga']), $groups[$ids['ga']]->name);
         self::assertSame('Equipe [x]  y', $groups[$ids['gb']]->name);

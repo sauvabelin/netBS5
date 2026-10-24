@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace NetBS\AuthBundle\Directory;
 
-use Symfony\Component\HttpClient\HttpClient;
 use Symfony\Contracts\HttpClient\Exception\ExceptionInterface as HttpClientExceptionInterface;
 use Symfony\Contracts\HttpClient\HttpClientInterface;
 
@@ -15,18 +14,16 @@ use Symfony\Contracts\HttpClient\HttpClientInterface;
  */
 final class LldapClient implements LldapClientInterface
 {
-    private HttpClientInterface $http;
     private ?string $token = null;
 
+    /**
+     * @param HttpClientInterface $http scoped to LLDAP_URL (`lldap.client`)
+     */
     public function __construct(
-        string $lldapUrl,
+        private readonly HttpClientInterface $http,
         private readonly string $adminUsername,
         private readonly string $adminPassword,
     ) {
-        $this->http = HttpClient::createForBaseUri($lldapUrl, [
-            'timeout' => 5,
-            'max_duration' => 15,
-        ]);
     }
 
     public function listUsers(): array
@@ -46,9 +43,9 @@ final class LldapClient implements LldapClientInterface
                 if ($attribute['value'] === []) {
                     continue;
                 }
-                if ($attribute['name'] === DirectorySync::NETBS_ID_ATTRIBUTE) {
+                if ($attribute['name'] === self::NETBS_ID_ATTRIBUTE) {
                     $netbsId = (int) $attribute['value'][0];
-                } elseif ($attribute['name'] === DirectorySync::NETBS_ROLE_ATTRIBUTE) {
+                } elseif ($attribute['name'] === self::NETBS_ROLE_ATTRIBUTE) {
                     $netbsRole = (string) $attribute['value'][0];
                 }
             }
@@ -63,23 +60,13 @@ final class LldapClient implements LldapClientInterface
         }, $data['groups']);
     }
 
-    public function hasGroupAttribute(string $name): bool
+    public function groupAttributes(): array
     {
         $data = $this->graphql('{ schema { groupSchema { attributes { name } } } }');
-        return in_array($name, array_column($data['schema']['groupSchema']['attributes'], 'name'), true);
+        return array_column($data['schema']['groupSchema']['attributes'], 'name');
     }
 
-    public function addIntegerGroupAttribute(string $name): void
-    {
-        $this->addGroupAttribute($name, 'INTEGER');
-    }
-
-    public function addStringGroupAttribute(string $name): void
-    {
-        $this->addGroupAttribute($name, 'STRING');
-    }
-
-    private function addGroupAttribute(string $name, string $type): void
+    public function addGroupAttribute(string $name, string $type): void
     {
         $this->graphql(
             'mutation($name: String!, $type: AttributeType!) { addGroupAttribute(name: $name, attributeType: $type, isList: false, isVisible: true, isEditable: false) { ok } }',
@@ -112,10 +99,10 @@ final class LldapClient implements LldapClientInterface
     {
         $request = ['displayName' => $displayName, 'attributes' => []];
         if ($netbsId !== null) {
-            $request['attributes'][] = ['name' => DirectorySync::NETBS_ID_ATTRIBUTE, 'value' => [(string) $netbsId]];
+            $request['attributes'][] = ['name' => self::NETBS_ID_ATTRIBUTE, 'value' => [(string) $netbsId]];
         }
         if ($netbsRole !== null) {
-            $request['attributes'][] = ['name' => DirectorySync::NETBS_ROLE_ATTRIBUTE, 'value' => [$netbsRole]];
+            $request['attributes'][] = ['name' => self::NETBS_ROLE_ATTRIBUTE, 'value' => [$netbsRole]];
         }
 
         $data = $this->graphql(

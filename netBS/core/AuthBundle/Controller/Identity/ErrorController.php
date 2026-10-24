@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace NetBS\AuthBundle\Controller\Identity;
 
 use Psr\Log\LoggerInterface;
-use Psr\Log\NullLogger;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -55,7 +54,7 @@ final class ErrorController extends AbstractController
 
     public function __construct(
         private readonly KernelInterface $kernel,
-        private readonly ?LoggerInterface $logger = null,
+        private readonly LoggerInterface $logger,
     ) {
     }
 
@@ -74,7 +73,7 @@ final class ErrorController extends AbstractController
 
         // Log the FULL incoming payload so operators can debug real failures
         // without exposing attacker-supplied text to victims.
-        ($this->logger ?? new NullLogger())->warning('OIDC error page reached', [
+        $this->logger->warning('OIDC error page reached', [
             'error'             => $rawError,
             'error_description' => $rawDescription,
             'error_hint'        => $rawHint,

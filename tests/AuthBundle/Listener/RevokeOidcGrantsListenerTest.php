@@ -20,9 +20,7 @@ final class RevokeOidcGrantsListenerTest extends TestCase
     private function listener(array $responses): RevokeOidcGrantsListener
     {
         $this->http = new MockHttpClient($responses);
-        $hydra = (new \ReflectionClass(HydraAdminClient::class))->newInstanceWithoutConstructor();
-        (new \ReflectionProperty(HydraAdminClient::class, 'http'))->setValue($hydra, $this->http);
-        (new \ReflectionProperty(HydraAdminClient::class, 'logger'))->setValue($hydra, new \Psr\Log\NullLogger());
+        $hydra = new HydraAdminClient($this->http, new \Psr\Log\NullLogger());
 
         return new RevokeOidcGrantsListener($hydra, new \Psr\Log\NullLogger());
     }

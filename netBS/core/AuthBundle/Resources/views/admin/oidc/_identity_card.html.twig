@@ -1,4 +1,3 @@
-{% set endpoints = oidc_endpoints() %}
 {% set one_shot_secret = app.flashes('oidc_one_shot_secret')|first|default(null) %}
 
 {% macro copyable(value) %}
@@ -40,10 +39,10 @@
             </dd>
 
             <dt class="col-sm-3">Issuer</dt>
-            <dd class="col-sm-9">{{ macros.copyable(endpoints.issuer) }}</dd>
+            <dd class="col-sm-9">{{ macros.copyable(issuer) }}</dd>
 
             <dt class="col-sm-3">Discovery</dt>
-            <dd class="col-sm-9">{{ macros.copyable(endpoints.discovery) }}</dd>
+            <dd class="col-sm-9">{{ macros.copyable(issuer ~ '/.well-known/openid-configuration') }}</dd>
 
         </dl>
     </div>

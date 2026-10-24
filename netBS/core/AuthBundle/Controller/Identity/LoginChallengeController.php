@@ -10,7 +10,6 @@ use NetBS\AuthBundle\Security\LocalSessionTerminator;
 use NetBS\AuthBundle\Service\HydraAdminClient;
 use NetBS\AuthBundle\Service\HydraClientException;
 use Psr\Log\LoggerInterface;
-use Psr\Log\NullLogger;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;
@@ -18,20 +17,20 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Core\Authentication\Token\SwitchUserToken;
 use Symfony\Component\Security\Core\Exception\AccessDeniedException;
+use Symfony\Component\Security\Http\Util\TargetPathTrait;
 
 final class LoginChallengeController extends AbstractController
 {
+    use TargetPathTrait;
+
     /** Session key prefix: when re-authentication was forced for a given challenge. */
     private const REAUTH_KEY_PREFIX = '_oidc.reauth_requested_at.';
-
-    private readonly LoggerInterface $logger;
 
     public function __construct(
         private readonly HydraAdminClient $hydra,
         private readonly LocalSessionTerminator $localSession,
-        ?LoggerInterface $logger = null,
+        private readonly LoggerInterface $logger,
     ) {
-        $this->logger = $logger ?? new NullLogger();
     }
 
     #[Route('/oidc-login', name: 'oidc_login', methods: ['GET'])]
@@ -95,13 +94,13 @@ final class LoginChallengeController extends AbstractController
         // silently re-binds Hydra's session to the new user — a cross-account
         // token forgery vector. When the subjects disagree, reject this
         // login round (and prompt re-auth) instead of papering over it.
-        if (($loginRequest['skip'] ?? false) === true) {
+        $skip = ($loginRequest['skip'] ?? false) === true;
+        if ($skip) {
             $hydraSub = $loginRequest['subject'] ?? null;
             if (!\is_string($hydraSub) || !hash_equals($hydraSub, $currentSub)) {
                 $this->logger->warning('oidc.login: subject mismatch on skip=true; rejecting', [
                     'subject'         => $currentSub,
                     'hydra_subject'   => $hydraSub,
-                    'session_subject' => $currentSub,
                     'client_id'       => $clientId,
                     'login_challenge' => $loginChallenge,
                     'decision'        => 'reject',
@@ -126,7 +125,7 @@ final class LoginChallengeController extends AbstractController
         // with the time we accept, so accepting on an old netBS session would
         // be a lie. Hydra only sets skip=true when its own session satisfies
         // the request, so that path needs no check.
-        if (($loginRequest['skip'] ?? false) !== true && $this->needsReauthentication($request, $loginRequest, $loginChallenge)) {
+        if (!$skip && $this->needsReauthentication($request, $loginRequest, $loginChallenge)) {
             if (\in_array('none', $this->promptValues($loginRequest), true)) {
                 $reject = $this->hydra->rejectLoginRequest($loginChallenge, [
                     'error' => 'login_required',
@@ -156,7 +155,7 @@ final class LoginChallengeController extends AbstractController
             'client_id'       => $clientId,
             'login_challenge' => $loginChallenge,
             'decision'        => 'accept',
-            'reason'          => ($loginRequest['skip'] ?? false) ? 'skip_existing_session' : 'authenticated_session',
+            'reason'          => $skip ? 'skip_existing_session' : 'authenticated_session',
         ]);
 
         return new RedirectResponse($accept['redirect_to']);
@@ -200,7 +199,7 @@ final class LoginChallengeController extends AbstractController
         if ($request->hasSession()) {
             $session = $request->getSession();
             $session->set(self::REAUTH_KEY_PREFIX . $loginChallenge, time());
-            $session->set('_security.oidc.target_path', $request->getUri());
+            $this->saveTargetPath($session, 'oidc', $request->getUri());
         }
 
         return $this->localSession->clearRememberMe($this->redirectToRoute('netbs.secure.login.login'));

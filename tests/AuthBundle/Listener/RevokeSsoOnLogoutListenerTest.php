@@ -18,9 +18,7 @@ final class RevokeSsoOnLogoutListenerTest extends TestCase
 {
     private function listener(MockHttpClient $http): RevokeSsoOnLogoutListener
     {
-        $hydra = (new \ReflectionClass(HydraAdminClient::class))->newInstanceWithoutConstructor();
-        (new \ReflectionProperty(HydraAdminClient::class, 'http'))->setValue($hydra, $http);
-        (new \ReflectionProperty(HydraAdminClient::class, 'logger'))->setValue($hydra, new \Psr\Log\NullLogger());
+        $hydra = new HydraAdminClient($http, new \Psr\Log\NullLogger());
         return new RevokeSsoOnLogoutListener($hydra, new \Psr\Log\NullLogger());
     }
 

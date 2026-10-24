@@ -10,6 +10,7 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 use Symfony\Component\Security\Core\Authentication\Token\TokenInterface;
 use Symfony\Component\Security\Http\Authentication\AuthenticationSuccessHandlerInterface;
+use Symfony\Component\Security\Http\Util\TargetPathTrait;
 
 /**
  * After a successful login on the netbs firewall, send the user back to the
@@ -23,6 +24,8 @@ use Symfony\Component\Security\Http\Authentication\AuthenticationSuccessHandlerI
  */
 final class OidcAwareLoginSuccessHandler implements AuthenticationSuccessHandlerInterface
 {
+    use TargetPathTrait;
+
     public function __construct(
         private readonly UrlGeneratorInterface $router,
         private readonly string $defaultRoute,
@@ -33,10 +36,10 @@ final class OidcAwareLoginSuccessHandler implements AuthenticationSuccessHandler
     {
         $session = $request->getSession();
 
-        foreach (['_security.oidc.target_path', '_security.netbs.target_path'] as $key) {
-            $target = $session->get($key);
-            if (is_string($target) && $target !== '') {
-                $session->remove($key);
+        foreach (['oidc', 'netbs'] as $firewall) {
+            $target = $this->getTargetPath($session, $firewall);
+            if ($target !== null && $target !== '') {
+                $this->removeTargetPath($session, $firewall);
                 return new RedirectResponse($target);
             }
         }

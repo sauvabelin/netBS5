@@ -10,6 +10,7 @@ use NetBS\AuthBundle\Service\HydraAdminClient;
 use NetBS\AuthBundle\Service\HydraClientException;
 use Psr\Log\LoggerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\DependencyInjection\Attribute\Autowire;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
@@ -29,6 +30,8 @@ final class OidcClientController extends AbstractController
     public function __construct(
         private readonly HydraAdminClient $hydra,
         private readonly LoggerInterface $logger,
+        #[Autowire('%env(HYDRA_ISSUER)%')]
+        private readonly string $issuer,
     ) {
     }
 
@@ -40,12 +43,7 @@ final class OidcClientController extends AbstractController
         try {
             $clients = $this->hydra->listOAuthClients();
         } catch (HydraClientException $e) {
-            $this->logger->error('Hydra listOAuthClients failed', [
-                'method' => $e->method,
-                'url' => $e->url,
-                'status' => $e->statusCode,
-                'response_excerpt' => $e->responseExcerpt,
-            ]);
+            $this->logger->error('Hydra listOAuthClients failed', ['exception' => $e]);
             $this->addFlash('error', 'Could not list OAuth clients.');
             $clients = [];
         }
@@ -74,12 +72,7 @@ final class OidcClientController extends AbstractController
         try {
             $created = $this->hydra->createOAuthClient($dto->toHydraPayload($plaintext));
         } catch (HydraClientException $e) {
-            $this->logger->error('Hydra createOAuthClient failed', [
-                'method' => $e->method,
-                'url' => $e->url,
-                'status' => $e->statusCode,
-                'response_excerpt' => $e->responseExcerpt,
-            ]);
+            $this->logger->error('Hydra createOAuthClient failed', ['exception' => $e]);
             $this->addFlash('error', 'Could not create OAuth client.');
             return $this->redirectToRoute('auth.admin.oidc_clients.index');
         }
@@ -118,12 +111,7 @@ final class OidcClientController extends AbstractController
                     $this->addFlash('success', 'Client updated.');
                     return $this->redirectToRoute('auth.admin.oidc_clients.index');
                 } catch (HydraClientException $e) {
-                    $this->logger->error('Hydra updateOAuthClient failed', [
-                        'method' => $e->method,
-                        'url' => $e->url,
-                        'status' => $e->statusCode,
-                        'response_excerpt' => $e->responseExcerpt,
-                    ]);
+                    $this->logger->error('Hydra updateOAuthClient failed', ['exception' => $e]);
                     $this->addFlash('error', 'Could not update OAuth client.');
                     // Turbo ignores a 200 answer to a form POST; an error
                     // status makes it render the page and its flash.
@@ -139,6 +127,7 @@ final class OidcClientController extends AbstractController
         return $this->render('@NetBSAuth/admin/oidc/edit.html.twig', [
             'client' => $dto,
             'form'   => $form->createView(),
+            'issuer' => rtrim($this->issuer, '/'),
         ], new Response('', $status));
     }
 
@@ -162,12 +151,7 @@ final class OidcClientController extends AbstractController
         try {
             $this->hydra->updateOAuthClient($slug, $dto->toHydraPayload($plaintext));
         } catch (HydraClientException $e) {
-            $this->logger->error('Hydra regenerateSecret failed', [
-                'method' => $e->method,
-                'url' => $e->url,
-                'status' => $e->statusCode,
-                'response_excerpt' => $e->responseExcerpt,
-            ]);
+            $this->logger->error('Hydra regenerateSecret failed', ['exception' => $e]);
             $this->addFlash('error', 'Could not regenerate the client secret.');
             return $this->redirectToRoute('auth.admin.oidc_clients.edit', ['slug' => $slug]);
         }
@@ -190,12 +174,7 @@ final class OidcClientController extends AbstractController
         try {
             $this->hydra->deleteOAuthClient($slug);
         } catch (HydraClientException $e) {
-            $this->logger->error('Hydra deleteOAuthClient failed', [
-                'method' => $e->method,
-                'url' => $e->url,
-                'status' => $e->statusCode,
-                'response_excerpt' => $e->responseExcerpt,
-            ]);
+            $this->logger->error('Hydra deleteOAuthClient failed', ['exception' => $e]);
             $this->addFlash('error', 'Could not delete OAuth client.');
             return $this->redirectToRoute('auth.admin.oidc_clients.edit', ['slug' => $slug]);
         }

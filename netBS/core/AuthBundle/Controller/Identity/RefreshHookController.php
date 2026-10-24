@@ -8,7 +8,6 @@ use NetBS\AuthBundle\Contract\IdentityClientPolicyInterface;
 use NetBS\AuthBundle\Contract\IdentityUserResolverInterface;
 use NetBS\AuthBundle\Service\ClaimsAssembler;
 use Psr\Log\LoggerInterface;
-use Psr\Log\NullLogger;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
@@ -19,16 +18,13 @@ final class RefreshHookController extends AbstractController
 {
     private const SECRET_HEADER = 'X-Hydra-Hook-Secret';
 
-    private readonly LoggerInterface $logger;
-
     public function __construct(
         private readonly IdentityUserResolverInterface $userResolver,
         private readonly IdentityClientPolicyInterface $policy,
         private readonly ClaimsAssembler $claims,
         private readonly string $expectedSecret,
-        ?LoggerInterface $logger = null,
+        private readonly LoggerInterface $logger,
     ) {
-        $this->logger = $logger ?? new NullLogger();
     }
 
     #[Route('/oidc-refresh-hook', name: 'oidc_refresh_hook', methods: ['POST'])]
@@ -102,20 +98,13 @@ final class RefreshHookController extends AbstractController
             $grantedScopes = null;
         }
 
-        $idTokenClaims = $this->claims->assemble($identity, $grantedScopes);
-
         $this->logger->info('oidc.refresh_hook: accepted', [
             'subject' => $subject,
             'client_id' => $clientId,
         ]);
 
-        // Hydra decodes id_token/access_token into JSON objects (maps); an empty
-        // PHP array would encode as `[]` and fail the whole refresh grant.
         return new JsonResponse([
-            'session' => [
-                'id_token' => $idTokenClaims,
-                'access_token' => (object) [],
-            ],
+            'session' => $this->claims->hydraSession($identity, $grantedScopes),
         ]);
     }
 }

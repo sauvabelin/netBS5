@@ -53,6 +53,7 @@ final class RefreshHookControllerTest extends TestCase
             $policy,
             new ClaimsAssembler(),
             $expectedSecret,
+            new \Psr\Log\NullLogger(),
         );
     }
 

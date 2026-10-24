@@ -68,23 +68,12 @@ final class OidcClientControllerTest extends TestCase
 
     private function buildHydra(MockHttpClient $mock): HydraAdminClient
     {
-        $client = (new \ReflectionClass(HydraAdminClient::class))
-            ->newInstanceWithoutConstructor();
-
-        $httpProp = new \ReflectionProperty(HydraAdminClient::class, 'http');
-        $httpProp->setAccessible(true);
-        $httpProp->setValue($client, $mock);
-
-        $loggerProp = new \ReflectionProperty(HydraAdminClient::class, 'logger');
-        $loggerProp->setAccessible(true);
-        $loggerProp->setValue($client, new NullLogger());
-
-        return $client;
+        return new HydraAdminClient($mock, new NullLogger());
     }
 
     private function makeController(): OidcClientController
     {
-        $controller = new OidcClientController($this->hydra, new NullLogger());
+        $controller = new OidcClientController($this->hydra, new NullLogger(), 'http://hydra.test/');
 
         $isAdmin = &$this->isAdmin;
         $auth = new class($isAdmin) implements AuthorizationCheckerInterface {

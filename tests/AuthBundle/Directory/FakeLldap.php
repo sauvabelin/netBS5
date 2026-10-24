@@ -47,17 +47,12 @@ final class FakeLldap implements LldapClientInterface
         return array_values($this->groups);
     }
 
-    public function hasGroupAttribute(string $name): bool
+    public function groupAttributes(): array
     {
-        return in_array($name, $this->attributes, true);
+        return $this->attributes;
     }
 
-    public function addIntegerGroupAttribute(string $name): void
-    {
-        $this->attributes[] = $name;
-    }
-
-    public function addStringGroupAttribute(string $name): void
+    public function addGroupAttribute(string $name, string $type): void
     {
         $this->attributes[] = $name;
     }

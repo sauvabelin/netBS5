@@ -16,15 +16,20 @@ namespace NetBS\AuthBundle\Directory;
  */
 interface LldapClientInterface
 {
+    /** Group attribute holding the netBS groupe id of a groupe group. */
+    public const NETBS_ID_ATTRIBUTE = 'netbs-id';
+    /** Group attribute holding the role of a role group. */
+    public const NETBS_ROLE_ATTRIBUTE = 'netbs-role';
+
     public function listUsers(): array;
 
     public function listGroups(): array;
 
-    public function hasGroupAttribute(string $name): bool;
+    /** @return string[] names of the custom group attributes */
+    public function groupAttributes(): array;
 
-    public function addIntegerGroupAttribute(string $name): void;
-
-    public function addStringGroupAttribute(string $name): void;
+    /** @param string $type lldap AttributeType: INTEGER, STRING, ... */
+    public function addGroupAttribute(string $name, string $type): void;
 
     public function createUser(DirectoryUser $user): void;
 

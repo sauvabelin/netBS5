@@ -7,6 +7,7 @@ namespace NetBS\AuthBundle\Command;
 use NetBS\AuthBundle\Directory\DirectoryNotConfiguredException;
 use NetBS\AuthBundle\Directory\DirectoryProjection;
 use NetBS\AuthBundle\Directory\DirectorySync;
+use NetBS\AuthBundle\Directory\LldapClientException;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
@@ -39,13 +40,12 @@ final class LdapSyncCommand extends Command
 
         try {
             $snapshot = $this->projection->snapshot();
-        } catch (DirectoryNotConfiguredException $e) {
+            $io->writeln(sprintf('netBS: %d users, %d groups, %d role groups', count($snapshot->users), count($snapshot->groups), count($snapshot->roleGroups)));
+            $report = $this->sync->sync($snapshot, $dryRun);
+        } catch (DirectoryNotConfiguredException|LldapClientException $e) {
             $io->error($e->getMessage());
             return Command::FAILURE;
         }
-        $io->writeln(sprintf('netBS: %d users, %d groups, %d role groups', count($snapshot['users']), count($snapshot['groups']), count($snapshot['roleGroups'])));
-
-        $report = $this->sync->sync($snapshot['users'], $snapshot['groups'], $snapshot['roleGroups'], $dryRun);
 
         if ($report->changes !== []) {
             $io->listing($report->changes);

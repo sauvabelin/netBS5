@@ -10,13 +10,8 @@ use NetBS\FichierBundle\Mapping\BaseGroupeType;
 /**
  * Turns a groupe and a "sous-groupes" mode (see BaseGroupeType::SOUS_GROUPES_*)
  * into the ids of its members:
- *   - direct:    active attributions in the groupe itself
- *   - fonctions: plus active attributions in any sub-groupe whose fonction
- *                counts in the parent groupe (CP, CL, …)
- *   - tous:      plus every active attribution in any sub-groupe
- *
- * Sub-groupes are all descendants, at any depth. Not LDAP-specific: meant to
- * be shared with mailing lists later.
+ *   - direct: active attributions in the groupe itself
+ *   - tous:   plus every active attribution in any sub-groupe, at any depth
  */
 final class GroupeMemberResolver
 {

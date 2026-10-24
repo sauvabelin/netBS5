@@ -5,8 +5,6 @@ declare(strict_types=1);
 namespace NetBS\AuthBundle\Service;
 
 use Psr\Log\LoggerInterface;
-use Psr\Log\NullLogger;
-use Symfony\Component\HttpClient\HttpClient;
 use Symfony\Contracts\HttpClient\Exception\ExceptionInterface as HttpClientExceptionInterface;
 use Symfony\Contracts\HttpClient\Exception\TransportExceptionInterface;
 use Symfony\Contracts\HttpClient\HttpClientInterface;
@@ -28,19 +26,13 @@ final class HydraAdminClient
 {
     private const RESPONSE_EXCERPT_LIMIT = 500;
 
-    private HttpClientInterface $http;
-    private LoggerInterface $logger;
-
-    public function __construct(string $hydraAdminUrl, ?LoggerInterface $logger = null)
-    {
-        // Reasonable timeouts so a stalled Hydra never wedges a Symfony worker
-        // indefinitely. `timeout` is the inactivity timeout, `max_duration`
-        // the total budget for the whole request.
-        $this->http = HttpClient::createForBaseUri($hydraAdminUrl, [
-            'timeout' => 5,
-            'max_duration' => 10,
-        ]);
-        $this->logger = $logger ?? new NullLogger();
+    /**
+     * @param HttpClientInterface $http scoped to HYDRA_ADMIN_URL (`hydra.admin.client`)
+     */
+    public function __construct(
+        private readonly HttpClientInterface $http,
+        private readonly LoggerInterface $logger,
+    ) {
     }
 
     public function getLoginRequest(string $loginChallenge): array
@@ -146,30 +138,7 @@ final class HydraAdminClient
      */
     public function getOAuthClient(string $clientId): ?array
     {
-        $url = '/admin/clients/' . rawurlencode($clientId);
-        try {
-            $response = $this->http->request('GET', $url);
-            $status = $response->getStatusCode();
-            if ($status === 404) {
-                return null;
-            }
-            if ($status >= 400) {
-                $this->fail('GET', $url, $response);
-            }
-            return $response->toArray();
-        } catch (TransportExceptionInterface $e) {
-            $this->failTransport('GET', $url, $e);
-        } catch (HttpClientExceptionInterface $e) {
-            // toArray() can throw on non-2xx (already guarded above) or when
-            // the response body fails to decode as JSON. Re-wrap uniformly so
-            // callers only ever see HydraClientException.
-            $this->logger->warning('hydra.client: response decoding failed', [
-                'method' => 'GET',
-                'url' => $url,
-                'error' => $e->getMessage(),
-            ]);
-            throw new HydraClientException('GET', $url, 0, $e->getMessage(), $e);
-        }
+        return $this->jsonRequest('GET', '/admin/clients/' . rawurlencode($clientId), nullOn404: true);
     }
 
     /**
@@ -215,13 +184,16 @@ final class HydraAdminClient
 
     /**
      * @param array<string, mixed> $options
-     * @return array<string, mixed>
+     * @return array<string, mixed>|null null only on a 404 with $nullOn404
      */
-    private function jsonRequest(string $method, string $url, array $options = []): array
+    private function jsonRequest(string $method, string $url, array $options = [], bool $nullOn404 = false): ?array
     {
         try {
             $response = $this->http->request($method, $url, $options);
             $status = $response->getStatusCode();
+            if ($nullOn404 && $status === 404) {
+                return null;
+            }
             if ($status >= 400) {
                 $this->fail($method, $url, $response);
             }
