@@ -46,6 +46,15 @@ abstract class BaseFonction
     protected $poids;
 
     /**
+     * Whether attributions with this fonction also count as members of the
+     * parent groupe (directory groups in "fonctions" sous-groupes mode)
+     *
+     * @var bool
+     */
+    #[ORM\Column(name: 'compte_dans_parent', type: 'boolean', options: ['default' => false])]
+    protected $compteDansParent = false;
+
+    /**
      * @var BaseRole[]
      */
     protected $roles;
@@ -147,6 +156,25 @@ abstract class BaseFonction
     public function getPoids()
     {
         return $this->poids;
+    }
+
+    /**
+     * @param bool $compteDansParent
+     * @return $this
+     */
+    public function setCompteDansParent($compteDansParent)
+    {
+        $this->compteDansParent = (bool) $compteDansParent;
+
+        return $this;
+    }
+
+    /**
+     * @return bool
+     */
+    public function isCompteDansParent()
+    {
+        return $this->compteDansParent;
     }
 
     /**

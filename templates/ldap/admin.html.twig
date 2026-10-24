@@ -1,0 +1,134 @@
+{% extends '@NetBSCore/layout/backend.layout.twig' %}
+
+{% set title %}Authentication — LDAP{% endset %}
+
+{% block main %}
+    <div class="container-fluid">
+        {% include '@NetBSCore/includes/header.include.twig' with {
+            header: 'Authentication',
+            subHeader: 'Annuaire LDAP'
+        } %}
+
+        <div class="row">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <h5 class="card-title mb-0">Synchronisation</h5>
+                        {% if notConfigured is null %}
+                            <form id="ldap-sync-now" method="post" action="{{ path('auth.admin.ldap.sync') }}" class="m-0"
+                                  data-turbo-confirm="Appliquer maintenant ces changements à l'annuaire ?">
+                                <input type="hidden" name="_token" value="{{ csrf_token('ldap_sync') }}">
+                                <button type="submit" class="btn btn-primary">
+                                    <i class="fas fa-sync"></i> Synchroniser maintenant
+                                </button>
+                            </form>
+                        {% endif %}
+                    </div>
+                    <div class="card-body">
+                        <p class="mb-2">
+                            Les groupes de l'annuaire se règlent dans
+                            <a href="{{ path('netbs.fichier.groupe_type.page_groupe_types') }}">Types de groupes</a>
+                            (« Crée un groupe », « Sous-groupes ») et
+                            <a href="{{ path('netbs.fichier.fonction.page_fonctions') }}">Fonctions</a>
+                            (« Compte dans le groupe parent »). Cette page montre le résultat sans rien écrire ;
+                            les changements s'appliquent à la prochaine synchronisation.
+                        </p>
+
+                        {% if notConfigured is not null %}
+                            <div id="ldap-not-configured" class="alert alert-warning mb-0">{{ notConfigured }}</div>
+                        {% else %}
+                            <p class="mb-0 text-muted">{{ users|length }} utilisateur(s), {{ groups|length }} groupe(s).</p>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        {% if notConfigured is null %}
+            <div class="row mt-3">
+                <div class="col-12">
+                    <div class="card" id="ldap-pending">
+                        <div class="card-header">
+                            <h5 class="card-title mb-0">Changements en attente</h5>
+                        </div>
+                        <div class="card-body">
+                            {% if lldapError is not null %}
+                                <div class="alert alert-danger mb-0">lldap ne répond pas : {{ lldapError }}</div>
+                            {% else %}
+                                {% if report.errors is not empty %}
+                                    <div class="alert alert-warning">
+                                        <ul class="mb-0">
+                                            {% for error in report.errors %}<li>{{ error }}</li>{% endfor %}
+                                        </ul>
+                                    </div>
+                                {% endif %}
+                                {% if report.changes is empty %}
+                                    <p class="text-muted mb-0">L'annuaire est à jour.</p>
+                                {% else %}
+                                    <details>
+                                        <summary>{{ report.changes|length }} changement(s)</summary>
+                                        <ul class="mt-2 mb-0" style="max-height: 24rem; overflow-y: auto">
+                                            {% for change in report.changes %}<li><code>{{ change }}</code></li>{% endfor %}
+                                        </ul>
+                                    </details>
+                                {% endif %}
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row mt-3">
+                <div class="col-12">
+                    <div class="card card-table">
+                        <div class="card-header">
+                            <h5 class="card-title mb-0">Groupes</h5>
+                        </div>
+                        <div class="card-body">
+                            <table class="table table-striped mb-0">
+                                <thead>
+                                    <tr>
+                                        <th>Groupe</th>
+                                        <th>Type</th>
+                                        <th>Sous-groupes</th>
+                                        <th>Membres</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for netbsId, group in groups %}
+                                        {% set groupe = groupes[netbsId] ?? null %}
+                                        <tr data-group-id="{{ netbsId }}">
+                                            <td>
+                                                {% if groupe %}
+                                                    <a href="{{ path('netbs.fichier.groupe.page_groupe', { id: netbsId }) }}">{{ group.name }}</a>
+                                                {% else %}
+                                                    {{ group.name }}
+                                                {% endif %}
+                                            </td>
+                                            <td>{{ groupe ? groupe.groupeType.nom : '—' }}</td>
+                                            <td>{{ groupe ? sousGroupesLabels[groupe.groupeType.sousGroupes] : '—' }}</td>
+                                            <td>
+                                                {% if group.members is empty %}
+                                                    <span class="text-muted">0</span>
+                                                {% else %}
+                                                    <details>
+                                                        <summary>{{ group.members|length }}</summary>
+                                                        <ul class="mb-0">
+                                                            {% for uid in group.members %}
+                                                                <li>{{ users[uid].displayName }} <span class="text-muted">({{ uid }})</span></li>
+                                                            {% endfor %}
+                                                        </ul>
+                                                    </details>
+                                                {% endif %}
+                                            </td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        {% endif %}
+    </div>
+{% endblock %}

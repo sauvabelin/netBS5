@@ -5,10 +5,12 @@ namespace NetBS\FichierBundle\ListModel;
 use NetBS\CoreBundle\Form\Type\AjaxSelect2DocumentType;
 use NetBS\CoreBundle\Form\Type\SwitchType;
 use NetBS\CoreBundle\ListModel\Column\XEditableColumn;
+use NetBS\FichierBundle\Mapping\BaseGroupeType;
 use NetBS\FichierBundle\Utils\Traits\FichierConfigTrait;
 use NetBS\ListBundle\Model\BaseListModel;
 use NetBS\ListBundle\Model\ListColumnsConfiguration;
 use NetBS\CoreBundle\Utils\Traits\EntityManagerTrait;
+use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
 use Symfony\Component\Form\Extension\Core\Type\TextareaType;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
 
@@ -57,6 +59,15 @@ class GroupeTypesList extends BaseListModel
             ->addColumn('Affichage des effectifs', null, XEditableColumn::class, array(
                 XEditableColumn::TYPE_CLASS => SwitchType::class,
                 XEditableColumn::PROPERTY   => 'affichageEffectifs'
+            ))
+            ->addColumn('Crée un groupe', null, XEditableColumn::class, array(
+                XEditableColumn::TYPE_CLASS => SwitchType::class,
+                XEditableColumn::PROPERTY   => 'creeGroupe'
+            ))
+            ->addColumn('Sous-groupes', null, XEditableColumn::class, array(
+                XEditableColumn::TYPE_CLASS => ChoiceType::class,
+                XEditableColumn::PROPERTY   => 'sousGroupes',
+                XEditableColumn::PARAMS     => ['choices' => BaseGroupeType::getSousGroupesChoices()]
             ))
             ->addColumn('Catégorie d\'unité', null, XEditableColumn::class, array(
                 XEditableColumn::TYPE_CLASS => AjaxSelect2DocumentType::class,
