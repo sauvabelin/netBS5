@@ -49,8 +49,12 @@ class XEditable
         if(isset($this->data['multiple']) && !in_array($this->data['multiple'], ['', 'false', false]))
             return $this->formatMultipleValue();
 
-        if($this->getNormalizedType() === 'checkbox' && is_array($this->baseValue) && isset($this->baseValue[0]))
-            return $this->baseValue[0];
+        // CheckboxType only reads null as unchecked: an unticked switch posts
+        // value[]='' which would otherwise save true.
+        if($this->getNormalizedType() === 'checkbox') {
+            $value = is_array($this->baseValue) ? ($this->baseValue[0] ?? null) : $this->baseValue;
+            return $value === '' ? null : $value;
+        }
 
         return $this->baseValue;
     }

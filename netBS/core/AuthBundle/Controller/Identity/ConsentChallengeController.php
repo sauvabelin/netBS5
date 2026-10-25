@@ -64,9 +64,12 @@ final class ConsentChallengeController extends AbstractController
 
         $requestedScopes = $consentRequest['requested_scope'] ?? [];
 
+        $clientName = $consentRequest['client']['client_name'] ?? '';
+        $clientName = \is_string($clientName) && $clientName !== '' ? $clientName : $clientId;
+
         $identity = $this->userResolver->resolveBySub($subject);
         if ($identity === null || $identity->isDisabled) {
-            return $this->rejectAndRedirect($consentChallenge, 'access_denied', 'User not found or disabled', [
+            return $this->rejectAndShowError($consentChallenge, $clientName, 'User not found or disabled', [
                 'subject'   => $subject,
                 'client_id' => $clientId,
                 'reason'    => $identity === null ? 'unknown_subject' : 'disabled',
@@ -77,7 +80,7 @@ final class ConsentChallengeController extends AbstractController
         // flag the client requires (`metadata.required_flag`, set on the OIDC
         // admin form). Every decision is logged.
         if (!$this->policy->canAccess($identity, $clientId)) {
-            return $this->rejectAndRedirect($consentChallenge, 'access_denied', "User does not have access to {$clientId}", [
+            return $this->rejectAndShowError($consentChallenge, $clientName, "User does not have access to {$clientId}", [
                 'subject'   => $subject,
                 'client_id' => $clientId,
                 'reason'    => 'policy_denied',
@@ -102,6 +105,42 @@ final class ConsentChallengeController extends AbstractController
         ]);
 
         return new RedirectResponse($accept['redirect_to']);
+    }
+
+    /**
+     * Access denials end on netBS's error page rather than back at the client:
+     * the client only gets a bare `error=access_denied` and shows a generic
+     * failure, while here we can tell the user which app refused them. The
+     * challenge is still rejected so Hydra closes it.
+     *
+     * @param array<string, mixed> $logContext extra structured fields for the warning log
+     */
+    private function rejectAndShowError(string $consentChallenge, string $clientName, string $description, array $logContext = []): Response
+    {
+        $this->logger->warning('oidc.consent: rejected', $logContext + [
+            'consent_challenge' => $consentChallenge,
+            'decision'          => 'reject',
+            'error'             => 'access_denied',
+            'error_description' => $description,
+        ]);
+
+        try {
+            $this->hydra->rejectConsentRequest($consentChallenge, [
+                'error' => 'access_denied',
+                'error_description' => $description,
+            ]);
+        } catch (HydraClientException $e) {
+            $this->logger->critical('oidc.consent: reject call failed', [
+                'consent_challenge' => $consentChallenge,
+                'error' => $e->getMessage(),
+            ]);
+        }
+
+        return $this->render('@NetBSAuth/identity/error.html.twig', [
+            'errorCode'   => 'access_denied',
+            'userMessage' => "Vous n'avez pas accès à {$clientName}.",
+            'devDetails'  => null,
+        ], new Response('', Response::HTTP_FORBIDDEN));
     }
 
     /**
