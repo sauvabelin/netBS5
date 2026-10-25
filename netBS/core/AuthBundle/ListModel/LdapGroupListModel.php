@@ -12,8 +12,7 @@ use Symfony\Component\OptionsResolver\OptionsResolver;
 
 /**
  * Groups on the LDAP page, rows built by the controller from the directory
- * snapshot. Members are not rendered; the "Membres" badge loads them through
- * the ldap-members Stimulus controller.
+ * snapshot. Each group links to its own page listing the members.
  */
 final class LdapGroupListModel extends BaseListModel
 {
@@ -46,12 +45,13 @@ final class LdapGroupListModel extends BaseListModel
         $configuration
             ->addColumn('Groupe', null, ClosureColumn::class, [
                 ClosureColumn::CLOSURE => function (LdapGroupRow $row) {
-                    $name = htmlspecialchars($row->name, ENT_QUOTES, 'UTF-8');
+                    $url = htmlspecialchars($this->router->generate('auth.admin.ldap.group', ['key' => $row->key]), ENT_QUOTES, 'UTF-8');
+                    $html = "<a href=\"{$url}\">" . htmlspecialchars($row->name, ENT_QUOTES, 'UTF-8') . '</a>';
                     if ($row->groupeId !== null) {
-                        $url = htmlspecialchars($this->router->generate('netbs.fichier.groupe.page_groupe', ['id' => $row->groupeId]), ENT_QUOTES, 'UTF-8');
-                        $name = "<a href=\"{$url}\">{$name}</a>";
+                        $groupeUrl = htmlspecialchars($this->router->generate('netbs.fichier.groupe.page_groupe', ['id' => $row->groupeId]), ENT_QUOTES, 'UTF-8');
+                        $html .= " <a href=\"{$groupeUrl}\" class=\"text-muted\" title=\"Groupe netBS\"><i class=\"fas fa-external-link-alt\"></i></a>";
                     }
-                    return $name;
+                    return $html;
                 },
             ])
             // The netbs renderer prints cells raw, so every value is escaped here.
@@ -62,11 +62,7 @@ final class LdapGroupListModel extends BaseListModel
                 ClosureColumn::CLOSURE => fn (LdapGroupRow $row) => htmlspecialchars($row->sousGroupes, ENT_QUOTES, 'UTF-8'),
             ])
             ->addColumn('Membres', null, ClosureColumn::class, [
-                ClosureColumn::CLOSURE => function (LdapGroupRow $row) {
-                    $key = htmlspecialchars($row->key, ENT_QUOTES, 'UTF-8');
-                    return "<span class=\"badge text-bg-secondary\" role=\"button\" title=\"Afficher les membres\""
-                        . " data-key=\"{$key}\" data-action=\"click->ldap-members#toggle\">{$row->memberCount}</span>";
-                },
+                ClosureColumn::CLOSURE => fn (LdapGroupRow $row) => $row->memberCount,
             ]);
     }
 }

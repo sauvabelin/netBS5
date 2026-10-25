@@ -17,6 +17,8 @@ final class FakeLldap implements LldapClientInterface
     /** @var string[] group attribute names, in creation order */
     public array $attributes = [];
     public ?string $failOnCreateUser = null;
+    /** Every read fails, as when lldap is unreachable. */
+    public bool $down = false;
     private int $nextGroupId = 1;
 
     public function membersOf(string $displayName): array
@@ -39,16 +41,19 @@ final class FakeLldap implements LldapClientInterface
 
     public function listUsers(): array
     {
+        $this->failIfDown();
         return array_values($this->users);
     }
 
     public function listGroups(): array
     {
+        $this->failIfDown();
         return array_values($this->groups);
     }
 
     public function groupAttributes(): array
     {
+        $this->failIfDown();
         return $this->attributes;
     }
 
@@ -103,5 +108,12 @@ final class FakeLldap implements LldapClientInterface
     public function removeUserFromGroup(string $uid, int $groupId): void
     {
         $this->groups[$groupId]['members'] = array_values(array_diff($this->groups[$groupId]['members'], [$uid]));
+    }
+
+    private function failIfDown(): void
+    {
+        if ($this->down) {
+            throw new LldapClientException('lldap is down');
+        }
     }
 }

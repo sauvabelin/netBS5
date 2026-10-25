@@ -92,6 +92,8 @@ services:
       - { name: kernel.event_subscriber }
 
   App\Subscriber\WorkerIdleSubscriber:
+    arguments:
+      $stopWhenIdle: '%env(bool:MESSENGER_STOP_WHEN_IDLE)%'
     tags:
       - { name: kernel.event_subscriber }
 

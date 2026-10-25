@@ -6,7 +6,7 @@ services:
 
   NetBS\AuthBundle\:
     resource: '../../*'
-    exclude: '../../{Dto,Tests,Resources,DependencyInjection,NetBSAuthBundle.php}'
+    exclude: '../../{Dto,Message,Tests,Resources,DependencyInjection,NetBSAuthBundle.php}'
 
   # Hydra admin API (HYDRA_ADMIN_URL). Logs every failure (see HydraClientException).
   NetBS\AuthBundle\Service\HydraAdminClient:
@@ -28,7 +28,7 @@ services:
     tags:
       - { name: netbs.list.model }
 
-  NetBS\AuthBundle\ListModel\LdapChangeListModel:
+  NetBS\AuthBundle\ListModel\LdapMemberListModel:
     tags:
       - { name: netbs.list.model }
 

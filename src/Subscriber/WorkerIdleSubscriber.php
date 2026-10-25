@@ -6,14 +6,19 @@ use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 use Symfony\Component\Messenger\Event\WorkerRunningEvent;
 
 /**
- * Class ExtractFailedEvent
- * @package App\Event
+ * Stops a worker once the queue is empty, for workers started by cron.
+ * Disabled with MESSENGER_STOP_WHEN_IDLE=0 for a long-running worker, which
+ * the scheduler needs (see NetBS\AuthBundle\Schedule\DirectorySchedule).
  */
 class WorkerIdleSubscriber implements EventSubscriberInterface
 {
+    public function __construct(private readonly bool $stopWhenIdle)
+    {
+    }
+
     public function onWorkerRunning(WorkerRunningEvent $event): void
     {
-        if ($event->isWorkerIdle()) {
+        if ($this->stopWhenIdle && $event->isWorkerIdle()) {
             $event->getWorker()->stop();
         }
     }

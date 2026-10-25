@@ -24,8 +24,19 @@ final class ClaimsAssemblerTest extends TestCase
         );
         $this->assertSame(
             ['sub' => 'alice', 'preferred_username' => 'alice', 'name' => 'Alice Example', 'email' => 'alice@example.com'],
-            $assembler->assemble($this->identity(), ['openid', 'profile', 'email', 'groups']),
+            $assembler->assemble($this->identity(), ['openid', 'profile', 'email']),
         );
+        $this->assertSame(
+            ['sub' => 'alice', 'groups' => ['wiki-admins']],
+            $assembler->assemble($this->identity(), ['openid', 'groups']),
+        );
+    }
+
+    public function testUserWithoutRoleGroupsGetsAnEmptyGroupsClaim(): void
+    {
+        $claims = (new ClaimsAssembler())->assemble($this->identity(groups: []), ['openid', 'groups']);
+
+        $this->assertSame(['sub' => 'alice', 'groups' => []], $claims);
     }
 
     public function testUserWithoutEmailOmitsTheEmailClaim(): void
@@ -35,7 +46,10 @@ final class ClaimsAssemblerTest extends TestCase
         $this->assertSame(['sub' => 'alice'], $claims);
     }
 
-    private function identity(?string $email = 'alice@example.com'): IdentityDTO
+    /**
+     * @param list<string> $groups
+     */
+    private function identity(?string $email = 'alice@example.com', array $groups = ['wiki-admins']): IdentityDTO
     {
         return new IdentityDTO(
             sub: 'alice',
@@ -43,6 +57,7 @@ final class ClaimsAssemblerTest extends TestCase
             email: $email,
             displayName: 'Alice Example',
             isDisabled: false,
+            groups: $groups,
         );
     }
 }

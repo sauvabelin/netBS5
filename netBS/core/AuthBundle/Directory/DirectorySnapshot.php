@@ -18,4 +18,10 @@ final class DirectorySnapshot
         public readonly array $roleGroups,
     ) {
     }
+
+    /** @param string $key netBS groupe id, or a role of {@see DirectoryProjection::ROLE_GROUPS} */
+    public function group(string $key): ?DirectoryGroup
+    {
+        return ctype_digit($key) ? $this->groups[(int) $key] ?? null : $this->roleGroups[$key] ?? null;
+    }
 }

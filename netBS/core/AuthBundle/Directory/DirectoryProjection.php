@@ -58,33 +58,6 @@ final class DirectoryProjection
     }
 
     /**
-     * Members of one group, computed without building the whole snapshot.
-     *
-     * @param string $key netBS groupe id, or a {@see ROLE_GROUPS} role
-     * @return list<DirectoryUser>|null sorted by display name; null when $key
-     *                                  is not a group of the directory
-     */
-    public function members(string $key): ?array
-    {
-        if (isset(self::ROLE_GROUPS[$key])) {
-            $members = self::roleHolders($this->userProvider->directoryUsers(), $key);
-        } elseif (ctype_digit($key)) {
-            /** @var BaseGroupe|null $groupe */
-            $groupe = $this->em->find($this->fichierConfig->getGroupeClass(), (int) $key);
-            if ($groupe === null || !$groupe->getGroupeType()->isCreeGroupe()) {
-                return null;
-            }
-            $membreIds = array_flip($this->resolver->membreIds($groupe, $groupe->getGroupeType()->getSousGroupes()));
-            $members = array_filter($this->userProvider->directoryUsers(), fn (DirectoryUser $user) => isset($membreIds[$user->membreId]));
-        } else {
-            return null;
-        }
-
-        usort($members, fn (DirectoryUser $a, DirectoryUser $b) => strcasecmp($a->displayName, $b->displayName));
-        return $members;
-    }
-
-    /**
      * Group names end up in DNs. Nextcloud escapes these characters in DNs
      * (`\28` for `(`, ...) and lldap can't find entries by such DNs, so they
      * are replaced.

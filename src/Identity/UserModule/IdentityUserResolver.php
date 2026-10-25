@@ -9,6 +9,7 @@ use NetBS\AuthBundle\Contract\IdentityDTO;
 use NetBS\AuthBundle\Contract\IdentityUserResolverInterface;
 use Doctrine\ORM\EntityManagerInterface;
 use NetBS\AuthBundle\Contract\Subject;
+use NetBS\AuthBundle\Directory\DirectoryProjection;
 
 final class IdentityUserResolver implements IdentityUserResolverInterface
 {
@@ -30,6 +31,10 @@ final class IdentityUserResolver implements IdentityUserResolverInterface
             email: BSUserIdentity::email($user),
             displayName: BSUserIdentity::displayName($user),
             isDisabled: !$user->getIsActive(),
+            groups: array_values(array_intersect_key(
+                DirectoryProjection::ROLE_GROUPS,
+                array_flip($user->getRolesAsString()),
+            )),
         );
     }
 }

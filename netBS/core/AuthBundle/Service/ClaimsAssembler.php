@@ -19,6 +19,7 @@ final class ClaimsAssembler
         'preferred_username' => 'profile',
         'name'               => 'profile',
         'email'              => 'email',
+        'groups'             => 'groups',
     ];
 
     /**
@@ -32,6 +33,7 @@ final class ClaimsAssembler
             'sub'                => $identity->sub,
             'preferred_username' => $identity->preferredUsername,
             'name'               => $identity->displayName,
+            'groups'             => $identity->groups,
         ];
 
         // No `email_verified` companion — netBS has no verification mechanism,

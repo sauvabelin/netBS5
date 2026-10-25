@@ -7,6 +7,7 @@ namespace NetBS\AuthBundle\Command;
 use NetBS\AuthBundle\Directory\DirectoryNotConfiguredException;
 use NetBS\AuthBundle\Directory\DirectoryProjection;
 use NetBS\AuthBundle\Directory\DirectorySync;
+use NetBS\AuthBundle\Directory\DirectorySyncRunner;
 use NetBS\AuthBundle\Directory\LldapClientException;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
@@ -24,6 +25,7 @@ final class LdapSyncCommand extends Command
     public function __construct(
         private readonly DirectoryProjection $projection,
         private readonly DirectorySync $sync,
+        private readonly DirectorySyncRunner $runner,
     ) {
         parent::__construct();
     }
@@ -41,7 +43,8 @@ final class LdapSyncCommand extends Command
         try {
             $snapshot = $this->projection->snapshot();
             $io->writeln(sprintf('netBS: %d users, %d groups, %d role groups', count($snapshot->users), count($snapshot->groups), count($snapshot->roleGroups)));
-            $report = $this->sync->sync($snapshot, $dryRun);
+            // A real run goes through the runner, so it never overlaps the worker's.
+            $report = $dryRun ? $this->sync->sync($snapshot, true) : $this->runner->run();
         } catch (DirectoryNotConfiguredException|LldapClientException $e) {
             $io->error($e->getMessage());
             return Command::FAILURE;

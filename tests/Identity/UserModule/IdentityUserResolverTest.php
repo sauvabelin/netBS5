@@ -47,7 +47,26 @@ final class IdentityUserResolverTest extends TestCase
         $this->assertSame('alice@sauvabelin.ch', $dto->email);
     }
 
-    private function user(?string $email = null, ?string $emailBS = null, string $username = 'alice'): BSUser
+    public function testGroupsAreTheDirectoryRoleGroupsTheUserHolds(): void
+    {
+        $user = $this->user(roles: ['ROLE_USER', 'ROLE_WIKI_ADMIN', 'ROLE_ADMIN']);
+
+        $dto = (new IdentityUserResolver($this->emReturning($user)))->resolveBySub('alice');
+
+        $this->assertSame(['wiki-admins'], $dto->groups);
+    }
+
+    public function testUserWithoutRoleGroupsHasNoGroups(): void
+    {
+        $dto = (new IdentityUserResolver($this->emReturning($this->user(roles: ['ROLE_USER']))))->resolveBySub('alice');
+
+        $this->assertSame([], $dto->groups);
+    }
+
+    /**
+     * @param list<string> $roles
+     */
+    private function user(?string $email = null, ?string $emailBS = null, string $username = 'alice', array $roles = []): BSUser
     {
         $user = $this->createMock(BSUser::class);
         $user->method('getUsername')->willReturn($username);
@@ -55,6 +74,7 @@ final class IdentityUserResolverTest extends TestCase
         $user->method('getEmail')->willReturn($email);
         $user->method('getEmailBS')->willReturn($emailBS);
         $user->method('getIsActive')->willReturn(true);
+        $user->method('getRolesAsString')->willReturn($roles);
         return $user;
     }
 

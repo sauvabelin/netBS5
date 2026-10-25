@@ -1,0 +1,64 @@
+{% extends '@NetBSCore/layout/backend.layout.twig' %}
+
+{% set title %}Authentication — LDAP — {{ group.name }}{% endset %}
+
+{% block main %}
+    <div class="container-fluid">
+        {% include '@NetBSCore/includes/header.include.twig' with {
+            header: group.name,
+            subHeader: 'Groupe de l\'annuaire LDAP',
+            actions: ['<a href="' ~ path('auth.admin.ldap.index') ~ '" class="btn btn-secondary"><i class="fas fa-arrow-left"></i> Annuaire LDAP</a>']
+        } %}
+
+        <div class="row">
+            <div class="col-12">
+                <div class="card" id="ldap-group">
+                    <div class="card-body">
+                        <dl class="row mb-0">
+                            {% if group.role is not null %}
+                                <dt class="col-sm-3">Rôle</dt>
+                                <dd class="col-sm-9"><code>{{ group.role }}</code></dd>
+                            {% else %}
+                                <dt class="col-sm-3">Groupe netBS</dt>
+                                <dd class="col-sm-9">
+                                    <a href="{{ path('netbs.fichier.groupe.page_groupe', {id: group.netbsId}) }}">{{ group.name }}</a>
+                                </dd>
+                                <dt class="col-sm-3">Type</dt>
+                                <dd class="col-sm-9">{{ group.typeName }}</dd>
+                                <dt class="col-sm-3">Sous-groupes</dt>
+                                <dd class="col-sm-9">{{ sousGroupes ?? '—' }}</dd>
+                            {% endif %}
+                            <dt class="col-sm-3">Membres</dt>
+                            <dd class="col-sm-9">{{ group.members|length }}</dd>
+                            <dt class="col-sm-3">Dans lldap</dt>
+                            <dd class="col-sm-9 mb-0">
+                                {% if lldapError is not null %}
+                                    <span class="text-danger">lldap ne répond pas : {{ lldapError }}</span>
+                                {% elseif lldapGroup is null %}
+                                    pas encore créé, il le sera à la prochaine synchronisation
+                                {% elseif lldapGroup.displayName != group.name %}
+                                    nommé « {{ lldapGroup.displayName }} », sera renommé à la prochaine synchronisation
+                                {% else %}
+                                    présent
+                                {% endif %}
+                            </dd>
+                        </dl>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row mt-3">
+            <div class="col-12">
+                <div class="card card-table" id="ldap-members">
+                    <div class="card-header">
+                        <h5 class="card-title mb-0">Membres</h5>
+                    </div>
+                    <div class="card-body">
+                        {{ render_list('netbs.auth.ldap.members', 'netbs', {members: memberRows}) }}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}
