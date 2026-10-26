@@ -6,6 +6,7 @@ namespace App\Identity\UserModule;
 
 use App\Entity\BSUser;
 use Doctrine\ORM\EntityManagerInterface;
+use Doctrine\ORM\QueryBuilder;
 use NetBS\AuthBundle\Contract\DirectoryUserProviderInterface;
 use NetBS\AuthBundle\Contract\Subject;
 use NetBS\AuthBundle\Directory\DirectoryProjection;
@@ -25,17 +26,14 @@ final class DirectoryUserProvider implements DirectoryUserProviderInterface
     public function directoryUsers(): array
     {
         /** @var BSUser[] $accounts */
-        $accounts = $this->em->createQueryBuilder()
+        $accounts = $this->directoryAccounts()
             ->select('u', 'm', 'ur', 'a', 'f', 'fr')
-            ->from(BSUser::class, 'u')
             ->leftJoin('u.membre', 'm')
             // Fetched up front so getAllRoles() doesn't lazy-load per user.
             ->leftJoin('u.roles', 'ur')
             ->leftJoin('m.attributions', 'a')
             ->leftJoin('a.fonction', 'f')
             ->leftJoin('f.roles', 'fr')
-            ->where('u.nextcloudAccount = true')
-            ->andWhere('u.isActive = true')
             ->getQuery()
             ->getResult();
 
@@ -61,5 +59,29 @@ final class DirectoryUserProvider implements DirectoryUserProviderInterface
         }
 
         return $users;
+    }
+
+    public function uidsByMembre(): array
+    {
+        $rows = $this->directoryAccounts()
+            ->select('m.id AS membreId', 'u.username')
+            ->join('u.membre', 'm')
+            ->getQuery()
+            ->getArrayResult();
+
+        $uids = [];
+        foreach ($rows as $row) {
+            $uids[(int) $row['membreId']] = Subject::fromUsername($row['username']);
+        }
+        return $uids;
+    }
+
+    /** The accounts that belong in the directory, as `u`; callers set the select. */
+    private function directoryAccounts(): QueryBuilder
+    {
+        return $this->em->createQueryBuilder()
+            ->from(BSUser::class, 'u')
+            ->where('u.nextcloudAccount = true')
+            ->andWhere('u.isActive = true');
     }
 }

@@ -14,7 +14,8 @@
                 {% if notConfigured is not null %}
                     <div id="ldap-not-configured" class="alert alert-warning">{{ notConfigured }}</div>
                 {% else %}
-                    <div class="card card-table" id="ldap-groups">
+                    {# Member counts are fetched per row on hover: resolving every group up front is slow. #}
+                    <div class="card card-table" id="ldap-groups" data-controller="lazy-count" data-action="mouseover->lazy-count#load">
                         <div class="card-header">
                             <h5 class="card-title mb-0">Groupes</h5>
                         </div>

@@ -83,4 +83,23 @@ final class DirectoryProjectionTest extends KernelTestCase
         self::assertSame('Equipe [x]  y', $groups[$ids['gb']]->name);
         self::assertSame(sprintf('Equipe [x]  y [%d]', $ids['gc']), $groups[$ids['gc']]->name);
     }
+
+    public function testSingleGroupAndOutlinesMatchSnapshot(): void
+    {
+        $ids = $this->seedGroupeTree();
+        $this->grantUserRole($ids['user'], 'ROLE_WIKI_ADMIN');
+        $this->db->update('sauvabelin_netbs_groupes', ['nom' => 'nextcloud-admins'], ['id' => $ids['ga']]);
+
+        $snapshot = $this->projection->snapshot();
+        static::getContainer()->get('doctrine.orm.entity_manager')->clear();
+
+        self::assertEquals($snapshot->groups[$ids['ga']], $this->projection->group((string) $ids['ga']));
+        self::assertEquals($snapshot->roleGroups['ROLE_WIKI_ADMIN'], $this->projection->group('ROLE_WIKI_ADMIN'));
+        self::assertNull($this->projection->group((string) $ids['gb']), 'type does not create a group');
+        self::assertNull($this->projection->group('ROLE_ADMIN'), 'role not published');
+
+        $outlines = $this->projection->groupOutlines();
+        self::assertSame(array_keys($snapshot->groups), array_keys($outlines));
+        self::assertSame(['name' => sprintf('nextcloud-admins [%d]', $ids['ga']), 'typeName' => 'dirproj-a', 'sousGroupes' => 'tous'], $outlines[$ids['ga']]);
+    }
 }

@@ -15,4 +15,12 @@ interface DirectoryUserProviderInterface
      * @return array<string, DirectoryUser> keyed by uid
      */
     public function directoryUsers(): array;
+
+    /**
+     * Membre id => uid, for the accounts {@see directoryUsers()} lists that
+     * have a membre. Cheaper than directoryUsers(), for resolving one group.
+     *
+     * @return array<int, string>
+     */
+    public function uidsByMembre(): array;
 }

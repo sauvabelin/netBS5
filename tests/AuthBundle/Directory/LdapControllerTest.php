@@ -69,7 +69,21 @@ final class LdapControllerTest extends WebTestCase
         self::assertStringContainsString('dirproj-GA', $group->text());
         self::assertStringNotContainsString('Dir Projection', $group->text(), 'members are on the group page');
         self::assertCount(1, $group->filter(sprintf('a[href$="/groups/%d"]', $ids['ga'])));
+        self::assertCount(1, $group->filter(sprintf('.ldap-member-count[data-lazy-count-url$="/groups/%d/count"]', $ids['ga'])), 'counted on hover');
         self::assertSame([], $this->lldap->groups, 'the page must not write to lldap');
+    }
+
+    public function testMemberCountEndpoint(): void
+    {
+        $ids = $this->seedGroupeTree();
+        $this->loginAdmin();
+
+        $this->client->request('GET', sprintf('%s/groups/%d/count', self::URL, $ids['ga']));
+        self::assertResponseIsSuccessful();
+        self::assertSame(['count' => 1], json_decode($this->client->getResponse()->getContent(), true));
+
+        $this->client->request('GET', sprintf('%s/groups/%d/count', self::URL, $ids['gb']));
+        self::assertResponseStatusCodeSame(404);
     }
 
     public function testGroupeTypeNameIsEscaped(): void

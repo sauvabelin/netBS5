@@ -41,11 +41,12 @@ final class GroupeMemberResolver
     }
 
     /**
-     * Depth-first, each groupe once, so a parent cycle in the data terminates.
+     * Every sub-groupe, at any depth. Depth-first, each groupe once, so a
+     * parent cycle in the data terminates.
      *
      * @return BaseGroupe[]
      */
-    private function descendants(BaseGroupe $root): array
+    public function descendants(BaseGroupe $root): array
     {
         $visited = [$this->key($root) => true];
         $result = [];

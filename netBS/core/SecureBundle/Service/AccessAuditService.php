@@ -40,6 +40,8 @@ final class AccessAuditService
         'ROLE_CREATE_EVERYWHERE',
         'ROLE_UPDATE_EVERYWHERE',
         'ROLE_DELETE_EVERYWHERE',
+        'ROLE_NEXTCLOUD_ADMIN',
+        'ROLE_WIKI_ADMIN',
     ];
 
     /**

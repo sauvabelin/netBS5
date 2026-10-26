@@ -43,14 +43,7 @@ final class DirectoryProjection
     public function snapshot(): DirectorySnapshot
     {
         $users = $this->userProvider->directoryUsers();
-        $uidByMembre = [];
-        foreach ($users as $uid => $user) {
-            if ($user->membreId !== null) {
-                $uidByMembre[$user->membreId] = $uid;
-            }
-        }
-
-        $groups = $this->groups($uidByMembre);
+        $groups = $this->groups(self::uidByMembre($users));
         if ($groups === []) {
             throw new DirectoryNotConfiguredException();
         }
@@ -89,6 +82,21 @@ final class DirectoryProjection
 
     /**
      * @param array<string, DirectoryUser> $users
+     * @return array<int, string> membre id => uid
+     */
+    private static function uidByMembre(array $users): array
+    {
+        $uids = [];
+        foreach ($users as $uid => $user) {
+            if ($user->membreId !== null) {
+                $uids[$user->membreId] = $uid;
+            }
+        }
+        return $uids;
+    }
+
+    /**
+     * @param array<string, DirectoryUser> $users
      * @return array<string, DirectoryUser> the users holding $role, keys kept
      */
     private static function roleHolders(array $users, string $role): array
@@ -97,52 +105,140 @@ final class DirectoryProjection
     }
 
     /**
+     * The groupe groups' names and types, without their members: cheap, for
+     * listing. Names are the ones {@see snapshot()} gives.
+     *
+     * @return array<int, array{name: string, typeName: string, sousGroupes: string}> keyed by groupe id
+     * @throws DirectoryNotConfiguredException when no groupe would become a group
+     */
+    public function groupOutlines(): array
+    {
+        $groupes = $this->creeGroupeGroupes(false) ?: throw new DirectoryNotConfiguredException();
+        $outlines = [];
+        foreach (self::names($groupes) as $id => $name) {
+            $type = $groupes[$id]->getGroupeType();
+            $outlines[$id] = ['name' => $name, 'typeName' => $type->getNom(), 'sousGroupes' => $type->getSousGroupes()];
+        }
+        return $outlines;
+    }
+
+    /**
+     * One group as {@see snapshot()} computes it, without resolving the others.
+     *
+     * @param string $key netBS groupe id, or a role of {@see ROLE_GROUPS}
+     * @param array<string, DirectoryUser>|null $users the directory users, when
+     *        the caller has them; otherwise loaded, as little as the group needs
+     * @return DirectoryGroup|null null when $key matches no group
+     */
+    public function group(string $key, ?array $users = null): ?DirectoryGroup
+    {
+        if (!ctype_digit($key)) {
+            return isset(self::ROLE_GROUPS[$key]) ? $this->roleGroups($users ?? $this->userProvider->directoryUsers())[$key] : null;
+        }
+
+        $groupes = $this->creeGroupeGroupes(false);
+        $groupe = $groupes[(int) $key] ?? null;
+        if ($groupe === null) {
+            return null;
+        }
+        $this->prefetchSubtree($groupe);
+        $uidByMembre = $users !== null ? self::uidByMembre($users) : $this->userProvider->uidsByMembre();
+        return $this->buildGroup($groupe, self::names($groupes)[$groupe->getId()], $uidByMembre);
+    }
+
+    /**
      * @param array<int, string> $uidByMembre membre id => uid; membres without an account are dropped
      * @return array<int, DirectoryGroup>
      */
     private function groups(array $uidByMembre): array
     {
-        /** @var BaseGroupe[] $groupes */
-        $groupes = $this->em->createQueryBuilder()
-            ->select('g', 't', 'a', 'am')
-            ->from($this->fichierConfig->getGroupeClass(), 'g')
-            ->join('g.groupeType', 't')
-            ->leftJoin('g.attributions', 'a')
-            ->leftJoin('a.membre', 'am')
-            ->where('t.creeGroupe = true')
-            ->orderBy('g.id')
-            ->getQuery()
-            ->getResult();
+        $groupes = $this->creeGroupeGroupes(true);
         $this->prefetchSousGroupes($groupes);
 
         $groups = [];
-        // Role group names are reserved; a groupe using one gets the id suffix.
-        $seenNames = array_fill_keys(array_map('mb_strtolower', self::ROLE_GROUPS), true);
-        foreach ($groupes as $groupe) {
-            $members = [];
-            foreach ($this->resolver->membreIds($groupe, $groupe->getGroupeType()->getSousGroupes()) as $membreId) {
-                $uid = $uidByMembre[$membreId] ?? null;
-                if ($uid !== null) {
-                    $members[$uid] = $uid;
-                }
-            }
-
-            // lldap group names are unique; two netBS groupes can share a nom.
-            $name = self::dnSafe(trim($groupe->getNom()));
-            if (isset($seenNames[mb_strtolower($name)])) {
-                $name = sprintf('%s [%d]', $name, $groupe->getId());
-            }
-            $seenNames[mb_strtolower($name)] = true;
-
-            $groups[$groupe->getId()] = new DirectoryGroup(
-                $groupe->getId(),
-                $name,
-                array_values($members),
-                typeName: $groupe->getGroupeType()->getNom(),
-                sousGroupes: $groupe->getGroupeType()->getSousGroupes(),
-            );
+        foreach (self::names($groupes) as $id => $name) {
+            $groups[$id] = $this->buildGroup($groupes[$id], $name, $uidByMembre);
         }
         return $groups;
+    }
+
+    /** @param array<int, string> $uidByMembre */
+    private function buildGroup(BaseGroupe $groupe, string $name, array $uidByMembre): DirectoryGroup
+    {
+        $members = [];
+        foreach ($this->resolver->membreIds($groupe, $groupe->getGroupeType()->getSousGroupes()) as $membreId) {
+            $uid = $uidByMembre[$membreId] ?? null;
+            if ($uid !== null) {
+                $members[$uid] = $uid;
+            }
+        }
+
+        return new DirectoryGroup(
+            $groupe->getId(),
+            $name,
+            array_values($members),
+            typeName: $groupe->getGroupeType()->getNom(),
+            sousGroupes: $groupe->getGroupeType()->getSousGroupes(),
+        );
+    }
+
+    /**
+     * The groupes whose type creates a group, by id.
+     *
+     * @return array<int, BaseGroupe>
+     */
+    private function creeGroupeGroupes(bool $withAttributions): array
+    {
+        $qb = $this->em->createQueryBuilder()
+            ->select('g', 't')
+            ->from($this->fichierConfig->getGroupeClass(), 'g', 'g.id')
+            ->join('g.groupeType', 't')
+            ->where('t.creeGroupe = true')
+            ->orderBy('g.id');
+        if ($withAttributions) {
+            $qb->addSelect('a', 'am')
+                ->leftJoin('g.attributions', 'a')
+                ->leftJoin('a.membre', 'am');
+        }
+        return $qb->getQuery()->getResult();
+    }
+
+    /**
+     * lldap group names are unique and two netBS groupes can share a nom; role
+     * group names are reserved too. A clash gets the groupe id as suffix, so
+     * names depend on every groupe, in id order.
+     *
+     * @param array<int, BaseGroupe> $groupes ordered by id
+     * @return array<int, string> groupe id => name
+     */
+    private static function names(array $groupes): array
+    {
+        $names = [];
+        $seen = array_fill_keys(array_map('mb_strtolower', self::ROLE_GROUPS), true);
+        foreach ($groupes as $groupe) {
+            $name = self::dnSafe(trim($groupe->getNom()));
+            if (isset($seen[mb_strtolower($name)])) {
+                $name = sprintf('%s [%d]', $name, $groupe->getId());
+            }
+            $seen[mb_strtolower($name)] = true;
+            $names[$groupe->getId()] = $name;
+        }
+        return $names;
+    }
+
+    /**
+     * Loads the attributions of $root and, in "tous" mode, of its whole
+     * subtree, in at most two queries; the resolver then finds initialized
+     * collections instead of lazy-loading each groupe.
+     */
+    private function prefetchSubtree(BaseGroupe $root): void
+    {
+        $groupes = [$root];
+        if ($root->getGroupeType()->getSousGroupes() === BaseGroupeType::SOUS_GROUPES_TOUS) {
+            $this->fetchEnfants();
+            $groupes = [$root, ...$this->resolver->descendants($root)];
+        }
+        $this->fetchAttributions(array_map(fn (BaseGroupe $groupe) => $groupe->getId(), $groupes));
     }
 
     /**
@@ -165,19 +261,33 @@ final class DirectoryProjection
             return;
         }
 
-        // Fetch joins initialize the collections of groupes already managed.
+        $this->fetchEnfants();
+        $this->fetchAttributions(null);
+    }
+
+    // Fetch joins initialize the collections of groupes already managed.
+
+    private function fetchEnfants(): void
+    {
         $this->em->createQueryBuilder()
             ->select('g', 'e')
             ->from($this->fichierConfig->getGroupeClass(), 'g')
             ->leftJoin('g.enfants', 'e')
             ->getQuery()
             ->getResult();
-        $this->em->createQueryBuilder()
+    }
+
+    /** @param int[]|null $groupeIds null for every groupe */
+    private function fetchAttributions(?array $groupeIds): void
+    {
+        $qb = $this->em->createQueryBuilder()
             ->select('g', 'a', 'am')
             ->from($this->fichierConfig->getGroupeClass(), 'g')
             ->leftJoin('g.attributions', 'a')
-            ->leftJoin('a.membre', 'am')
-            ->getQuery()
-            ->getResult();
+            ->leftJoin('a.membre', 'am');
+        if ($groupeIds !== null) {
+            $qb->where('g.id IN (:ids)')->setParameter('ids', $groupeIds);
+        }
+        $qb->getQuery()->getResult();
     }
 }

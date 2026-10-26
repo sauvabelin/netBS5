@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace NetBS\AuthBundle\Controller\Admin;
 
+use NetBS\AuthBundle\Contract\DirectoryUserProviderInterface;
 use NetBS\AuthBundle\Directory\DirectoryGroup;
 use NetBS\AuthBundle\Directory\DirectoryNotConfiguredException;
 use NetBS\AuthBundle\Directory\DirectoryProjection;
-use NetBS\AuthBundle\Directory\DirectorySnapshot;
 use NetBS\AuthBundle\Directory\DirectoryUser;
 use NetBS\AuthBundle\Directory\LldapClientException;
 use NetBS\AuthBundle\Directory\LldapClientInterface;
@@ -16,6 +16,7 @@ use NetBS\AuthBundle\ListModel\LdapMemberRow;
 use NetBS\FichierBundle\Mapping\BaseGroupeType;
 use Psr\Log\LoggerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 
@@ -30,6 +31,7 @@ final class LdapController extends AbstractController
 {
     public function __construct(
         private readonly DirectoryProjection $projection,
+        private readonly DirectoryUserProviderInterface $userProvider,
         private readonly LldapClientInterface $lldap,
         private readonly LoggerInterface $logger,
     ) {
@@ -40,16 +42,27 @@ final class LdapController extends AbstractController
     {
         $this->denyAccessUnlessGranted('ROLE_ADMIN');
 
+        // Members aren't resolved here: that takes the whole snapshot. The
+        // page fetches each group's count on hover, see memberCount().
         try {
-            $snapshot = $this->projection->snapshot();
+            $outlines = $this->projection->groupOutlines();
         } catch (DirectoryNotConfiguredException $e) {
             return $this->render('@NetBSAuth/admin/ldap/index.html.twig', ['notConfigured' => $e->getMessage()]);
         }
 
         return $this->render('@NetBSAuth/admin/ldap/index.html.twig', [
             'notConfigured' => null,
-            'groupRows'     => $this->groupRows($snapshot),
+            'groupRows'     => $this->groupRows($outlines),
         ]);
+    }
+
+    #[Route('/groups/{key}/count', name: 'auth.admin.ldap.group_count', requirements: ['key' => '[A-Za-z0-9_]+'], methods: ['GET'])]
+    public function memberCount(string $key): JsonResponse
+    {
+        $this->denyAccessUnlessGranted('ROLE_ADMIN');
+
+        $group = $this->projection->group($key) ?? throw $this->createNotFoundException();
+        return new JsonResponse(['count' => count($group->members)]);
     }
 
     /** One group: its members, each compared with the lldap copy. */
@@ -58,12 +71,8 @@ final class LdapController extends AbstractController
     {
         $this->denyAccessUnlessGranted('ROLE_ADMIN');
 
-        try {
-            $snapshot = $this->projection->snapshot();
-        } catch (DirectoryNotConfiguredException) {
-            throw $this->createNotFoundException();
-        }
-        $group = $snapshot->group($key) ?? throw $this->createNotFoundException();
+        $users = $this->userProvider->directoryUsers();
+        $group = $this->projection->group($key, $users) ?? throw $this->createNotFoundException();
 
         $lldapGroup = null;
         $lldapError = null;
@@ -86,7 +95,7 @@ final class LdapController extends AbstractController
             'group'       => $group,
             'lldapGroup'  => $lldapGroup,
             'lldapError'  => $lldapError,
-            'memberRows'  => $this->memberRows($group, $snapshot->users, $lldapError === null ? $lldapGroup['members'] ?? [] : null),
+            'memberRows'  => $this->memberRows($group, $users, $lldapError === null ? $lldapGroup['members'] ?? [] : null),
             'sousGroupes' => array_flip(BaseGroupeType::getSousGroupesChoices())[$group->sousGroupes] ?? null,
         ]);
     }
@@ -122,26 +131,25 @@ final class LdapController extends AbstractController
     /**
      * Role groups first, then groupe groups by name.
      *
+     * @param array<int, array{name: string, typeName: string, sousGroupes: string}> $outlines
      * @return LdapGroupRow[]
      */
-    private function groupRows(DirectorySnapshot $snapshot): array
+    private function groupRows(array $outlines): array
     {
         $rows = [];
-        foreach ($snapshot->roleGroups as $role => $group) {
-            $rows[] = new LdapGroupRow($role, $group->name, null, "Rôle $role", '—', count($group->members));
+        foreach (DirectoryProjection::ROLE_GROUPS as $role => $name) {
+            $rows[] = new LdapGroupRow($role, $name, null, "Rôle $role", '—');
         }
 
         $sousGroupesLabels = array_flip(BaseGroupeType::getSousGroupesChoices());
-        $groups = $snapshot->groups;
-        uasort($groups, fn ($a, $b) => strcasecmp($a->name, $b->name));
-        foreach ($groups as $netbsId => $group) {
+        uasort($outlines, fn ($a, $b) => strcasecmp($a['name'], $b['name']));
+        foreach ($outlines as $netbsId => $outline) {
             $rows[] = new LdapGroupRow(
                 (string) $netbsId,
-                $group->name,
+                $outline['name'],
                 $netbsId,
-                $group->typeName ?? '—',
-                $sousGroupesLabels[$group->sousGroupes] ?? '—',
-                count($group->members),
+                $outline['typeName'],
+                $sousGroupesLabels[$outline['sousGroupes']] ?? '—',
             );
         }
         return $rows;

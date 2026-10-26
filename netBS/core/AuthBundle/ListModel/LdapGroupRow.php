@@ -15,7 +15,6 @@ final class LdapGroupRow
         public readonly ?int $groupeId,
         public readonly string $type,
         public readonly string $sousGroupes,
-        public readonly int $memberCount,
     ) {
     }
 

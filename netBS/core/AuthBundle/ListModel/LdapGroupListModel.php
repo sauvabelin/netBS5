@@ -12,7 +12,7 @@ use Symfony\Component\OptionsResolver\OptionsResolver;
 
 /**
  * Groups on the LDAP page, rows built by the controller from the directory
- * snapshot. Each group links to its own page listing the members.
+ * projection's group outlines. Each group links to its own page listing the members.
  */
 final class LdapGroupListModel extends BaseListModel
 {
@@ -62,7 +62,11 @@ final class LdapGroupListModel extends BaseListModel
                 ClosureColumn::CLOSURE => fn (LdapGroupRow $row) => htmlspecialchars($row->sousGroupes, ENT_QUOTES, 'UTF-8'),
             ])
             ->addColumn('Membres', null, ClosureColumn::class, [
-                ClosureColumn::CLOSURE => fn (LdapGroupRow $row) => $row->memberCount,
+                // Counted on hover (lazy-count controller): resolving every group is slow.
+                ClosureColumn::CLOSURE => function (LdapGroupRow $row) {
+                    $url = htmlspecialchars($this->router->generate('auth.admin.ldap.group_count', ['key' => $row->key]), ENT_QUOTES, 'UTF-8');
+                    return "<span class=\"ldap-member-count text-muted\" data-lazy-count-url=\"{$url}\" title=\"Survoler la ligne pour compter\">…</span>";
+                },
             ]);
     }
 }
