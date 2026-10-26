@@ -18,6 +18,7 @@ use NetBS\FichierBundle\Mapping\BaseGroupeType;
 use NetBS\FichierBundle\Mapping\BaseMembre;
 use NetBS\SecureBundle\Mapping\BaseRole;
 use NetBS\SecureBundle\Mapping\BaseUser;
+use Psr\Log\LoggerInterface;
 use Symfony\Component\Messenger\MessageBusInterface;
 use Symfony\Component\Messenger\Stamp\DelayStamp;
 
@@ -26,6 +27,9 @@ use Symfony\Component\Messenger\Stamp\DelayStamp;
  * built from ({@see \NetBS\AuthBundle\Directory\DirectoryProjection}). The
  * delay lets a burst of edits end in one sync: the runner skips messages
  * requested before a sync started.
+ *
+ * Queueing is best-effort: the flush has already committed, and the scheduled
+ * sync catches up if the transport (Redis) is unavailable.
  */
 #[AsDoctrineListener(event: Events::onFlush)]
 #[AsDoctrineListener(event: Events::postFlush)]
@@ -44,8 +48,10 @@ final class DirectoryChangeListener
 
     private bool $changed = false;
 
-    public function __construct(private readonly MessageBusInterface $bus)
-    {
+    public function __construct(
+        private readonly MessageBusInterface $bus,
+        private readonly LoggerInterface $logger,
+    ) {
     }
 
     public function onFlush(OnFlushEventArgs $args): void
@@ -79,9 +85,13 @@ final class DirectoryChangeListener
             return;
         }
         $this->changed = false;
-        $this->bus->dispatch(
-            new SyncDirectory(new \DateTimeImmutable()),
-            [new DelayStamp(self::DELAY_MS)],
-        );
+        try {
+            $this->bus->dispatch(
+                new SyncDirectory(new \DateTimeImmutable()),
+                [new DelayStamp(self::DELAY_MS)],
+            );
+        } catch (\Throwable $e) {
+            $this->logger->error('directory.sync_queue_failed', ['error' => $e->getMessage()]);
+        }
     }
 }

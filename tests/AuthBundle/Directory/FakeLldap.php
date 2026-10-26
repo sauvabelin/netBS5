@@ -107,7 +107,15 @@ final class FakeLldap implements LldapClientInterface
 
     public function removeUserFromGroup(string $uid, int $groupId): void
     {
+        if (!isset($this->users[$uid])) {
+            throw new LldapClientException("unknown user $uid");
+        }
         $this->groups[$groupId]['members'] = array_values(array_diff($this->groups[$groupId]['members'], [$uid]));
+    }
+
+    /** Stands in for LldapClient, whose service is tagged kernel.reset. */
+    public function reset(): void
+    {
     }
 
     private function failIfDown(): void

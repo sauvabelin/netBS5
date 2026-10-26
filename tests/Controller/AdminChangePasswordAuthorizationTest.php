@@ -34,4 +34,27 @@ class AdminChangePasswordAuthorizationTest extends WebTestCase
         $this->assertResponseStatusCodeSame(403, 'a ROLE_USER must not reach the admin password-change endpoint');
     }
 
+    public function test_an_admin_is_allowed(): void
+    {
+        $client = static::createClient();
+        $actor  = $this->persistUser($client, 'authz-admin', plainPassword: 'whatever', roles: ['ROLE_USER', 'ROLE_ADMIN']);
+        $target = $this->persistUser($client, 'authz-target', plainPassword: 'whatever');
+        $client->loginUser($actor, 'netbs');
+
+        $client->request('GET', $this->url($target->getId()));
+
+        $this->assertResponseIsSuccessful('an admin must be able to open the password-change modal');
+    }
+
+    public function test_an_anonymous_visitor_is_denied(): void
+    {
+        $client = static::createClient();
+        $target = $this->persistUser($client, 'authz-target', plainPassword: 'whatever');
+
+        $client->request('GET', $this->url($target->getId()));
+
+        // form_login firewall bounces an unauthenticated visitor to the login page.
+        $this->assertResponseRedirects();
+        $this->assertStringContainsString('/login', $client->getResponse()->headers->get('Location') ?? '');
+    }
 }

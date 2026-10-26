@@ -58,4 +58,12 @@ final class RevokeSsoOnLogoutListenerTest extends TestCase
         $this->assertSame(1, $http->getRequestsCount());
     }
 
+    public function testForcedReauthenticationKeepsSsoSessions(): void
+    {
+        $http = new MockHttpClient([]);
+
+        ($this->listener($http))($this->event(Request::create('/oidc-login', 'GET', ['login_challenge' => 'ch-1'])));
+
+        $this->assertSame(0, $http->getRequestsCount());
+    }
 }

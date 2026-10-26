@@ -91,11 +91,13 @@ final class RefreshHookController extends AbstractController
         // Hydra v2 sends the scopes both at the top level and under `requester`.
         $grantedScopes = $payload['granted_scopes'] ?? ($payload['requester']['granted_scopes'] ?? null);
         if (!\is_array($grantedScopes)) {
-            $this->logger->warning('oidc.refresh_hook: no granted_scopes in payload; claims not scope-filtered', [
+            // Fail closed: without the granted scopes, release only the
+            // scope-less claims rather than everything.
+            $this->logger->warning('oidc.refresh_hook: no granted_scopes in payload; releasing scope-less claims only', [
                 'subject' => $subject,
                 'client_id' => $clientId,
             ]);
-            $grantedScopes = null;
+            $grantedScopes = [];
         }
 
         $this->logger->info('oidc.refresh_hook: accepted', [

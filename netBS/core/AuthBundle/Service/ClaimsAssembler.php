@@ -23,11 +23,10 @@ final class ClaimsAssembler
     ];
 
     /**
-     * @param list<string>|null $grantedScopes scopes granted to this token;
-     *                                         null skips scope filtering
+     * @param list<string> $grantedScopes scopes granted to this token
      * @return array<string, mixed>
      */
-    public function assemble(IdentityDTO $identity, ?array $grantedScopes): array
+    public function assemble(IdentityDTO $identity, array $grantedScopes): array
     {
         $claims = [
             'sub'                => $identity->sub,
@@ -40,10 +39,6 @@ final class ClaimsAssembler
         // so emitting that claim would be dishonest.
         if ($identity->email !== null) {
             $claims['email'] = $identity->email;
-        }
-
-        if ($grantedScopes === null) {
-            return $claims;
         }
 
         return array_filter(
@@ -60,10 +55,10 @@ final class ClaimsAssembler
      * empty PHP array encodes as `[]`, which Hydra rejects, so the always-empty
      * access_token is an object.
      *
-     * @param list<string>|null $grantedScopes see {@see assemble()}
+     * @param list<string> $grantedScopes see {@see assemble()}
      * @return array{id_token: array<string, mixed>, access_token: object}
      */
-    public function hydraSession(IdentityDTO $identity, ?array $grantedScopes): array
+    public function hydraSession(IdentityDTO $identity, array $grantedScopes): array
     {
         return [
             'id_token'     => $this->assemble($identity, $grantedScopes),

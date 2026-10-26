@@ -6,13 +6,14 @@ namespace NetBS\AuthBundle\Directory;
 
 use Symfony\Contracts\HttpClient\Exception\ExceptionInterface as HttpClientExceptionInterface;
 use Symfony\Contracts\HttpClient\HttpClientInterface;
+use Symfony\Contracts\Service\ResetInterface;
 
 /**
  * lldap management client. Talks to lldap's HTTP API (JWT login + GraphQL),
  * never to the LDAP port: netBS writes the directory, other services read it
  * over LDAP. Schema reference: https://github.com/lldap/lldap/blob/v0.6.3/schema.graphql
  */
-final class LldapClient implements LldapClientInterface
+final class LldapClient implements LldapClientInterface, ResetInterface
 {
     private ?string $token = null;
 
@@ -151,9 +152,25 @@ final class LldapClient implements LldapClientInterface
         ];
     }
 
+    /**
+     * Drops the cached JWT. Called between messenger messages (kernel.reset),
+     * so a long-running worker logs in afresh for each sync.
+     */
+    public function reset(): void
+    {
+        $this->token = null;
+    }
+
     private function graphql(string $query, array $variables = []): array
     {
-        $body = $this->request('/api/graphql', ['query' => $query, 'variables' => (object) $variables], $this->token());
+        $payload = ['query' => $query, 'variables' => (object) $variables];
+        try {
+            $body = $this->request('/api/graphql', $payload, $this->token());
+        } catch (LldapUnauthorizedException) {
+            // Token expired mid-run: log in again, retry once.
+            $this->reset();
+            $body = $this->request('/api/graphql', $payload, $this->token());
+        }
 
         if (!empty($body['errors'])) {
             $messages = array_map(static fn (array $e): string => $e['message'] ?? json_encode($e), $body['errors']);
@@ -164,7 +181,6 @@ final class LldapClient implements LldapClientInterface
 
     private function token(): string
     {
-        // lldap JWTs last a day; one sync run never outlives one.
         return $this->token ??= $this->request('/auth/simple/login', [
             'username' => $this->adminUsername,
             'password' => $this->adminPassword,
@@ -178,6 +194,9 @@ final class LldapClient implements LldapClientInterface
                 'json' => $json,
                 'auth_bearer' => $bearer,
             ]);
+            if ($bearer !== null && $response->getStatusCode() === 401) {
+                throw new LldapUnauthorizedException(sprintf('lldap call POST %s rejected the token', $path));
+            }
             return $response->toArray();
         } catch (HttpClientExceptionInterface $e) {
             throw new LldapClientException(sprintf('lldap call POST %s failed: %s', $path, $e->getMessage()), 0, $e);

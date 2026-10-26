@@ -142,4 +142,15 @@ final class DirectorySyncTest extends TestCase
     {
         return new DirectoryUser($uid, "$uid@example.org", ucfirst($uid), ucfirst($uid), 'Test');
     }
+
+    public function testDeletedUserIsNotRemovedFromItsGroupsAgain(): void
+    {
+        $this->sync([$this->user('alice'), $this->user('bob')], [new DirectoryGroup(10, 'Troupe X', ['alice', 'bob'])]);
+
+        $report = $this->sync([$this->user('bob')], [new DirectoryGroup(10, 'Troupe X', ['bob'])]);
+
+        self::assertSame([], $report->errors);
+        self::assertSame(['delete user alice'], $report->changes);
+        self::assertSame(['bob'], $this->lldap->membersOf('Troupe X'));
+    }
 }

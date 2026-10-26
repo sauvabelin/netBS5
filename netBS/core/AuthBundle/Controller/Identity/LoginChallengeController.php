@@ -46,7 +46,23 @@ final class LoginChallengeController extends AbstractController
             throw new \InvalidArgumentException('login_challenge missing');
         }
 
-        $loginRequest = $this->hydra->getLoginRequest($loginChallenge);
+        try {
+            $loginRequest = $this->hydra->getLoginRequest($loginChallenge);
+        } catch (HydraClientException $e) {
+            if ($e->statusCode < 400 || $e->statusCode >= 500) {
+                throw $e;
+            }
+            // Expired or already handled — typically a target path left in
+            // the session by an abandoned RP sign-in, replayed after a later
+            // direct netBS login. Nothing to resume: land on the dashboard.
+            $this->logger->info('oidc.login: unknown or expired challenge', [
+                'login_challenge' => $loginChallenge,
+                'decision'        => 'drop',
+                'error'           => $e->getMessage(),
+            ]);
+
+            return $this->redirectToRoute('netbs.core.home.dashboard');
+        }
         $clientId = $loginRequest['client']['client_id'] ?? null;
 
         $user = $this->getUser();

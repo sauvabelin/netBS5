@@ -32,7 +32,11 @@ final class RevokeSsoOnLogoutListener
     {
         // An RP-initiated logout is finished by Hydra itself (acceptLogoutRequest
         // ends that login session); revoking it first would break the round-trip.
-        if ($event->getRequest()->get('logout_challenge')) {
+        // A forced re-authentication (prompt=login / max_age) only drops the
+        // local session: the user's other SSO sessions stay, and the one
+        // carrying this login challenge must survive until it is accepted.
+        $request = $event->getRequest();
+        if ($request->get('logout_challenge') || $request->get('login_challenge')) {
             return;
         }
 

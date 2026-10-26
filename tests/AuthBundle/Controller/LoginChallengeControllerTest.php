@@ -321,4 +321,16 @@ final class LoginChallengeControllerTest extends TestCase
         $this->assertSame('equipe', $acceptBody['subject'] ?? null);
     }
 
+    public function testExpiredChallengeLandsOnTheDashboard(): void
+    {
+        // A target path left by an abandoned RP sign-in, replayed after a
+        // later direct netBS login: Hydra no longer knows the challenge.
+        $hydra = $this->makeHydra([new MockResponse('{"error":"not_found"}', ['http_code' => 404])]);
+        $controller = $this->build($hydra, currentSubject: 'alice')['controller'];
+
+        $response = $controller($this->loginRequest());
+
+        $this->assertInstanceOf(RedirectResponse::class, $response);
+        $this->assertSame('/r/netbs.core.home.dashboard', $response->getTargetUrl());
+    }
 }

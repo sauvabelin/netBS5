@@ -6,9 +6,8 @@ security:
 
     providers:
         database:
-            entity:
-                class: App\Entity\BSUser
-                property: loginUsername
+            # Resolves both the login handle (forms) and the permanent username (tokens).
+            id: App\Security\BSUserProvider
 
     firewalls:
         dev:

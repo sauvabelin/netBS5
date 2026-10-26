@@ -31,6 +31,8 @@ final class DirectorySync
     private array $errors = [];
     /** @var array<string, true> uids that must not be put in groups this run (failed or unmanaged) */
     private array $skippedUids = [];
+    /** @var array<string, true> uids deleted this run; lldap dropped their memberships with them */
+    private array $deletedUids = [];
 
     public function __construct(
         private readonly LldapClientInterface $client,
@@ -42,6 +44,7 @@ final class DirectorySync
         $this->changes = [];
         $this->errors = [];
         $this->skippedUids = [];
+        $this->deletedUids = [];
 
         $existingAttributes = $this->client->groupAttributes();
         foreach (self::GROUP_ATTRIBUTES as $name => $type) {
@@ -66,7 +69,7 @@ final class DirectorySync
         }
         $this->syncGroups($desired, $currentGroups, $dryRun);
 
-        return new DirectorySyncReport($this->changes, $this->errors);
+        return new DirectorySyncReport($this->changes, $this->errors, $snapshot);
     }
 
     private function findMarkerGroup(array $currentGroups): ?array
@@ -116,7 +119,13 @@ final class DirectorySync
 
         foreach (array_keys($managedUids) as $uid) {
             if (!isset($users[$uid])) {
-                $this->apply($dryRun, "delete user $uid", fn () => $this->client->deleteUser($uid));
+                $deleted = $this->apply($dryRun, "delete user $uid", function () use ($uid) {
+                    $this->client->deleteUser($uid);
+                    return true;
+                });
+                if ($deleted || $dryRun) {
+                    $this->deletedUids[mb_strtolower($uid)] = true;
+                }
             }
         }
     }
@@ -162,6 +171,9 @@ final class DirectorySync
                     fn () => $this->client->addUserToGroup($uid, $groupId));
             }
             foreach (array_diff($currentMembers, $group->members) as $uid) {
+                if (isset($this->deletedUids[$uid])) {
+                    continue;
+                }
                 $this->apply($dryRun, sprintf('remove %s from "%s"', $uid, $group->name),
                     fn () => $this->client->removeUserFromGroup($uid, $groupId));
             }

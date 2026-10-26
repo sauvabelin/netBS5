@@ -6,16 +6,17 @@ use Doctrine\ORM\Mapping as ORM;
 use Gedmo\Mapping\Annotation as Gedmo;
 use NetBS\FichierBundle\Mapping\BaseMembre;
 use NetBS\SecureBundle\Mapping\BaseUser;
-use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
+use App\Repository\BSUserRepository;
+use App\Validator\UniqueLoginHandle;
 use Symfony\Component\Validator\Constraints as Assert;
 
 /**
  * User
  */
 #[ORM\Table(name: 'sauvabelin_netbs_users')]
-#[ORM\Entity]
+#[ORM\Entity(repositoryClass: BSUserRepository::class)]
 #[Gedmo\SoftDeleteable(fieldName: 'deletedAt', timeAware: false, hardDelete: false)]
-#[UniqueEntity(fields: ['loginUsername'], message: "Ce nom de connexion est déjà pris.")]
+#[UniqueLoginHandle]
 class BSUser extends BaseUser
 {
     const HAS_REDIRECT = 'has_a_mail_redirect';

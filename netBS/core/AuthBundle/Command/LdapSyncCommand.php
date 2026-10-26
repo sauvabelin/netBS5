@@ -41,14 +41,15 @@ final class LdapSyncCommand extends Command
         $dryRun = (bool) $input->getOption('dry-run');
 
         try {
-            $snapshot = $this->projection->snapshot();
-            $io->writeln(sprintf('netBS: %d users, %d groups, %d role groups', count($snapshot->users), count($snapshot->groups), count($snapshot->roleGroups)));
             // A real run goes through the runner, so it never overlaps the worker's.
-            $report = $dryRun ? $this->sync->sync($snapshot, true) : $this->runner->run();
+            $report = $dryRun ? $this->sync->sync($this->projection->snapshot(), true) : $this->runner->run();
         } catch (DirectoryNotConfiguredException|LldapClientException $e) {
             $io->error($e->getMessage());
             return Command::FAILURE;
         }
+
+        $snapshot = $report->snapshot;
+        $io->writeln(sprintf('netBS: %d users, %d groups, %d role groups', count($snapshot->users), count($snapshot->groups), count($snapshot->roleGroups)));
 
         if ($report->changes !== []) {
             $io->listing($report->changes);

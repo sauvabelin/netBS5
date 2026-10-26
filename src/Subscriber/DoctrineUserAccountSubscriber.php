@@ -142,18 +142,11 @@ class DoctrineUserAccountSubscriber implements EventSubscriber
 
         $username = StrUtil::slugify($membre->getPrenom()) . "." . StrUtil::slugify($membre->getFamille()->getNom());
 
-        // Look up including soft-deleted users — a soft-deleted user with this
-        // username would still trip the UNIQUE index on insert.
-        $filters = $manager->getFilters();
-        $filterWasEnabled = $filters->isEnabled('softdeleteable');
-        if ($filterWasEnabled) $filters->disable('softdeleteable');
-        try {
-            $collision = $manager->getRepository(BSUser::class)->findOneBy(['username' => $username]);
-        } finally {
-            if ($filterWasEnabled) $filters->enable('softdeleteable');
-        }
+        // The new user's username and login username both default to this
+        // slug; it must not be held by anyone (soft-deleted included) in either column.
+        $collision = $manager->getRepository(BSUser::class)->isHandleTaken([$username]);
 
-        if ($collision !== null) {
+        if ($collision) {
             $this->requestStack->getSession()->getFlashBag()->add(
                 'warning',
                 sprintf(

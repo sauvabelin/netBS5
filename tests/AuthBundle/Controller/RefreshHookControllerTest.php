@@ -122,7 +122,11 @@ final class RefreshHookControllerTest extends TestCase
         $response = $controller(
             $this->makeRequest(
                 secretHeader: self::VALID_SECRET,
-                body: json_encode(['subject' => 'alice', 'client_id' => 'acme-client'], JSON_THROW_ON_ERROR),
+                body: json_encode([
+                    'subject' => 'alice',
+                    'client_id' => 'acme-client',
+                    'granted_scopes' => ['openid', 'profile'],
+                ], JSON_THROW_ON_ERROR),
             ),
         );
 
@@ -226,5 +230,22 @@ final class RefreshHookControllerTest extends TestCase
         );
 
         $this->assertSame(Response::HTTP_FORBIDDEN, $response->getStatusCode());
+    }
+
+    public function testMissingGrantedScopesReleasesOnlyScopelessClaims(): void
+    {
+        $controller = $this->makeController(
+            resolverReturns: $this->makeIdentity(),
+        );
+
+        $response = $controller(
+            $this->makeRequest(
+                secretHeader: self::VALID_SECRET,
+                body: json_encode(['subject' => 'alice', 'client_id' => 'acme-client'], JSON_THROW_ON_ERROR),
+            ),
+        );
+
+        $decoded = json_decode((string) $response->getContent(), true, flags: JSON_THROW_ON_ERROR);
+        $this->assertSame(['sub' => 'alice'], $decoded['session']['id_token']);
     }
 }

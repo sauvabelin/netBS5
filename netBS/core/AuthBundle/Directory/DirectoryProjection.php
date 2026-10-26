@@ -7,6 +7,7 @@ namespace NetBS\AuthBundle\Directory;
 use Doctrine\ORM\EntityManagerInterface;
 use NetBS\AuthBundle\Contract\DirectoryUserProviderInterface;
 use NetBS\FichierBundle\Mapping\BaseGroupe;
+use NetBS\FichierBundle\Mapping\BaseGroupeType;
 use NetBS\FichierBundle\Service\FichierConfig;
 
 /**
@@ -112,6 +113,7 @@ final class DirectoryProjection
             ->orderBy('g.id')
             ->getQuery()
             ->getResult();
+        $this->prefetchSousGroupes($groupes);
 
         $groups = [];
         // Role group names are reserved; a groupe using one gets the id suffix.
@@ -141,5 +143,41 @@ final class DirectoryProjection
             );
         }
         return $groups;
+    }
+
+    /**
+     * Loads, in two queries, every groupe's enfants and attributions,
+     * so {@see GroupeMemberResolver} walking a "tous" subtree
+     * finds initialized collections instead of lazy-loading each groupe.
+     *
+     * @param BaseGroupe[] $groupes
+     */
+    private function prefetchSousGroupes(array $groupes): void
+    {
+        $needsTree = false;
+        foreach ($groupes as $groupe) {
+            if ($groupe->getGroupeType()->getSousGroupes() === BaseGroupeType::SOUS_GROUPES_TOUS) {
+                $needsTree = true;
+                break;
+            }
+        }
+        if (!$needsTree) {
+            return;
+        }
+
+        // Fetch joins initialize the collections of groupes already managed.
+        $this->em->createQueryBuilder()
+            ->select('g', 'e')
+            ->from($this->fichierConfig->getGroupeClass(), 'g')
+            ->leftJoin('g.enfants', 'e')
+            ->getQuery()
+            ->getResult();
+        $this->em->createQueryBuilder()
+            ->select('g', 'a', 'am')
+            ->from($this->fichierConfig->getGroupeClass(), 'g')
+            ->leftJoin('g.attributions', 'a')
+            ->leftJoin('a.membre', 'am')
+            ->getQuery()
+            ->getResult();
     }
 }
