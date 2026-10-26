@@ -1,0 +1,29 @@
+{% extends '@NetBSCore/layout/backend.layout.twig' %}
+
+{% set title %}Authentication — LDAP{% endset %}
+
+{% block main %}
+    <div class="container-fluid">
+        {% include '@NetBSCore/includes/header.include.twig' with {
+            header: 'Authentication',
+            subHeader: 'Annuaire LDAP'
+        } %}
+
+        <div class="row">
+            <div class="col-12">
+                {% if notConfigured is not null %}
+                    <div id="ldap-not-configured" class="alert alert-warning">{{ notConfigured }}</div>
+                {% else %}
+                    <div class="card card-table" id="ldap-groups">
+                        <div class="card-header">
+                            <h5 class="card-title mb-0">Groupes</h5>
+                        </div>
+                        <div class="card-body">
+                            {{ render_list('netbs.auth.ldap.groups', 'netbs', {rows: groupRows}) }}
+                        </div>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+{% endblock %}

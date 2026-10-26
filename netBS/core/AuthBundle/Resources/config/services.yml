@@ -1,0 +1,47 @@
+services:
+  _defaults:
+    autowire: true
+    autoconfigure: true
+    public: false
+
+  NetBS\AuthBundle\:
+    resource: '../../*'
+    exclude: '../../{Dto,Message,Tests,Resources,DependencyInjection,NetBSAuthBundle.php}'
+
+  # Hydra admin API (HYDRA_ADMIN_URL). Logs every failure (see HydraClientException).
+  NetBS\AuthBundle\Service\HydraAdminClient:
+    arguments:
+      $http: '@hydra.admin.client'
+
+  # lldap management API, written by the directory sync (netbs:ldap:sync).
+  NetBS\AuthBundle\Directory\LldapClient:
+    arguments:
+      $http: '@lldap.client'
+      $adminUsername: '%env(LLDAP_ADMIN_USERNAME)%'
+      $adminPassword: '%env(LLDAP_ADMIN_PASSWORD)%'
+
+  NetBS\AuthBundle\Directory\LldapClientInterface:
+    alias: NetBS\AuthBundle\Directory\LldapClient
+
+  # LDAP page lists (Administration › Authentication › LDAP).
+  NetBS\AuthBundle\ListModel\LdapGroupListModel:
+    tags:
+      - { name: netbs.list.model }
+
+  NetBS\AuthBundle\ListModel\LdapMemberListModel:
+    tags:
+      - { name: netbs.list.model }
+
+  # Shared secret verified on every Hydra refresh_token_hook call.
+  # Must match Hydra's oauth2.refresh_token_hook.auth.config.value.
+  NetBS\AuthBundle\Controller\Identity\RefreshHookController:
+    arguments:
+      $expectedSecret: '%env(HYDRA_REFRESH_HOOK_SECRET)%'
+
+  NetBS\AuthBundle\Listener\MainMenuListener:
+    tags:
+      - { name: kernel.event_listener, event: netbs.menu.extend, method: onMenuConfigure }
+
+  NetBS\AuthBundle\Security\OidcAwareLoginSuccessHandler:
+    arguments:
+      $defaultRoute: 'netbs.core.home.dashboard'

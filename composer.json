@@ -45,6 +45,7 @@
         "symfony/rate-limiter": "6.4.*",
         "symfony/redis-messenger": "6.4.*",
         "symfony/runtime": "6.4.*",
+        "symfony/scheduler": "6.4.*",
         "symfony/security-bundle": "6.4.*",
         "symfony/serializer": "6.4.*",
         "symfony/stimulus-bundle": "^2.35",
@@ -82,6 +83,7 @@
             "NetBS\\SecureBundle\\": "netBS/core/SecureBundle",
             "NetBS\\FichierBundle\\": "netBS/core/FichierBundle",
             "NetBS\\ListBundle\\": "netBS/core/ListBundle",
+            "NetBS\\AuthBundle\\": "netBS/core/AuthBundle",
             "Ovesco\\FacturationBundle\\": "netBS/ovesco/FacturationBundle",
             "Iacopo\\MailingBundle\\": "netBS/iacopo/MailingBundle"
         }

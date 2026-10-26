@@ -17,6 +17,19 @@ framework:
     php_errors:
         log: true
 
+    # `timeout` is the inactivity timeout, `max_duration` the total budget, so
+    # a stalled upstream never wedges a worker.
+    http_client:
+        scoped_clients:
+            hydra.admin.client:
+                base_uri: '%env(HYDRA_ADMIN_URL)%'
+                timeout: 5
+                max_duration: 10
+            lldap.client:
+                base_uri: '%env(LLDAP_URL)%'
+                timeout: 5
+                max_duration: 15
+
     rate_limiter:
         password_reset_request:
             policy: 'sliding_window'

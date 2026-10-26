@@ -1,0 +1,159 @@
+<?php
+
+declare(strict_types=1);
+
+namespace NetBS\AuthBundle\Dto;
+
+/**
+ * Form-backing object for an OAuth client.
+ *
+ * Hydra is the source of truth — the local DB no longer stores client rows.
+ * This DTO carries data between the Hydra admin API and the Symfony form,
+ * converting between Hydra's JSON shape and our internal field names in two
+ * tiny adapter methods.
+ *
+ * The `slug` field is the OAuth `client_id`. Empty when the form is filled
+ * for a new client; populated when editing.
+ */
+final class OidcClientDto
+{
+    /**
+     * Account flags a client can require (`metadata.required_flag`); enforced
+     * by the app's IdentityClientPolicy.
+     */
+    public const REQUIRED_FLAGS = ['nextcloud_account', 'wiki_account'];
+
+    /**
+     * Hydra fields that are server-managed and must not be echoed back on PUT.
+     */
+    private const READ_ONLY_FIELDS = ['created_at', 'updated_at', 'registration_access_token', 'registration_client_uri'];
+
+    /**
+     * Fields Hydra types as JSON objects. Decoded as PHP arrays, an empty one
+     * would be re-encoded as `[]` and Hydra rejects the whole request.
+     */
+    private const OBJECT_FIELDS = ['jwks', 'metadata'];
+
+    public string $slug = '';
+    public string $name = '';
+
+    /** @var list<string> */
+    public array $redirectUris = [];
+
+    /** @var list<string> */
+    public array $postLogoutRedirectUris = [];
+
+    public ?string $backchannelLogoutUri = null;
+
+    /** Shown on the netBS login page when this client initiates an OIDC flow. */
+    public ?string $logoUri = null;
+
+    public string $scopes = 'openid profile email';
+
+    /** One of {@see REQUIRED_FLAGS}, or null when any active user may sign in. */
+    public ?string $requiredFlag = null;
+
+    /**
+     * The client as Hydra returned it. Hydra's PUT replaces the whole client,
+     * so fields this form doesn't manage (auth method, skip_consent, token
+     * lifetimes, extra metadata, ...) are carried over from here.
+     *
+     * @var array<string, mixed>
+     */
+    private array $hydraOriginal = [];
+
+    /**
+     * Build a DTO from a Hydra `GET /admin/clients/{id}` response body.
+     *
+     * @param array<string, mixed> $hydra
+     */
+    public static function fromHydra(array $hydra): self
+    {
+        $dto = new self();
+        $dto->slug                   = (string) ($hydra['client_id'] ?? '');
+        $dto->name                   = (string) ($hydra['client_name'] ?? '');
+        $dto->redirectUris           = self::stringList($hydra['redirect_uris'] ?? []);
+        $dto->postLogoutRedirectUris = self::stringList($hydra['post_logout_redirect_uris'] ?? []);
+        $dto->backchannelLogoutUri   = isset($hydra['backchannel_logout_uri']) && $hydra['backchannel_logout_uri'] !== ''
+            ? (string) $hydra['backchannel_logout_uri']
+            : null;
+        $dto->logoUri                = isset($hydra['logo_uri']) && $hydra['logo_uri'] !== ''
+            ? (string) $hydra['logo_uri']
+            : null;
+        $dto->scopes                 = (string) ($hydra['scope'] ?? 'openid profile email');
+        $requiredFlag                = $hydra['metadata']['required_flag'] ?? null;
+        $dto->requiredFlag           = \in_array($requiredFlag, self::REQUIRED_FLAGS, true) ? $requiredFlag : null;
+        $dto->hydraOriginal          = $hydra;
+        return $dto;
+    }
+
+    /**
+     * Project the DTO to the JSON shape Hydra expects on POST/PUT.
+     *
+     * `$plaintextSecret` is included only when set — on create (Hydra
+     * generates one if omitted) or on explicit secret regeneration.
+     *
+     * @return array<string, mixed>
+     */
+    public function toHydraPayload(?string $plaintextSecret = null): array
+    {
+        // Defaults for a new client; an existing client keeps its own values.
+        $payload = array_diff_key($this->hydraOriginal, array_flip(self::READ_ONLY_FIELDS)) + [
+            'grant_types'                => ['authorization_code', 'refresh_token'],
+            'response_types'             => ['code'],
+            'token_endpoint_auth_method' => 'client_secret_post',
+        ];
+
+        $metadata = \is_array($payload['metadata'] ?? null) ? $payload['metadata'] : [];
+        // Leftover from per-client claim lists; claims now follow scopes only.
+        unset($metadata['allowed_claims']);
+        if ($this->requiredFlag !== null) {
+            $metadata['required_flag'] = $this->requiredFlag;
+        } else {
+            unset($metadata['required_flag']);
+        }
+
+        $payload = [
+            'client_id'                 => $this->slug,
+            'client_name'               => $this->name,
+            'redirect_uris'             => array_values($this->redirectUris),
+            'post_logout_redirect_uris' => array_values($this->postLogoutRedirectUris),
+            'scope'                     => $this->scopes,
+            'metadata'                  => $metadata,
+        ] + $payload;
+
+        // Optional form fields: an emptied field must drop the old value.
+        unset($payload['backchannel_logout_uri'], $payload['logo_uri']);
+        if ($this->backchannelLogoutUri !== null && $this->backchannelLogoutUri !== '') {
+            $payload['backchannel_logout_uri'] = $this->backchannelLogoutUri;
+        }
+
+        if ($this->logoUri !== null && $this->logoUri !== '') {
+            $payload['logo_uri'] = $this->logoUri;
+        }
+
+        if ($plaintextSecret !== null && $plaintextSecret !== '') {
+            $payload['client_secret'] = $plaintextSecret;
+        }
+
+        foreach (self::OBJECT_FIELDS as $field) {
+            if (($payload[$field] ?? null) === []) {
+                $payload[$field] = new \stdClass();
+            }
+        }
+
+        return $payload;
+    }
+
+    /**
+     * @param mixed $raw
+     * @return list<string>
+     */
+    private static function stringList($raw): array
+    {
+        if (!is_array($raw)) {
+            return [];
+        }
+        return array_values(array_map(static fn ($v) => (string) $v, $raw));
+    }
+}

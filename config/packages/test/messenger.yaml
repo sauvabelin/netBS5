@@ -1,0 +1,6 @@
+framework:
+    messenger:
+        transports:
+            # The container env points MESSENGER_TRANSPORT_DSN at redis; tests
+            # inspect the queue instead of sending to it.
+            async: 'in-memory://'

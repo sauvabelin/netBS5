@@ -120,7 +120,7 @@ class ResetPasswordController extends AbstractController
             'resetForm' => $form->createView(),
             // Surfaced into a hidden autocomplete="username" field so password
             // managers can bind the new password to the right account entry.
-            'username'  => $user->getUserIdentifier(),
+            'username'  => $user->getLoginUsername(),
         ]);
     }
 
@@ -137,7 +137,7 @@ class ResetPasswordController extends AbstractController
             return;
         }
 
-        $user = $this->em->getRepository(BSUser::class)->findOneBy(['username' => $username]);
+        $user = $this->em->getRepository(BSUser::class)->findOneByHandle($username);
         if (!$user) {
             $this->jitter();
             return;

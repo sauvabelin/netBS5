@@ -11,6 +11,12 @@ class BaseGroupeType
 {
     use RemarqueTrait;
 
+    /** Sub-groupe expansion for directory groups: only direct attributions */
+    const SOUS_GROUPES_DIRECT = 'direct';
+
+    /** ...plus every sub-groupe attribution */
+    const SOUS_GROUPES_TOUS = 'tous';
+
     /**
      * @var int
      */
@@ -31,6 +37,12 @@ class BaseGroupeType
      */
     #[ORM\Column(name: 'affichageEffectifs', type: 'boolean')]
     protected $affichageEffectifs;
+
+    #[ORM\Column(name: 'cree_groupe', type: 'boolean', options: ['default' => false])]
+    protected $creeGroupe = false;
+
+    #[ORM\Column(name: 'sous_groupes', type: 'string', length: 16, options: ['default' => self::SOUS_GROUPES_TOUS])]
+    protected $sousGroupes = self::SOUS_GROUPES_TOUS;
 
     /**
      * @var BaseGroupeCategorie
@@ -112,6 +124,42 @@ class BaseGroupeType
      * @param BaseGroupeCategorie $groupeCategorie
      * @return self
      */
+    public static function getSousGroupesChoices()
+    {
+        return [
+            'Directs seulement'     => self::SOUS_GROUPES_DIRECT,
+            'Tous'                  => self::SOUS_GROUPES_TOUS,
+        ];
+    }
+
+    public function setCreeGroupe($creeGroupe)
+    {
+        $this->creeGroupe = (bool) $creeGroupe;
+
+        return $this;
+    }
+
+    public function isCreeGroupe()
+    {
+        return $this->creeGroupe;
+    }
+
+    public function setSousGroupes($sousGroupes)
+    {
+        if (!in_array($sousGroupes, self::getSousGroupesChoices(), true)) {
+            throw new \InvalidArgumentException(sprintf('Unknown sous-groupes mode "%s".', $sousGroupes));
+        }
+
+        $this->sousGroupes = $sousGroupes;
+
+        return $this;
+    }
+
+    public function getSousGroupes()
+    {
+        return $this->sousGroupes;
+    }
+
     public function setGroupeCategorie(BaseGroupeCategorie $groupeCategorie)
     {
         $this->groupeCategorie = $groupeCategorie;

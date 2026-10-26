@@ -1,0 +1,112 @@
+<?php
+
+declare(strict_types=1);
+
+namespace NetBS\AuthBundle\Controller\Identity;
+
+use NetBS\AuthBundle\Contract\IdentityClientPolicyInterface;
+use NetBS\AuthBundle\Contract\IdentityUserResolverInterface;
+use NetBS\AuthBundle\Service\ClaimsAssembler;
+use Psr\Log\LoggerInterface;
+use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\HttpFoundation\JsonResponse;
+use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\Routing\Attribute\Route;
+
+final class RefreshHookController extends AbstractController
+{
+    private const SECRET_HEADER = 'X-Hydra-Hook-Secret';
+
+    public function __construct(
+        private readonly IdentityUserResolverInterface $userResolver,
+        private readonly IdentityClientPolicyInterface $policy,
+        private readonly ClaimsAssembler $claims,
+        private readonly string $expectedSecret,
+        private readonly LoggerInterface $logger,
+    ) {
+    }
+
+    #[Route('/oidc-refresh-hook', name: 'oidc_refresh_hook', methods: ['POST'])]
+    public function __invoke(Request $request): Response
+    {
+        // Refuse to run unauthenticated if the operator forgot to configure
+        // the shared secret. Better to break the hook loudly than to silently
+        // expose claim assembly to the public internet.
+        if ($this->expectedSecret === '') {
+            $this->logger->error('oidc.refresh_hook: rejected - server secret not configured', [
+                'remote_addr' => $request->getClientIp(),
+            ]);
+
+            return new JsonResponse(['error' => 'server_misconfigured'], Response::HTTP_INTERNAL_SERVER_ERROR);
+        }
+
+        $presented = (string) $request->headers->get(self::SECRET_HEADER, '');
+        if ($presented === '' || !hash_equals($this->expectedSecret, $presented)) {
+            $this->logger->warning('oidc.refresh_hook: rejected - bad or missing shared secret', [
+                'remote_addr' => $request->getClientIp(),
+                'header_present' => $presented !== '',
+            ]);
+
+            return new JsonResponse(['error' => 'unauthorized'], Response::HTTP_UNAUTHORIZED);
+        }
+
+        try {
+            $payload = json_decode($request->getContent(), true, flags: \JSON_THROW_ON_ERROR);
+        } catch (\JsonException $e) {
+            // Malformed body — return a structured 400 rather than letting the
+            // JsonException bubble up to a 500. Hydra retries on 5xx but treats
+            // 4xx as a permanent rejection, which is the correct semantics for
+            // "we cannot parse what you sent".
+            $this->logger->warning('oidc.refresh_hook: malformed JSON body', [
+                'remote_addr' => $request->getClientIp(),
+                'error' => $e->getMessage(),
+            ]);
+
+            return new JsonResponse(['error' => 'invalid_request'], Response::HTTP_BAD_REQUEST);
+        }
+
+        $subject = $payload['subject'] ?? null;
+        $clientId = $payload['client_id'] ?? ($payload['client']['client_id'] ?? null);
+
+        if (!\is_string($subject) || !\is_string($clientId)) {
+            $this->logger->warning('oidc.refresh_hook: invalid payload', [
+                'remote_addr' => $request->getClientIp(),
+            ]);
+
+            return new JsonResponse(['error' => 'invalid_request'], Response::HTTP_BAD_REQUEST);
+        }
+
+        $identity = $this->userResolver->resolveBySub($subject);
+        if ($identity === null || $identity->isDisabled || !$this->policy->canAccess($identity, $clientId)) {
+            $this->logger->info('oidc.refresh_hook: access denied', [
+                'subject' => $subject,
+                'client_id' => $clientId,
+                'reason' => $identity === null ? 'unknown_subject' : ($identity->isDisabled ? 'disabled' : 'policy'),
+            ]);
+
+            return new JsonResponse(['error' => 'access_denied'], Response::HTTP_FORBIDDEN);
+        }
+
+        // Hydra v2 sends the scopes both at the top level and under `requester`.
+        $grantedScopes = $payload['granted_scopes'] ?? ($payload['requester']['granted_scopes'] ?? null);
+        if (!\is_array($grantedScopes)) {
+            // Fail closed: without the granted scopes, release only the
+            // scope-less claims rather than everything.
+            $this->logger->warning('oidc.refresh_hook: no granted_scopes in payload; releasing scope-less claims only', [
+                'subject' => $subject,
+                'client_id' => $clientId,
+            ]);
+            $grantedScopes = [];
+        }
+
+        $this->logger->info('oidc.refresh_hook: accepted', [
+            'subject' => $subject,
+            'client_id' => $clientId,
+        ]);
+
+        return new JsonResponse([
+            'session' => $this->claims->hydraSession($identity, $grantedScopes),
+        ]);
+    }
+}

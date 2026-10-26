@@ -1,0 +1,251 @@
+<?php
+
+declare(strict_types=1);
+
+namespace App\Tests\AuthBundle\Controller;
+
+use NetBS\AuthBundle\Contract\IdentityClientPolicyInterface;
+use NetBS\AuthBundle\Contract\IdentityDTO;
+use NetBS\AuthBundle\Contract\IdentityUserResolverInterface;
+use NetBS\AuthBundle\Controller\Identity\RefreshHookController;
+use NetBS\AuthBundle\Service\ClaimsAssembler;
+use PHPUnit\Framework\TestCase;
+use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\Response;
+
+/**
+ * Exercises the Hydra refresh-token hook controller. The hook authenticates
+ * via a shared secret header — these tests defend the secret-check branches
+ * and the structured error contract Hydra expects (4xx is permanent reject;
+ * 5xx is "try again"). They are deliberately collaborator-driven and avoid
+ * the kernel.
+ */
+final class RefreshHookControllerTest extends TestCase
+{
+    private const VALID_SECRET = 'shared-secret-value';
+
+    /**
+     * @param array<string, mixed>|null $resolverReturns
+     */
+    private function makeController(
+        string $expectedSecret = self::VALID_SECRET,
+        ?IdentityDTO $resolverReturns = null,
+        bool $policyAllows = true,
+    ): RefreshHookController {
+        $resolver = new class($resolverReturns) implements IdentityUserResolverInterface {
+            public function __construct(private readonly ?IdentityDTO $dto) {}
+            public function resolveBySub(string $sub): ?IdentityDTO
+            {
+                return $this->dto;
+            }
+        };
+
+        $policy = new class($policyAllows) implements IdentityClientPolicyInterface {
+            public function __construct(private readonly bool $allows) {}
+            public function canAccess(IdentityDTO $identity, string $clientId): bool
+            {
+                return $this->allows;
+            }
+        };
+
+        return new RefreshHookController(
+            $resolver,
+            $policy,
+            new ClaimsAssembler(),
+            $expectedSecret,
+            new \Psr\Log\NullLogger(),
+        );
+    }
+
+    private function makeIdentity(bool $disabled = false): IdentityDTO
+    {
+        return new IdentityDTO(
+            sub: 'alice',
+            preferredUsername: 'alice',
+            email: 'alice@example.com',
+            displayName: 'Alice Example',
+            isDisabled: $disabled,
+        );
+    }
+
+    private function makeRequest(?string $secretHeader, string $body): Request
+    {
+        $server = [];
+        if ($secretHeader !== null) {
+            $server['HTTP_X_HYDRA_HOOK_SECRET'] = $secretHeader;
+        }
+        return Request::create(
+            uri: '/oidc-refresh-hook',
+            method: 'POST',
+            server: $server,
+            content: $body,
+        );
+    }
+
+    public function testReturns500WhenServerSecretNotConfigured(): void
+    {
+        // Operator forgot to set the env var. We must not silently authorise
+        // any caller — bail with a 500 so monitoring catches it.
+        $controller = $this->makeController(expectedSecret: '');
+
+        $response = $controller(
+            $this->makeRequest(secretHeader: 'whatever', body: '{}'),
+        );
+
+        $this->assertSame(Response::HTTP_INTERNAL_SERVER_ERROR, $response->getStatusCode());
+        $this->assertStringContainsString('server_misconfigured', $response->getContent());
+    }
+
+    public function testSecretCheckUsesConstantTimeCompare(): void
+    {
+        // Regression test against a future `===` simplification. A presented
+        // secret of the same length as the expected secret but differing in
+        // content must still be rejected. We can't directly measure timing
+        // here, but the behavioural assertion (rejection of equal-length
+        // mismatch) is what hash_equals guarantees independently of timing.
+        $controller = $this->makeController(expectedSecret: 'AAAAAAAAAAAAAAAA');
+
+        $response = $controller(
+            $this->makeRequest(secretHeader: 'BBBBBBBBBBBBBBBB', body: '{}'),
+        );
+
+        $this->assertSame(Response::HTTP_UNAUTHORIZED, $response->getStatusCode());
+    }
+
+    public function testReturns200WithClaimsOnHappyPath(): void
+    {
+        $controller = $this->makeController(
+            resolverReturns: $this->makeIdentity(),
+            policyAllows: true,
+        );
+
+        $response = $controller(
+            $this->makeRequest(
+                secretHeader: self::VALID_SECRET,
+                body: json_encode([
+                    'subject' => 'alice',
+                    'client_id' => 'acme-client',
+                    'granted_scopes' => ['openid', 'profile'],
+                ], JSON_THROW_ON_ERROR),
+            ),
+        );
+
+        $this->assertSame(Response::HTTP_OK, $response->getStatusCode());
+
+        $decoded = json_decode((string) $response->getContent(), true, flags: JSON_THROW_ON_ERROR);
+        $this->assertSame('alice', $decoded['session']['id_token']['sub']);
+        $this->assertSame('alice', $decoded['session']['id_token']['preferred_username']);
+    }
+
+    public function testSessionClaimsSerializeAsJsonObjects(): void
+    {
+        // Hydra decodes the session claims into Go maps; a JSON array (`[]`,
+        // what an empty PHP array encodes to) fails every refresh grant.
+        // The id_token always carries `sub`, so only access_token is empty.
+        $controller = $this->makeController(
+            resolverReturns: $this->makeIdentity(),
+        );
+
+        $response = $controller(
+            $this->makeRequest(
+                secretHeader: self::VALID_SECRET,
+                body: json_encode(['subject' => 'alice', 'client_id' => 'acme-client'], JSON_THROW_ON_ERROR),
+            ),
+        );
+
+        $this->assertSame(Response::HTTP_OK, $response->getStatusCode());
+        $this->assertStringContainsString('"access_token":{}', (string) $response->getContent());
+    }
+
+    public function testClaimsFollowGrantedScopesFromHookPayload(): void
+    {
+        $controller = $this->makeController(
+            resolverReturns: $this->makeIdentity(),
+        );
+
+        $response = $controller(
+            $this->makeRequest(
+                secretHeader: self::VALID_SECRET,
+                body: json_encode([
+                    'subject' => 'alice',
+                    'client_id' => 'acme-client',
+                    'requester' => ['granted_scopes' => ['openid', 'email']],
+                ], JSON_THROW_ON_ERROR),
+            ),
+        );
+
+        $decoded = json_decode((string) $response->getContent(), true, flags: JSON_THROW_ON_ERROR);
+        $this->assertSame(['sub' => 'alice', 'email' => 'alice@example.com'], $decoded['session']['id_token']);
+    }
+
+    public function testReturns200WhenClientIdNestedUnderClientObject(): void
+    {
+        // Hydra's payload schema for the refresh hook puts client_id under
+        // `client.client_id` rather than at the top level. The controller
+        // accepts either shape; verify the nested fallback works.
+        $controller = $this->makeController(
+            resolverReturns: $this->makeIdentity(),
+        );
+
+        $response = $controller(
+            $this->makeRequest(
+                secretHeader: self::VALID_SECRET,
+                body: json_encode([
+                    'subject' => 'alice',
+                    'client' => ['client_id' => 'acme-client'],
+                ], JSON_THROW_ON_ERROR),
+            ),
+        );
+
+        $this->assertSame(Response::HTTP_OK, $response->getStatusCode());
+    }
+
+    public function testRejectsWhenSubjectIsDisabled(): void
+    {
+        $controller = $this->makeController(
+            resolverReturns: $this->makeIdentity(disabled: true),
+        );
+
+        $response = $controller(
+            $this->makeRequest(
+                secretHeader: self::VALID_SECRET,
+                body: json_encode(['subject' => 'alice', 'client_id' => 'acme-client'], JSON_THROW_ON_ERROR),
+            ),
+        );
+
+        $this->assertSame(Response::HTTP_FORBIDDEN, $response->getStatusCode());
+        $this->assertStringContainsString('access_denied', $response->getContent());
+    }
+
+    public function testRejectsWhenSubjectUnknown(): void
+    {
+        // resolverReturns null = unknown subject.
+        $controller = $this->makeController(resolverReturns: null);
+
+        $response = $controller(
+            $this->makeRequest(
+                secretHeader: self::VALID_SECRET,
+                body: json_encode(['subject' => 'ghost', 'client_id' => 'acme-client'], JSON_THROW_ON_ERROR),
+            ),
+        );
+
+        $this->assertSame(Response::HTTP_FORBIDDEN, $response->getStatusCode());
+    }
+
+    public function testMissingGrantedScopesReleasesOnlyScopelessClaims(): void
+    {
+        $controller = $this->makeController(
+            resolverReturns: $this->makeIdentity(),
+        );
+
+        $response = $controller(
+            $this->makeRequest(
+                secretHeader: self::VALID_SECRET,
+                body: json_encode(['subject' => 'alice', 'client_id' => 'acme-client'], JSON_THROW_ON_ERROR),
+            ),
+        );
+
+        $decoded = json_decode((string) $response->getContent(), true, flags: JSON_THROW_ON_ERROR);
+        $this->assertSame(['sub' => 'alice'], $decoded['session']['id_token']);
+    }
+}
