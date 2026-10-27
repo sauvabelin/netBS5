@@ -4,23 +4,17 @@ declare(strict_types=1);
 
 namespace NetBS\AuthBundle\Service;
 
-use Symfony\Component\HttpFoundation\RequestStack;
-use Symfony\Component\Security\Http\Util\TargetPathTrait;
-
 /**
  * Resolves the OIDC client context, if any, for the current login attempt.
  *
- * When the netBS login page is rendered as part of an OIDC flow, the OIDC
- * firewall has stored the intercepted URL under `_security.oidc.target_path`.
- * We pull the `login_challenge` out of that URL and ask Hydra for the client
- * so the template can show the requesting application's branding.
+ * When the netBS login page is rendered as part of an OIDC flow, its URL
+ * carries the Hydra `login_challenge` (see OidcLoginChallenge). We ask Hydra
+ * for the client behind it so the template can show the requesting
+ * application's branding.
  */
 final class LoginContextProvider
 {
-    use TargetPathTrait;
-
     public function __construct(
-        private readonly RequestStack $requestStack,
         private readonly HydraAdminClient $hydra,
     ) {
     }
@@ -28,25 +22,14 @@ final class LoginContextProvider
     /**
      * @return array{client_id: string, client_name: ?string, logo_uri: ?string}|null
      */
-    public function currentClient(): ?array
+    public function currentClient(?string $loginChallenge): ?array
     {
-        $targetPath = $this->getTargetPath($this->requestStack->getSession(), 'oidc');
-        if ($targetPath === null || $targetPath === '') {
-            return null;
-        }
-
-        $query = parse_url($targetPath, PHP_URL_QUERY);
-        if (!is_string($query)) {
-            return null;
-        }
-        parse_str($query, $params);
-        $challenge = $params['login_challenge'] ?? null;
-        if (!is_string($challenge) || $challenge === '') {
+        if ($loginChallenge === null) {
             return null;
         }
 
         try {
-            $loginRequest = $this->hydra->getLoginRequest($challenge);
+            $loginRequest = $this->hydra->getLoginRequest($loginChallenge);
         } catch (HydraClientException) {
             // Challenge expired or unknown (or any other Hydra failure; the
             // client logged it): render the plain login form.
