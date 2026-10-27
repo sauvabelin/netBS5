@@ -7,6 +7,7 @@ namespace NetBS\AuthBundle\Controller\Identity;
 use NetBS\AuthBundle\Contract\Subject;
 use NetBS\AuthBundle\Listener\RecordAuthenticationTimeListener;
 use NetBS\AuthBundle\Security\LocalSessionTerminator;
+use NetBS\AuthBundle\Security\OidcLoginChallenge;
 use NetBS\AuthBundle\Service\HydraAdminClient;
 use NetBS\AuthBundle\Service\HydraClientException;
 use Psr\Log\LoggerInterface;
@@ -218,7 +219,10 @@ final class LoginChallengeController extends AbstractController
             $this->saveTargetPath($session, 'oidc', $request->getUri());
         }
 
-        return $this->localSession->clearRememberMe($this->redirectToRoute('netbs.secure.login.login'));
+        return $this->localSession->clearRememberMe($this->redirectToRoute(
+            'netbs.secure.login.login',
+            OidcLoginChallenge::routeParameters($loginChallenge),
+        ));
     }
 
     /**

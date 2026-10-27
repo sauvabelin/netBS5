@@ -41,9 +41,12 @@
             </div>
 
             <div class="card-body">
-                <form action="{{ path('netbs.secure.login.login') }}" method="POST" data-turbo="false">
+                {% set login_params = login_challenge ? {login_challenge: login_challenge} : {} %}
+                <form action="{{ path('netbs.secure.login.login', login_params) }}" method="POST" data-turbo="false">
 
                     <input type="hidden" name="_csrf_token" value="{{ csrf_token('authenticate') }}">
+                    {# A failed attempt comes back here with the OIDC challenge, not to the bare login page. #}
+                    <input type="hidden" name="_failure_path" value="{{ path('netbs.secure.login.login', login_params) }}">
 
                     <div class="form-group">
                         <label for="username" class="form-label visually-hidden">Nom d'utilisateur</label>
@@ -81,7 +84,10 @@
                     </div>
                     <button type="submit" class="btn btn-primary w-100">Connexion</button>
 
-                    {% if error %}
+                    {% if error and error.messageKey == 'Invalid CSRF token.' %}
+                        {# The session holding the token expired while the form was open. #}
+                        <p class="text-danger text-center">Votre session a expiré. Veuillez vous reconnecter.</p>
+                    {% elseif error %}
                         <p class="text-danger text-center">{{ error.messageKey|trans(error.messageData, 'security') }}</p>
                     {% endif %}
                 </form>

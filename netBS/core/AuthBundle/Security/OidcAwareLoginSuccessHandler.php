@@ -20,7 +20,9 @@ use Symfony\Component\Security\Http\Util\TargetPathTrait;
  * `_security.oidc.target_path`. The netbs firewall doesn't read that key by
  * default, so the user gets bounced to the netBS dashboard instead of being
  * returned to Hydra's consent flow. This handler bridges the two by checking
- * the OIDC firewall's saved target first.
+ * the OIDC firewall's saved target first. A `login_challenge` in the login
+ * URL wins over both: it belongs to the form that was just submitted, whereas
+ * the session target may have been replaced by a sign-in in another tab.
  */
 final class OidcAwareLoginSuccessHandler implements AuthenticationSuccessHandlerInterface
 {
@@ -35,6 +37,15 @@ final class OidcAwareLoginSuccessHandler implements AuthenticationSuccessHandler
     public function onAuthenticationSuccess(Request $request, TokenInterface $token): Response
     {
         $session = $request->getSession();
+
+        $loginChallenge = OidcLoginChallenge::fromRequest($request);
+        if ($loginChallenge !== null) {
+            $this->removeTargetPath($session, 'oidc');
+            return new RedirectResponse($this->router->generate(
+                'oidc_login',
+                OidcLoginChallenge::routeParameters($loginChallenge),
+            ));
+        }
 
         foreach (['oidc', 'netbs'] as $firewall) {
             $target = $this->getTargetPath($session, $firewall);

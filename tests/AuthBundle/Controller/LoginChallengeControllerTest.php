@@ -87,7 +87,7 @@ final class LoginChallengeControllerTest extends TestCase
         $router = new class implements UrlGeneratorInterface {
             public function generate(string $name, array $parameters = [], int $referenceType = self::ABSOLUTE_PATH): string
             {
-                return '/r/' . $name;
+                return '/r/' . $name . ($parameters === [] ? '' : '?' . http_build_query($parameters));
             }
             public function setContext(\Symfony\Component\Routing\RequestContext $context): void {}
             public function getContext(): \Symfony\Component\Routing\RequestContext
@@ -250,7 +250,7 @@ final class LoginChallengeControllerTest extends TestCase
 
         $response = $controller($request);
 
-        $this->assertSame('/r/netbs.secure.login.login', $response->getTargetUrl());
+        $this->assertSame('/r/netbs.secure.login.login?login_challenge=ch-1', $response->getTargetUrl());
         $this->assertSame(1, $mock->getRequestsCount(), 'the login must not be accepted');
         $session = $request->getSession();
         $this->assertSame($request->getUri(), $session->get('_security.oidc.target_path'));
@@ -285,7 +285,7 @@ final class LoginChallengeControllerTest extends TestCase
             RecordAuthenticationTimeListener::SESSION_KEY => time() - 3600,
         ]));
 
-        $this->assertSame('/r/netbs.secure.login.login', $response->getTargetUrl());
+        $this->assertSame('/r/netbs.secure.login.login?login_challenge=ch-1', $response->getTargetUrl());
     }
 
     public function testReauthWithPromptNoneRejectsLoginRequired(): void

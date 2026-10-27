@@ -32,6 +32,8 @@ security:
             pattern: ^/oidc-(login|consent|logout|error|refresh-hook)
             provider: database
             context: netbs   # share session with the netbs firewall so login carries over
+            # Keeps the login_challenge in the login page URL (see OidcLoginChallenge).
+            entry_point: NetBS\AuthBundle\Security\OidcLoginEntryPoint
             form_login:
                 login_path: netbs.secure.login.login
                 check_path: netbs.secure.login.login
