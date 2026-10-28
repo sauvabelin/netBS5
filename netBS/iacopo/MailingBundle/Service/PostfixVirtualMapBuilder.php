@@ -40,9 +40,9 @@ class PostfixVirtualMapBuilder
         foreach ($this->mailingLists->findBy(['active' => true]) as $list) {
             $listLabel = sprintf('"%s" (#%d)', $list->getName(), $list->getId());
 
+            // The resolver returns addresses already lowercased and trimmed.
             $recipients = [];
             foreach ($this->resolver->resolveMailingList($list) as $email) {
-                $email = strtolower(trim($email));
                 if (!preg_match(self::SAFE_ADDRESS, $email)) {
                     $warnings[] = sprintf('%s: skipped malformed recipient "%s"', $listLabel, $email);
                     continue;
@@ -74,8 +74,9 @@ class PostfixVirtualMapBuilder
         }
 
         $entries = [];
+        $cutLoops = [];
         foreach (array_keys($direct) as $source) {
-            $targets = $this->flatten($source, $direct, [$source], $warnings);
+            $targets = $this->flatten($source, $direct, [$source], $cutLoops);
 
             // postmap rejects keys without a value; leaving the address out
             // makes Postfix reject mail to it instead.
@@ -88,9 +89,13 @@ class PostfixVirtualMapBuilder
             $entries[$source] = array_keys($targets);
         }
 
+        foreach (array_keys($cutLoops) as $pair) {
+            $warnings[] = sprintf('%s include each other, loop cut', str_replace('|', ' and ', $pair));
+        }
+
         ksort($entries);
 
-        return new PostfixVirtualMap($entries, array_values(array_unique($warnings)));
+        return new PostfixVirtualMap($entries, $warnings);
     }
 
     /**
@@ -98,11 +103,11 @@ class PostfixVirtualMapBuilder
      * list's own recipients.
      *
      * @param array<string, array<string, true>> $direct
-     * @param list<string>                       $path   list addresses being expanded, to cut cycles
-     * @param list<string>                       $warnings
+     * @param list<string>                       $path     list addresses being expanded, to cut cycles
+     * @param array<string, true>                $cutLoops "a|b" pairs found including each other
      * @return array<string, true>
      */
-    private function flatten(string $source, array $direct, array $path, array &$warnings): array
+    private function flatten(string $source, array $direct, array $path, array &$cutLoops): array
     {
         $out = [];
         foreach (array_keys($direct[$source]) as $recipient) {
@@ -114,11 +119,11 @@ class PostfixVirtualMapBuilder
             }
 
             if (in_array($recipient, $path, true)) {
-                $warnings[] = sprintf('%s and %s include each other, loop cut', $source, $recipient);
+                $cutLoops[min($source, $recipient) . '|' . max($source, $recipient)] = true;
                 continue;
             }
 
-            $out += $this->flatten($recipient, $direct, [...$path, $recipient], $warnings);
+            $out += $this->flatten($recipient, $direct, [...$path, $recipient], $cutLoops);
         }
 
         return $out;

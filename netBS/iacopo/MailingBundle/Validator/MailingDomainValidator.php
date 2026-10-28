@@ -24,7 +24,7 @@ class MailingDomainValidator extends ConstraintValidator
             return;
         }
 
-        if (!$this->domains->allows(trim($value))) {
+        if (!$this->domains->allows($value)) {
             $this->context->buildViolation($constraint->message)
                 ->setParameter('{{ domains }}', implode(', ', $this->domains->all()))
                 ->addViolation();

@@ -31,7 +31,7 @@ class PostfixMapExportTest extends TestCase
         $loop  = $this->list(3, 'Loop', 'loop@sauvabelin.ch');
 
         $builder = $this->builder([
-            [$chefs, ['zoe@example.com', 'Alice@Example.com', 'alice@example.com', 'bad address@example.com']],
+            [$chefs, ['zoe@example.com', 'alice@example.com', 'bad address@example.com']],
             [$empty, []],
             [$loop, ['loop@sauvabelin.ch', 'bob@example.com']],
         ]);
@@ -39,7 +39,7 @@ class PostfixMapExportTest extends TestCase
         $map = $builder->build();
 
         // Aliases resolve straight to recipients (no hop through the base
-        // address); keys and recipients are lowercased, deduplicated, sorted.
+        // address); keys are lowercased, keys and recipients sorted.
         // A list listing itself keeps that entry: Postfix stops there and
         // relays a copy to the real mailbox.
         $this->assertSame(
@@ -64,7 +64,7 @@ class PostfixMapExportTest extends TestCase
 
         $map = $this->builder([
             // A and B name each other by address (plain email targets).
-            [$a, ['alice@example.com', 'B-Alias@sauvabelin.ch', 'info@sauvabelin.ch', 'vide@sauvabelin.ch']],
+            [$a, ['alice@example.com', 'b-alias@sauvabelin.ch', 'info@sauvabelin.ch', 'vide@sauvabelin.ch']],
             [$b, ['bob@example.com', 'a@sauvabelin.ch']],
             [$info, ['info@sauvabelin.ch', 'ida@example.com']],
             [$empty, []],
@@ -96,7 +96,7 @@ class PostfixMapExportTest extends TestCase
         $resolver = new MailingTargetResolver($this->createMock(EntityManagerInterface::class), new NullLogger());
 
         $nested = $this->list(2, 'Off', 'off@sauvabelin.ch');
-        $nested->addTarget($this->target(MailingTarget::TYPE_EMAIL, fn (MailingTarget $t) => $t->setTargetEmail('nested@example.com')));
+        $nested->addTarget((new MailingTarget())->setType(MailingTarget::TYPE_EMAIL)->setTargetEmail('nested@example.com'));
         $nested->setActive(false);
 
         $disabled = (new BSUser())->setEmail('gone@example.com');
@@ -104,11 +104,12 @@ class PostfixMapExportTest extends TestCase
         $active = (new BSUser())->setEmail('here@example.com');
 
         $list = $this->list(1, 'Main', 'main@sauvabelin.ch');
-        $list->addTarget($this->target(MailingTarget::TYPE_LIST, fn (MailingTarget $t) => $t->setTargetList($nested)));
-        $list->addTarget($this->target(MailingTarget::TYPE_USER, fn (MailingTarget $t) => $t->setTargetUser($disabled)));
-        $list->addTarget($this->target(MailingTarget::TYPE_USER, fn (MailingTarget $t) => $t->setTargetUser($active)));
-        $list->addTarget($this->target(MailingTarget::TYPE_EMAIL, fn (MailingTarget $t) => $t->setTargetEmail('Here@Example.com')));
+        $list->addTarget((new MailingTarget())->setType(MailingTarget::TYPE_LIST)->setTargetList($nested));
+        $list->addTarget((new MailingTarget())->setType(MailingTarget::TYPE_USER)->setTargetUser($disabled));
+        $list->addTarget((new MailingTarget())->setType(MailingTarget::TYPE_USER)->setTargetUser($active));
+        $list->addTarget((new MailingTarget())->setType(MailingTarget::TYPE_EMAIL)->setTargetEmail(' Here@Example.com'));
 
+        // Lowercased and trimmed, so the duplicate collapses (the builder relies on this).
         $this->assertSame(['here@example.com'], $resolver->resolveMailingList($list));
     }
 
@@ -189,14 +190,6 @@ class PostfixMapExportTest extends TestCase
         );
 
         return new PostfixVirtualMapBuilder($repository, $resolver, new MailingDomains(['sauvabelin.ch', 'testmail.sauvabelin.ch']));
-    }
-
-    private function target(string $type, callable $configure): MailingTarget
-    {
-        $target = (new MailingTarget())->setType($type);
-        $configure($target);
-
-        return $target;
     }
 
     /**

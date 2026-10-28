@@ -35,6 +35,7 @@ class MailingDomains
 
     public function allows(string $address): bool
     {
+        $address = trim($address);
         $at = strrpos($address, '@');
 
         return $at !== false && in_array(strtolower(substr($address, $at + 1)), $this->domains, true);

@@ -153,7 +153,7 @@ class DefaultController extends AbstractController
 
         // Get the last used type from query parameter
         $lastType = $request->query->get('lastType', MailingTarget::TYPE_EMAIL);
-        if (!in_array($lastType, [MailingTarget::TYPE_EMAIL, MailingTarget::TYPE_USER, MailingTarget::TYPE_UNITE, MailingTarget::TYPE_ROLE, MailingTarget::TYPE_LIST], true)) {
+        if (!in_array($lastType, MailingTarget::TYPES, true)) {
             $lastType = MailingTarget::TYPE_EMAIL;
         }
 

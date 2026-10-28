@@ -19,6 +19,7 @@ class MailingTarget
     const TYPE_UNITE = 'unite';
     const TYPE_ROLE = 'role';
     const TYPE_LIST = 'list';
+    const TYPES = [self::TYPE_EMAIL, self::TYPE_USER, self::TYPE_UNITE, self::TYPE_ROLE, self::TYPE_LIST];
 
     #[ORM\Id]
     #[ORM\GeneratedValue]
@@ -32,7 +33,7 @@ class MailingTarget
 
     #[ORM\Column(type: 'string', length: 50)]
     #[Assert\NotBlank(message: 'Le type est requis.')]
-    #[Assert\Choice(choices: ['email', 'user', 'unite', 'role', 'list'], message: 'Type invalide.')]
+    #[Assert\Choice(choices: self::TYPES, message: 'Type invalide.')]
     private $type;
 
     #[ORM\Column(type: 'string', length: 255, nullable: true)]
@@ -87,7 +88,7 @@ class MailingTarget
 
     public function setType(string $type): self
     {
-        if (!in_array($type, [self::TYPE_EMAIL, self::TYPE_USER, self::TYPE_UNITE, self::TYPE_ROLE, self::TYPE_LIST])) {
+        if (!in_array($type, self::TYPES, true)) {
             throw new \InvalidArgumentException("Invalid target type");
         }
         $this->type = $type;
