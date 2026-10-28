@@ -16,7 +16,9 @@ use Symfony\Component\Routing\Attribute\Route;
  * sauvabelin/mailserver repo).
  *
  * Lives outside every firewall (not under /netBS or /api/v1/netBS): the only
- * client is a machine holding the shared token, checked below.
+ * client is a machine holding the shared token, checked below. The token comes
+ * in X-Authorization, like the rest of the netBS API: the prod Apache does not
+ * pass a Bearer `Authorization` header on to PHP.
  */
 final class PostfixMapController
 {
@@ -37,10 +39,13 @@ final class PostfixMapController
             return $this->text('server misconfigured', Response::HTTP_INTERNAL_SERVER_ERROR);
         }
 
-        $presented = (string) preg_replace('/^Bearer\s+/i', '', $request->headers->get('Authorization', ''));
+        $header = $request->headers->get('X-Authorization', '');
+        $presented = (string) preg_replace('/^Bearer\s+/i', '', $header);
         if (!hash_equals($this->expectedToken, $presented)) {
-            $this->logger->warning('mailing.postfix_map: rejected - bad or missing token', [
+            // Error, not warning: prod only writes logs once a request has an error.
+            $this->logger->error('mailing.postfix_map: rejected - bad or missing token', [
                 'remote_addr' => $request->getClientIp(),
+                'header_present' => $header !== '',
             ]);
             return $this->text('unauthorized', Response::HTTP_UNAUTHORIZED);
         }

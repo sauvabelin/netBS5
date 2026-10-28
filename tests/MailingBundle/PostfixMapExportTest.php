@@ -82,7 +82,7 @@ class PostfixMapExportTest extends TestCase
         $withList = $this->builder([[$this->list(1, 'Chefs', 'chefs@sauvabelin.ch'), ['alice@example.com']]]);
         $request = static fn (?string $auth): Request => Request::create(
             '/mailing-export/postfix-map',
-            server: $auth === null ? [] : ['HTTP_AUTHORIZATION' => $auth],
+            server: $auth === null ? [] : ['HTTP_X_AUTHORIZATION' => $auth],
         );
 
         // No configured token: never serve the address list.
@@ -91,6 +91,9 @@ class PostfixMapExportTest extends TestCase
         $controller = new PostfixMapController($withList, new NullLogger(), 's3cret');
         $this->assertSame(401, $controller($request(null))->getStatusCode());
         $this->assertSame(401, $controller($request('Bearer wrong'))->getStatusCode());
+        // The standard header is not read (prod Apache drops it before PHP).
+        $standard = Request::create('/mailing-export/postfix-map', server: ['HTTP_AUTHORIZATION' => 'Bearer s3cret']);
+        $this->assertSame(401, $controller($standard)->getStatusCode());
 
         $response = $controller($request('Bearer s3cret'));
         $this->assertSame(200, $response->getStatusCode());
