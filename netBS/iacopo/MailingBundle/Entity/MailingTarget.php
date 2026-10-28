@@ -36,7 +36,7 @@ class MailingTarget
     private $type;
 
     #[ORM\Column(type: 'string', length: 255, nullable: true)]
-    #[Assert\Email(message: "L'adresse email n'est pas valide.", groups: ['email_type'])]
+    #[Assert\Email(message: "L'adresse email n'est pas valide.")]
     #[Assert\Length(max: 255, maxMessage: "L'adresse email ne peut pas dépasser {{ limit }} caractères.")]
     private $targetEmail;
 

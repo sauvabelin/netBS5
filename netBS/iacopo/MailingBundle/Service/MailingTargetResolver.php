@@ -23,7 +23,8 @@ class MailingTargetResolver
     }
 
     /**
-     * Batch load users for a collection of membres (fixes N+1 query problem)
+     * Batch load the active users of a collection of membres (fixes N+1 query
+     * problem). Deactivated accounts get no list mail.
      *
      * @param array $membres Array of membre entities
      * @return array Associative array indexed by membre ID
@@ -38,6 +39,7 @@ class MailingTargetResolver
             ->getRepository(BSUser::class)
             ->createQueryBuilder('u')
             ->where('u.membre IN (:membres)')
+            ->andWhere('u.isActive = true')
             ->setParameter('membres', $membres)
             ->getQuery()
             ->getResult();
@@ -72,7 +74,7 @@ class MailingTargetResolver
 
             case MailingTarget::TYPE_USER:
                 $user = $target->getTargetUser();
-                if ($user) {
+                if ($user && $user->getIsActive()) {
                     // Use getEmail() directly - NEVER fall back to membre email
                     $email = $user->getEmail();
                     if ($email) {
@@ -150,7 +152,8 @@ class MailingTargetResolver
 
             case MailingTarget::TYPE_LIST:
                 $nestedList = $target->getTargetList();
-                if ($nestedList) {
+                // Switching a list off removes its members from every list nesting it.
+                if ($nestedList && $nestedList->isActive()) {
                     $nestedListId = $nestedList->getId();
                     // Check for circular reference
                     if (!in_array($nestedListId, $visitedListIds)) {
@@ -161,7 +164,11 @@ class MailingTargetResolver
                 break;
         }
 
-        return array_unique($emails);
+        // Addresses are case-insensitive; normalise so counts match the Postfix export.
+        return array_values(array_unique(array_map(
+            static fn (string $email): string => strtolower(trim($email)),
+            $emails,
+        )));
     }
 
     /**

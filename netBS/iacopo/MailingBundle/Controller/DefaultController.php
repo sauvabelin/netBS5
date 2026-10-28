@@ -67,6 +67,8 @@ class DefaultController extends AbstractController
     #[Route('/', name: 'iacopo.mailing.list')]
     public function indexAction(): Response
     {
+        $this->denyAccessUnlessGranted('read', new MailingList());
+
         return $this->render('@IacopoMailing/default/index.html.twig');
     }
 
@@ -151,6 +153,9 @@ class DefaultController extends AbstractController
 
         // Get the last used type from query parameter
         $lastType = $request->query->get('lastType', MailingTarget::TYPE_EMAIL);
+        if (!in_array($lastType, [MailingTarget::TYPE_EMAIL, MailingTarget::TYPE_USER, MailingTarget::TYPE_UNITE, MailingTarget::TYPE_ROLE, MailingTarget::TYPE_LIST], true)) {
+            $lastType = MailingTarget::TYPE_EMAIL;
+        }
 
         // Form for adding new target
         $newTarget = new MailingTarget();

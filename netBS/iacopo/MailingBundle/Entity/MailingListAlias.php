@@ -4,6 +4,7 @@ namespace Iacopo\MailingBundle\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Validator\Constraints as Assert;
+use Iacopo\MailingBundle\Validator\MailingDomain;
 use Iacopo\MailingBundle\Validator\UniqueMailingAddress;
 
 #[ORM\Entity(repositoryClass: \Iacopo\MailingBundle\Repository\MailingListAliasRepository::class)]
@@ -25,6 +26,7 @@ class MailingListAlias
     #[Assert\NotBlank(message: "L'adresse est requise.")]
     #[Assert\Email(message: "L'adresse doit être une adresse email valide.")]
     #[Assert\Length(max: 255, maxMessage: "L'adresse ne peut pas dépasser {{ limit }} caractères.")]
+    #[MailingDomain]
     private $address;
 
     #[ORM\Column(type: 'datetime')]

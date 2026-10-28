@@ -8,9 +8,12 @@ use Iacopo\MailingBundle\Repository\MailingListRepository;
 
 /**
  * Builds a fully-expanded Postfix virtual alias map from the active mailing
- * lists. Every base address and alias maps directly to its final recipients,
- * so Postfix never has to recurse through list-to-list hops (nesting and
- * cycle handling are done once, by MailingTargetResolver).
+ * lists. Every base address and alias maps directly to its final recipients:
+ * nested lists are expanded by MailingTargetResolver, and a recipient that is
+ * itself a list address (typed in as a plain email) is replaced here by that
+ * list's recipients, cycles cut. Postfix therefore never chains list to list;
+ * the one key it still finds among the recipients is a list address that
+ * lists itself, where Postfix stops and relays to the real mailbox.
  *
  * The rendered output is meant to be fed to `postmap lmdb:<file>` on the
  * mail host and referenced from `virtual_alias_maps`.
@@ -24,12 +27,14 @@ class PostfixVirtualMapBuilder
     public function __construct(
         private readonly MailingListRepository $mailingLists,
         private readonly MailingTargetResolver $resolver,
+        private readonly MailingDomains $domains,
     ) {
     }
 
     public function build(): PostfixVirtualMap
     {
-        $entries = [];
+        /** @var array<string, array<string, true>> $direct source => recipients, before flattening */
+        $direct = [];
         $warnings = [];
 
         foreach ($this->mailingLists->findBy(['active' => true]) as $list) {
@@ -56,37 +61,66 @@ class PostfixVirtualMapBuilder
                     $warnings[] = sprintf('%s: skipped malformed address "%s"', $listLabel, $source);
                     continue;
                 }
-
-                // An address that expands to itself would be delivered locally
-                // instead of being forwarded — drop it rather than bounce.
-                $targets = $recipients;
-                if (isset($targets[$source])) {
-                    unset($targets[$source]);
-                    $warnings[] = sprintf('%s: dropped self-reference to %s', $listLabel, $source);
-                }
-
-                // postmap rejects keys without a value; leaving the address out
-                // makes Postfix reject mail to it instead.
-                if ($targets === []) {
-                    $warnings[] = sprintf('%s: %s has no recipients, left out of the map', $listLabel, $source);
+                if (!$this->domains->allows($source)) {
+                    $warnings[] = sprintf('%s: skipped %s, its domain is not relayed by the mail node', $listLabel, $source);
                     continue;
                 }
 
-                if (isset($entries[$source])) {
+                if (isset($direct[$source])) {
                     $warnings[] = sprintf('%s: %s is also used by another list, recipients merged', $listLabel, $source);
-                    $targets += $entries[$source];
                 }
-
-                ksort($targets);
-                $entries[$source] = $targets;
+                $direct[$source] = ($direct[$source] ?? []) + $recipients;
             }
+        }
+
+        $entries = [];
+        foreach (array_keys($direct) as $source) {
+            $targets = $this->flatten($source, $direct, [$source], $warnings);
+
+            // postmap rejects keys without a value; leaving the address out
+            // makes Postfix reject mail to it instead.
+            if ($targets === []) {
+                $warnings[] = sprintf('%s has no recipients, left out of the map', $source);
+                continue;
+            }
+
+            ksort($targets);
+            $entries[$source] = array_keys($targets);
         }
 
         ksort($entries);
 
-        return new PostfixVirtualMap(
-            array_map('array_keys', $entries),
-            $warnings,
-        );
+        return new PostfixVirtualMap($entries, array_values(array_unique($warnings)));
+    }
+
+    /**
+     * Recipients of $source with every other list address replaced by that
+     * list's own recipients.
+     *
+     * @param array<string, array<string, true>> $direct
+     * @param list<string>                       $path   list addresses being expanded, to cut cycles
+     * @param list<string>                       $warnings
+     * @return array<string, true>
+     */
+    private function flatten(string $source, array $direct, array $path, array &$warnings): array
+    {
+        $out = [];
+        foreach (array_keys($direct[$source]) as $recipient) {
+            // A list that lists itself: Postfix stops expanding there and relays
+            // the copy to the real mailbox (e.g. info@ also read at Hostpoint).
+            if ($recipient === $source || !isset($direct[$recipient])) {
+                $out[$recipient] = true;
+                continue;
+            }
+
+            if (in_array($recipient, $path, true)) {
+                $warnings[] = sprintf('%s and %s include each other, loop cut', $source, $recipient);
+                continue;
+            }
+
+            $out += $this->flatten($recipient, $direct, [...$path, $recipient], $warnings);
+        }
+
+        return $out;
     }
 }

@@ -5,14 +5,17 @@ namespace Iacopo\MailingBundle\Select2;
 use Doctrine\ORM\EntityManagerInterface;
 use Iacopo\MailingBundle\Entity\MailingList;
 use NetBS\CoreBundle\Select2\Select2ProviderInterface;
+use Symfony\Component\Security\Core\Authorization\AuthorizationCheckerInterface;
 
 class MailingListSelect2Provider implements Select2ProviderInterface
 {
     private $entityManager;
+    private $authorizationChecker;
 
-    public function __construct(EntityManagerInterface $entityManager)
+    public function __construct(EntityManagerInterface $entityManager, AuthorizationCheckerInterface $authorizationChecker)
     {
         $this->entityManager = $entityManager;
+        $this->authorizationChecker = $authorizationChecker;
     }
 
     public function getManagedClass(): string
@@ -45,6 +48,12 @@ class MailingListSelect2Provider implements Select2ProviderInterface
 
     public function search($needle, $limit = 5)
     {
+        // The select2 endpoint is open to every logged-in user; list names and
+        // addresses are for mailing managers only.
+        if (!$this->authorizationChecker->isGranted('read', new MailingList())) {
+            return [];
+        }
+
         $qb = $this->entityManager
             ->getRepository(MailingList::class)
             ->createQueryBuilder('ml')

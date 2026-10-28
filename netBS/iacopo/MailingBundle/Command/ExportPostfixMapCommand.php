@@ -60,7 +60,8 @@ final class ExportPostfixMapCommand extends Command
         // dumpFile writes a temp file and renames it, so readers never see a partial map.
         try {
             $this->filesystem->dumpFile($path, $map->render());
-            $this->filesystem->chmod($path, 0644);
+            // Member addresses: readable by the postfix group, not by everyone.
+            $this->filesystem->chmod($path, 0640);
         } catch (IOException $e) {
             $io->error($e->getMessage());
             return Command::FAILURE;
