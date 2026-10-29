@@ -15,6 +15,10 @@ use Iacopo\MailingBundle\Repository\MailingListRepository;
  * the one key it still finds among the recipients is a list address that
  * lists itself, where Postfix stops and relays to the real mailbox.
  *
+ * Lists on a forwarded domain (see MailingDomains) are keyed by the address
+ * the forward delivers to, and never list themselves: that copy would go back
+ * to the forwarding host, which forwards it to the node again.
+ *
  * The rendered output is meant to be fed to `postmap lmdb:<file>` on the
  * mail host and referenced from `virtual_alias_maps`.
  */
@@ -77,6 +81,9 @@ class PostfixVirtualMapBuilder
         $cutLoops = [];
         foreach (array_keys($direct) as $source) {
             $targets = $this->flatten($source, $direct, [$source], $cutLoops);
+            if ($this->domains->isForwarded($source)) {
+                unset($targets[$source]);
+            }
 
             // postmap rejects keys without a value; leaving the address out
             // makes Postfix reject mail to it instead.
@@ -86,7 +93,7 @@ class PostfixVirtualMapBuilder
             }
 
             ksort($targets);
-            $entries[$source] = array_keys($targets);
+            $entries[$this->domains->nodeAddress($source)] = array_keys($targets);
         }
 
         foreach (array_keys($cutLoops) as $pair) {

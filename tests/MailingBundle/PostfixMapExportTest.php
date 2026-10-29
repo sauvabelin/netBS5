@@ -91,6 +91,29 @@ class PostfixMapExportTest extends TestCase
         $this->assertStringContainsString('skipped ext@gmail.com', implode("\n", $map->warnings));
     }
 
+    public function test_forwarded_domain_lists_are_keyed_by_forward_target_and_never_list_themselves(): void
+    {
+        $chefs = $this->list(1, 'Chefs', 'chefs@sauvabelin.ch', ['cheffes@sauvabelin.ch']);
+        $info = $this->list(2, 'Info', 'info@sauvabelin.ch');
+        $test = $this->list(3, 'Test', 'test@testmail.sauvabelin.ch');
+
+        $map = $this->builder([
+            // info@ lists itself and chefs@ by address: both resolved here, as a
+            // copy to info@sauvabelin.ch would come back through Hostpoint.
+            [$chefs, ['alice@example.com', 'boss@sauvabelin.ch']],
+            [$info, ['info@sauvabelin.ch', 'chefs@sauvabelin.ch', 'ida@example.com']],
+            [$test, ['tom@example.com']],
+        ], ['sauvabelin.ch=alias.sauvabelin.ch'])->build();
+
+        // Personal mailboxes (boss@) stay on the main domain, at Hostpoint.
+        $this->assertSame([
+            'cheffes@alias.sauvabelin.ch' => ['alice@example.com', 'boss@sauvabelin.ch'],
+            'chefs@alias.sauvabelin.ch' => ['alice@example.com', 'boss@sauvabelin.ch'],
+            'info@alias.sauvabelin.ch' => ['alice@example.com', 'boss@sauvabelin.ch', 'ida@example.com'],
+            'test@testmail.sauvabelin.ch' => ['tom@example.com'],
+        ], $map->entries);
+    }
+
     public function test_resolver_skips_inactive_nested_lists_and_accounts(): void
     {
         $resolver = new MailingTargetResolver($this->createMock(EntityManagerInterface::class), new NullLogger());
@@ -170,8 +193,9 @@ class PostfixMapExportTest extends TestCase
 
     /**
      * @param list<array{MailingList, list<string>}> $listsWithRecipients
+     * @param list<string>                           $forwarded           `domain=target` pairs
      */
-    private function builder(array $listsWithRecipients): PostfixVirtualMapBuilder
+    private function builder(array $listsWithRecipients, array $forwarded = []): PostfixVirtualMapBuilder
     {
         $repository = $this->createMock(MailingListRepository::class);
         $repository->method('findBy')->with(['active' => true])
@@ -189,7 +213,7 @@ class PostfixMapExportTest extends TestCase
             },
         );
 
-        return new PostfixVirtualMapBuilder($repository, $resolver, new MailingDomains(['sauvabelin.ch', 'testmail.sauvabelin.ch']));
+        return new PostfixVirtualMapBuilder($repository, $resolver, new MailingDomains(['sauvabelin.ch', 'testmail.sauvabelin.ch'], $forwarded));
     }
 
     /**

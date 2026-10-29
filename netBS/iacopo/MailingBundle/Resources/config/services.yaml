@@ -16,6 +16,7 @@ services:
   Iacopo\MailingBundle\Service\MailingDomains:
     arguments:
       $domains: '%env(csv:MAILING_DOMAINS)%'
+      $forwarded: '%env(csv:MAILING_FORWARDED_DOMAINS)%'
 
   # Data Fixtures
   Iacopo\MailingBundle\DataFixtures\:
