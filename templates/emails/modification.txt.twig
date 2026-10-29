@@ -1,0 +1,23 @@
+{% extends 'emails/apmbs_layout.txt.twig' %}
+
+{% block heading %}Modification proposée{% endblock %}
+{% block status_label %}À confirmer{% endblock %}
+{% block intro %}{{ reservation.cabane.correctionEmail }}{% endblock %}
+{% block details_title %}Dates proposées{% endblock %}
+
+{% block details %}
+Arrivée : {{ reservation.start|date(param('format', 'php_datetime')) }} (auparavant {{ oldStart|date(param('format', 'php_datetime')) }})
+Départ : {{ reservation.end|date(param('format', 'php_datetime')) }} (auparavant {{ oldEnd|date(param('format', 'php_datetime')) }})
+{% endblock %}
+
+{% block actions %}
+{% if toApmbs %}
+Le demandeur doit accepter ou refuser ces dates depuis son propre e-mail.
+{% else %}
+Accepter les nouvelles dates :
+{{ acceptUrl }}
+
+Refuser et annuler la réservation :
+{{ rejectUrl }}
+{% endif %}
+{% endblock %}

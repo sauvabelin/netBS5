@@ -1,12 +1,12 @@
 {# Building blocks for templates extending @NetBSCore/mailer/layout.html.twig.
    Classes are styled in assets/styles/email.scss. #}
 
-{# Full-width primary button, same as the login form's. The padded <a> inside
-   a coloured cell also renders in Outlook. #}
-{% macro button(href, label) %}
+{# Full-width button, same as the login form's. The padded <a> inside a
+   coloured cell also renders in Outlook. variant: primary, success or danger. #}
+{% macro button(href, label, variant = 'primary') %}
     <table role="presentation" width="100%" cellpadding="0" cellspacing="0" class="btn-table">
         <tr>
-            <td align="center" class="btn-cell">
+            <td align="center" class="btn-cell btn-cell-{{ variant }}">
                 <a href="{{ href }}" target="_blank" class="btn-primary">{{ label }}</a>
             </td>
         </tr>

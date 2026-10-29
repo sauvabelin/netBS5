@@ -73,6 +73,14 @@ a {
     background-color: $primary;
 }
 
+.btn-cell-success {
+    background-color: $success;
+}
+
+.btn-cell-danger {
+    background-color: $danger;
+}
+
 .btn-primary {
     display: block;
     padding: 10px 16px;
@@ -119,3 +127,92 @@ a {
 .footer-note {
     font-size: 12px;
 }
+
+// Reservation emails (templates/emails/, APMBS).
+
+.meta {
+    margin: 0 0 16px;
+    font-size: 13px;
+    color: $secondary;
+}
+
+// Status banner, sized like .btn-primary.
+.status {
+    padding: 10px 16px;
+    border-radius: $border-radius;
+    font-size: 14px;
+    font-weight: 700;
+    line-height: 20px;
+    text-align: center;
+    background-color: $gray-200;
+    color: $gray-700;
+}
+
+.status-success {
+    background-color: tint-color($success, 80%);
+    color: shade-color($success, 40%);
+}
+
+.status-warning {
+    background-color: tint-color($warning, 70%);
+    color: shade-color($warning, 60%);
+}
+
+.status-danger {
+    background-color: tint-color($danger, 80%);
+    color: shade-color($danger, 40%);
+}
+
+.section-title {
+    margin: 24px 0 8px;
+    font-size: 15px;
+    line-height: 22px;
+    font-weight: 700;
+}
+
+.details {
+    width: 100%;
+    margin: 0 0 8px;
+    border-collapse: collapse;
+}
+
+.details-label,
+.details-value {
+    padding: 8px 0;
+    border-bottom: 1px solid $gray-200;
+    vertical-align: top;
+    text-align: left;
+}
+
+.details-label {
+    width: 38%;
+    padding-right: 12px;
+    font-weight: 400;
+    color: $secondary;
+}
+
+.details-old {
+    color: $secondary;
+    text-decoration: line-through;
+}
+
+.details-total {
+    font-weight: 700;
+}
+
+.message {
+    margin: 0 0 16px;
+    padding: 12px 14px;
+    border-left: 3px solid $primary;
+    background-color: $gray-100;
+}
+
+.conditions {
+    margin: 0 0 16px;
+    padding-left: 20px;
+}
+
+.signature {
+    margin: 24px 0 0;
+}
+

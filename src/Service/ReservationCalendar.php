@@ -11,7 +11,8 @@ use Google\Service\Calendar\Event;
 /**
  * Keeps the cabane calendars in sync with APMBS reservations. Which backend
  * is written to (Google or a local file) depends on the CalendarClientInterface
- * alias in config/services.yaml.
+ * alias in config/services.yaml. Updates gcEventId on the reservation but
+ * doesn't flush: callers save it with the rest of their changes.
  */
 class ReservationCalendar {
 
@@ -118,8 +119,6 @@ class ReservationCalendar {
 
         $result = $this->client->insertEvent($calendarId, $event);
         $reservation->setGCEventId($result->getId());
-        $this->em->persist($reservation);
-        $this->em->flush();
 
         return $result->getId();
     }
@@ -139,8 +138,6 @@ class ReservationCalendar {
         }
 
         $reservation->setGCEventId(null);
-        $this->em->persist($reservation);
-        $this->em->flush();
     }
 
     private function reservationToEvent(APMBSReservation $reservation): Event {

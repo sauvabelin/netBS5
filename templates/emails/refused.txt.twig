@@ -1,0 +1,5 @@
+{% extends 'emails/apmbs_layout.txt.twig' %}
+
+{% block heading %}Demande refusée{% endblock %}
+{% block status_label %}Refusée{% endblock %}
+{% block intro %}{{ reservation.cabane.rejectedEmail }}{% endblock %}

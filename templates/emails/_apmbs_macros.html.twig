@@ -1,0 +1,28 @@
+{# Rows for the reservation table in apmbs_layout.html.twig (class "details"). #}
+
+{# multiline keeps the line breaks of textarea input. #}
+{% macro row(label, value, multiline = false) %}
+    <tr>
+        <th class="details-label">{{ label }}</th>
+        <td class="details-value">{{ multiline ? value|nl2br : value }}</td>
+    </tr>
+{% endmacro %}
+
+{# New value with the previous one struck through underneath. #}
+{% macro change_row(label, old, new) %}
+    <tr>
+        <th class="details-label">{{ label }}</th>
+        <td class="details-value">{{ new }}{% if old != new %}<br><span class="details-old">{{ old }}</span>{% endif %}</td>
+    </tr>
+{% endmacro %}
+
+{% macro dates(reservation) %}
+    {{ _self.row('Arrivée', reservation.start|date(param('format', 'php_datetime'))) }}
+    {{ _self.row('Départ', reservation.end|date(param('format', 'php_datetime'))) }}
+{% endmacro %}
+
+{% macro intendant(label, intendant) %}
+    {% if intendant %}
+        {{ _self.row(label, [intendant.nom, intendant.phone, intendant.email]|filter(v => v)|join(' · ')) }}
+    {% endif %}
+{% endmacro %}

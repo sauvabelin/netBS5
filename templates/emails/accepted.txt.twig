@@ -1,0 +1,26 @@
+{% extends 'emails/apmbs_layout.txt.twig' %}
+
+{% block heading %}Réservation confirmée{% endblock %}
+{% block status_label %}Confirmée{% endblock %}
+{% block intro %}{{ reservation.cabane.confirmedEmail }}{% endblock %}
+
+{% block details %}
+{{ dates }}
+{% for label, intendant in {"Intendant à l'ouverture": reservation.intendantDebut, 'Intendant à la fermeture': reservation.intendantFin} %}
+{% if intendant %}
+{{ label }} : {{ [intendant.nom, intendant.phone, intendant.email]|filter(v => v)|join(' · ') }}
+{% endif %}
+{% endfor %}
+{% if reservation.estimatedPrice %}
+Prix estimé : {{ reservation.estimatedPrice }} CHF
+{% endif %}
+{% endblock %}
+
+{% block after_details %}
+{% if reservation.cabane.conditionsList %}
+Conditions de la cabane, à lire avant votre arrivée :
+{% for condition in reservation.cabane.conditionsList %}
+- {{ condition }}
+{% endfor %}
+{% endif %}
+{% endblock %}

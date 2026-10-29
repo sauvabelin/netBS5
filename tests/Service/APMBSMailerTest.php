@@ -29,6 +29,7 @@ class APMBSMailerTest extends TestCase
         $this->assertSame('moillettaz@sauvabelin.ch', $client->getFrom()[0]->getAddress());
         $this->assertSame('APMBS La Moillettaz', $client->getFrom()[0]->getName());
         $this->assertSame('emails/accepted.html.twig', $client->getHtmlTemplate());
+        $this->assertSame('emails/accepted.txt.twig', $client->getTextTemplate());
         $this->assertSame('Bon séjour', $client->getContext()['message']);
         $this->assertFalse($client->getContext()['toApmbs']);
 

@@ -1,0 +1,45 @@
+{#
+    Public page behind the Accepter / Refuser links of the modification
+    email (ApiAPMBSController::clientAnswerAction). step is one of:
+      - confirm           — form that POSTs the answer (action, token)
+      - accepted/rejected — answer recorded
+      - already_answered  — the reservation no longer waits for an answer
+#}
+{% extends '@NetBSAuth/layout/auth.layout.twig' %}
+
+{% block title %}APMBS | {{ reservation.cabane.nom }}{% endblock %}
+
+{% block card_body %}
+    <p class="text-muted text-center mb-3">Réservation n°&nbsp;{{ reservation.id }}</p>
+
+    {% if step == 'confirm' %}
+        <p>Dates proposées par l'intendant&nbsp;:</p>
+        <ul class="list-unstyled mb-3">
+            <li><strong>Arrivée&nbsp;:</strong> {{ reservation.start|date(param('format', 'php_datetime')) }}</li>
+            <li><strong>Départ&nbsp;:</strong> {{ reservation.end|date(param('format', 'php_datetime')) }}</li>
+        </ul>
+        <form method="post">
+            <input type="hidden" name="token" value="{{ token }}">
+            {% if action == 'accept' %}
+                <p>Confirmez-vous ces nouvelles dates&nbsp;?</p>
+                <button type="submit" class="btn btn-success w-100">Accepter les nouvelles dates</button>
+            {% else %}
+                <p>Votre réservation sera annulée.</p>
+                <button type="submit" class="btn btn-danger w-100">Refuser et annuler la réservation</button>
+            {% endif %}
+        </form>
+    {% elseif step == 'accepted' %}
+        <div class="alert alert-success mb-0">
+            Merci, vous avez confirmé les nouvelles dates. L'intendant finalise votre réservation et vous recevrez un e-mail de confirmation.
+        </div>
+    {% elseif step == 'rejected' %}
+        <div class="alert alert-secondary mb-0">
+            Votre réservation a été annulée. Un e-mail de confirmation de l'annulation vous a été envoyé.
+        </div>
+    {% else %}
+        <div class="alert alert-info mb-0">
+            Vous avez déjà répondu à cette proposition, ou la réservation a changé depuis.
+            Pour toute question, écrivez à <a href="mailto:{{ reservation.cabane.fromEmail }}">{{ reservation.cabane.fromEmail }}</a>.
+        </div>
+    {% endif %}
+{% endblock %}

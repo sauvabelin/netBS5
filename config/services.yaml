@@ -165,6 +165,10 @@ services:
     arguments:
       $em: "@doctrine.orm.default_entity_manager"
 
+  App\Service\APMBSClientLinks:
+    arguments:
+      $secret: "%kernel.secret%"
+
   App\Service\APMBSFactureExporter:
     arguments:
       $manager: "@doctrine.orm.default_entity_manager"
