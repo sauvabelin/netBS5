@@ -23,6 +23,7 @@ use Symfony\Component\Mime\Address;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 use Symfony\Component\RateLimiter\RateLimiterFactory;
 use Symfony\Component\Routing\Annotation\Route;
+use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 use SymfonyCasts\Bundle\ResetPassword\Controller\ResetPasswordControllerTrait;
 use SymfonyCasts\Bundle\ResetPassword\Exception\ResetPasswordExceptionInterface;
 use SymfonyCasts\Bundle\ResetPassword\Exception\TooManyPasswordRequestsException;
@@ -196,6 +197,7 @@ class ResetPasswordController extends AbstractController
             ->textTemplate('@NetBSSecure/reset_password/email.txt.twig')
             ->context([
                 'resetToken' => $resetToken,
+                'resetUrl' => $this->generateUrl('netbs.secure.password_reset.reset_form', ['token' => $resetToken->getToken()], UrlGeneratorInterface::ABSOLUTE_URL),
                 'user' => $user,
             ]);
 

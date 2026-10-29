@@ -1,15 +1,19 @@
 {#
-    Shared HTML layout for every email netBS sends.
+    Shared HTML layout for every email netBS sends. Mirrors the login card:
+    logo + "netBS | <heading>" + divider, then the body, copyright underneath.
 
     Blocks:
       - preheader    — one-line summary shown next to the subject in inbox lists
-      - heading      — big title at the top of the card
+      - heading      — card title, rendered after "netBS | "
       - content      — body of the card (use the macros in _macros.html.twig)
       - footer_note  — small print under the card (default: automated-mail notice)
 
-    Table-based with inline styles on purpose: Outlook and Gmail ignore most
-    <style> rules. Keep new templates to the same pattern.
+    Style with classes from assets/styles/email.scss: inline_css copies those
+    rules onto each element, since Gmail and Outlook drop most <style> rules.
+    Layout stays table-based for Outlook. .email-body sits on both <body> and
+    the outer table because some clients strip <body>.
 #}
+{% apply inline_css(email_stylesheet()) %}
 <!DOCTYPE html>
 <html lang="fr" xmlns:v="urn:schemas-microsoft-com:vml">
 <head>
@@ -19,38 +23,49 @@
     <meta name="format-detection" content="telephone=no, date=no, address=no, email=no, url=no">
     <meta name="color-scheme" content="light">
     <meta name="supported-color-schemes" content="light">
-    <title>{{ block('heading') }}</title>
+    <title>{{ param('app', 'name') }} | {{ block('heading') }}</title>
     <!--[if mso]>
-    <style>td,th,div,p,a,h1 {font-family: "Segoe UI", Arial, sans-serif; mso-line-height-rule: exactly;}</style>
+    <style>td,th,div,p,a,h1 {font-family: Arial, sans-serif; mso-line-height-rule: exactly;}</style>
     <![endif]-->
+    <!--[if !mso]><!-->
+    <link href="https://fonts.googleapis.com/css?family=Roboto:300,400,700" rel="stylesheet">
+    <!--<![endif]-->
+    {# Media queries can't be inlined; clients that honour them read them here. #}
     <style>
-        @media (max-width: 620px) {
-            .card { padding: 28px 20px !important; }
-            .outer { padding: 24px 12px !important; }
+        @media (max-width: 520px) {
+            .card { padding: 24px 20px !important; }
+            .email-outer { padding: 24px 8px !important; }
         }
     </style>
 </head>
-<body style="margin: 0; padding: 0; width: 100%; background-color: #f1f5f9; -webkit-font-smoothing: antialiased; word-break: break-word;">
+<body class="email-body">
 <div style="display: none; max-height: 0; overflow: hidden; mso-hide: all;">{% block preheader %}{% endblock %}&#847;&zwnj;&nbsp;&#847;&zwnj;&nbsp;&#847;&zwnj;&nbsp;&#847;&zwnj;&nbsp;</div>
-<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background-color: #f1f5f9;">
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" class="email-body">
     <tr>
-        <td class="outer" align="center" style="padding: 40px 16px;">
-            <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width: 560px;">
+        <td class="email-outer" align="center">
+            <table role="presentation" width="100%" cellpadding="0" cellspacing="0" class="email-container">
                 <tr>
-                    <td align="center" style="padding-bottom: 24px;">
-                        <img src="{{ absolute_url(asset('bundles/netbscore/img/logo.png')) }}" width="56" height="59" alt="{{ param('app', 'organization') }}" style="display: block; border: 0;">
-                    </td>
-                </tr>
-                <tr>
-                    <td class="card" style="background-color: #ffffff; border-radius: 8px; border: 1px solid #e2e8f0; padding: 40px; font-family: -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; font-size: 16px; line-height: 24px; color: #334155;">
-                        <h1 style="margin: 0 0 24px; font-size: 22px; line-height: 30px; font-weight: 700; color: #0f172a;">{% block heading %}{% endblock %}</h1>
+                    <td class="card">
+                        <table role="presentation" width="100%" cellpadding="0" cellspacing="0">
+                            <tr>
+                                <td align="center">
+                                    <img src="{{ absolute_url(asset('bundles/netbscore/img/logo.png')) }}" width="62" height="64" alt="{{ param('app', 'organization') }}" class="logo">
+                                    <h1 class="card-title">{{ param('app', 'name') }} | {% block heading %}{% endblock %}</h1>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td class="divider-cell">
+                                    <div class="divider">&nbsp;</div>
+                                </td>
+                            </tr>
+                        </table>
                         {% block content %}{% endblock %}
                     </td>
                 </tr>
                 <tr>
-                    <td align="center" style="padding: 24px 16px 0; font-family: -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; font-size: 12px; line-height: 18px; color: #64748b;">
-                        {% block footer_note %}Cet e-mail a été envoyé automatiquement par {{ param('app', 'name') }}, merci de ne pas y répondre.{% endblock %}
-                        <br>{{ param('app', 'organization') }}
+                    <td class="footer" align="center">
+                        &copy; {{ 'now'|date('Y') }} - {{ param('app', 'organization') }}
+                        <br><span class="footer-note">{% block footer_note %}Cet e-mail a été envoyé automatiquement par {{ param('app', 'name') }}, merci de ne pas y répondre.{% endblock %}</span>
                     </td>
                 </tr>
             </table>
@@ -59,3 +74,4 @@
 </table>
 </body>
 </html>
+{% endapply %}

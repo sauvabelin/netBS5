@@ -1,17 +1,15 @@
 {% extends '@NetBSCore/mailer/layout.html.twig' %}
 {% import '@NetBSCore/mailer/_macros.html.twig' as mail %}
 
-{% set resetUrl = url('netbs.secure.password_reset.reset_form', { token: resetToken.token }) %}
-
 {% block preheader %}Choisissez un nouveau mot de passe pour le compte {{ user.loginUsername }}.{% endblock %}
 
-{% block heading %}Réinitialiser votre mot de passe{% endblock %}
+{% block heading %}Mot de passe oublié{% endblock %}
 
 {% block content %}
-    {{ mail.paragraph('Bonjour ' ~ user ~ ',') }}
-    <p style="margin: 0 0 16px;">
+    <p>Bonjour {{ user }},</p>
+    <p>
         Nous avons reçu une demande de réinitialisation du mot de passe de votre compte netBS
-        <strong style="color: #0f172a;">{{ user.loginUsername }}</strong>.
+        <strong>{{ user.loginUsername }}</strong>.
         Cliquez sur le bouton ci-dessous pour en choisir un nouveau.
     </p>
     {{ mail.button(resetUrl, 'Choisir un nouveau mot de passe') }}
