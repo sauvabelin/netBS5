@@ -106,8 +106,8 @@
     box-shadow: 0 0 1px var(--bs-primary);
   }
 
-  // Logo — invert black monochrome logo to white
-  .menu-logo img {
+  // Logo — invert black monochrome logo to white (OIDC client logos are left alone)
+  .brand-logo {
     filter: invert(1);
   }
 
