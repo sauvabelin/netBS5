@@ -1,0 +1,26 @@
+{# Building blocks for templates extending @NetBSCore/mailer/layout.html.twig.
+   Classes are styled in assets/styles/email.scss. #}
+
+{# Full-width primary button, same as the login form's. The padded <a> inside
+   a coloured cell also renders in Outlook. #}
+{% macro button(href, label) %}
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" class="btn-table">
+        <tr>
+            <td align="center" class="btn-cell">
+                <a href="{{ href }}" target="_blank" class="btn-primary">{{ label }}</a>
+            </td>
+        </tr>
+    </table>
+{% endmacro %}
+
+{# Raw URL for clients where the button doesn't work; small and wrappable. #}
+{% macro fallback_link(href) %}
+    <p class="fallback-link">
+        Si le bouton ne fonctionne pas, copiez ce lien dans votre navigateur&nbsp;:<br>
+        <a href="{{ href }}">{{ href }}</a>
+    </p>
+{% endmacro %}
+
+{% macro notice(text) %}
+    <p class="notice">{{ text }}</p>
+{% endmacro %}

@@ -1,0 +1,77 @@
+{#
+    Shared HTML layout for every email netBS sends. Mirrors the login card:
+    logo + "netBS | <heading>" + divider, then the body, copyright underneath.
+
+    Blocks:
+      - preheader    — one-line summary shown next to the subject in inbox lists
+      - heading      — card title, rendered after "netBS | "
+      - content      — body of the card (use the macros in _macros.html.twig)
+      - footer_note  — small print under the card (default: automated-mail notice)
+
+    Style with classes from assets/styles/email.scss: inline_css copies those
+    rules onto each element, since Gmail and Outlook drop most <style> rules.
+    Layout stays table-based for Outlook. .email-body sits on both <body> and
+    the outer table because some clients strip <body>.
+#}
+{% apply inline_css(email_stylesheet()) %}
+<!DOCTYPE html>
+<html lang="fr" xmlns:v="urn:schemas-microsoft-com:vml">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="x-apple-disable-message-reformatting">
+    <meta name="format-detection" content="telephone=no, date=no, address=no, email=no, url=no">
+    <meta name="color-scheme" content="light">
+    <meta name="supported-color-schemes" content="light">
+    <title>{{ param('app', 'name') }} | {{ block('heading') }}</title>
+    <!--[if mso]>
+    <style>td,th,div,p,a,h1 {font-family: Arial, sans-serif; mso-line-height-rule: exactly;}</style>
+    <![endif]-->
+    <!--[if !mso]><!-->
+    <link href="https://fonts.googleapis.com/css?family=Roboto:300,400,700" rel="stylesheet">
+    <!--<![endif]-->
+    {# Media queries can't be inlined; clients that honour them read them here. #}
+    <style>
+        @media (max-width: 520px) {
+            .card { padding: 24px 20px !important; }
+            .email-outer { padding: 24px 8px !important; }
+        }
+    </style>
+</head>
+<body class="email-body">
+<div style="display: none; max-height: 0; overflow: hidden; mso-hide: all;">{% block preheader %}{% endblock %}&#847;&zwnj;&nbsp;&#847;&zwnj;&nbsp;&#847;&zwnj;&nbsp;&#847;&zwnj;&nbsp;</div>
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" class="email-body">
+    <tr>
+        <td class="email-outer" align="center">
+            <table role="presentation" width="100%" cellpadding="0" cellspacing="0" class="email-container">
+                <tr>
+                    <td class="card">
+                        <table role="presentation" width="100%" cellpadding="0" cellspacing="0">
+                            <tr>
+                                <td align="center">
+                                    <img src="{{ absolute_url(asset('bundles/netbscore/img/logo.png')) }}" width="60" height="63" alt="{{ param('app', 'organization') }}" class="logo">
+                                    <h1 class="card-title">{{ param('app', 'name') }} | {% block heading %}{% endblock %}</h1>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td class="divider-cell">
+                                    <div class="divider">&nbsp;</div>
+                                </td>
+                            </tr>
+                        </table>
+                        {% block content %}{% endblock %}
+                    </td>
+                </tr>
+                <tr>
+                    <td class="footer" align="center">
+                        &copy; {{ 'now'|date('Y') }} - {{ param('app', 'organization') }}
+                        <br><span class="footer-note">{% block footer_note %}Cet e-mail a été envoyé automatiquement par {{ param('app', 'name') }}, merci de ne pas y répondre.{% endblock %}</span>
+                    </td>
+                </tr>
+            </table>
+        </td>
+    </tr>
+</table>
+</body>
+</html>
+{% endapply %}

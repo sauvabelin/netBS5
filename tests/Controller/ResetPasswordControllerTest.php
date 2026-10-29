@@ -43,6 +43,7 @@ class ResetPasswordControllerTest extends WebTestCase
         $email = $this->getMailerMessage(0);
         $this->assertEmailAddressContains($email, 'To', 'reset-test-alice@example.test');
         $this->assertEmailHtmlBodyContains($email, '/reset-password/');
+        $this->assertEmailTextBodyContains($email, '/reset-password/');
 
         // Sanity-check the follow-through page renders the generic banner.
         $client->followRedirect();

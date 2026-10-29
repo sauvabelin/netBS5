@@ -1,0 +1,6 @@
+{#- Plain-text counterpart of layout.html.twig: same blocks, same footer. -#}
+{% block content %}{% endblock %}
+
+--
+{{ param('app', 'organization') }}
+{% block footer_note %}Cet e-mail a été envoyé automatiquement par {{ param('app', 'name') }}, merci de ne pas y répondre.{% endblock %}

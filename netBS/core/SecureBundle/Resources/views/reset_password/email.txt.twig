@@ -1,0 +1,13 @@
+{% extends '@NetBSCore/mailer/layout.txt.twig' %}
+
+{% block content %}
+Bonjour {{ user }},
+
+Nous avons reçu une demande de réinitialisation du mot de passe de votre compte netBS {{ user.loginUsername }}.
+
+Pour choisir un nouveau mot de passe, ouvrez ce lien :
+{{ resetUrl }}
+
+Ce lien est valable {% include '@NetBSSecure/reset_password/_validity.txt.twig' %} et ne peut être utilisé qu'une seule fois.
+Si vous n'êtes pas à l'origine de cette demande, ignorez simplement cet e-mail : votre mot de passe reste inchangé.
+{% endblock %}
