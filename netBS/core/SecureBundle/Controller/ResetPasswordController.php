@@ -11,6 +11,7 @@ use NetBS\SecureBundle\Form\ResetPasswordRequestFormType;
 use NetBS\SecureBundle\Model\ChangePassword;
 use NetBS\SecureBundle\Repository\ResetPasswordRequestRepository;
 use Psr\Log\LoggerInterface;
+use Symfony\Bridge\Twig\Mime\TemplatedEmail;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\DependencyInjection\Attribute\Autowire;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
@@ -19,7 +20,6 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Mailer\Exception\TransportExceptionInterface;
 use Symfony\Component\Mailer\MailerInterface;
 use Symfony\Component\Mime\Address;
-use Symfony\Component\Mime\Email;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 use Symfony\Component\RateLimiter\RateLimiterFactory;
 use Symfony\Component\Routing\Annotation\Route;
@@ -188,14 +188,16 @@ class ResetPasswordController extends AbstractController
             return;
         }
 
-        $email = (new Email())
+        $email = (new TemplatedEmail())
             ->from(new Address($this->fromAddress ?? 'no-reply@netbs.localhost', 'netBS'))
-            ->to($user->getEmail())
+            ->to(new Address($user->getEmail(), (string) $user))
             ->subject('Réinitialisation de votre mot de passe netBS')
-            ->html($this->renderView('@NetBSSecure/reset_password/email.html.twig', [
+            ->htmlTemplate('@NetBSSecure/reset_password/email.html.twig')
+            ->textTemplate('@NetBSSecure/reset_password/email.txt.twig')
+            ->context([
                 'resetToken' => $resetToken,
                 'user' => $user,
-            ]));
+            ]);
 
         try {
             $this->mailer->send($email);

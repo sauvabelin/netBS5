@@ -1,0 +1,8 @@
+{#- Remaining lifetime of resetToken, in French ("1 heure", "30 minutes"). -#}
+{%- set minutes = ((resetToken.expiresAt.timestamp - 'now'|date('U')) / 60)|round(0, 'ceil') -%}
+{%- if minutes >= 60 -%}
+    {%- set hours = (minutes / 60)|round -%}
+    {{- hours }} heure{{ hours > 1 ? 's' -}}
+{%- else -%}
+    {{- minutes }} minute{{ minutes > 1 ? 's' -}}
+{%- endif -%}

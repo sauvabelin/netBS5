@@ -1,10 +1,20 @@
-<p>Bonjour {{ user }},</p>
+{% extends '@NetBSCore/mailer/layout.html.twig' %}
+{% import '@NetBSCore/mailer/_macros.html.twig' as mail %}
 
-<p>Vous avez demandé la réinitialisation de votre mot de passe netBS.
-Cliquez sur le lien suivant dans l'heure qui vient&nbsp;:</p>
+{% set resetUrl = url('netbs.secure.password_reset.reset_form', { token: resetToken.token }) %}
 
-<p><a href="{{ url('netbs.secure.password_reset.reset_form', { token: resetToken.token }) }}">{{ url('netbs.secure.password_reset.reset_form', { token: resetToken.token }) }}</a></p>
+{% block preheader %}Choisissez un nouveau mot de passe pour le compte {{ user.loginUsername }}.{% endblock %}
 
-<p>Si ce n'était pas vous, ignorez ce message&nbsp;: aucun changement n'a été effectué.</p>
+{% block heading %}Réinitialiser votre mot de passe{% endblock %}
 
-<p>La Team IT</p>
+{% block content %}
+    {{ mail.paragraph('Bonjour ' ~ user ~ ',') }}
+    <p style="margin: 0 0 16px;">
+        Nous avons reçu une demande de réinitialisation du mot de passe de votre compte netBS
+        <strong style="color: #0f172a;">{{ user.loginUsername }}</strong>.
+        Cliquez sur le bouton ci-dessous pour en choisir un nouveau.
+    </p>
+    {{ mail.button(resetUrl, 'Choisir un nouveau mot de passe') }}
+    {{ mail.fallback_link(resetUrl) }}
+    {{ mail.notice("Ce lien est valable " ~ include('@NetBSSecure/reset_password/_validity.txt.twig') ~ " et ne peut être utilisé qu'une seule fois. Si vous n'êtes pas à l'origine de cette demande, ignorez simplement cet e-mail : votre mot de passe reste inchangé.") }}
+{% endblock %}

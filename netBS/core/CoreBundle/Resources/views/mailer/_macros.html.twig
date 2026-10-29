@@ -1,0 +1,28 @@
+{# Building blocks for templates extending @NetBSCore/mailer/layout.html.twig. #}
+
+{% macro paragraph(text) %}
+    <p style="margin: 0 0 16px;">{{ text }}</p>
+{% endmacro %}
+
+{# Bulletproof button: the padded <a> inside a coloured cell renders in Outlook too. #}
+{% macro button(href, label) %}
+    <table role="presentation" cellpadding="0" cellspacing="0" style="margin: 8px 0 24px;">
+        <tr>
+            <td style="border-radius: 6px; background-color: #1f4e8c;">
+                <a href="{{ href }}" target="_blank" style="display: inline-block; padding: 12px 28px; border-radius: 6px; font-size: 16px; font-weight: 600; line-height: 24px; color: #ffffff; text-decoration: none;">{{ label }}</a>
+            </td>
+        </tr>
+    </table>
+{% endmacro %}
+
+{# Raw URL for clients where the button doesn't work; small and wrappable. #}
+{% macro fallback_link(href) %}
+    <p style="margin: 0 0 24px; font-size: 13px; line-height: 20px; color: #64748b;">
+        Si le bouton ne fonctionne pas, copiez ce lien dans votre navigateur&nbsp;:<br>
+        <a href="{{ href }}" style="color: #1f4e8c; word-break: break-all;">{{ href }}</a>
+    </p>
+{% endmacro %}
+
+{% macro notice(text) %}
+    <p style="margin: 0; padding: 12px 16px; border-radius: 6px; background-color: #f8fafc; border-left: 3px solid #cbd5e1; font-size: 14px; line-height: 20px; color: #475569;">{{ text }}</p>
+{% endmacro %}
