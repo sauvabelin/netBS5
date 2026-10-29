@@ -1,10 +1,6 @@
 {# Building blocks for templates extending @NetBSCore/mailer/layout.html.twig.
    Classes are styled in assets/styles/email.scss. #}
 
-{% macro paragraph(text) %}
-    <p>{{ text }}</p>
-{% endmacro %}
-
 {# Full-width primary button, same as the login form's. The padded <a> inside
    a coloured cell also renders in Outlook. #}
 {% macro button(href, label) %}

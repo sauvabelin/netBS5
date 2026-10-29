@@ -10,7 +10,8 @@
 
     Style with classes from assets/styles/email.scss: inline_css copies those
     rules onto each element, since Gmail and Outlook drop most <style> rules.
-    Layout stays table-based for Outlook.
+    Layout stays table-based for Outlook. .email-body sits on both <body> and
+    the outer table because some clients strip <body>.
 #}
 {% apply inline_css(email_stylesheet()) %}
 <!DOCTYPE html>

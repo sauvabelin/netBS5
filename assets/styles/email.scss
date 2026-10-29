@@ -22,6 +22,8 @@
 
 .email-container {
     max-width: 480px;
+    font-family: $font-family-sans-serif;
+    color: $body-color;
 }
 
 .card {
@@ -29,10 +31,8 @@
     border-radius: $border-radius;
     box-shadow: $box-shadow-sm;
     padding: 32px;
-    font-family: $font-family-sans-serif;
     font-size: 14px;
     line-height: 22px;
-    color: $body-color;
 }
 
 .card-title {
@@ -40,7 +40,6 @@
     font-size: 18px;
     line-height: 26px;
     font-weight: $headings-font-weight;
-    color: $body-color;
 }
 
 .divider-cell {
@@ -67,10 +66,6 @@ a {
     color: $primary;
 }
 
-strong {
-    color: $body-color;
-}
-
 // The coloured cell carries the background for Outlook, which ignores
 // padding/background on <a>.
 .btn-cell {
@@ -81,7 +76,6 @@ strong {
 .btn-primary {
     display: block;
     padding: 10px 16px;
-    border-radius: $border-radius;
     font-size: 14px;
     font-weight: $btn-font-weight;
     line-height: 20px;
@@ -117,7 +111,6 @@ strong {
 
 .footer {
     padding: 20px 16px 0;
-    font-family: $font-family-sans-serif;
     font-size: 13px;
     line-height: 20px;
     color: $secondary;
