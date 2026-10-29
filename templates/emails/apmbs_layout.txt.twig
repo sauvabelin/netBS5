@@ -2,13 +2,20 @@
 {#-
     Plain-text counterpart of apmbs_layout.html.twig. Children define the
     same blocks; this template places them and handles the blank lines, so
-    their content is trimmed. "dates" holds the default details rows.
+    their content is trimmed. fmt is the date format, for children's blocks.
 -#}
 
 {% block content -%}
-{% set dates -%}
-Arrivée : {{ reservation.start|date(param('format', 'php_datetime')) }}
-Départ : {{ reservation.end|date(param('format', 'php_datetime')) }}
+{% set fmt = param('format', 'php_datetime') %}
+{% set intro = block('intro')|trim %}
+{% set after_details = block('after_details') is defined ? block('after_details')|trim : '' %}
+{% set actions = block('actions') is defined ? block('actions')|trim : '' %}
+{% set details -%}
+{% if block('details') is defined %}{{ block('details') }}{% else -%}
+Arrivée : {{ reservation.start|date(fmt) }}
+Départ : {{ reservation.end|date(fmt) }}
+{% if block('details_extra') is defined %}{{ block('details_extra') }}{% endif %}
+{%- endif %}
 {%- endset %}
 {% if toApmbs -%}
 [Copie interne] E-mail envoyé à {{ reservation.prenom }} {{ reservation.nom }} ({{ reservation.email }}).
@@ -22,15 +29,15 @@ Gérer la réservation : {{ url('sauvabelin.apmbs.reservation', {id: reservation
 Bonjour {{ reservation.prenom }},
 
 {% endif -%}
-{% if block('intro') is defined and block('intro')|trim -%}
-{{ block('intro')|trim }}
+{% if intro -%}
+{{ intro }}
 
 {% endif -%}
 {{ block('details_title') is defined ? block('details_title') : 'Votre réservation' }}
-{{ block('details') is defined ? block('details')|trim : dates }}
+{{ details|trim }}
 
-{% if block('after_details') is defined -%}
-{{ block('after_details')|trim }}
+{% if after_details -%}
+{{ after_details }}
 
 {% endif -%}
 {% if message -%}
@@ -38,8 +45,8 @@ Message de l'intendant :
 {{ message }}
 
 {% endif -%}
-{% if block('actions') is defined -%}
-{{ block('actions')|trim }}
+{% if actions -%}
+{{ actions }}
 
 {% endif -%}
 Meilleures salutations,

@@ -26,12 +26,11 @@ class APMBSMailer {
         $to = $toApmbs ? $reservation->getCabane()->getFromEmail() : $reservation->getEmail();
         $subject = $toApmbs ? "suivi res. {$reservation->getId()}" : "[APMBS {$reservation->getId()}] - $title";
 
-        if ($tplName === 'modification' && !$toApmbs) {
-            $data += [
-                'acceptUrl' => $this->clientLinks->url($reservation, 'accept'),
-                'rejectUrl' => $this->clientLinks->url($reservation, 'reject'),
-            ];
-        }
+        // Only the client may answer a modification; the copy gets no links.
+        $answerLinks = $tplName === 'modification' && !$toApmbs ? [
+            'acceptUrl' => $this->clientLinks->url($reservation, 'accept'),
+            'rejectUrl' => $this->clientLinks->url($reservation, 'reject'),
+        ] : [];
 
         $email = (new TemplatedEmail())
             ->from(new Address($reservation->getCabane()->getFromEmail(), "APMBS {$reservation->getCabane()->getNom()}"))
@@ -39,7 +38,7 @@ class APMBSMailer {
             ->subject($subject)
             ->htmlTemplate("emails/$tplName.html.twig")
             ->textTemplate("emails/$tplName.txt.twig")
-            ->context(array_merge($data, [
+            ->context(array_merge($data, $answerLinks, [
                 'reservation' => $reservation,
                 'message' => $message,
                 'toApmbs' => $toApmbs,

@@ -5,10 +5,12 @@
     Base for the APMBS reservation emails: the shared netBS layout, branded
     "APMBS". Each email sets heading and preheader, plus:
       - status_label / status_variant — banner under the reservation number
-        (variant: success, warning, danger, or empty for grey)
-      - intro          — the cabane's own text for this step (Cabane::*Email)
+        (variant: success, warning, danger, or none for grey)
+      - intro          — required: the cabane's own text for this step (Cabane::*Email),
+        plain text: the layout wraps it and keeps its line breaks
       - details_title  — title of the reservation table
-      - details        — its rows (macros in _apmbs_macros.html.twig)
+      - details_extra  — rows after the dates (macros in _apmbs_macros.html.twig),
+        or details to replace all rows
       - after_details  — anything between the table and the intendant's message
       - actions        — anything after the message
     toApmbs is true on the internal copy sent to the cabane's address.
@@ -26,18 +28,20 @@
     {# Same box as mail.button, so the status reads at a glance. #}
     <table role="presentation" width="100%" cellpadding="0" cellspacing="0" class="btn-table">
         <tr>
-            <td align="center" class="status status-{{ block('status_variant') }}">{{ block('status_label') }}</td>
+            <td align="center" class="status status-{% block status_variant %}{% endblock %}">{% block status_label %}{% endblock %}</td>
         </tr>
     </table>
 
     {% if not toApmbs %}
         <p>Bonjour {{ reservation.prenom }},</p>
     {% endif %}
-    {% block intro %}{% endblock %}
+    {# block() output is already escaped by the child: raw avoids escaping it twice. #}
+    {% set intro = block('intro') %}
+    {% if intro %}<p>{{ intro|raw|nl2br }}</p>{% endif %}
 
     <p class="section-title">{% block details_title %}Votre réservation{% endblock %}</p>
     <table role="presentation" width="100%" cellpadding="0" cellspacing="0" class="details">
-        {% block details %}{{ apmbs.dates(reservation) }}{% endblock %}
+        {% block details %}{{ apmbs.dates(reservation) }}{% block details_extra %}{% endblock %}{% endblock %}
     </table>
 
     {% block after_details %}{% endblock %}

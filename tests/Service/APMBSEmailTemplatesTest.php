@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace App\Tests\Service;
 
 use App\Entity\APMBSReservation;
-use App\Entity\Cabane;
 use App\Entity\Intendant;
+use App\Tests\Support\APMBSFixturesTrait;
 use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
 use Twig\Environment;
 
@@ -16,6 +16,13 @@ use Twig\Environment;
  */
 class APMBSEmailTemplatesTest extends KernelTestCase
 {
+    use APMBSFixturesTrait;
+
+    protected function setUp(): void
+    {
+        self::bootKernel();
+    }
+
     public static function templates(): iterable
     {
         foreach (['pending', 'accepted', 'refused', 'cancelled', 'modification', 'invoice'] as $name) {
@@ -66,18 +73,18 @@ class APMBSEmailTemplatesTest extends KernelTestCase
 
     public function test_user_input_is_escaped(): void
     {
-        $html = $this->render('emails/pending.html.twig', false, '<b>hack</b>');
+        $reservation = $this->reservation('<b>hack</b>');
+        $reservation->getCabane()->setConfirmedEmail("Bienvenue\n<b>vite</b>");
+        $html = $this->render('emails/accepted.html.twig', false, $reservation);
 
-        $this->assertStringNotContainsString('<b>hack</b>', $html);
-        $this->assertStringContainsString('&lt;b&gt;hack&lt;/b&gt;', $html);
+        $this->assertStringNotContainsString('<b>hack</b>', $this->render('emails/pending.html.twig', false, $reservation));
+        $this->assertMatchesRegularExpression('#Bienvenue<br ?/?>\s*&lt;b&gt;vite&lt;/b&gt;#', $html, 'cabane text keeps its line breaks and is escaped once');
     }
 
-    private function render(string $template, bool $toApmbs, string $description = "Camp d'automne\nAvec 20 enfants"): string
+    private function render(string $template, bool $toApmbs, ?APMBSReservation $reservation = null): string
     {
-        self::bootKernel();
-
         return self::getContainer()->get(Environment::class)->render($template, [
-            'reservation' => $this->reservation($description),
+            'reservation' => $reservation ?? $this->reservation("Camp d'automne\nAvec 20 enfants"),
             'message' => "Merci de laisser la cabane propre.\nBon séjour !",
             'toApmbs' => $toApmbs,
             'oldStart' => new \DateTime('2026-11-09 10:00'),
@@ -90,31 +97,16 @@ class APMBSEmailTemplatesTest extends KernelTestCase
 
     private function reservation(string $description): APMBSReservation
     {
-        $cabane = new Cabane();
-        $cabane->setNom('La Moillettaz');
-        $cabane->setFromEmail('moillettaz@sauvabelin.ch');
-        $cabane->setConfirmedEmail("Votre réservation est confirmée.\nÀ bientôt.");
-        $cabane->setConditions("Pas de feu à l'intérieur\nRendre les clés");
+        $reservation = $this->makeReservation(APMBSReservation::PENDING, 42);
+        $reservation->getCabane()->setNom('La Moillettaz');
+        $reservation->getCabane()->setConfirmedEmail("Votre réservation est confirmée.\nÀ bientôt.");
+        $reservation->getCabane()->setConditions("Pas de feu à l'intérieur\nRendre les clés");
 
         $intendant = new Intendant();
         $intendant->setNom('Paul Martin');
         $intendant->setPhone('079 111 11 11');
 
-        $reservation = new APMBSReservation();
-        (new \ReflectionProperty(APMBSReservation::class, 'id'))->setValue($reservation, 42);
-        $reservation->setCabane($cabane);
-        $reservation->setStatus(APMBSReservation::PENDING);
-        $reservation->setPrenom('Jeanne');
-        $reservation->setNom('Dupont');
-        $reservation->setUnite('Brigade');
-        $reservation->setEmail('jeanne@example.com');
-        $reservation->setPhone('079 000 00 00');
-        $reservation->setRue('Rue du Lac 1');
-        $reservation->setNpa('1000');
-        $reservation->setLocalite('Lausanne');
         $reservation->setDescription($description);
-        $reservation->setStart(new \DateTime('2026-11-10 10:00'));
-        $reservation->setEnd(new \DateTime('2026-11-12 16:00'));
         $reservation->setIntendantDebut($intendant);
         $reservation->setIntendantFin($intendant);
         $reservation->setEstimatedPrice(150);

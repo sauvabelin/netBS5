@@ -6,8 +6,8 @@
 {% block details_title %}Dates proposées{% endblock %}
 
 {% block details %}
-Arrivée : {{ reservation.start|date(param('format', 'php_datetime')) }} (auparavant {{ oldStart|date(param('format', 'php_datetime')) }})
-Départ : {{ reservation.end|date(param('format', 'php_datetime')) }} (auparavant {{ oldEnd|date(param('format', 'php_datetime')) }})
+Arrivée : {{ reservation.start|date(fmt) }} (auparavant {{ oldStart|date(fmt) }})
+Départ : {{ reservation.end|date(fmt) }} (auparavant {{ oldEnd|date(fmt) }})
 {% endblock %}
 
 {% block actions %}

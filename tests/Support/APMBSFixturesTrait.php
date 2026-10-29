@@ -7,12 +7,13 @@ use App\Entity\Cabane;
 use Doctrine\ORM\EntityManagerInterface;
 
 /**
- * A cabane + reservation pair in netbs5_test, created fresh for each test.
+ * A cabane + reservation pair, built in memory or saved in netbs5_test.
  * Calendar writes go to LocalCalendarClient (var/apmbs_calendar.test.json).
  */
 trait APMBSFixturesTrait
 {
-    protected function persistReservation(EntityManagerInterface $em, string $status): APMBSReservation
+    /** Unsaved; $id is forced for tests that never hit the database. */
+    protected function makeReservation(string $status, ?int $id = null): APMBSReservation
     {
         $cabane = new Cabane();
         $cabane->setNom('Cabane test');
@@ -21,6 +22,9 @@ trait APMBSFixturesTrait
         $cabane->setAvailabilityRule('{}');
 
         $reservation = new APMBSReservation();
+        if ($id !== null) {
+            (new \ReflectionProperty(APMBSReservation::class, 'id'))->setValue($reservation, $id);
+        }
         $reservation->setCabane($cabane);
         $reservation->setStatus($status);
         $reservation->setPrenom('Jeanne');
@@ -34,7 +38,13 @@ trait APMBSFixturesTrait
         $reservation->setStart(new \DateTime('2026-11-10 10:00'));
         $reservation->setEnd(new \DateTime('2026-11-12 16:00'));
 
-        $em->persist($cabane);
+        return $reservation;
+    }
+
+    protected function persistReservation(EntityManagerInterface $em, string $status): APMBSReservation
+    {
+        $reservation = $this->makeReservation($status);
+        $em->persist($reservation->getCabane());
         $em->persist($reservation);
         $em->flush();
 

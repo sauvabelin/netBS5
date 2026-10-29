@@ -4,8 +4,7 @@
 {% block status_label %}Confirmée{% endblock %}
 {% block intro %}{{ reservation.cabane.confirmedEmail }}{% endblock %}
 
-{% block details %}
-{{ dates }}
+{% block details_extra %}
 {% for label, intendant in {"Intendant à l'ouverture": reservation.intendantDebut, 'Intendant à la fermeture': reservation.intendantFin} %}
 {% if intendant %}
 {{ label }} : {{ [intendant.nom, intendant.phone, intendant.email]|filter(v => v)|join(' · ') }}

@@ -5,16 +5,12 @@
 {% block heading %}Facture{% endblock %}
 {% block preheader %}Votre facture pour le séjour à {{ reservation.cabane.nom }} est jointe à cet e-mail.{% endblock %}
 {% block status_label %}Facture{% endblock %}
-{% block status_variant %}{% endblock %}
 
-{% block intro %}
-    {% if reservation.cabane.invoiceEmail %}<p>{{ reservation.cabane.invoiceEmail|nl2br }}</p>{% endif %}
-{% endblock %}
+{% block intro %}{{ reservation.cabane.invoiceEmail }}{% endblock %}
 
 {% block details_title %}Détails de la facture{% endblock %}
 
-{% block details %}
-    {{ apmbs.dates(reservation) }}
+{% block details_extra %}
     {{ apmbs.row('Location ' ~ reservation.cabane.nom, reservation.finalPrice ~ ' CHF') }}
     {% if autreFrais %}{{ apmbs.row(autreFrais.message ?: 'Autres frais', autreFrais.montant ~ ' CHF') }}{% endif %}
 {% endblock %}

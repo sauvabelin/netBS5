@@ -5,8 +5,7 @@
 {% block intro %}{{ reservation.cabane.invoiceEmail }}{% endblock %}
 {% block details_title %}Détails de la facture{% endblock %}
 
-{% block details %}
-{{ dates }}
+{% block details_extra %}
 Location {{ reservation.cabane.nom }} : {{ reservation.finalPrice }} CHF
 {% if autreFrais %}
 {{ autreFrais.message ?: 'Autres frais' }} : {{ autreFrais.montant }} CHF

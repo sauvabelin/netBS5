@@ -6,12 +6,9 @@
 {% block status_label %}Confirmée{% endblock %}
 {% block status_variant %}success{% endblock %}
 
-{% block intro %}
-    {% if reservation.cabane.confirmedEmail %}<p>{{ reservation.cabane.confirmedEmail|nl2br }}</p>{% endif %}
-{% endblock %}
+{% block intro %}{{ reservation.cabane.confirmedEmail }}{% endblock %}
 
-{% block details %}
-    {{ apmbs.dates(reservation) }}
+{% block details_extra %}
     {{ apmbs.intendant("Intendant à l'ouverture", reservation.intendantDebut) }}
     {{ apmbs.intendant('Intendant à la fermeture', reservation.intendantFin) }}
     {% if reservation.estimatedPrice %}{{ apmbs.row('Prix estimé', reservation.estimatedPrice ~ ' CHF') }}{% endif %}

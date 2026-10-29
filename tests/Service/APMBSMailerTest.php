@@ -6,12 +6,14 @@ namespace App\Tests\Service;
 
 use App\Entity\APMBSReservation;
 use App\Entity\Cabane;
+use App\Service\APMBSClientLinks;
 use App\Service\APMBSMailer;
 use PHPUnit\Framework\TestCase;
 use Symfony\Bridge\Twig\Mime\TemplatedEmail;
 use Symfony\Component\Mailer\Envelope;
 use Symfony\Component\Mailer\MailerInterface;
 use Symfony\Component\Mime\RawMessage;
+use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 
 class APMBSMailerTest extends TestCase
 {
@@ -19,7 +21,7 @@ class APMBSMailerTest extends TestCase
     {
         $mailer = new RecordingMailer();
 
-        (new APMBSMailer($mailer))->sendEmailToClient($this->reservation(), 'Réservation validée', 'Bon séjour');
+        $this->mailer($mailer)->sendEmailToClient($this->reservation(), 'Réservation validée', 'Bon séjour');
 
         $this->assertCount(2, $mailer->sent);
         [$client, $copy] = $mailer->sent;
@@ -42,10 +44,30 @@ class APMBSMailerTest extends TestCase
     {
         $mailer = new RecordingMailer();
 
-        (new APMBSMailer($mailer))->sendEmailToClient($this->reservation(), 'Facture', null, 'invoice', ['extra' => 1]);
+        $this->mailer($mailer)->sendEmailToClient($this->reservation(), 'Facture', null, 'invoice', ['extra' => 1]);
 
         $this->assertSame('emails/invoice.html.twig', $mailer->sent[0]->getHtmlTemplate());
         $this->assertSame(1, $mailer->sent[0]->getContext()['extra']);
+    }
+
+    public function test_modification_email_gets_signed_answer_links_but_the_copy_does_not(): void
+    {
+        $mailer = new RecordingMailer();
+
+        $this->mailer($mailer)->sendEmailToClient($this->reservation(), 'Modification', null, 'modification');
+
+        [$client, $copy] = $mailer->sent;
+        $this->assertSame('https://netbs.example/client/accept', $client->getContext()['acceptUrl']);
+        $this->assertSame('https://netbs.example/client/reject', $client->getContext()['rejectUrl']);
+        $this->assertArrayNotHasKey('acceptUrl', $copy->getContext());
+    }
+
+    private function mailer(MailerInterface $mailer): APMBSMailer
+    {
+        $urls = $this->createMock(UrlGeneratorInterface::class);
+        $urls->method('generate')->willReturnCallback(fn (string $route, array $params) => "https://netbs.example/client/{$params['action']}");
+
+        return new APMBSMailer($mailer, new APMBSClientLinks('secret', $urls));
     }
 
     private function reservation(): APMBSReservation
@@ -59,6 +81,8 @@ class APMBSMailerTest extends TestCase
         $reservation->setCabane($cabane);
         $reservation->setStatus(APMBSReservation::ACCEPTED);
         $reservation->setEmail('jeanne@example.com');
+        $reservation->setStart(new \DateTime('2026-11-10 10:00'));
+        $reservation->setEnd(new \DateTime('2026-11-12 16:00'));
 
         return $reservation;
     }

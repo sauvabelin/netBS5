@@ -6,11 +6,14 @@ namespace App\Tests\Service;
 
 use App\Entity\APMBSReservation;
 use App\Service\APMBSClientLinks;
+use App\Tests\Support\APMBSFixturesTrait;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 
 class APMBSClientLinksTest extends TestCase
 {
+    use APMBSFixturesTrait;
+
     public function test_token_is_valid_for_the_same_reservation_and_action(): void
     {
         $links = $this->links();
@@ -76,11 +79,6 @@ class APMBSClientLinksTest extends TestCase
 
     private function reservation(int $id): APMBSReservation
     {
-        $reservation = new APMBSReservation();
-        (new \ReflectionProperty(APMBSReservation::class, 'id'))->setValue($reservation, $id);
-        $reservation->setStart(new \DateTime('2026-11-10 10:00'));
-        $reservation->setEnd(new \DateTime('2026-11-12 16:00'));
-
-        return $reservation;
+        return $this->makeReservation(APMBSReservation::MODIFICATION_PENDING, $id);
     }
 }

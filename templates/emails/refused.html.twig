@@ -5,6 +5,4 @@
 {% block status_label %}Refusée{% endblock %}
 {% block status_variant %}danger{% endblock %}
 
-{% block intro %}
-    {% if reservation.cabane.rejectedEmail %}<p>{{ reservation.cabane.rejectedEmail|nl2br }}</p>{% endif %}
-{% endblock %}
+{% block intro %}{{ reservation.cabane.rejectedEmail }}{% endblock %}

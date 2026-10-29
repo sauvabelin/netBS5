@@ -3,8 +3,5 @@
 {% block heading %}Réservation annulée{% endblock %}
 {% block preheader %}Votre réservation de {{ reservation.cabane.nom }} du {{ reservation.start|date(param('format', 'php_date')) }} au {{ reservation.end|date(param('format', 'php_date')) }} a été annulée.{% endblock %}
 {% block status_label %}Annulée{% endblock %}
-{% block status_variant %}{% endblock %}
 
-{% block intro %}
-    {% if reservation.cabane.cancelledEmail %}<p>{{ reservation.cabane.cancelledEmail|nl2br }}</p>{% endif %}
-{% endblock %}
+{% block intro %}{{ reservation.cabane.cancelledEmail }}{% endblock %}

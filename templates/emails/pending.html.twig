@@ -4,14 +4,10 @@
 {% block heading %}Demande reçue{% endblock %}
 {% block preheader %}Nous avons bien reçu votre demande pour {{ reservation.cabane.nom }} du {{ reservation.start|date(param('format', 'php_date')) }} au {{ reservation.end|date(param('format', 'php_date')) }}.{% endblock %}
 {% block status_label %}En attente{% endblock %}
-{% block status_variant %}{% endblock %}
 
-{% block intro %}
-    {% if reservation.cabane.receivedEmail %}<p>{{ reservation.cabane.receivedEmail|nl2br }}</p>{% endif %}
-{% endblock %}
+{% block intro %}{{ reservation.cabane.receivedEmail }}{% endblock %}
 
-{% block details %}
-    {{ apmbs.dates(reservation) }}
+{% block details_extra %}
     {{ apmbs.row('Nom', reservation.prenom ~ ' ' ~ reservation.nom) }}
     {{ apmbs.row('Groupe', reservation.unite) }}
     {{ apmbs.row('Téléphone', reservation.phone) }}

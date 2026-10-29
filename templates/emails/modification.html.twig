@@ -7,9 +7,7 @@
 {% block status_label %}À confirmer{% endblock %}
 {% block status_variant %}warning{% endblock %}
 
-{% block intro %}
-    {% if reservation.cabane.correctionEmail %}<p>{{ reservation.cabane.correctionEmail|nl2br }}</p>{% endif %}
-{% endblock %}
+{% block intro %}{{ reservation.cabane.correctionEmail }}{% endblock %}
 
 {% block details_title %}Dates proposées{% endblock %}
 

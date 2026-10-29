@@ -4,8 +4,7 @@
 {% block status_label %}En attente{% endblock %}
 {% block intro %}{{ reservation.cabane.receivedEmail }}{% endblock %}
 
-{% block details %}
-{{ dates }}
+{% block details_extra %}
 Nom : {{ reservation.prenom }} {{ reservation.nom }}
 Groupe : {{ reservation.unite }}
 Téléphone : {{ reservation.phone }}
