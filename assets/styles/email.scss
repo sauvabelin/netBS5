@@ -1,0 +1,128 @@
+// Stylesheet for netBS emails (@NetBSCore/mailer/layout.html.twig).
+//
+// Built from the same variables as the app so emails follow the theme, but
+// compiled to plain values: the layout inlines these rules onto each element
+// at render time (inline_css), and mail clients ignore CSS custom properties,
+// so nothing here may use var(--bs-*). Only class selectors — no @media
+// (can't be inlined) and no :hover (pointless in mail).
+
+@import "variables";
+@import "../../vendor/twbs/bootstrap/scss/variables";
+
+.email-body {
+    margin: 0;
+    padding: 0;
+    width: 100%;
+    background-color: $gray-100;
+}
+
+.email-outer {
+    padding: 48px 16px;
+}
+
+.email-container {
+    max-width: 480px;
+}
+
+.card {
+    background-color: $white;
+    border-radius: $border-radius;
+    box-shadow: $box-shadow-sm;
+    padding: 32px;
+    font-family: $font-family-sans-serif;
+    font-size: 14px;
+    line-height: 22px;
+    color: $body-color;
+}
+
+.card-title {
+    margin: 20px 0 0;
+    font-size: 18px;
+    line-height: 26px;
+    font-weight: $headings-font-weight;
+    color: $body-color;
+}
+
+.divider-cell {
+    padding: 20px 8px 24px;
+}
+
+.divider {
+    height: 1px;
+    line-height: 1px;
+    font-size: 1px;
+    background-color: $gray-400;
+}
+
+.logo {
+    display: block;
+    border: 0;
+}
+
+p {
+    margin: 0 0 16px;
+}
+
+a {
+    color: $primary;
+}
+
+strong {
+    color: $body-color;
+}
+
+// The coloured cell carries the background for Outlook, which ignores
+// padding/background on <a>.
+.btn-cell {
+    border-radius: $border-radius;
+    background-color: $primary;
+}
+
+.btn-primary {
+    display: block;
+    padding: 10px 16px;
+    border-radius: $border-radius;
+    font-size: 14px;
+    font-weight: $btn-font-weight;
+    line-height: 20px;
+    color: $white;
+    text-decoration: none;
+}
+
+.btn-table {
+    margin: 8px 0 20px;
+}
+
+.fallback-link {
+    margin: 0 0 20px;
+    font-size: 12px;
+    line-height: 18px;
+    color: $secondary;
+}
+
+.fallback-link a {
+    word-break: break-all;
+}
+
+.notice {
+    margin: 0;
+    padding: 12px 14px;
+    border-radius: $border-radius;
+    background-color: $gray-100;
+    border: 1px solid $gray-200;
+    font-size: 13px;
+    line-height: 20px;
+    color: $secondary;
+}
+
+.footer {
+    padding: 20px 16px 0;
+    font-family: $font-family-sans-serif;
+    font-size: 13px;
+    line-height: 20px;
+    color: $secondary;
+}
+
+.footer-note {
+    font-size: 12px;
+}

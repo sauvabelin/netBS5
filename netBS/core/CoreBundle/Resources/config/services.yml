@@ -110,6 +110,10 @@ services:
         tags:
             - { name: twig.extension }
 
+    NetBS\CoreBundle\Twig\Extension\MailerExtension:
+        tags:
+            - { name: twig.extension }
+
     NetBS\CoreBundle\Twig\Extension\ParamExtension:
         tags:
             - { name: twig.extension }

@@ -61,7 +61,8 @@
         "symfonycasts/sass-bundle": "^0.9.0",
         "tecnickcom/tcpdf": "^6.4",
         "twbs/bootstrap": "^5.3",
-        "twig/extra-bundle": "^3.3",
+        "twig/cssinliner-extra": "^3.26",
+        "twig/extra-bundle": "^3.29",
         "twig/twig": "^3.3"
     },
     "config": {
