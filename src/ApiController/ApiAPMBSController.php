@@ -6,7 +6,8 @@ use App\Entity\APMBSReservation;
 use App\Entity\Cabane;
 use App\Entity\CabaneTimePeriod;
 use App\Entity\ReservationLog;
-use App\Service\GoogleCalendarManager;
+use App\Service\ReservationCalendar;
+use App\Service\APMBSMailer;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
@@ -53,7 +54,7 @@ class ApiAPMBSController extends AbstractController
      * @return Response
      */
     #[Route('/cabane-reservation/{id}', name: 'apmbs.api.cabane_reservation')]
-    public function reservationAction(Request $request, EntityManagerInterface $em, GoogleCalendarManager $gcm, ValidatorInterface $validator, Cabane $cabane) {
+    public function reservationAction(Request $request, EntityManagerInterface $em, APMBSMailer $mailer, ValidatorInterface $validator, Cabane $cabane) {
         $reservation = new APMBSReservation();
         $reservation->setCabane($cabane);
         $parameters = json_decode($request->getContent(), true);
@@ -82,8 +83,8 @@ class ApiAPMBSController extends AbstractController
 
         // Update google calendar
         // We currently do NOT write pending reservations to GC
-        // $gcm->updateReservation($reservation);
-        $gcm->sendEmailToClient($reservation, 'Votre demande de réservation', 'modification');
+        // $calendar->updateReservation($reservation);
+        $mailer->sendEmailToClient($reservation, 'Votre demande de réservation', 'modification');
 
         return new Response('ok'); 
     }
@@ -93,7 +94,7 @@ class ApiAPMBSController extends AbstractController
      * @return Response
      */
     #[Route('/cabane-monthly-events/{id}', name: 'apmbs.api.cabane_calendar')]
-    public function monthlyEventsAction(Request $request, Cabane $cabane, EntityManagerInterface $em, GoogleCalendarManager $gcm) {
+    public function monthlyEventsAction(Request $request, Cabane $cabane, EntityManagerInterface $em, ReservationCalendar $calendar) {
         $start = new \DateTimeImmutable($request->get('start'));
         $end = new \DateTimeImmutable($request->get('end'));
 
@@ -108,10 +109,10 @@ class ApiAPMBSController extends AbstractController
             ->getQuery()
             ->execute();
 
-        $gcmReservations = $gcm->listReservations($cabane, $start, $end);
+        $calendarEvents = $calendar->listReservations($cabane, $start, $end);
 
         return $this->json(array_merge(
-            $gcm->googleEventToJSON($gcmReservations),
+            $calendar->googleEventToJSON($calendarEvents),
             array_map(function(APMBSReservation $reservation) {
                 return $reservation->toJSON();
             }, $pendingReservations)
@@ -119,7 +120,7 @@ class ApiAPMBSController extends AbstractController
     }
 
     #[Route('/client/accept/{id}/{email}', name: 'apmbs.api.client.accept')]
-    public function clientAcceptReservation(APMBSReservation $reservation, $email, EntityManagerInterface $em, GoogleCalendarManager $gcm) {
+    public function clientAcceptReservation(APMBSReservation $reservation, $email, EntityManagerInterface $em, ReservationCalendar $calendar) {
         // Denied if not same email or reservation not in pending state
         if ($reservation->getEmail() !== $email || $reservation->getStatus() !== APMBSReservation::MODIFICATION_PENDING) {
             throw $this->createAccessDeniedException("Vous n'avez pas le droit de réaliser cette action.");
@@ -132,7 +133,7 @@ class ApiAPMBSController extends AbstractController
         $log->setReservation($reservation);
         $log->setPayload(['Modification acceptee par le demandeur']);
         $log->setAction(ReservationLog::MODIFICATION_ACCEPTED);
-        $gcm->updateReservation($reservation);
+        $calendar->updateReservation($reservation);
         $em->persist($log);
         $em->flush();
 
@@ -142,7 +143,7 @@ class ApiAPMBSController extends AbstractController
     }
 
     #[Route('/client/reject/{id}/{email}', name: 'apmbs.api.client.reject')]
-    public function clientRejectReservation(APMBSReservation $reservation, $email, EntityManagerInterface $em, GoogleCalendarManager $gcm) {
+    public function clientRejectReservation(APMBSReservation $reservation, $email, EntityManagerInterface $em, ReservationCalendar $calendar, APMBSMailer $mailer) {
         // Denied if not same email or reservation not in pending state
         if ($reservation->getEmail() !== $email || $reservation->getStatus() !== APMBSReservation::MODIFICATION_PENDING) {
             throw $this->createAccessDeniedException("Vous n'avez pas le droit de réaliser cette action.");
@@ -155,11 +156,11 @@ class ApiAPMBSController extends AbstractController
         $log->setReservation($reservation);
         $log->setPayload(['Modification refusee, reservation annulee par le demandeur']);
         $log->setAction(ReservationLog::CANCELLED);
-        $gcm->deleteReservation($reservation);
+        $calendar->deleteReservation($reservation);
         $em->persist($log);
         $em->flush();
 
-        $gcm->sendEmailToClient($reservation, 'Vous avez annulé votre demande de réservation');
+        $mailer->sendEmailToClient($reservation, 'Vous avez annulé votre demande de réservation');
         return $this->render('reservation/client_reject.html.twig', [
             'reservation' => $reservation,
         ]);

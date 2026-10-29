@@ -147,9 +147,22 @@ services:
     tags:
       - { name: kernel.event_listener, event: kernel.response, priority: -10 }
 
-  App\Service\GoogleCalendarManager:
+  # APMBS cabane calendars. Prod writes to Google; dev and test (see the
+  # when@ blocks at the end of this file) use a JSON file in var/ so local
+  # testing never touches the real calendars.
+  App\Service\Calendar\GoogleCalendarClient:
     arguments:
       $serviceAccountJson: "%env(json:GOOGLE_SERVICE_ACCOUNT_JSON)%"
+
+  App\Service\Calendar\LocalCalendarClient:
+    arguments:
+      $storagePath: "%kernel.project_dir%/var/apmbs_calendar.%kernel.environment%.json"
+
+  App\Service\Calendar\CalendarClientInterface:
+    alias: App\Service\Calendar\GoogleCalendarClient
+
+  App\Service\ReservationCalendar:
+    arguments:
       $em: "@doctrine.orm.default_entity_manager"
 
   App\Service\APMBSFactureExporter:
@@ -188,3 +201,13 @@ imports:
   - { resource: "@NetBSSecureBundle/Resources/config/services.yml" }
   - { resource: "@NetBSListBundle/Resources/config/services.yml" }
   - { resource: "@OvescoFacturationBundle/Resources/config/services.yml" }
+
+when@dev:
+  services:
+    App\Service\Calendar\CalendarClientInterface:
+      alias: App\Service\Calendar\LocalCalendarClient
+
+when@test:
+  services:
+    App\Service\Calendar\CalendarClientInterface:
+      alias: App\Service\Calendar\LocalCalendarClient
