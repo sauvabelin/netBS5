@@ -1,0 +1,58 @@
+{% extends '@NetBSCore/mailer/layout.txt.twig' %}
+{#-
+    Plain-text counterpart of apmbs_layout.html.twig. Children define the
+    same blocks; this template places them and handles the blank lines, so
+    their content is trimmed. fmt is the date format, for children's blocks.
+-#}
+
+{% block content -%}
+{% set fmt = param('format', 'php_datetime') %}
+{% set intro = block('intro')|trim %}
+{% set after_details = block('after_details') is defined ? block('after_details')|trim : '' %}
+{% set actions = block('actions') is defined ? block('actions')|trim : '' %}
+{% set details -%}
+{% if block('details') is defined %}{{ block('details') }}{% else -%}
+Arrivée : {{ reservation.start|date(fmt) }}
+Départ : {{ reservation.end|date(fmt) }}
+{% if block('details_extra') is defined %}{{ block('details_extra') }}{% endif %}
+{%- endif %}
+{%- endset %}
+{% if toApmbs -%}
+[Copie interne] E-mail envoyé à {{ reservation.prenom }} {{ reservation.nom }} ({{ reservation.email }}).
+Gérer la réservation : {{ url('sauvabelin.apmbs.reservation', {id: reservation.id}) }}
+
+{% endif -%}
+{{ block('heading') }}
+{{ reservation.cabane.nom }} · Réservation n° {{ reservation.id }} · {{ block('status_label') }}
+
+{% if not toApmbs -%}
+Bonjour {{ reservation.prenom }},
+
+{% endif -%}
+{% if intro -%}
+{{ intro }}
+
+{% endif -%}
+{{ block('details_title') is defined ? block('details_title') : 'Votre réservation' }}
+{{ details|trim }}
+
+{% if after_details -%}
+{{ after_details }}
+
+{% endif -%}
+{% if message -%}
+Message de l'intendant :
+{{ message }}
+
+{% endif -%}
+{% if actions -%}
+{{ actions }}
+
+{% endif -%}
+Meilleures salutations,
+L'APMBS
+{%- endblock %}
+
+{% block footer_note -%}
+{% if toApmbs %}Copie interne envoyée à l'adresse de la cabane.{% else %}Vous recevez cet e-mail suite à votre demande de réservation pour {{ reservation.cabane.nom }}. Pour toute question, répondez simplement à ce message.{% endif %}
+{%- endblock %}

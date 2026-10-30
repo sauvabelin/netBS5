@@ -1,0 +1,15 @@
+{% extends 'emails/apmbs_layout.txt.twig' %}
+
+{% block heading %}Facture{% endblock %}
+{% block status_label %}Facture{% endblock %}
+{% block intro %}{{ reservation.cabane.invoiceEmail }}{% endblock %}
+{% block details_title %}Détails de la facture{% endblock %}
+
+{% block details_extra %}
+Location {{ reservation.cabane.nom }} : {{ reservation.finalPrice }} CHF
+{% if autreFrais %}
+{{ autreFrais.message ?: 'Autres frais' }} : {{ autreFrais.montant }} CHF
+{% endif %}
+{% endblock %}
+
+{% block after_details %}La facture (PDF avec bulletin QR) est jointe à cet e-mail.{% endblock %}

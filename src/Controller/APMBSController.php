@@ -21,7 +21,8 @@ use App\Model\ReservationMessage;
 use App\Model\SearchAPMBSReservation;
 use App\Model\SendInvoiceReservation;
 use App\Service\APMBSFactureExporter;
-use App\Service\GoogleCalendarManager;
+use App\Service\ReservationCalendar;
+use App\Service\APMBSMailer;
 use Doctrine\ORM\EntityManagerInterface;
 use NetBS\CoreBundle\Searcher\SearcherManager;
 use NetBS\CoreBundle\Utils\Modal;
@@ -68,14 +69,14 @@ class APMBSController extends AbstractController
     }
 
     #[Route('/cabane/{id}/full-calendar-reservations', name: 'sauvabelin.apmbs.full_calendar_cabane_reservations')]
-    public function cabaneFullCalendarReservationsAction(Cabane $cabane, Request $request, EntityManagerInterface $em, GoogleCalendarManager $gcm) {
+    public function cabaneFullCalendarReservationsAction(Cabane $cabane, Request $request, EntityManagerInterface $em, ReservationCalendar $calendar) {
         $start = new \DateTimeImmutable($request->get('start'));
         $end = new \DateTimeImmutable($request->get('end'));
         $highlight = $request->get('reservationId');
         $highlight = $highlight ? intval($highlight) : null;
 
         // No need to take larger range for google calendar
-        $gcmReservations = $gcm->listReservations($cabane, $start, $end);
+        $gcmReservations = $calendar->listReservations($cabane, $start, $end);
         $result = [];
         $foundHighlight = false;
 
@@ -217,9 +218,9 @@ class APMBSController extends AbstractController
     }
 
     #[Route('/reservation/{id}', name: 'sauvabelin.apmbs.reservation')]
-    public function viewReservationAction(APMBSReservation $reservation, GoogleCalendarManager $gcm) {
+    public function viewReservationAction(APMBSReservation $reservation, ReservationCalendar $calendar) {
         $form = $this->createForm(APMBSReservationType::class, $reservation);
-        $reservations = $gcm->listReservations($reservation->getCabane(), $reservation->getStart(), $reservation->getEnd());
+        $reservations = $calendar->listReservations($reservation->getCabane(), $reservation->getStart(), $reservation->getEnd());
         $conflicts = array_filter($reservations, function($r) use ($reservation) {
             return $r->getId() !== $reservation->getGCEventId();
         });
@@ -300,7 +301,7 @@ class APMBSController extends AbstractController
     }
     
     #[Route('/reservation/{id}/modify', name: 'sauvabelin.apmbs.reservation.modify')]
-    public function reservationModifyModalAction(Request $request, APMBSReservation $reservation, EntityManagerInterface $em, GoogleCalendarManager $gcm) {
+    public function reservationModifyModalAction(Request $request, APMBSReservation $reservation, EntityManagerInterface $em, ReservationCalendar $calendar, APMBSMailer $mailer) {
         $modify = new ModifyReservation();
         $modify->start = $reservation->getStart();
         $modify->end = $reservation->getEnd();
@@ -327,14 +328,14 @@ class APMBSController extends AbstractController
             ]);
 
             
-            $gcm->deleteReservation($reservation);
+            $calendar->deleteReservation($reservation);
             $reservation->setStatus(APMBSReservation::MODIFICATION_PENDING);
             $em->persist($reservation);
             $log->setAction(ReservationLog::MODIFY);
             $em->persist($log);
             $em->flush();
 
-            $gcm->sendEmailToClient($reservation, 'Demande de réservation en attente', $modify->message, 'modification', [
+            $mailer->sendEmailToClient($reservation, 'Demande de réservation en attente', $modify->message, 'modification', [
                 'oldStart' => $oldStart,
                 'oldEnd' => $oldEnd,
             ]);
@@ -348,7 +349,7 @@ class APMBSController extends AbstractController
     }
 
     #[Route('/reservation/{id}/accept', name: 'sauvabelin.apmbs.reservation.accept')]
-    public function reservationAcceptModalAction(Request $request, APMBSReservation $reservation, EntityManagerInterface $em, GoogleCalendarManager $gcm) {
+    public function reservationAcceptModalAction(Request $request, APMBSReservation $reservation, EntityManagerInterface $em, ReservationCalendar $calendar, APMBSMailer $mailer) {
         $msg = new AcceptReservation();
         $form = $this->createForm(ReservationAcceptType::class, $msg, ['cabane' => $reservation->getCabane()]);
         $form->handleRequest($request);
@@ -368,12 +369,12 @@ class APMBSController extends AbstractController
             $reservation->setIntendantFin($msg->intendantFin);
             $reservation->setEstimatedPrice($msg->estimatedPrice);
 
-            $gcm->updateReservation($reservation);
+            $calendar->updateReservation($reservation);
             $em->persist($reservation);
             $em->persist($log);
             $em->flush();
 
-            $gcm->sendEmailToClient($reservation, 'Réservation validée', $msg->message);
+            $mailer->sendEmailToClient($reservation, 'Réservation validée', $msg->message);
             $this->addFlash('success', "Réservation validée");
             return Modal::refresh();
         }
@@ -387,7 +388,7 @@ class APMBSController extends AbstractController
     }
 
     #[Route('/reservation/{id}/refuse', name: 'sauvabelin.apmbs.reservation.refuse')]
-    public function reservationRefuseModalAction(Request $request, APMBSReservation $reservation, EntityManagerInterface $em, GoogleCalendarManager $gcm) {
+    public function reservationRefuseModalAction(Request $request, APMBSReservation $reservation, EntityManagerInterface $em, ReservationCalendar $calendar, APMBSMailer $mailer) {
         $msg = new ReservationMessage();
         $form = $this->createForm(ReservationMessageType::class, $msg);
         $form->handleRequest($request);
@@ -400,12 +401,12 @@ class APMBSController extends AbstractController
             $log->setAction(ReservationLog::REFUSED);
 
             $reservation->setStatus(APMBSReservation::REFUSED);
-            $gcm->deleteReservation($reservation);
+            $calendar->deleteReservation($reservation);
             $em->persist($reservation);
             $em->persist($log);
             $em->flush();
             
-            $gcm->sendEmailToClient($reservation, 'Demande de réservation refusée', $msg->message);
+            $mailer->sendEmailToClient($reservation, 'Demande de réservation refusée', $msg->message);
             $this->addFlash('info', "Réservation refusée");
             return Modal::refresh();
         }
@@ -419,7 +420,7 @@ class APMBSController extends AbstractController
     }
 
     #[Route('/reservation/{id}/cancel', name: 'sauvabelin.apmbs.reservation.cancel')]
-    public function reservationCancelModalAction(Request $request, APMBSReservation $reservation, EntityManagerInterface $em, GoogleCalendarManager $gcm) {
+    public function reservationCancelModalAction(Request $request, APMBSReservation $reservation, EntityManagerInterface $em, ReservationCalendar $calendar, APMBSMailer $mailer) {
         $msg = new ReservationMessage();
         $form = $this->createForm(ReservationMessageType::class, $msg);
         $form->handleRequest($request);
@@ -432,12 +433,12 @@ class APMBSController extends AbstractController
             $log->setAction(ReservationLog::CANCELLED);
 
             $reservation->setStatus(APMBSReservation::CANCELLED);
-            $gcm->deleteReservation($reservation);
+            $calendar->deleteReservation($reservation);
             $em->persist($reservation);
             $em->persist($log);
             $em->flush();
 
-            $gcm->sendEmailToClient($reservation, 'Demande de réservation annulée', $msg->message);
+            $mailer->sendEmailToClient($reservation, 'Demande de réservation annulée', $msg->message);
             $this->addFlash('info', "Réservation annulée");
             return Modal::refresh();
         }
@@ -468,7 +469,7 @@ class APMBSController extends AbstractController
     }
 
     #[Route('/reservation/{id}/send-invoice', name: 'sauvabelin.apmbs.reservation.send-invoice')]
-    public function reservationSendInvoiceAction(Request $request, APMBSReservation $reservation, EntityManagerInterface $em, GoogleCalendarManager $gcm, APMBSFactureExporter $invoicer) {
+    public function reservationSendInvoiceAction(Request $request, APMBSReservation $reservation, EntityManagerInterface $em, APMBSMailer $mailer, APMBSFactureExporter $invoicer) {
         $data = new SendInvoiceReservation();
         $data->montant = $reservation->getEstimatedPrice();
         $data->date = $reservation->getEnd();
@@ -500,7 +501,7 @@ class APMBSController extends AbstractController
             }
 
             try {
-                $gcm->sendEmailToClient(
+                $mailer->sendEmailToClient(
                     $reservation, 
                     'Facture de réservation', 
                     $data->message, 'invoice',

@@ -1,0 +1,16 @@
+{% extends 'emails/apmbs_layout.txt.twig' %}
+
+{% block heading %}Demande reçue{% endblock %}
+{% block status_label %}En attente{% endblock %}
+{% block intro %}{{ reservation.cabane.receivedEmail }}{% endblock %}
+
+{% block details_extra %}
+Nom : {{ reservation.prenom }} {{ reservation.nom }}
+Groupe : {{ reservation.unite }}
+Téléphone : {{ reservation.phone }}
+E-mail : {{ reservation.email }}
+Adresse : {{ reservation.rue }}, {{ reservation.npa }} {{ reservation.localite }}
+{% if reservation.description %}
+Commentaire : {{ reservation.description }}
+{% endif %}
+{% endblock %}

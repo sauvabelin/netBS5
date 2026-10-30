@@ -1,0 +1,5 @@
+{% extends 'emails/apmbs_layout.txt.twig' %}
+
+{% block heading %}Réservation annulée{% endblock %}
+{% block status_label %}Annulée{% endblock %}
+{% block intro %}{{ reservation.cabane.cancelledEmail }}{% endblock %}
