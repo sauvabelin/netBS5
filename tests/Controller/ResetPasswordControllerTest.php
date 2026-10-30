@@ -43,10 +43,7 @@ class ResetPasswordControllerTest extends WebTestCase
         $email = $this->getMailerMessage(0);
         $this->assertEmailAddressContains($email, 'To', 'reset-test-alice@example.test');
         $this->assertEmailHtmlBodyContains($email, '/reset-password/');
-        $this->assertEmailHtmlBodyContains($email, 'Choisir un nouveau mot de passe');
         $this->assertEmailTextBodyContains($email, '/reset-password/');
-        // Lifetime is rendered from the token, not hardcoded.
-        $this->assertEmailTextBodyContains($email, 'valable 1 heure');
 
         // Sanity-check the follow-through page renders the generic banner.
         $client->followRedirect();

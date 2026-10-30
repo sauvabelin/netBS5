@@ -67,6 +67,7 @@ class ReservationCalendar {
 
     public function googleEventToJSON($events) {
 
+        // Try to find corresponding database reservations if any
         $dbReservations = $this->em->getRepository(APMBSReservation::class)->createQueryBuilder('r')
             ->where('r.gcEventId IN (:ids)')
             ->setParameter('ids', array_map(function($event) {
@@ -76,11 +77,13 @@ class ReservationCalendar {
             ->execute();
 
         $res = [];
+        /** @var Event $event */
         foreach ($events as $event) {
             $start = $event->getStart()->getDateTime();
             $end = $event->getEnd()->getDateTime();
 
             if (!$start || !$end) {
+                // Full day event
                 $start = $event->getStart()->getDate();
                 $end = $event->getEnd()->getDate();
             }
@@ -110,9 +113,10 @@ class ReservationCalendar {
 
     public function updateReservation(APMBSReservation $reservation) {
 
-        $event = $this->reservationToEvent($reservation);
+        $event = $this->reservationToGoogleEvent($reservation);
         $calendarId = $reservation->getCabane()->getCalendarId();
 
+        // If google calendar event, update, otherwise insert new event in calendar
         if ($reservation->getGCEventId()) {
             return $this->client->updateEvent($calendarId, $reservation->getGCEventId(), $event)->getId();
         }
@@ -140,7 +144,7 @@ class ReservationCalendar {
         $reservation->setGCEventId(null);
     }
 
-    private function reservationToEvent(APMBSReservation $reservation): Event {
+    private function reservationToGoogleEvent(APMBSReservation $reservation): Event {
 
         $event = new Event();
 
@@ -166,6 +170,7 @@ class ReservationCalendar {
             $event->setColorId("1");
         }
 
+        // $event->setLocation($reservation->getCabane()->getLocation());
         return $event;
     }
 }

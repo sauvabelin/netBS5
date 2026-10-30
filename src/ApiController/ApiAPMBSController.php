@@ -84,7 +84,7 @@ class ApiAPMBSController extends AbstractController
 
         // Update google calendar
         // We currently do NOT write pending reservations to GC
-        // $calendar->updateReservation($reservation);
+        // $gcm->updateReservation($reservation);
         $mailer->sendEmailToClient($reservation, 'Votre demande de réservation');
 
         return new Response('ok'); 
@@ -110,10 +110,10 @@ class ApiAPMBSController extends AbstractController
             ->getQuery()
             ->execute();
 
-        $calendarEvents = $calendar->listReservations($cabane, $start, $end);
+        $gcmReservations = $calendar->listReservations($cabane, $start, $end);
 
         return $this->json(array_merge(
-            $calendar->googleEventToJSON($calendarEvents),
+            $calendar->googleEventToJSON($gcmReservations),
             array_map(function(APMBSReservation $reservation) {
                 return $reservation->toJSON();
             }, $pendingReservations)

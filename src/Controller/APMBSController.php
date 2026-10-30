@@ -76,7 +76,7 @@ class APMBSController extends AbstractController
         $highlight = $highlight ? intval($highlight) : null;
 
         // No need to take larger range for google calendar
-        $calendarEvents = $calendar->listReservations($cabane, $start, $end);
+        $gcmReservations = $calendar->listReservations($cabane, $start, $end);
         $result = [];
         $foundHighlight = false;
 
@@ -86,15 +86,15 @@ class APMBSController extends AbstractController
             ->select('r')
             ->from(APMBSReservation::class, 'r')
             ->where('r.gcEventId IN (:eventIds)')
-            ->setParameter('eventIds', array_map(function($event) { return $event->getId(); }, $calendarEvents))
+            ->setParameter('eventIds', array_map(function($event) { return $event->getId(); }, $gcmReservations))
             ->getQuery()
             ->getResult();
 
-        /** @var \Google\Service\Calendar\Event $calendarEvent */
-        foreach ($calendarEvents as $calendarEvent) {
+        /** @var \Google\Service\Calendar\Event $gcmReservation */
+        foreach ($gcmReservations as $gcmReservation) {
             $foundItem = null;
             foreach ($mappedReservations as $rrr) {
-                if ($rrr->getGCEventId() === $calendarEvent->getId()) {
+                if ($rrr->getGCEventId() === $gcmReservation->getId()) {
                     $foundItem = $rrr;
                     break;
                 }
@@ -102,7 +102,7 @@ class APMBSController extends AbstractController
 
             $bgColor = "#aaa6ff";
             $textColor = "black";
-            $url = $calendarEvent->htmlLink;
+            $url = $gcmReservation->htmlLink;
             if ($foundItem) {
                 $bgColor = self::getHighlightColor($foundItem)[0];
                 $url = $this->generateUrl('sauvabelin.apmbs.reservation', ['id' => $foundItem->getId()]);
@@ -114,9 +114,9 @@ class APMBSController extends AbstractController
             }
 
             $result[] = [
-                'start' => (new \DateTimeImmutable($calendarEvent->start->dateTime ? $calendarEvent->start->dateTime : $calendarEvent->start->date))->format('c'),
-                'end'   => (new \DateTimeImmutable($calendarEvent->end->dateTime ? $calendarEvent->end->dateTime : $calendarEvent->end->date))->format('c'),
-                'title'   => $calendarEvent->summary,
+                'start' => (new \DateTimeImmutable($gcmReservation->start->dateTime ? $gcmReservation->start->dateTime : $gcmReservation->start->date))->format('c'),
+                'end'   => (new \DateTimeImmutable($gcmReservation->end->dateTime ? $gcmReservation->end->dateTime : $gcmReservation->end->date))->format('c'),
+                'title'   => $gcmReservation->summary,
                 'backgroundColor' => $bgColor,
                 'textColor' => $textColor,
                 'url' => $url,
