@@ -1,6 +1,6 @@
 {% extends '@NetBSCore/layout/modal.layout.twig' %}
 
-{% block widthClass %}modal-lg{% endblock %}
+{% block size %}wide{% endblock %}
 
 {% set class = facture.statut == 'annulee' ? 'secondary' : facture.statut == 'ouverte' ? 'info' : 'success' %}
 {% block title %}Facture #{{ facture.factureId }}{% endblock %}
@@ -23,15 +23,15 @@
                 </tr>
                 <tr>
                     <th>Date de création</th>
-                    <td>{{ facture.date|date(param('format', 'php_date')) }}</td>
+                    <td>{{ facture.date|date(date_format) }}</td>
                 </tr>
                 <tr>
                     <th>Première impression</th>
-                    <td>{% if facture.dateImpression %}{{ facture.dateImpression|date(param('format', 'php_date')) }}{% endif %}</td>
+                    <td>{% if facture.dateImpression %}{{ facture.dateImpression|date(date_format) }}{% endif %}</td>
                 </tr>
                 <tr>
                     <th>Dernière impression</th>
-                    <td>{% if facture.latestImpression %}{{ facture.latestImpression|date(param('format', 'php_date')) }}{% endif %}</td>
+                    <td>{% if facture.latestImpression %}{{ facture.latestImpression|date(date_format) }}{% endif %}</td>
                 </tr>
                 <tr>
                     <th>Montant total</th>

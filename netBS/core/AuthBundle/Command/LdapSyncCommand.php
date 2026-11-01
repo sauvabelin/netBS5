@@ -49,7 +49,8 @@ final class LdapSyncCommand extends Command
         }
 
         $snapshot = $report->snapshot;
-        $io->writeln(sprintf('netBS: %d users, %d groups, %d role groups', count($snapshot->users), count($snapshot->groups), count($snapshot->roleGroups)));
+        $io->writeln(sprintf('netBS: %d users, %d groups, %d computed groups, %d role groups, %d frozen',
+            count($snapshot->users), count($snapshot->groups), count($snapshot->computedGroups), count($snapshot->roleGroups), count($snapshot->frozen)));
 
         if ($report->changes !== []) {
             $io->listing($report->changes);
@@ -57,8 +58,12 @@ final class LdapSyncCommand extends Command
         foreach ($report->errors as $error) {
             $io->warning($error);
         }
+        // Frozen groups are left as they are in lldap until their rule is fixed.
+        foreach ($snapshot->frozen as $frozen) {
+            $io->warning(sprintf('gelé : %s — %s', $frozen->name, $frozen->reason));
+        }
 
         $io->success(sprintf('%s %d change(s), %d error(s).', $dryRun ? 'Would apply' : 'Applied', count($report->changes), count($report->errors)));
-        return $report->errors === [] ? Command::SUCCESS : Command::FAILURE;
+        return $report->errors === [] && $snapshot->frozen === [] ? Command::SUCCESS : Command::FAILURE;
     }
 }

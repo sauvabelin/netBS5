@@ -4,6 +4,7 @@ namespace App\Automatics;
 
 use NetBS\CoreBundle\Model\BaseAutomatic;
 use NetBS\CoreBundle\Model\ConfigurableAutomaticInterface;
+use NetBS\CoreBundle\Rule\RuleEvaluator;
 use NetBS\CoreBundle\Utils\Traits\EntityManagerTrait;
 use NetBS\CoreBundle\Utils\Traits\ParamTrait;
 use NetBS\FichierBundle\Mapping\BaseGroupe;
@@ -13,10 +14,19 @@ use NetBS\FichierBundle\Utils\Traits\FichierConfigTrait;
 use NetBS\SecureBundle\Mapping\BaseUser;
 use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
 use Symfony\Component\Form\FormBuilderInterface;
+use Symfony\Contracts\Service\Attribute\Required;
 
 class CotisationsAutomatic extends BaseAutomatic implements ConfigurableAutomaticInterface
 {
     use MembreListHelper, FichierConfigTrait, EntityManagerTrait, ParamTrait;
+
+    private RuleEvaluator $ruleEvaluator;
+
+    #[Required]
+    public function setRuleEvaluator(RuleEvaluator $ruleEvaluator): void
+    {
+        $this->ruleEvaluator = $ruleEvaluator;
+    }
 
     /**
      * @return string
@@ -43,7 +53,7 @@ class CotisationsAutomatic extends BaseAutomatic implements ConfigurableAutomati
     protected function getItems($data = null)
     {
         $allMembres = $this->getAllMembres();
-        $split = $this->filterTarif($allMembres);
+        $split = $this->splitTarif($allMembres);
 
         return $data['type'] === 'normal' ? $split['normal'] : $split['reduit'];
     }
@@ -102,9 +112,25 @@ class CotisationsAutomatic extends BaseAutomatic implements ConfigurableAutomati
         return array_filter(array_unique($membres), fn($m) => $m->consideredInscrit());
     }
 
-    private function filterTarif($membres) {
+    /**
+     * Membres matching the « tarif réduit » rule pay the reduced rate. Without a rule, the legacy
+     * logic applies: a fonction of poids > 99, or an attribution in the Someo branche or one of its
+     * direct sub-groupes (legacy key bs.groupe.branche_smt_id).
+     *
+     * @return array{normal: BaseMembre[], reduit: BaseMembre[]}
+     */
+    public function splitTarif($membres) {
 
-        $smtId = $this->parameterManager->getValue('bs', 'groupe.branche_smt_id');
+        $rule = $this->parameterManager->getValue('bs', 'cotisations.tarif_reduit');
+        if ($rule !== null) {
+            $split = ['normal' => [], 'reduit' => []];
+            foreach ($membres as $membre)
+                $split[$this->ruleEvaluator->matches($rule, 'membre', $membre) ? 'reduit' : 'normal'][] = $membre;
+
+            return $split;
+        }
+
+        $smtId = intval($this->parameterManager->getStoredValue('bs', 'groupe.branche_smt_id'));
 
         $normal = [];
         $reduit = [];

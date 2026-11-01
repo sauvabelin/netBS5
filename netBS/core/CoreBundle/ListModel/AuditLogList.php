@@ -5,6 +5,7 @@ namespace NetBS\CoreBundle\ListModel;
 use Doctrine\ORM\QueryBuilder;
 use NetBS\CoreBundle\Entity\AuditLog;
 use NetBS\CoreBundle\ListModel\Column\HelperColumn;
+use NetBS\CoreBundle\Utils\DateFormat;
 use NetBS\CoreBundle\Utils\Traits\EntityManagerTrait;
 use NetBS\CoreBundle\Utils\Traits\ParamTrait;
 use NetBS\ListBundle\Column\ClosureColumn;
@@ -84,7 +85,7 @@ class AuditLogList extends AjaxModel
             ])
             ->addColumn('Utilisateur', 'user', HelperColumn::class)
             ->addColumn('Date', 'createdAt', DateTimeColumn::class, [
-                'format' => $this->parameterManager->getValue('format', 'php_datetime')
+                'format' => DateFormat::DATETIME
             ])
         ;
     }

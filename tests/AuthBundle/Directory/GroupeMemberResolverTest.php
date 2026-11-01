@@ -9,6 +9,11 @@ use App\Entity\BSMembre;
 use NetBS\AuthBundle\Directory\GroupeMemberResolver;
 use NetBS\FichierBundle\Entity\Attribution;
 use NetBS\FichierBundle\Entity\Fonction;
+use App\Tests\Support\RealRuleEngineTrait;
+use NetBS\CoreBundle\Rule\Rule;
+use NetBS\CoreBundle\Rule\RuleCondition;
+use NetBS\CoreBundle\Rule\RuleEvaluationException;
+use NetBS\CoreBundle\Rule\RuleGroup;
 use PHPUnit\Framework\TestCase;
 
 /**
@@ -17,8 +22,11 @@ use PHPUnit\Framework\TestCase;
  */
 final class GroupeMemberResolverTest extends TestCase
 {
+    use RealRuleEngineTrait;
+
     private GroupeMemberResolver $resolver;
     private Fonction $eclaireur;
+    private Fonction $cp;
     private BSGroupe $troupe;
     private BSGroupe $patrouille;
     private BSGroupe $sousPatrouille;
@@ -27,8 +35,11 @@ final class GroupeMemberResolverTest extends TestCase
 
     protected function setUp(): void
     {
-        $this->resolver = new GroupeMemberResolver();
+        $this->resolver = new GroupeMemberResolver($this->fichierRuleEvaluator());
         $this->eclaireur = new Fonction();
+        $this->setId($this->eclaireur, 1);
+        $this->cp = new Fonction();
+        $this->setId($this->cp, 2);
 
         $this->troupe = $this->groupe(1);
         $this->patrouille = $this->groupe(2);
@@ -37,7 +48,7 @@ final class GroupeMemberResolverTest extends TestCase
         $this->patrouille->addEnfant($this->sousPatrouille);
 
         $this->attribute($this->troupe, 1, $this->eclaireur);
-        $this->attribute($this->patrouille, 2, $this->eclaireur);
+        $this->attribute($this->patrouille, 2, $this->cp);
         $this->attribute($this->patrouille, 3, $this->eclaireur);
         $this->attribute($this->sousPatrouille, 4, $this->eclaireur);
     }
@@ -68,10 +79,44 @@ final class GroupeMemberResolverTest extends TestCase
         self::assertSame([1, 2, 3, 4], $this->resolve('tous'));
     }
 
-    /** @return int[] sorted */
-    private function resolve(string $mode): array
+    public function testRuleMode(): void
     {
-        $ids = $this->resolver->membreIds($this->troupe, $mode);
+        self::assertSame([1, 2], $this->resolve('regle', $this->rule('attribution.fonctions', ['fonctions' => [2]])));
+    }
+
+    public function testRuleModeDepth(): void
+    {
+        self::assertSame([1, 2, 3], $this->resolve('regle', $this->rule('attribution.profondeur', ['op' => 'le', 'profondeur' => 1])));
+        self::assertSame([1, 4], $this->resolve('regle', $this->rule('attribution.profondeur', ['op' => 'eq', 'profondeur' => 2])));
+    }
+
+    public function testRuleModeCycleTerminates(): void
+    {
+        $this->sousPatrouille->addEnfant($this->troupe);
+
+        self::assertSame([1, 2, 3, 4], $this->resolve('regle', $this->rule('attribution.profondeur', ['op' => 'le', 'profondeur' => 20])));
+    }
+
+    public function testEmptyRuleKeepsOwnMembersOnly(): void
+    {
+        self::assertSame([1], $this->resolve('regle', null));
+    }
+
+    public function testRegleModeThrowsOnBrokenRule(): void
+    {
+        $this->expectException(RuleEvaluationException::class);
+        $this->resolve('regle', Rule::expert('membre.getFamille().getNom() == "x"')->toJson());
+    }
+
+    private function rule(string $block, array $params): string
+    {
+        return Rule::blocks(new RuleGroup('and', [new RuleCondition($block, $params)]))->toJson();
+    }
+
+    /** @return int[] sorted */
+    private function resolve(string $mode, ?string $rule = null): array
+    {
+        $ids = $this->resolver->membreIds($this->troupe, $mode, $rule);
         sort($ids);
         return $ids;
     }

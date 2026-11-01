@@ -12,7 +12,7 @@ use NetBS\AuthBundle\Directory\LldapClientInterface;
 final class FakeLldap implements LldapClientInterface
 {
     public array $users = [];
-    /** @var array<int, array{id: int, displayName: string, netbsId: ?int, netbsRole: ?string, members: string[]}> */
+    /** @var array<int, array{id: int, displayName: string, netbsId: ?int, netbsRole: ?string, netbsComputedId: ?int, members: string[]}> */
     public array $groups = [];
     /** @var string[] group attribute names, in creation order */
     public array $attributes = [];
@@ -83,10 +83,10 @@ final class FakeLldap implements LldapClientInterface
         }
     }
 
-    public function createGroup(string $displayName, ?int $netbsId, ?string $netbsRole = null): int
+    public function createGroup(string $displayName, ?int $netbsId, ?string $netbsRole = null, ?int $netbsComputedId = null): int
     {
         $id = $this->nextGroupId++;
-        $this->groups[$id] = ['id' => $id, 'displayName' => $displayName, 'netbsId' => $netbsId, 'netbsRole' => $netbsRole, 'members' => []];
+        $this->groups[$id] = ['id' => $id, 'displayName' => $displayName, 'netbsId' => $netbsId, 'netbsRole' => $netbsRole, 'netbsComputedId' => $netbsComputedId, 'members' => []];
         return $id;
     }
 

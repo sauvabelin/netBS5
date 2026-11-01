@@ -7,7 +7,10 @@ namespace NetBS\AuthBundle\Listener;
 use Doctrine\Bundle\DoctrineBundle\Attribute\AsDoctrineListener;
 use Doctrine\ORM\Event\OnFlushEventArgs;
 use Doctrine\ORM\Events;
+use NetBS\AuthBundle\Entity\DirectoryComputedGroup;
+use NetBS\AuthBundle\Entity\DirectoryPublicationRule;
 use NetBS\AuthBundle\Message\SyncDirectory;
+use NetBS\CoreBundle\Entity\StoredRule;
 use NetBS\FichierBundle\Mapping\BaseAttribution;
 use NetBS\FichierBundle\Mapping\BaseContactInformation;
 use NetBS\FichierBundle\Mapping\BaseEmail;
@@ -41,7 +44,11 @@ final class DirectoryChangeListener
         BaseUser::class, BaseRole::class,
         BaseMembre::class, BaseFamille::class, BaseContactInformation::class, BaseEmail::class,
         BaseAttribution::class, BaseFonction::class, BaseGroupe::class, BaseGroupeType::class,
+        DirectoryPublicationRule::class, DirectoryComputedGroup::class,
     ];
+
+    /** Rule contexts the directory uses; editing such a rule only updates its StoredRule row. */
+    private const RULE_CONTEXTS = ['groupe', 'attribution_sous_groupe', 'membre'];
 
     /** User fields the directory doesn't carry; changing only these doesn't queue a sync. */
     private const IGNORED_USER_FIELDS = ['password', 'salt', 'passwordChangedAt', 'newPasswordRequired'];
@@ -70,6 +77,10 @@ final class DirectoryChangeListener
         }
 
         foreach ($entities as $entity) {
+            if ($entity instanceof StoredRule && in_array($entity->getContext(), self::RULE_CONTEXTS, true)) {
+                $this->changed = true;
+                return;
+            }
             foreach (self::WATCHED as $class) {
                 if ($entity instanceof $class) {
                     $this->changed = true;

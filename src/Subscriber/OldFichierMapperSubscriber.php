@@ -14,7 +14,9 @@ use NetBS\FichierBundle\Mapping\BaseMembre;
 use NetBS\FichierBundle\Mapping\BaseTelephone;
 use NetBS\FichierBundle\Mapping\Personne;
 use App\Entity\BSMembre;
-use NetBS\CoreBundle\Entity\Parameter;
+use NetBS\CoreBundle\Service\ParameterManager;
+use NetBS\CoreBundle\Settings\SettingNotConfiguredException;
+use Psr\Log\LoggerInterface;
 
 /**
  * Class UserAccountSubscriber
@@ -24,9 +26,13 @@ use NetBS\CoreBundle\Entity\Parameter;
  */
 class OldFichierMapperSubscriber implements EventSubscriber
 {
-    private $adabsId = null;
-
     private $changeSet = [];
+
+    public function __construct(
+        private readonly ParameterManager $params,
+        private readonly LoggerInterface $logger,
+    ) {
+    }
 
     /**
      * Returns an array of events this subscriber wants to listen to.
@@ -81,11 +87,14 @@ class OldFichierMapperSubscriber implements EventSubscriber
 
     private function mapMembre(BSMembre $membre, EntityManager $manager) {
 
-        if($this->adabsId === null)
-            $this->adabsId = $manager->getRepository(Parameter::class)->findOneBy(array(
-                'namespace' => 'bs',
-                'paramKey'  => 'groupe.adabs_id'
-            ))->getValue();
+        // Runs on every membre creation: a missing setting skips the mapping instead of
+        // failing the save.
+        try {
+            $adabsId = $this->params->getValue('bs', 'groupe.adabs_id');
+        } catch (SettingNotConfiguredException $e) {
+            $this->logger->warning($e->getMessage());
+            return;
+        }
 
         $sexe       = ($membre->getSexe() === Personne::HOMME) ? 'm' : 'f';
         $adresse    = $membre->getSendableAdresse();
@@ -119,7 +128,7 @@ class OldFichierMapperSubscriber implements EventSubscriber
             $data['date_inscription_bs'] = $membre->getInscription()->format('d-m-Y');
 
         foreach($membre->getAttributions() as $attribution) {
-            if (intval($attribution->getGroupeId()) === intval($this->adabsId)) {
+            if (intval($attribution->getGroupeId()) === intval($adabsId)) {
                 $data['date_inscription_adabs'] = $attribution->getDateDebut()->format('d-m-Y');
                 $data['id_fichier'] = 2;
             }

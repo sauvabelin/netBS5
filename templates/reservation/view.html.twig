@@ -65,15 +65,15 @@
                             <div class="form-horizontal">
                                 <div class="form-group row" style="padding: 3px 0">
                                     <label class="col-lg-4 control-label" style="padding-top:6px;text-align:left;">Créé le</label>
-                                    <div class="col-lg-8">{{ reservation.createdAt|date(param('format', 'php_datetime')) }}</div>
+                                    <div class="col-lg-8">{{ reservation.createdAt|date(datetime_format) }}</div>
                                 </div>
                                 <div class="form-group row" style="padding: 3px 0">
                                     <label class="col-lg-4 control-label" style="padding-top:6px;text-align:left;">Début</label>
-                                    <div class="col-lg-8">{{ reservation.start|date(param('format', 'php_datetime')) }}</div>
+                                    <div class="col-lg-8">{{ reservation.start|date(datetime_format) }}</div>
                                 </div>
                                 <div class="form-group row" style="padding: 3px 0">
                                     <label class="col-lg-4 control-label" style="padding-top:6px;text-align:left;">Fin</label>
-                                    <div class="col-lg-8">{{ reservation.end|date(param('format', 'php_datetime')) }}</div>
+                                    <div class="col-lg-8">{{ reservation.end|date(datetime_format) }}</div>
                                 </div>
                                 <div class="form-group row" style="padding: 3px 0">
                                     <label class="col-lg-4 control-label" style="padding-top:6px;text-align:left;">Nom</label>

@@ -2,7 +2,7 @@
 
 namespace NetBS\CoreBundle\Form\Type;
 
-use NetBS\CoreBundle\Service\ParameterManager;
+use NetBS\CoreBundle\Utils\DateFormat;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\CallbackTransformer;
 use Symfony\Component\Form\Exception\TransformationFailedException;
@@ -14,13 +14,6 @@ use Symfony\Component\OptionsResolver\OptionsResolver;
 
 class DatepickerType extends AbstractType
 {
-    protected $params;
-
-    public function __construct(ParameterManager $parameterManager)
-    {
-        $this->params = $parameterManager;
-    }
-
     public function configureOptions(OptionsResolver $resolver)
     {
         $resolver->setDefaults([]);
@@ -28,7 +21,7 @@ class DatepickerType extends AbstractType
 
     public function buildForm(FormBuilderInterface $builder, array $options)
     {
-        $phpFormat = $this->params->getValue('format', 'php_date');
+        $phpFormat = DateFormat::DATE;
 
         $builder->addViewTransformer(new CallbackTransformer(
             function ($date) use ($phpFormat) {
@@ -54,12 +47,12 @@ class DatepickerType extends AbstractType
 
     public function buildView(FormView $view, FormInterface $form, array $options)
     {
-        $phpFormat = $this->params->getValue('format', 'php_date');
+        $phpFormat = DateFormat::DATE;
         $flatpickrFormat = $this->phpToFlatpickrFormat($phpFormat);
 
         $view->vars['attr']['data-controller'] = 'flatpickr';
         $view->vars['attr']['data-flatpickr-format-value'] = $flatpickrFormat;
-        $view->vars['attr']['placeholder'] = $this->params->getValue('format', 'js_date');
+        $view->vars['attr']['placeholder'] = DateFormat::PLACEHOLDER;
     }
 
     /**

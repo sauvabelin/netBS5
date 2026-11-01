@@ -11,8 +11,10 @@ namespace NetBS\AuthBundle\Directory;
  * (admin, lldap_admin, ...) are left alone:
  *   - users: members of the {@see MANAGED_USERS_GROUP} marker group
  *   - groups: groups carrying a {@see LldapClientInterface::NETBS_ID_ATTRIBUTE}
- *     (groupe groups) or {@see LldapClientInterface::NETBS_ROLE_ATTRIBUTE}
+ *     (groupe groups), {@see LldapClientInterface::NETBS_COMPUTED_ATTRIBUTE}
+ *     (computed groups) or {@see LldapClientInterface::NETBS_ROLE_ATTRIBUTE}
  *     (role groups) attribute
+ * Frozen groups ({@see DirectorySnapshot::$frozen}) are left exactly as they are.
  * The marker group doubles as the LDAP filter services use to find netBS users.
  */
 final class DirectorySync
@@ -23,6 +25,7 @@ final class DirectorySync
     private const GROUP_ATTRIBUTES = [
         LldapClientInterface::NETBS_ID_ATTRIBUTE => 'INTEGER',
         LldapClientInterface::NETBS_ROLE_ATTRIBUTE => 'STRING',
+        LldapClientInterface::NETBS_COMPUTED_ATTRIBUTE => 'INTEGER',
     ];
 
     /** @var string[] */
@@ -64,10 +67,10 @@ final class DirectorySync
 
         $this->syncUsers($snapshot->users, $managedUids, $markerId, $dryRun);
         $desired = [];
-        foreach ([...array_values($snapshot->groups), ...array_values($snapshot->roleGroups)] as $group) {
-            $desired[DirectoryGroup::key($group->netbsId, $group->role)] = $group;
+        foreach ([...array_values($snapshot->groups), ...array_values($snapshot->computedGroups), ...array_values($snapshot->roleGroups)] as $group) {
+            $desired[DirectoryGroup::key($group->netbsId, $group->role, $group->computedId)] = $group;
         }
-        $this->syncGroups($desired, $currentGroups, $dryRun);
+        $this->syncGroups($desired, $snapshot->frozen, $currentGroups, $dryRun);
 
         return new DirectorySyncReport($this->changes, $this->errors, $snapshot);
     }
@@ -132,13 +135,14 @@ final class DirectorySync
 
     /**
      * @param array<string, DirectoryGroup> $groups keyed by {@see DirectoryGroup::key()}
+     * @param array<string, FrozenGroup> $frozen same keys; never created, changed nor deleted
      */
-    private function syncGroups(array $groups, array $currentGroups, bool $dryRun): void
+    private function syncGroups(array $groups, array $frozen, array $currentGroups, bool $dryRun): void
     {
         $managed = [];
         foreach ($currentGroups as $group) {
-            if ($group['netbsId'] !== null || $group['netbsRole'] !== null) {
-                $managed[DirectoryGroup::key($group['netbsId'], $group['netbsRole'])] = $group;
+            if ($group['netbsId'] !== null || $group['netbsRole'] !== null || $group['netbsComputedId'] !== null) {
+                $managed[DirectoryGroup::key($group['netbsId'], $group['netbsRole'], $group['netbsComputedId'])] = $group;
             }
         }
 
@@ -147,7 +151,7 @@ final class DirectorySync
 
             if ($current === null) {
                 $groupId = $this->apply($dryRun, sprintf('create group "%s"', $group->name),
-                    fn () => $this->client->createGroup($group->name, $group->netbsId, $group->role));
+                    fn () => $this->client->createGroup($group->name, $group->netbsId, $group->role, $group->computedId));
                 $currentMembers = [];
             } else {
                 $groupId = $current['id'];
@@ -180,7 +184,7 @@ final class DirectorySync
         }
 
         foreach ($managed as $key => $current) {
-            if (!isset($groups[$key])) {
+            if (!isset($groups[$key]) && !isset($frozen[$key])) {
                 $this->apply($dryRun, sprintf('delete group "%s"', $current['displayName']),
                     fn () => $this->client->deleteGroup($current['id']));
             }

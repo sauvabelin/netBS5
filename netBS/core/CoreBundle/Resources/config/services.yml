@@ -19,9 +19,17 @@ services:
     NetBS\CoreBundle\Command\:
         resource: '../../Command'
 
-    NetBS\CoreBundle\DataFixtures\:
-        resource: '../../DataFixtures'
-        tags: ['doctrine.fixture.orm']
+    NetBS\CoreBundle\Settings\:
+        resource: '../../Settings'
+
+    NetBS\CoreBundle\Rule\:
+        resource: '../../Rule'
+        exclude: '../../Rule/{Rule.php,RuleGroup.php,RuleCondition.php,RuleParam.php,RuleVariable.php,Operator.php,InvalidRuleException.php}'
+
+    NetBS\CoreBundle\Rule\RuleRegistry:
+        arguments:
+            $contexts: !tagged_iterator netbs.rule_context
+            $blocks: !tagged_iterator netbs.rule_block
 
     NetBS\CoreBundle\Service\FormTypesRegistrer: ~
 
@@ -119,6 +127,10 @@ services:
             - { name: twig.runtime }
 
     NetBS\CoreBundle\Twig\Extension\ParamExtension:
+        tags:
+            - { name: twig.extension }
+
+    NetBS\CoreBundle\Twig\Extension\SettingsProblemsExtension:
         tags:
             - { name: twig.extension }
 

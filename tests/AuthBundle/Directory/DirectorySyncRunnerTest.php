@@ -48,7 +48,7 @@ final class DirectorySyncRunnerTest extends KernelTestCase
 
     public function testRunApplies(): void
     {
-        $this->seedGroupeTree();
+        $this->seedPublishedTree();
 
         self::assertNotNull($this->runner()->run());
 
@@ -57,7 +57,7 @@ final class DirectorySyncRunnerTest extends KernelTestCase
 
     public function testRequestCoveredByALaterRunIsSkipped(): void
     {
-        $this->seedGroupeTree();
+        $this->seedPublishedTree();
         $requestedAt = new \DateTimeImmutable('-1 minute');
         $this->runner()->run();
 
@@ -68,7 +68,7 @@ final class DirectorySyncRunnerTest extends KernelTestCase
 
     public function testHandlerLogsAFailedRunWithoutThrowingAndItCoversNothing(): void
     {
-        $this->seedGroupeTree();
+        $this->seedPublishedTree();
         $this->lldap->down = true;
 
         static::getContainer()->get(SyncDirectoryHandler::class)(new SyncDirectory());
@@ -79,7 +79,7 @@ final class DirectorySyncRunnerTest extends KernelTestCase
 
     public function testFlushOfDirectoryDataQueuesADelayedSync(): void
     {
-        $ids = $this->seedGroupeTree();
+        $ids = $this->seedPublishedTree();
         $groupe = $this->em->find(static::getContainer()->get(FichierConfig::class)->getGroupeClass(), $ids['ga']);
 
         $groupe->setNom('dirproj-GA renamed');
@@ -93,7 +93,7 @@ final class DirectorySyncRunnerTest extends KernelTestCase
 
     public function testPasswordChangeDoesNotQueueASync(): void
     {
-        $ids = $this->seedGroupeTree();
+        $ids = $this->seedPublishedTree();
         $user = $this->em->find(BSUser::class, $ids['user']);
 
         $user->setPassword('changed');

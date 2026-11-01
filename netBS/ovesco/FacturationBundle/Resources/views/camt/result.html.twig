@@ -145,7 +145,7 @@
                                             {% endif %}
                                         </td>
                                         <td>
-                                            {{ paiement.dateEffectivePaiement|date(param('format', 'php_date')) }}
+                                            {{ paiement.dateEffectivePaiement|date(date_format) }}
                                         </td>
                                     </tr>
                                 {% endfor %}

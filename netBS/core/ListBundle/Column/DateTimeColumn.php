@@ -2,23 +2,16 @@
 
 namespace NetBS\ListBundle\Column;
 
-use NetBS\CoreBundle\Service\ParameterManager;
+use NetBS\CoreBundle\Utils\DateFormat;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 
 class DateTimeColumn extends BaseColumn
 {
-    private $params;
-
-    public function __construct(ParameterManager $params)
-    {
-        $this->params   = $params;
-    }
-
     public function configureOptions(OptionsResolver $resolver)
     {
         parent::configureOptions($resolver);
 
-        $resolver->setDefault('format', $this->params->getValue('format', 'php_date'));
+        $resolver->setDefault('format', DateFormat::DATE);
     }
 
     /**

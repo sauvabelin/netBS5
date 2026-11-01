@@ -1,0 +1,41 @@
+{#
+ # Glossary for expert expressions: the context's variables, and for each the methods read from
+ # its class (NetBS\CoreBundle\Rule\RuleGlossary). Expects: variables, example; optional hidden, open, intro.
+ #}
+<details class="rule-glossary mt-2" {{ open ?? true ? 'open' }} {{ hidden ?? false ? 'hidden' }} data-rule-builder-target="glossary">
+    <summary class="text-muted">Aide pour écrire une expression</summary>
+    <div class="mt-2">
+        {% if intro is defined %}<p class="mb-1">{{ intro }}</p>{% endif %}
+        <p class="mb-1">
+            Comparer : <code>==</code> <code>!=</code> <code>&lt;</code> <code>&lt;=</code> <code>&gt;</code> <code>&gt;=</code>
+            · combiner : <code>and</code> <code>or</code> <code>not</code> et des parenthèses
+            · texte entre guillemets : <code>"inscrit"</code>
+        </p>
+        <p class="mb-2">Exemple : <code>{{ example }}</code></p>
+        <table class="table table-sm mb-0">
+            <thead>
+                <tr><th>Variable</th><th>Ce que c'est, et ce qu'on peut appeler dessus</th></tr>
+            </thead>
+            <tbody>
+                {% for variable in variables %}
+                    <tr>
+                        <td class="text-nowrap"><code>{{ variable.name }}</code></td>
+                        <td>
+                            <div>{{ variable.description }}</div>
+                            {% for type in variable.types %}
+                                {% if type.methods is not empty %}
+                                    <div class="rule-methods mt-1">
+                                        {% if variable.types|length > 1 %}<span class="text-muted">{{ type.name }} :</span>{% endif %}
+                                        {% for method in type.methods %}<code>{{ variable.name }}.{{ method }}</code>{% endfor %}
+                                    </div>
+                                {% else %}
+                                    <div class="text-muted">{{ type.name }}</div>
+                                {% endif %}
+                            {% endfor %}
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</details>

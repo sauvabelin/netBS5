@@ -40,6 +40,7 @@ final class LldapClient implements LldapClientInterface, ResetInterface
         return array_map(static function (array $group): array {
             $netbsId = null;
             $netbsRole = null;
+            $netbsComputedId = null;
             foreach ($group['attributes'] as $attribute) {
                 if ($attribute['value'] === []) {
                     continue;
@@ -48,6 +49,8 @@ final class LldapClient implements LldapClientInterface, ResetInterface
                     $netbsId = (int) $attribute['value'][0];
                 } elseif ($attribute['name'] === self::NETBS_ROLE_ATTRIBUTE) {
                     $netbsRole = (string) $attribute['value'][0];
+                } elseif ($attribute['name'] === self::NETBS_COMPUTED_ATTRIBUTE) {
+                    $netbsComputedId = (int) $attribute['value'][0];
                 }
             }
 
@@ -56,6 +59,7 @@ final class LldapClient implements LldapClientInterface, ResetInterface
                 'displayName' => $group['displayName'],
                 'netbsId' => $netbsId,
                 'netbsRole' => $netbsRole,
+                'netbsComputedId' => $netbsComputedId,
                 'members' => array_column($group['users'], 'id'),
             ];
         }, $data['groups']);
@@ -96,7 +100,7 @@ final class LldapClient implements LldapClientInterface, ResetInterface
         $this->graphql('mutation($id: String!) { deleteUser(userId: $id) { ok } }', ['id' => $uid]);
     }
 
-    public function createGroup(string $displayName, ?int $netbsId, ?string $netbsRole = null): int
+    public function createGroup(string $displayName, ?int $netbsId, ?string $netbsRole = null, ?int $netbsComputedId = null): int
     {
         $request = ['displayName' => $displayName, 'attributes' => []];
         if ($netbsId !== null) {
@@ -104,6 +108,9 @@ final class LldapClient implements LldapClientInterface, ResetInterface
         }
         if ($netbsRole !== null) {
             $request['attributes'][] = ['name' => self::NETBS_ROLE_ATTRIBUTE, 'value' => [$netbsRole]];
+        }
+        if ($netbsComputedId !== null) {
+            $request['attributes'][] = ['name' => self::NETBS_COMPUTED_ATTRIBUTE, 'value' => [(string) $netbsComputedId]];
         }
 
         $data = $this->graphql(

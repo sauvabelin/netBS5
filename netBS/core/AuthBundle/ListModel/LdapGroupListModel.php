@@ -55,15 +55,16 @@ final class LdapGroupListModel extends BaseListModel
                 },
             ])
             // The netbs renderer prints cells raw, so every value is escaped here.
-            ->addColumn('Type', null, ClosureColumn::class, [
-                ClosureColumn::CLOSURE => fn (LdapGroupRow $row) => htmlspecialchars($row->type, ENT_QUOTES, 'UTF-8'),
-            ])
-            ->addColumn('Sous-groupes', null, ClosureColumn::class, [
-                ClosureColumn::CLOSURE => fn (LdapGroupRow $row) => htmlspecialchars($row->sousGroupes, ENT_QUOTES, 'UTF-8'),
+            ->addColumn('Origine', null, ClosureColumn::class, [
+                ClosureColumn::CLOSURE => fn (LdapGroupRow $row) => htmlspecialchars($row->origin, ENT_QUOTES, 'UTF-8'),
             ])
             ->addColumn('Membres', null, ClosureColumn::class, [
                 // Counted on hover (lazy-count controller): resolving every group is slow.
                 ClosureColumn::CLOSURE => function (LdapGroupRow $row) {
+                    if ($row->frozenReason !== null) {
+                        $reason = htmlspecialchars($row->frozenReason, ENT_QUOTES, 'UTF-8');
+                        return "<span class=\"badge bg-warning text-dark\" title=\"{$reason}\">gelé</span>";
+                    }
                     $url = htmlspecialchars($this->router->generate('auth.admin.ldap.group_count', ['key' => $row->key]), ENT_QUOTES, 'UTF-8');
                     return "<span class=\"ldap-member-count text-muted\" data-lazy-count-url=\"{$url}\" title=\"Survoler la ligne pour compter\">…</span>";
                 },

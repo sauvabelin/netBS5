@@ -7,6 +7,8 @@ use NetBS\CoreBundle\ListModel\Action\RemoveAction;
 use NetBS\CoreBundle\ListModel\ActionItem;
 use NetBS\CoreBundle\ListModel\Column\ActionColumn;
 use NetBS\CoreBundle\ListModel\Column\XEditableColumn;
+use NetBS\CoreBundle\Rule\RuleDescriber;
+use NetBS\CoreBundle\Rule\RuleValidator;
 use NetBS\CoreBundle\Utils\Traits\EntityManagerTrait;
 use NetBS\CoreBundle\Utils\Traits\RouterTrait;
 use NetBS\ListBundle\Column\ClosureColumn;
@@ -15,15 +17,40 @@ use NetBS\ListBundle\Model\ListColumnsConfiguration;
 use Ovesco\FacturationBundle\Entity\FactureModel;
 use Symfony\Component\Form\Extension\Core\Type\NumberType;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
+use Symfony\Contracts\Service\Attribute\Required;
 
 class FactureModelsList extends BaseListModel
 {
     use EntityManagerTrait, RouterTrait;
 
+    private RuleDescriber $ruleDescriber;
+
+    private RuleValidator $ruleValidator;
+
+    #[Required]
+    public function setRuleServices(RuleDescriber $ruleDescriber, RuleValidator $ruleValidator): void
+    {
+        $this->ruleDescriber = $ruleDescriber;
+        $this->ruleValidator = $ruleValidator;
+    }
+
     /**
      * Retrieves all elements managed by this list
      * @return array
      */
+    /**
+     * A short badge, with the rule spelled out in its tooltip. Tooltips render
+     * HTML, so each line is escaped twice: once for the attribute, once for
+     * the tooltip body.
+     */
+    private function ruleBadge(string $variant, string $label, array $lines): string
+    {
+        $escape = fn(string $text) => htmlspecialchars($text, ENT_QUOTES, 'UTF-8');
+        $title = $escape(implode('<br>', array_map($escape, $lines)));
+
+        return "<span class='badge text-bg-{$variant}' data-bs-toggle='tooltip' title='{$title}' style='cursor:help;'>{$label}</span>";
+    }
+
     protected function buildItemsList()
     {
         return $this->entityManager->getRepository(FactureModel::class)
@@ -81,10 +108,16 @@ class FactureModelsList extends BaseListModel
             ])
             ->addColumn('Règle', null, ClosureColumn::class, [
                 ClosureColumn::CLOSURE => function(FactureModel $model) {
-                    $rule = $model->getApplicationRule();
-                    if (!$rule) return '<span class="badge text-bg-secondary">Aucune</span>';
-                    $escaped = htmlspecialchars($rule, ENT_QUOTES, 'UTF-8');
-                    return "<span class='badge text-bg-warning' data-bs-toggle='tooltip' data-placement='top' title='{$escaped}' style='cursor:help;'>Active</span>";
+                    $json = $model->getRuleJson();
+                    if ($json === null) return '<span class="badge text-bg-secondary">Aucune</span>';
+
+                    $lines = [$this->ruleDescriber->describe($json, 'facture')];
+                    if ($model->getRule() === null) $lines[] = '(ancienne expression)';
+
+                    $errors = $this->ruleValidator->validate($json, 'facture');
+                    if ($errors) return $this->ruleBadge('danger', 'Invalide', array_merge($lines, $errors));
+
+                    return $this->ruleBadge('warning', 'Active', $lines);
                 }
             ])
             ->addColumn('Poids', null, XEditableColumn::class, [

@@ -55,7 +55,7 @@ final class LdapControllerTest extends WebTestCase
 
     public function testListsDirectoryGroupsWithoutTouchingLldap(): void
     {
-        $ids = $this->seedGroupeTree();
+        $ids = $this->seedPublishedTree();
         $this->loginAdmin();
 
         $crawler = $this->client->request('GET', self::URL);
@@ -75,7 +75,7 @@ final class LdapControllerTest extends WebTestCase
 
     public function testMemberCountEndpoint(): void
     {
-        $ids = $this->seedGroupeTree();
+        $ids = $this->seedPublishedTree();
         $this->loginAdmin();
 
         $this->client->request('GET', sprintf('%s/groups/%d/count', self::URL, $ids['ga']));
@@ -86,20 +86,94 @@ final class LdapControllerTest extends WebTestCase
         self::assertResponseStatusCodeSame(404);
     }
 
-    public function testGroupeTypeNameIsEscaped(): void
+    public function testOriginIsEscaped(): void
     {
-        $ids = $this->seedGroupeTree();
-        $this->db->executeStatement("UPDATE netbs_fichier_groupe_types SET nom = '<b>x</b>' WHERE nom = 'dirproj-a'");
+        $ids = $this->seedPublishedTree();
+        $this->db->update('netbs_auth_directory_publication_rules', ['label' => '<b>x</b>'], ['id' => $ids['rule']]);
         $this->loginAdmin();
 
         $crawler = $this->client->request('GET', self::URL);
 
         self::assertCount(0, $crawler->filter(sprintf('#ldap-groups tr[data-row-id="%d"] b', $ids['ga'])));
+        self::assertCount(0, $crawler->filter('#ldap-publication-rules td b'));
+        self::assertStringContainsString('<b>x</b>', $crawler->filter('#ldap-publication-rules')->text());
+    }
+
+    public function testPageShowsRuleSectionsWhenNotConfigured(): void
+    {
+        $this->db->executeStatement('DELETE FROM netbs_auth_directory_publication_rules');
+        $this->db->executeStatement('DELETE FROM netbs_auth_directory_computed_groups');
+        $this->loginAdmin();
+
+        $crawler = $this->client->request('GET', self::URL);
+
+        self::assertResponseIsSuccessful();
+        self::assertCount(1, $crawler->filter('#ldap-publication-rules'));
+        self::assertCount(1, $crawler->filter('#ldap-computed-groups'));
+        self::assertCount(1, $crawler->filter('#ldap-not-configured'));
+        self::assertCount(0, $crawler->filter('#ldap-groups'));
+    }
+
+    public function testListsRulesComputedAndFrozenGroups(): void
+    {
+        $ids = $this->seedPublishedTree();
+        $computed = $this->computedGroup('dirproj-chefs', self::blockRule('membre.fonctions', ['fonctions' => [$ids['fonction']]]));
+        $broken = $this->computedGroup('dirproj-cassé', self::blockRule('membre.fonctions', ['fonctions' => [999999999]]));
+        $this->loginAdmin();
+
+        $crawler = $this->client->request('GET', self::URL);
+
+        self::assertStringContainsString('dirproj-unités', $crawler->filter('#ldap-publication-rules')->text());
+        self::assertStringContainsString('le groupe est de type dirproj-a', $crawler->filter('#ldap-publication-rules')->text());
+        self::assertStringContainsString('dirproj-chefs', $crawler->filter('#ldap-computed-groups')->text());
+        self::assertStringContainsString('en erreur', $crawler->filter('#ldap-computed-groups')->text());
+        self::assertStringContainsString('Groupe calculé', $crawler->filter(sprintf('#ldap-groups tr[data-row-id="c%d"]', $computed))->text());
+        $frozen = $crawler->filter(sprintf('#ldap-groups tr[data-row-id="c%d"]', $broken));
+        self::assertStringContainsString('gelé', $frozen->text());
+        self::assertCount(0, $frozen->filter('[data-lazy-count-url]'), 'nothing to count');
+    }
+
+    public function testFrozenGroupPage(): void
+    {
+        $this->seedPublishedTree();
+        $broken = $this->computedGroup('dirproj-cassé', '{nope');
+        $this->loginAdmin();
+
+        $crawler = $this->client->request('GET', self::URL . "/groups/c$broken");
+
+        self::assertResponseIsSuccessful();
+        self::assertStringContainsString('Groupe gelé', $crawler->filter('#ldap-group-frozen')->text());
+        self::assertCount(0, $crawler->filter('#ldap-members'));
+    }
+
+    public function testComputedGroupPage(): void
+    {
+        $ids = $this->seedPublishedTree();
+        $computed = $this->computedGroup('dirproj-chefs', self::blockRule('membre.fonctions', ['fonctions' => [$ids['fonction']]]));
+        $this->loginAdmin();
+
+        $crawler = $this->client->request('GET', self::URL . "/groups/c$computed");
+
+        self::assertResponseIsSuccessful();
+        self::assertStringContainsString('Groupe calculé', $crawler->filter('#ldap-group')->text());
+        self::assertSame('à ajouter', $this->memberStatus($crawler, 'dirproj.user'));
+    }
+
+    public function testCountEndpointReportsFrozen(): void
+    {
+        $this->seedPublishedTree();
+        $broken = $this->computedGroup('dirproj-cassé', '{nope');
+        $this->loginAdmin();
+
+        $this->client->request('GET', self::URL . "/groups/c$broken/count");
+
+        self::assertResponseIsSuccessful();
+        self::assertArrayHasKey('frozen', json_decode($this->client->getResponse()->getContent(), true));
     }
 
     public function testGroupPageComparesMembersWithLldap(): void
     {
-        $ids = $this->seedGroupeTree();
+        $ids = $this->seedPublishedTree();
         $this->loginAdmin();
         $url = sprintf('%s/groups/%d', self::URL, $ids['ga']);
 
@@ -120,7 +194,7 @@ final class LdapControllerTest extends WebTestCase
 
     public function testGroupPageForRoleGroupAndUnknownKeys(): void
     {
-        $ids = $this->seedGroupeTree();
+        $ids = $this->seedPublishedTree();
         $this->grantUserRole($ids['user'], 'ROLE_WIKI_ADMIN');
         $this->loginAdmin();
 
@@ -128,8 +202,8 @@ final class LdapControllerTest extends WebTestCase
         self::assertResponseIsSuccessful();
         self::assertSame('à ajouter', $this->memberStatus($crawler, 'dirproj.user'));
 
-        // A groupe whose type doesn't create a group, or a role that isn't published.
-        foreach ([(string) $ids['gb'], 'ROLE_ADMIN'] as $key) {
+        // A groupe no rule selects, a role that isn't published, an unknown computed group.
+        foreach ([(string) $ids['gb'], 'ROLE_ADMIN', 'c999999999'] as $key) {
             $this->client->request('GET', self::URL . "/groups/$key");
             self::assertResponseStatusCodeSame(404);
         }

@@ -2,3 +2,6 @@ twig:
     default_path: '%kernel.project_dir%/templates'
     form_themes:
         - '@NetBSCore/form/base.theme.twig'
+    globals:
+        date_format: !php/const NetBS\CoreBundle\Utils\DateFormat::DATE
+        datetime_format: !php/const NetBS\CoreBundle\Utils\DateFormat::DATETIME

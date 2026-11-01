@@ -4,6 +4,7 @@ namespace NetBS\CoreBundle\ListModel;
 
 use NetBS\CoreBundle\Entity\Parameter;
 use NetBS\CoreBundle\ListModel\Column\XEditableColumn;
+use NetBS\CoreBundle\Settings\SettingsRegistry;
 use NetBS\ListBundle\Column\SimpleColumn;
 use NetBS\ListBundle\Model\BaseListModel;
 use NetBS\ListBundle\Model\ListColumnsConfiguration;
@@ -15,18 +16,25 @@ class ParametersList extends BaseListModel
 {
     use EntityManagerTrait;
 
+    public function __construct(private SettingsRegistry $registry)
+    {
+    }
+
     /**
-     * Retrieves all elements managed by this list
+     * Only the legacy parameters: declared settings are edited through their typed form.
      * @return array
      */
     protected function buildItemsList()
     {
-        return $this->entityManager->createQueryBuilder()
+        $parameters = $this->entityManager->createQueryBuilder()
             ->select('p')
             ->from(Parameter::class, 'p')
             ->orderBy('p.namespace', 'DESC')
             ->getQuery()
             ->execute();
+
+        return array_values(array_filter($parameters,
+            fn(Parameter $p) => $this->registry->get($p->getNamespace(), $p->getKey()) === null));
     }
 
     /**

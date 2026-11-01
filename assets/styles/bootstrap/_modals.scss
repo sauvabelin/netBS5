@@ -1,0 +1,17 @@
+// Two modal sizes, picked with {% block size %} in modal.layout.twig:
+// narrow (Bootstrap's default width) for short forms and confirmations,
+// wide for big edit forms and anything holding a rule editor.
+
+.modal-narrow {
+    --bs-modal-width: #{$modal-md};
+}
+
+.modal-wide {
+    @include media-breakpoint-up(lg) {
+        --bs-modal-width: #{$modal-lg};
+    }
+
+    @include media-breakpoint-up(xl) {
+        --bs-modal-width: #{$modal-xl};
+    }
+}

@@ -19,6 +19,15 @@
   }
 }
 
+// Same height for every single-line entry box, whatever its content: inputs (dates and
+// numbers render taller in some browsers), selects and the select2 controller's widgets.
+// Multi-selects may grow when their tags wrap (see plugin/_select2.scss).
+input.form-control:not([type="file"]):not(.form-control-color),
+select.form-select:not([multiple]):not([size]),
+.select2-ajax-wrapper > .form-control {
+  height: $input-height;
+}
+
 label {
   color: var(--bs-secondary-color);
 }

@@ -2,6 +2,13 @@
 
 {% set title %}Authentication — LDAP{% endset %}
 
+{% macro problem_badge(problem) %}
+    {% if problem is not null %}
+        <span class="badge bg-danger" title="{{ problem }}">en erreur</span>
+        <div class="small text-danger">{{ problem }}</div>
+    {% endif %}
+{% endmacro %}
+
 {% block main %}
     <div class="container-fluid">
         {% include '@NetBSCore/includes/header.include.twig' with {
@@ -10,6 +17,97 @@
         } %}
 
         <div class="row">
+            <div class="col-12">
+                <div class="card" id="ldap-publication-rules">
+                    <div class="card-header d-flex align-items-center">
+                        <h5 class="card-title mb-0 me-auto">Règles de publication</h5>
+                        <button class="btn btn-primary btn-sm" data-controller="modal" data-modal-url-value="{{ path('auth.admin.ldap.rule.add') }}" data-action="click->modal#open">
+                            <i class="fas fa-plus"></i> Ajouter une règle
+                        </button>
+                    </div>
+                    <div class="card-body">
+                        <p class="text-muted small">Chaque groupe suit la première règle qui le sélectionne. Un groupe qu'aucune règle ne sélectionne n'est pas publié.</p>
+                        {% if rules is empty %}
+                            <p class="mb-0">Aucune règle : aucun groupe n'est publié.</p>
+                        {% else %}
+                            <table class="table table-sm align-middle mb-0">
+                                <thead>
+                                    <tr><th>Nom</th><th>Groupes publiés</th><th>Membres</th><th class="text-end">Actions</th></tr>
+                                </thead>
+                                <tbody>
+                                    {% for view in rules %}
+                                        {% set rule = view.rule %}
+                                        <tr data-rule-id="{{ rule.id }}">
+                                            <td>{{ rule.label }} {{ _self.problem_badge(view.problem) }}</td>
+                                            <td>{{ view.selection }}</td>
+                                            <td>{{ view.membres }}</td>
+                                            <td class="text-end text-nowrap">
+                                                <button class="btn btn-outline-secondary btn-sm" title="Modifier" data-controller="modal" data-modal-url-value="{{ path('auth.admin.ldap.rule.edit', {id: rule.id}) }}" data-action="click->modal#open"><i class="fas fa-edit"></i></button>
+                                                {% for direction, icon in {up: 'fa-arrow-up', down: 'fa-arrow-down'} %}
+                                                    <form method="post" action="{{ path('auth.admin.ldap.rule.move', {id: rule.id, direction: direction}) }}" class="d-inline">
+                                                        <input type="hidden" name="_token" value="{{ csrf_token('ldap-rule-' ~ rule.id) }}">
+                                                        <button type="submit" class="btn btn-outline-secondary btn-sm" title="{{ direction == 'up' ? 'Monter' : 'Descendre' }}"
+                                                                {{ (direction == 'up' and loop.parent.loop.first) or (direction == 'down' and loop.parent.loop.last) ? 'disabled' }}><i class="fas {{ icon }}"></i></button>
+                                                    </form>
+                                                {% endfor %}
+                                                <form method="post" action="{{ path('auth.admin.ldap.rule.delete', {id: rule.id}) }}" class="d-inline" data-turbo-confirm="Supprimer la règle « {{ rule.label }} » ?">
+                                                    <input type="hidden" name="_token" value="{{ csrf_token('ldap-rule-' ~ rule.id) }}">
+                                                    <button type="submit" class="btn btn-outline-danger btn-sm" title="Supprimer"><i class="fas fa-trash"></i></button>
+                                                </form>
+                                            </td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row mt-3">
+            <div class="col-12">
+                <div class="card" id="ldap-computed-groups">
+                    <div class="card-header d-flex align-items-center">
+                        <h5 class="card-title mb-0 me-auto">Groupes calculés</h5>
+                        <button class="btn btn-primary btn-sm" data-controller="modal" data-modal-url-value="{{ path('auth.admin.ldap.computed.add') }}" data-action="click->modal#open">
+                            <i class="fas fa-plus"></i> Ajouter un groupe calculé
+                        </button>
+                    </div>
+                    <div class="card-body">
+                        <p class="text-muted small">Des groupes LDAP qui ne correspondent à aucun groupe netBS : leurs membres sont les membres qui remplissent la règle.</p>
+                        {% if computedGroups is empty %}
+                            <p class="mb-0">Aucun groupe calculé.</p>
+                        {% else %}
+                            <table class="table table-sm align-middle mb-0">
+                                <thead>
+                                    <tr><th>Nom</th><th>Membres</th><th>Description</th><th class="text-end">Actions</th></tr>
+                                </thead>
+                                <tbody>
+                                    {% for view in computedGroups %}
+                                        {% set group = view.group %}
+                                        <tr data-computed-id="{{ group.id }}">
+                                            <td>{{ group.name }} {{ _self.problem_badge(view.problem) }}</td>
+                                            <td>{{ view.membres }}</td>
+                                            <td>{{ group.description }}</td>
+                                            <td class="text-end text-nowrap">
+                                                <button class="btn btn-outline-secondary btn-sm" title="Modifier" data-controller="modal" data-modal-url-value="{{ path('auth.admin.ldap.computed.edit', {id: group.id}) }}" data-action="click->modal#open"><i class="fas fa-edit"></i></button>
+                                                <form method="post" action="{{ path('auth.admin.ldap.computed.delete', {id: group.id}) }}" class="d-inline" data-turbo-confirm="Supprimer le groupe calculé « {{ group.name }} » ?">
+                                                    <input type="hidden" name="_token" value="{{ csrf_token('ldap-computed-' ~ group.id) }}">
+                                                    <button type="submit" class="btn btn-outline-danger btn-sm" title="Supprimer"><i class="fas fa-trash"></i></button>
+                                                </form>
+                                            </td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row mt-3">
             <div class="col-12">
                 {% if notConfigured is not null %}
                     <div id="ldap-not-configured" class="alert alert-warning">{{ notConfigured }}</div>

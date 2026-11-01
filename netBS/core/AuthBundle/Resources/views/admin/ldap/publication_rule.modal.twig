@@ -1,0 +1,14 @@
+{% extends '@NetBSCore/layout/modal.layout.twig' %}
+
+{% block size %}wide{% endblock %}
+
+{% block title %}{{ title }}{% endblock %}
+
+{% block content %}
+    {{ form_start(form) }}
+    {{ form_row(form.label) }}
+    {{ form_row(form.selectionJson) }}
+    {{ form_row(form.sousGroupes) }}
+    {{ form_row(form.sousGroupesRuleJson) }}
+    {{ form_end(form) }}
+{% endblock %}

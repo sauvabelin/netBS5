@@ -1,0 +1,18 @@
+{% extends '@NetBSCore/layout/backend.layout.twig' %}
+
+{% set title %}Authentication — LDAP — {{ group.name }}{% endset %}
+
+{% block main %}
+    <div class="container-fluid">
+        {% include '@NetBSCore/includes/header.include.twig' with {
+            header: group.name,
+            subHeader: 'Groupe de l\'annuaire LDAP',
+            actions: ['<a href="' ~ path('auth.admin.ldap.index') ~ '" class="btn btn-secondary"><i class="fas fa-arrow-left"></i> Annuaire LDAP</a>']
+        } %}
+
+        <div class="alert alert-warning" id="ldap-group-frozen">
+            <strong>Groupe gelé :</strong> {{ group.reason }}.
+            Il n'est pas modifié dans lldap tant que la règle n'est pas corrigée.
+        </div>
+    </div>
+{% endblock %}

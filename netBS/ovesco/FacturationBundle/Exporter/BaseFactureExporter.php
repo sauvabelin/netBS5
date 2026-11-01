@@ -16,7 +16,8 @@ use NetBS\FichierBundle\Mapping\BaseMembre;
 use Ovesco\FacturationBundle\Entity\Creance;
 use Ovesco\FacturationBundle\Entity\Facture;
 use Ovesco\FacturationBundle\Entity\FactureModel;
-use Symfony\Component\ExpressionLanguage\ExpressionLanguage;
+use Ovesco\FacturationBundle\Service\FactureModelResolver;
+use Ovesco\FacturationBundle\Service\FactureTextRenderer;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
 abstract class BaseFactureExporter implements ExporterInterface, ConfigurableExporterInterface
@@ -25,15 +26,16 @@ abstract class BaseFactureExporter implements ExporterInterface, ConfigurableExp
 
     private $manager;
 
-    private $engine;
-
     private $parameterManager;
 
-    public function __construct(EntityManagerInterface $manager, ParameterManager $parameterManager)
-    {
+    public function __construct(
+        EntityManagerInterface $manager,
+        ParameterManager $parameterManager,
+        private FactureModelResolver $modelResolver,
+        private FactureTextRenderer $textRenderer,
+    ) {
         $this->manager = $manager;
         $this->parameterManager = $parameterManager;
-        $this->engine = new ExpressionLanguage();
     }
 
     /**
@@ -149,7 +151,7 @@ abstract class BaseFactureExporter implements ExporterInterface, ConfigurableExp
         }
 
         // Rules (or fallback): evaluate applicationRules
-        return $this->evaluateRules($facture);
+        return $this->modelResolver->resolve($facture);
     }
 
     private function getDebiteurNom(Facture $facture) {
@@ -279,42 +281,6 @@ abstract class BaseFactureExporter implements ExporterInterface, ConfigurableExp
         return $branches;
     }
 
-    private function evaluateRules(Facture $facture) {
-
-        $models = $this->manager->getRepository(FactureModel::class)
-            ->createQueryBuilder('m')->orderBy('m.poids', 'DESC')->getQuery()->getResult();
-
-        if (empty($models)) {
-            throw new \RuntimeException("Aucun modèle de facture trouvé en base de données");
-        }
-
-        /** @var FactureModel $item */
-        foreach($models as $item)
-            if ($this->evaluate($item->getApplicationRule(), $facture, false))
-                return $item;
-
-        return $models[0];
-    }
-
-    private function evaluate($string, Facture $facture, $parse = true) {
-
-        if ($string === null) return true;
-
-        if($parse) {
-            $string = str_replace("\r", '', str_replace("\n", '', $string));
-            $string = str_replace("'", "\\'", $string);
-            $string = str_replace('[', "'~", str_replace("]", "~'", "'$string'"));
-        }
-
-        $res = $this->engine->evaluate($string, [
-            'facture' => $facture,
-            'debiteur' => $facture->getDebiteur(),
-            'isFamille' => $facture->getDebiteur() instanceof BaseFamille
-        ]);
-
-        return $res;
-    }
-
     private function factureLatestDate(Facture $facture) {
         if (count($facture->getRappels()) === 0) return $facture->getDate();
         return $facture->getLatestRappel()->getDate();
@@ -387,7 +353,7 @@ abstract class BaseFactureExporter implements ExporterInterface, ConfigurableExp
         // Print title
         $fpdf->SetXY(15, 60);
         $fpdf->SetFont('OpenSans', 'B', 10);
-        $fpdf->Cell(0, 10, utf8_decode(strtoupper(StrUtil::removeAccents($this->evaluate($model->getTitre(), $facture)))));
+        $fpdf->Cell(0, 10, utf8_decode(strtoupper(StrUtil::removeAccents($this->textRenderer->render($model->getTitre(), $facture, $model->getTextesFormat())))));
 
         $fpdf->SetXY(15.2, 65);
         $fpdf->SetFont('OpenSans', '', 7);
@@ -395,7 +361,7 @@ abstract class BaseFactureExporter implements ExporterInterface, ConfigurableExp
 
         $fpdf->SetXY(15, 75);
         $fpdf->SetFontSize(10);
-        $fpdf->MultiCell(0, $config->interligne, utf8_decode($this->evaluate($model->getTopDescription(), $facture)), 0);
+        $fpdf->MultiCell(0, $config->interligne, utf8_decode($this->textRenderer->render($model->getTopDescription(), $facture, $model->getTextesFormat())), 0);
         $currentY = $fpdf->GetY() + 2;
 
         $fpdf->SetFontSize(9);
@@ -423,7 +389,10 @@ abstract class BaseFactureExporter implements ExporterInterface, ConfigurableExp
 
         $fpdf->SetFontSize(10);
         $fpdf->SetXY(15, $currentY);
-        $fpdf->MultiCell(0, $config->interligne, $this->evaluate(utf8_decode($model->getBottomSalutations()), $facture));
+        // Old format decoded before rendering, as it always did; new format decodes the rendered text.
+        $fpdf->MultiCell(0, $config->interligne, $model->getTextesFormat() === FactureModel::TEXTES_ANCIEN
+            ? $this->textRenderer->render(utf8_decode($model->getBottomSalutations()), $facture, FactureModel::TEXTES_ANCIEN)
+            : utf8_decode($this->textRenderer->render($model->getBottomSalutations(), $facture, $model->getTextesFormat())));
 
         // Signature
         $fpdf->SetXY(130, $fpdf->GetY() + $config->interligne);

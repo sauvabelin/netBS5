@@ -36,7 +36,10 @@ $select2-border-width: 1px;
 // The outer .form-control is a div (not an <input>), so we mirror the focus
 // ring via :focus-within when the inner search input is focused.
 .select2-multi-control {
+  // one row of tags keeps the height of the other entry boxes; more rows grow it
   min-height: $input-height;
+  padding-top: .1875rem;
+  padding-bottom: .1875rem;
 
   &:focus-within {
     color: var(--bs-body-color);

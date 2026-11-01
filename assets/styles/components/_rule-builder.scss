@@ -1,0 +1,97 @@
+// Rule editor (assets/controllers/rule_builder_controller.js): one sentence-like row per condition,
+// the connector (« Si », « et », « ou ») in a fixed column on the left.
+
+.rule-builder {
+  .rule-row {
+    display: flex;
+    align-items: flex-start;
+    gap: .5rem;
+    margin-bottom: .5rem;
+  }
+
+  // connector and ✕ are as tall as the entry boxes, so their text sits on the same line
+  .rule-connector {
+    flex: 0 0 4.75rem;
+    min-height: $input-height;
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    font-size: .875rem;
+    font-weight: 600;
+    color: var(--bs-secondary-color);
+    text-align: right;
+
+    .form-select { font-weight: 600; width: 100%; }
+  }
+
+  .rule-body {
+    flex: 1 1 auto;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-start;
+    gap: .5rem;
+    min-width: 0;
+
+    // w-auto selects size to their longest option; never let one outgrow the row
+    > *, .select2-container { max-width: 100%; }
+  }
+
+  .rule-remove {
+    flex: 0 0 auto;
+    height: $input-height;
+    color: var(--bs-secondary-color);
+    &:hover { color: var(--bs-danger-text-emphasis); }
+  }
+
+  .rule-group-nested {
+    flex: 1 1 auto;
+    padding: .5rem .5rem 0 0;
+    border: 1px solid var(--bs-border-color);
+    border-radius: var(--bs-border-radius);
+    background: var(--bs-tertiary-bg);
+  }
+
+  .rule-add {
+    margin-left: 5.25rem;
+    margin-bottom: .5rem;
+    font-size: .875rem;
+
+    .btn-link { padding: 0; margin-right: 1rem; text-decoration: none; font-size: inherit; }
+  }
+
+  .rule-empty {
+    padding: .5rem .75rem;
+    margin-bottom: .5rem;
+    border: 1px dashed var(--bs-border-color);
+    border-radius: var(--bs-border-radius);
+    color: var(--bs-secondary-color);
+    font-style: italic;
+  }
+
+  .rule-summary {
+    padding: .375rem .75rem;
+    border-left: 3px solid var(--bs-primary-border-subtle);
+    background: var(--bs-primary-bg-subtle);
+    color: var(--bs-primary-text-emphasis);
+    font-size: .875rem;
+  }
+
+  .rule-mode {
+    text-align: right;
+    font-size: .8125rem;
+
+    .btn-link { padding: 0; text-decoration: none; font-size: inherit; }
+  }
+
+  .rule-glossary {
+    font-size: .8125rem;
+
+    .rule-methods code {
+      display: inline-block;
+      margin: 0 .25rem .25rem 0;
+      padding: 0 .3rem;
+      border-radius: var(--bs-border-radius-sm);
+      background: var(--bs-tertiary-bg);
+    }
+  }
+}

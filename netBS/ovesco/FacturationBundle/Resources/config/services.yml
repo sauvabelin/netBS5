@@ -12,6 +12,19 @@ services:
         resource: '../../DataFixtures'
         tags: ['doctrine.fixture.orm']
 
+    Ovesco\FacturationBundle\Rule\:
+        resource: '../../Rule'
+
+    Ovesco\FacturationBundle\Service\:
+        resource: '../../Service'
+
+    Ovesco\FacturationBundle\Form\FactureModelType:
+        tags:
+            - { name: form.type }
+
+    Ovesco\FacturationBundle\Validator\:
+        resource: '../../Validator'
+
     Ovesco\FacturationBundle\Form\Type\DebiteurType:
         tags:
             - { name: form.type }

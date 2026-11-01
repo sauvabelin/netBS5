@@ -1,7 +1,8 @@
 <p><strong>Modèles de facture</strong> &mdash; Chaque modèle définit l'en-tête, le signataire et les coordonnées qui apparaissent sur la facture imprimée.</p>
 <ul>
     <li><strong>Poids</strong> &mdash; Détermine la priorité : le modèle avec le poids le plus élevé dont la règle correspond est utilisé.</li>
-    <li><strong>Règle</strong> &mdash; Expression évaluée pour chaque facture (ex: nombre de rappels). Si aucune règle n'est définie, le modèle s'applique par défaut.</li>
+    <li><strong>S'applique quand</strong> &mdash; Conditions sur la facture (nombre de rappels, déjà imprimée, débiteur famille, nombre de créances), une par ligne, reliées par « et » (toutes doivent être remplies) ou « ou » (au moins une), avec au plus un niveau de groupe. Le résumé sous les conditions relit la règle en une phrase. Sans condition, le modèle s'applique à toutes les factures. Un administrateur peut écrire une expression à la place (« Écrire une expression (avancé) ») ; l'aide affichée alors liste les variables et ce qu'on peut appeler dessus.</li>
+    <li><strong>Colonne Règle</strong> &mdash; « Aucune » si le modèle s'applique à toutes les factures, « Active » sinon : survolez le badge pour lire la règle. « Invalide » signale une règle qui ne peut pas être évaluée ; le survol en donne la raison. « (ancienne expression) » indique que le modèle utilise encore son expression d'origine ; elle reste valable tant qu'on ne la remplace pas par des conditions.</li>
     <li><strong>Dupliquer</strong> <i class="fas fa-copy"></i> &mdash; Crée une copie du modèle pour le modifier sans affecter l'original.</li>
 </ul>
 <p>Lors de l'impression, le système choisit le modèle selon ce processus :<br>

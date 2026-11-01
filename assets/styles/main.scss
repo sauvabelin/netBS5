@@ -19,6 +19,10 @@
 @import "bootstrap/buttons";
 @import "bootstrap/tabs";
 @import "bootstrap/form";
+@import "bootstrap/modals";
+
+// Components
+@import "components/rule-builder";
 
 // Dark mode overrides for custom styles
 @import "dark-mode";

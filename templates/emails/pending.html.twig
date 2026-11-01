@@ -22,11 +22,11 @@
         <tbody>
         <tr>
             <td style="width: 100px; border: solid #e2e8f0; border-width: 0px 0px 1px; background-color: #f1f5f9; padding-top: 8px; padding-bottom: 8px; padding-left: 8px; font-weight: 700">Début</td>
-            <td style="width: 500px; border: solid #e2e8f0; border-width: 0px 0px 1px; background-color: #f1f5f9; padding-top: 8px; padding-bottom: 8px">{{ reservation.start|date(param('format', 'php_datetime')) }}</td>
+            <td style="width: 500px; border: solid #e2e8f0; border-width: 0px 0px 1px; background-color: #f1f5f9; padding-top: 8px; padding-bottom: 8px">{{ reservation.start|date(datetime_format) }}</td>
         </tr>
         <tr>
             <td style="width: 100px; border: solid #e2e8f0; border-width: 0px 0px 1px; background-color: #f1f5f9; padding-top: 8px; padding-bottom: 8px; padding-left: 8px; font-weight: 700">Fin</td>
-            <td style="width: 500px; border: solid #e2e8f0; border-width: 0px 0px 1px; background-color: #f1f5f9; padding-top: 8px; padding-bottom: 8px">{{ reservation.end|date(param('format', 'php_datetime')) }}</td>
+            <td style="width: 500px; border: solid #e2e8f0; border-width: 0px 0px 1px; background-color: #f1f5f9; padding-top: 8px; padding-bottom: 8px">{{ reservation.end|date(datetime_format) }}</td>
         </tr>
         <tr>
             <td style="width: 100px; border: solid #e2e8f0; border-width: 0px 0px 1px; background-color: #f1f5f9; padding-top: 8px; padding-bottom: 8px; padding-left: 8px; font-weight: 700">Prénom</td>

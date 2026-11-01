@@ -1,0 +1,38 @@
+services:
+    App\Tests\Support\TestSettingsProvider:
+        autoconfigure: true
+
+    App\Tests\Support\TestRuleContext:
+        autoconfigure: true
+
+    App\Tests\Support\TestNBlock:
+        autoconfigure: true
+
+    App\Tests\Support\TestFlagBlock:
+        autoconfigure: true
+
+    # rule services are private and may be inlined; tests fetch them from the container
+    NetBS\CoreBundle\Rule\RuleRegistry:
+        public: true
+        arguments:
+            $contexts: !tagged_iterator netbs.rule_context
+            $blocks: !tagged_iterator netbs.rule_block
+
+    NetBS\CoreBundle\Rule\RuleDescriber:
+        public: true
+        autowire: true
+
+    NetBS\CoreBundle\Rule\RuleEvaluator:
+        public: true
+        autowire: true
+
+    NetBS\CoreBundle\Rule\EntityTargets:
+        public: true
+        autowire: true
+
+    App\Tests\Support\TestGroupeBlock:
+        autoconfigure: true
+
+    NetBS\CoreBundle\Rule\RuleValidator:
+        public: true
+        autowire: true

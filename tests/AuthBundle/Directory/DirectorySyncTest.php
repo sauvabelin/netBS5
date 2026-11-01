@@ -8,6 +8,7 @@ use NetBS\AuthBundle\Directory\DirectoryGroup;
 use NetBS\AuthBundle\Directory\DirectorySnapshot;
 use NetBS\AuthBundle\Directory\DirectorySync;
 use NetBS\AuthBundle\Directory\DirectoryUser;
+use NetBS\AuthBundle\Directory\FrozenGroup;
 use PHPUnit\Framework\TestCase;
 
 final class DirectorySyncTest extends TestCase
@@ -27,7 +28,7 @@ final class DirectorySyncTest extends TestCase
         );
 
         self::assertSame([], $report->errors);
-        self::assertSame(['netbs-id', 'netbs-role'], $this->lldap->attributes);
+        self::assertSame(['netbs-id', 'netbs-role', 'netbs-computed-id'], $this->lldap->attributes);
         self::assertSame(['alice', 'bob'], $this->lldap->membersOf(DirectorySync::MANAGED_USERS_GROUP));
         self::assertSame(['alice'], $this->lldap->membersOf('Troupe X'));
     }
@@ -102,7 +103,7 @@ final class DirectorySyncTest extends TestCase
             new DirectoryGroup(null, 'wiki-admins', ['alice'], 'ROLE_WIKI_ADMIN'),
         ]);
         $id = $this->lldap->groupId('wiki-admins');
-        self::assertSame(['netbs-id', 'netbs-role'], $this->lldap->attributes);
+        self::assertSame(['netbs-id', 'netbs-role', 'netbs-computed-id'], $this->lldap->attributes);
         self::assertSame('ROLE_WIKI_ADMIN', $this->lldap->groups[$id]['netbsRole']);
         self::assertSame(['alice'], $this->lldap->membersOf('wiki-admins'));
 
@@ -116,11 +117,81 @@ final class DirectorySyncTest extends TestCase
         self::assertNotNull($this->lldap->groupId('Troupe X'));
     }
 
+    public function testCreatesComputedGroupWithAttribute(): void
+    {
+        $this->sync([$this->user('alice')], [new DirectoryGroup(null, 'chefs', ['alice'], computedId: 3)]);
+
+        $id = $this->lldap->groupId('chefs');
+        self::assertSame(3, $this->lldap->groups[$id]['netbsComputedId']);
+        self::assertNull($this->lldap->groups[$id]['netbsId']);
+        self::assertSame(['alice'], $this->lldap->membersOf('chefs'));
+    }
+
+    public function testRenamedComputedGroupIsRenamedNotDuplicated(): void
+    {
+        $this->sync([$this->user('alice')], [new DirectoryGroup(null, 'chefs', ['alice'], computedId: 3)]);
+        $id = $this->lldap->groupId('chefs');
+
+        $this->sync([$this->user('alice')], [new DirectoryGroup(null, 'responsables', ['alice'], computedId: 3)]);
+
+        self::assertSame($id, $this->lldap->groupId('responsables'));
+        self::assertNull($this->lldap->groupId('chefs'));
+    }
+
+    public function testComputedAndGroupeGroupsWithTheSameIdAreDistinct(): void
+    {
+        $this->sync([$this->user('alice')], [
+            new DirectoryGroup(3, 'Troupe X', ['alice']),
+            new DirectoryGroup(null, 'chefs', [], computedId: 3),
+        ]);
+
+        self::assertNotNull($this->lldap->groupId('Troupe X'));
+        self::assertNotNull($this->lldap->groupId('chefs'));
+    }
+
+    public function testFrozenExistingGroupIsLeftUntouched(): void
+    {
+        $this->sync([$this->user('alice'), $this->user('bob')], [new DirectoryGroup(5, 'Troupe X', ['alice'])]);
+
+        $report = $this->sync([$this->user('alice'), $this->user('bob')], [], frozen: [new FrozenGroup('id:5', 'Troupe X renamed', 'cassée')]);
+
+        self::assertSame(['alice'], $this->lldap->membersOf('Troupe X'));
+        self::assertSame([], $report->changes);
+    }
+
+    public function testFrozenMissingGroupIsNotCreated(): void
+    {
+        $report = $this->sync([$this->user('alice')], [], frozen: [new FrozenGroup('computed:2', 'chefs', 'cassée')]);
+
+        self::assertNull($this->lldap->groupId('chefs'));
+        self::assertSame([], $report->errors);
+    }
+
+    public function testUnfrozenUndesiredGroupIsStillDeleted(): void
+    {
+        $this->sync([$this->user('alice')], [new DirectoryGroup(5, 'Troupe X', []), new DirectoryGroup(6, 'Meute Y', [])]);
+
+        $this->sync([$this->user('alice')], [], frozen: [new FrozenGroup('id:5', 'Troupe X', 'cassée')]);
+
+        self::assertNotNull($this->lldap->groupId('Troupe X'));
+        self::assertNull($this->lldap->groupId('Meute Y'));
+    }
+
+    public function testAddsComputedAttributeWhenMissing(): void
+    {
+        $this->lldap->attributes = ['netbs-id', 'netbs-role'];
+
+        $this->sync([], []);
+
+        self::assertSame(['netbs-id', 'netbs-role', 'netbs-computed-id'], $this->lldap->attributes);
+    }
+
     /**
      * @param DirectoryUser[] $users
-     * @param DirectoryGroup[] $groups groupe groups and role groups
+     * @param DirectoryGroup[] $groups groupe, computed and role groups
+     * @param FrozenGroup[] $frozen
      */
-    private function sync(array $users, array $groups, bool $dryRun = false)
+    private function sync(array $users, array $groups, bool $dryRun = false, array $frozen = [])
     {
         $usersByUid = [];
         foreach ($users as $user) {
@@ -128,14 +199,21 @@ final class DirectorySyncTest extends TestCase
         }
         $groupsById = [];
         $roleGroups = [];
+        $computedGroups = [];
         foreach ($groups as $group) {
             if ($group->role !== null) {
                 $roleGroups[$group->role] = $group;
+            } elseif ($group->computedId !== null) {
+                $computedGroups[$group->computedId] = $group;
             } else {
                 $groupsById[$group->netbsId] = $group;
             }
         }
-        return (new DirectorySync($this->lldap))->sync(new DirectorySnapshot($usersByUid, $groupsById, $roleGroups), $dryRun);
+        $frozenByKey = [];
+        foreach ($frozen as $group) {
+            $frozenByKey[$group->key] = $group;
+        }
+        return (new DirectorySync($this->lldap))->sync(new DirectorySnapshot($usersByUid, $groupsById, $roleGroups, $computedGroups, $frozenByKey), $dryRun);
     }
 
     private function user(string $uid): DirectoryUser

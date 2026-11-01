@@ -18,15 +18,16 @@
                             {% if group.role is not null %}
                                 <dt class="col-sm-3">Rôle</dt>
                                 <dd class="col-sm-9"><code>{{ group.role }}</code></dd>
+                            {% elseif group.computedId is not null %}
+                                <dt class="col-sm-3">Origine</dt>
+                                <dd class="col-sm-9">{{ group.origin }}</dd>
                             {% else %}
                                 <dt class="col-sm-3">Groupe netBS</dt>
                                 <dd class="col-sm-9">
                                     <a href="{{ path('netbs.fichier.groupe.page_groupe', {id: group.netbsId}) }}">{{ group.name }}</a>
                                 </dd>
-                                <dt class="col-sm-3">Type</dt>
-                                <dd class="col-sm-9">{{ group.typeName }}</dd>
-                                <dt class="col-sm-3">Sous-groupes</dt>
-                                <dd class="col-sm-9">{{ sousGroupes ?? '—' }}</dd>
+                                <dt class="col-sm-3">Règle</dt>
+                                <dd class="col-sm-9">{{ group.origin }}</dd>
                             {% endif %}
                             <dt class="col-sm-3">Membres</dt>
                             <dd class="col-sm-9">{{ group.members|length }}</dd>
