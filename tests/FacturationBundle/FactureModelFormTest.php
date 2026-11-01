@@ -95,6 +95,19 @@ final class FactureModelFormTest extends WebTestCase
         $this->assertNull($reloaded->getRule());
     }
 
+    public function test_malformed_rule_json_is_a_form_error(): void
+    {
+        $model = $this->legacyModel();
+
+        $this->submit('ovesco.facturation.facture_model.edit_modal', ['id' => $model->getId()], '{bad');
+
+        $this->assertNotSame(500, $this->client->getResponse()->getStatusCode(), substr(strip_tags((string) $this->client->getResponse()->getContent()), 0, 300));
+        $this->assertStringContainsString('Règle invalide.', $this->client->getResponse()->getContent());
+        $reloaded = $this->reload($model->getId());
+        $this->assertSame(self::LEGACY, $reloaded->getApplicationRule());
+        $this->assertNull($reloaded->getRule());
+    }
+
     public function test_untouched_legacy_expression_creates_no_rule(): void
     {
         $model = $this->legacyModel();

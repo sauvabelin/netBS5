@@ -71,8 +71,9 @@ final class DirectorySync
             $desired[DirectoryGroup::key($group->netbsId, $group->role, $group->computedId)] = $group;
         }
         $this->syncGroups($desired, $snapshot->frozen, $currentGroups, $dryRun);
+        [$frozen, $pending] = FrozenGroup::split($snapshot->frozen, array_map(fn () => true, self::managedGroups($currentGroups)));
 
-        return new DirectorySyncReport($this->changes, $this->errors, $snapshot);
+        return new DirectorySyncReport($this->changes, $this->errors, $snapshot, $frozen, $pending);
     }
 
     private function findMarkerGroup(array $currentGroups): ?array
@@ -134,17 +135,29 @@ final class DirectorySync
     }
 
     /**
+     * The lldap groups netBS manages (those carrying a netbs-* marker).
+     *
+     * @param list<array> $lldapGroups as {@see LldapClientInterface::listGroups()} returns them
+     * @return array<string, array> keyed by {@see DirectoryGroup::key()}
+     */
+    public static function managedGroups(array $lldapGroups): array
+    {
+        $managed = [];
+        foreach ($lldapGroups as $group) {
+            if ($group['netbsId'] !== null || $group['netbsRole'] !== null || $group['netbsComputedId'] !== null) {
+                $managed[DirectoryGroup::key($group['netbsId'], $group['netbsRole'], $group['netbsComputedId'])] = $group;
+            }
+        }
+        return $managed;
+    }
+
+    /**
      * @param array<string, DirectoryGroup> $groups keyed by {@see DirectoryGroup::key()}
      * @param array<string, FrozenGroup> $frozen same keys; never created, changed nor deleted
      */
     private function syncGroups(array $groups, array $frozen, array $currentGroups, bool $dryRun): void
     {
-        $managed = [];
-        foreach ($currentGroups as $group) {
-            if ($group['netbsId'] !== null || $group['netbsRole'] !== null || $group['netbsComputedId'] !== null) {
-                $managed[DirectoryGroup::key($group['netbsId'], $group['netbsRole'], $group['netbsComputedId'])] = $group;
-            }
-        }
+        $managed = self::managedGroups($currentGroups);
 
         foreach ($groups as $key => $group) {
             $current = $managed[$key] ?? null;

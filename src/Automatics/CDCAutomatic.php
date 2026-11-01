@@ -53,7 +53,7 @@ class CDCAutomatic extends BaseAutomatic implements ConfigurableAutomaticInterfa
      */
     protected function getItems($data = null)
     {
-        $adabsId = $this->parameterManager->getValue('bs', 'groupe.adabs_id');
+        $adabsId = $this->parameterManager->getValueOrNull('bs', 'groupe.adabs_id');
         $membres = !$data['actifs'] ? [] : array_filter($this->entityManager->getRepository($this->fichierConfig->getMembreClass())->findBy(['statut' => BaseMembre::INSCRIT]),
             function(BaseMembre $membre) use ($adabsId) {
                 if (count($membre->getAttributions()) === 0) return false;
@@ -65,7 +65,7 @@ class CDCAutomatic extends BaseAutomatic implements ConfigurableAutomaticInterfa
                 return true;
         });
 
-        $adabs = !$data['adabs'] ? [] : array_map(function(BaseAttribution $attribution) {
+        $adabs = !$data['adabs'] || $adabsId === null ? [] : array_map(function(BaseAttribution $attribution) {
             return $attribution->getMembre();
         }, $this->entityManager->getRepository($this->fichierConfig->getGroupeClass())->find($adabsId)->getActivesAttributions());
 

@@ -80,12 +80,12 @@ final class DirectoryProjection
 
         $groups = [];
         $frozen = [];
-        foreach ($selection as $id => [$groupe, $rule, $problem]) {
+        foreach ($selection as $id => [$groupe, $rule, $problem, $uncertain]) {
             $group = $problem === null ? $this->buildGroup($groupe, $names[$id], $rule, $uidByMembre, $checker) : null;
             if ($group instanceof DirectoryGroup) {
                 $groups[$id] = $group;
             } else {
-                $frozen["id:$id"] = new FrozenGroup("id:$id", $names[$id], $problem ?? $group);
+                $frozen["id:$id"] = new FrozenGroup("id:$id", $names[$id], $problem ?? $group, $uncertain);
             }
         }
 
@@ -154,8 +154,8 @@ final class DirectoryProjection
             $outlines[] = new GroupOutline("c$id", self::dnSafe($entity->getName()), null, $this->computedOrigin($entity),
                 $problem === null ? null : $checker->reason($entity->getMembres(), $problem));
         }
-        foreach ($selection as $id => [, $rule, $problem]) {
-            $outlines[] = new GroupOutline((string) $id, $names[$id], $id, $rule === null ? '—' : $this->origin($rule, $checker), $problem);
+        foreach ($selection as $id => [, $rule, $problem, $uncertain]) {
+            $outlines[] = new GroupOutline((string) $id, $names[$id], $id, $rule === null ? '—' : $this->origin($rule, $checker), $problem, $uncertain);
         }
         return $outlines;
     }
@@ -188,10 +188,10 @@ final class DirectoryProjection
         if (!isset($selection[(int) $key])) {
             return null;
         }
-        [$groupe, $rule, $problem] = $selection[(int) $key];
+        [$groupe, $rule, $problem, $uncertain] = $selection[(int) $key];
         $name = self::names($selection, $computed)[$groupe->getId()];
         if ($problem !== null) {
-            return new FrozenGroup("id:$key", $name, $problem);
+            return new FrozenGroup("id:$key", $name, $problem, $uncertain);
         }
 
         $this->fetchAttributions([$groupe->getId(), ...array_map(fn (BaseGroupe $g) => $g->getId(), $this->resolver->descendants($groupe))]);
@@ -226,11 +226,11 @@ final class DirectoryProjection
      * Which rule publishes each groupe: the first whose selection matches.
      * A groupe that reaches a broken selection rule can't tell whether that
      * rule wins, so it freezes; so does one whose winning rule has a broken
-     * sous-groupes rule.
+     * sous-groupes rule. The first kind is uncertain: see {@see FrozenGroup::$uncertain}.
      *
      * @param list<DirectoryPublicationRule> $rules
-     * @return array<int, array{BaseGroupe, ?DirectoryPublicationRule, ?string}> groupe id =>
-     *         [groupe, winning rule, freeze reason], selected or frozen groupes only, by id
+     * @return array<int, array{BaseGroupe, ?DirectoryPublicationRule, ?string, bool}> groupe id =>
+     *         [groupe, winning rule, freeze reason, uncertain], selected or frozen groupes only, by id
      */
     private function select(array $rules, DirectoryRuleChecker $checker): array
     {
@@ -243,7 +243,7 @@ final class DirectoryProjection
             foreach ($rules as $rule) {
                 $problem = $checker->problem($rule->getSelection());
                 if ($problem !== null) {
-                    $selection[$id] = [$groupe, $rule, $checker->reason($rule->getSelection(), $problem)];
+                    $selection[$id] = [$groupe, $rule, $checker->reason($rule->getSelection(), $problem), true];
                     continue 2;
                 }
                 try {
@@ -251,14 +251,14 @@ final class DirectoryProjection
                         continue;
                     }
                 } catch (RuleEvaluationException $e) {
-                    $selection[$id] = [$groupe, $rule, $checker->reason($rule->getSelection(), $e->getMessage())];
+                    $selection[$id] = [$groupe, $rule, $checker->reason($rule->getSelection(), $e->getMessage()), true];
                     continue 2;
                 }
 
                 $sousRule = $rule->getSousGroupesRule();
                 $problem = $rule->getSousGroupes() === DirectoryPublicationRule::SOUS_GROUPES_REGLE && $sousRule !== null
                     ? $checker->problem($sousRule) : null;
-                $selection[$id] = [$groupe, $rule, $problem === null ? null : $checker->reason($sousRule, $problem)];
+                $selection[$id] = [$groupe, $rule, $problem === null ? null : $checker->reason($sousRule, $problem), false];
                 continue 2;
             }
         }

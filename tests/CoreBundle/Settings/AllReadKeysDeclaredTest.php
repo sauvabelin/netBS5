@@ -9,13 +9,13 @@ use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
 use Symfony\Component\Finder\Finder;
 
 /**
- * Guard: every setting the code reads by literal key (PHP getValue(), Twig param(), the
+ * Guard: every setting the code reads by literal key (PHP getValue() / getValueOrNull(), Twig param(), the
  * Nextcloud SQL views) must be declared, so it is validated and shown on the Paramètres page.
  */
 final class AllReadKeysDeclaredTest extends KernelTestCase
 {
     private const CODE_PATTERNS = [
-        '/getValue\(\s*[\'"]([\w.]+)[\'"]\s*,\s*[\'"]([\w.]+)[\'"]/',
+        '/getValue(?:OrNull)?\(\s*[\'"]([\w.]+)[\'"]\s*,\s*[\'"]([\w.]+)[\'"]/',
         '/param\(\s*[\'"]([\w.]+)[\'"]\s*,\s*[\'"]([\w.]+)[\'"]/',
     ];
 

@@ -132,6 +132,7 @@ final class DirectoryProjectionTest extends KernelTestCase
             self::assertInstanceOf(FrozenGroup::class, $frozen, $groupe);
             self::assertStringContainsString('Règle LDAP « dirproj-cassée »', $frozen->reason);
             self::assertStringContainsString('Référence supprimée', $frozen->reason);
+            self::assertTrue($frozen->uncertain, 'only frozen because the broken rule might pick it');
         }
         self::assertArrayNotHasKey('id:' . $ids['gc'], $snapshot->frozen);
     }
@@ -177,6 +178,7 @@ final class DirectoryProjectionTest extends KernelTestCase
         $snapshot = $this->projection->snapshot();
 
         self::assertArrayHasKey('id:' . $ids['ga'], $snapshot->frozen);
+        self::assertFalse($snapshot->frozen['id:' . $ids['ga']]->uncertain, 'its rule does select it');
         self::assertArrayNotHasKey($ids['ga'], $snapshot->groups);
         self::assertArrayHasKey($ids['gc'], $snapshot->groups);
     }

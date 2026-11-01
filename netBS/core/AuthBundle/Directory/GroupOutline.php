@@ -16,6 +16,8 @@ final class GroupOutline
         public readonly string $origin,
         /** Set when the group is frozen. */
         public readonly ?string $frozenReason = null,
+        /** See {@see FrozenGroup::$uncertain}. */
+        public readonly bool $uncertain = false,
     ) {
     }
 }

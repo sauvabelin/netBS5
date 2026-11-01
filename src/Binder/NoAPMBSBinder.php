@@ -35,7 +35,9 @@ class NoAPMBSBinder extends BaseBinder
         if(!$form->getData())
             return;
 
-        $apmbsId    = $this->params->getValue('bs', "groupe.apmbs_id");
+        $apmbsId    = $this->params->getValueOrNull('bs', "groupe.apmbs_id");
+        if ($apmbsId === null)
+            return;
 
         $qb         = $this->manager->createQueryBuilder()->select('m.id')
             ->from($this->config->getMembreClass(), 'm');

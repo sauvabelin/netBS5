@@ -9,6 +9,7 @@ use NetBS\AuthBundle\Contract\DirectoryUserProviderInterface;
 use NetBS\AuthBundle\Directory\DirectoryGroup;
 use NetBS\AuthBundle\Directory\DirectoryNotConfiguredException;
 use NetBS\AuthBundle\Directory\DirectoryProjection;
+use NetBS\AuthBundle\Directory\DirectorySync;
 use NetBS\AuthBundle\Directory\DirectoryUser;
 use NetBS\AuthBundle\Directory\FrozenGroup;
 use NetBS\AuthBundle\Directory\GroupOutline;
@@ -56,7 +57,7 @@ final class LdapController extends AbstractController
         // Members aren't resolved here: that takes the whole snapshot. The
         // page fetches each group's count on hover, see memberCount().
         try {
-            $groupRows = $this->groupRows($this->projection->groupOutlines());
+            $groupRows = $this->groupRows($this->withoutPendingGroupes($this->projection->groupOutlines()));
             $notConfigured = null;
         } catch (DirectoryNotConfiguredException $e) {
             $groupRows = [];
@@ -69,6 +70,31 @@ final class LdapController extends AbstractController
             'rules'          => array_map($this->ruleView(...), $this->rules->ordered()),
             'computedGroups' => array_map($this->computedView(...), $this->em->getRepository(DirectoryComputedGroup::class)->findBy([], ['id' => 'ASC'])),
         ]);
+    }
+
+    /**
+     * Drops the groupes a broken selection rule merely might pick (see FrozenGroup::$uncertain)
+     * when lldap has no group for them: nothing is held back there, and such a rule reaches
+     * every groupe after it. The rule itself shows as broken in the rules table. If lldap
+     * can't be reached, everything is kept.
+     *
+     * @param list<GroupOutline> $outlines
+     * @return list<GroupOutline>
+     */
+    private function withoutPendingGroupes(array $outlines): array
+    {
+        if (!array_filter($outlines, fn (GroupOutline $o) => $o->uncertain)) {
+            return $outlines;
+        }
+        try {
+            $inLldap = DirectorySync::managedGroups($this->lldap->listGroups());
+        } catch (LldapClientException $e) {
+            $this->logger->error('LDAP page: lldap unreachable', ['exception' => $e]);
+            return $outlines;
+        }
+
+        return array_values(array_filter($outlines,
+            fn (GroupOutline $o) => !$o->uncertain || isset($inLldap[DirectoryGroup::key($o->groupeId, null)])));
     }
 
     #[Route('/groups/{key}/count', name: 'auth.admin.ldap.group_count', requirements: ['key' => '[A-Za-z0-9_]+'], methods: ['GET'])]

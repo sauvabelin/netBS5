@@ -133,6 +133,21 @@ final class LdapControllerTest extends WebTestCase
         self::assertCount(0, $frozen->filter('[data-lazy-count-url]'), 'nothing to count');
     }
 
+    public function testBrokenSelectionRuleListsOnlyGroupsAlreadyInLldap(): void
+    {
+        $ids = $this->seedGroupeTree();
+        $this->publicationRule('dirproj-GC', self::blockRule('groupe.parmi', ['groupes' => [$ids['gc']]]));
+        $this->publicationRule('dirproj-cassée', self::blockRule('groupe.parmi', ['groupes' => [999999999]]));
+        $this->lldap->groups[7] = ['id' => 7, 'displayName' => 'dirproj-GA', 'netbsId' => $ids['ga'], 'netbsRole' => null, 'netbsComputedId' => null, 'members' => []];
+        $this->loginAdmin();
+
+        $crawler = $this->client->request('GET', self::URL);
+
+        self::assertStringContainsString('gelé', $crawler->filter(sprintf('#ldap-groups tr[data-row-id="%d"]', $ids['ga']))->text());
+        self::assertCount(0, $crawler->filter(sprintf('#ldap-groups tr[data-row-id="%d"]', $ids['gb'])), 'not in lldap: nothing to show');
+        self::assertCount(1, $crawler->filter(sprintf('#ldap-groups tr[data-row-id="%d"]', $ids['gc'])));
+    }
+
     public function testFrozenGroupPage(): void
     {
         $this->seedPublishedTree();

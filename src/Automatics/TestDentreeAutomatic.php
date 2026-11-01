@@ -41,11 +41,13 @@ class TestDentreeAutomatic extends BaseAutomatic
     {
         $now        = new \DateTime();
         $deuxieme   = intval($now->format('Y')) - 1;
-        $fnIds      = [
-            $this->parameterManager->getValue('bs', 'fonction.cp_id'),
-            $this->parameterManager->getValue('bs', 'fonction.cl_id'),
-            $this->parameterManager->getValue('bs', 'fonction.rouge_id')
-        ];
+        $fnIds      = array_filter([
+            $this->parameterManager->getValueOrNull('bs', 'fonction.cp_id'),
+            $this->parameterManager->getValueOrNull('bs', 'fonction.cl_id'),
+            $this->parameterManager->getValueOrNull('bs', 'fonction.rouge_id')
+        ], fn($id) => $id !== null);
+        if (empty($fnIds))
+            return [];
 
         $fnIds  = array_map(function($i) {return intval($i);}, $fnIds);
         $query  = $this->entityManager->getRepository(Attribution::class)

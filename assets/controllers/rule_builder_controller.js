@@ -20,14 +20,20 @@ export default class extends Controller {
         this.labels = { ...(this.configValue.labels || {}) };
         this.rule = this._parse(this.inputTarget.value);
         this._render();
-        // capture: the select2 controller dispatches non-bubbling change events on its select
-        this.element.addEventListener('change', (e) => this._onChange(e), true);
-        this.element.addEventListener('input', (e) => this._onInput(e));
-        this.element.addEventListener('click', (e) => this._onClick(e));
+        // kept so disconnect() can remove them: a reconnect (modal re-attach, Turbo restore)
+        // would otherwise register them twice and one click would add two conditions
+        this._listeners = [
+            // capture: the select2 controller dispatches non-bubbling change events on its select
+            ['change', (e) => this._onChange(e), true],
+            ['input', (e) => this._onInput(e), false],
+            ['click', (e) => this._onClick(e), false],
+        ];
+        this._listeners.forEach(([type, handler, capture]) => this.element.addEventListener(type, handler, capture));
     }
 
     disconnect() {
         clearTimeout(this._timer);
+        this._listeners.forEach(([type, handler, capture]) => this.element.removeEventListener(type, handler, capture));
     }
 
     // --- state ---

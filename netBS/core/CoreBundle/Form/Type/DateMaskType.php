@@ -12,7 +12,7 @@ class DateMaskType extends MaskType
     public function configureOptions(OptionsResolver $resolver)
     {
         parent::configureOptions($resolver);
-        $format = (new \DateTime())->formatDateFormat::DATE;
+        $format = (new \DateTime())->format(DateFormat::DATE);
         $format = preg_replace('/[0-9]/', '9', $format);
         $resolver->setDefault('mask', "'mask' : '$format'");
     }
@@ -23,7 +23,7 @@ class DateMaskType extends MaskType
         $builder->addViewTransformer(new CallbackTransformer(
                 function($date) {
                     if($date instanceof \DateTime)
-                        return $date->formatDateFormat::DATE;
+                        return $date->format(DateFormat::DATE);
                 },
                 function($string) {
                     if($string === '' || is_null($string))

@@ -241,7 +241,7 @@ abstract class BaseFactureExporter implements ExporterInterface, ConfigurableExp
     {
         if (!$membre instanceof BaseMembre) return null;
 
-        $brancheTypeId = (int) $this->parameterManager->getValue('bs', 'groupe_type.branche_id');
+        $brancheTypeId = (int) $this->parameterManager->getValueOrNull('bs', 'groupe_type.branche_id');
 
         // First pass: look for a branche-type group in the hierarchy
         foreach ($membre->getActivesAttributions() as $attribution) {

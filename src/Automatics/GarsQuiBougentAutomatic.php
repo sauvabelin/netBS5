@@ -45,8 +45,10 @@ class GarsQuiBougentAutomatic extends BaseAutomatic implements ConfigurableAutom
     protected function getItems($data = null)
     {
         $fnId       = $data->getAge() === 'louveteaux'
-            ? $this->parameterManager->getValue('bs', 'fonction.louveteau_id')
-            : $this->parameterManager->getValue('bs', 'fonction.eclaireur_id');
+            ? $this->parameterManager->getValueOrNull('bs', 'fonction.louveteau_id')
+            : $this->parameterManager->getValueOrNull('bs', 'fonction.eclaireur_id');
+        if ($fnId === null)
+            return [];
 
         $age        = $data->getAge() === 'louveteaux' ? 10 : 14;
         $year       = intval(date('Y')) - $age;
@@ -91,17 +93,20 @@ class GarsQuiBougentAutomatic extends BaseAutomatic implements ConfigurableAutom
         if($data->getSexe() === Personne::HOMME) {
 
             if($data->getAge() === 'louveteaux')
-                $branche = $repo->find($this->parameterManager->getValue('bs', 'groupe.branche_louveteaux_id'));
+                $branche = $repo->find($this->parameterManager->getValueOrNull('bs', 'groupe.branche_louveteaux_id'));
             else
-                $branche = $repo->find($this->parameterManager->getValue('bs', 'groupe.branche_eclaireurs_id'));
+                $branche = $repo->find($this->parameterManager->getValueOrNull('bs', 'groupe.branche_eclaireurs_id'));
         }
 
         else {
             if($data->getAge() === 'louveteaux')
-                $branche = $repo->find($this->parameterManager->getValue('bs', 'groupe.branche_louvettes_id'));
+                $branche = $repo->find($this->parameterManager->getValueOrNull('bs', 'groupe.branche_louvettes_id'));
             else
-                $branche = $repo->find($this->parameterManager->getValue('bs', 'groupe.branche_eclaireuses_id'));
+                $branche = $repo->find($this->parameterManager->getValueOrNull('bs', 'groupe.branche_eclaireuses_id'));
         }
+
+        if ($branche === null)
+            return [];
 
         return array_merge([$branche], $branche->getEnfantsRecursive());
     }

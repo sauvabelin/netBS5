@@ -4,6 +4,7 @@ namespace Ovesco\FacturationBundle\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
 use NetBS\CoreBundle\Entity\StoredRule;
+use NetBS\CoreBundle\Rule\InvalidRuleException;
 use NetBS\CoreBundle\Rule\Rule;
 
 #[ORM\Table(name: 'ovesco_facturation_facture_models')]
@@ -196,12 +197,22 @@ class FactureModel
 
         $this->applicationRule = null;
 
-        if ($json === null || Rule::fromJson($json)->isEmpty()) {
+        if ($json === null || self::isEmptyRule($json)) {
             $this->rule = null;
         } elseif ($this->rule !== null) {
             $this->rule->setDefinition($json);
         } else {
             $this->rule = new StoredRule('facture', $json);
+        }
+    }
+
+    /** Malformed JSON is not empty: it is kept, so the form's « Règle invalide » error reports it. */
+    private static function isEmptyRule(string $json): bool
+    {
+        try {
+            return Rule::fromJson($json)->isEmpty();
+        } catch (InvalidRuleException) {
+            return false;
         }
     }
 

@@ -39,8 +39,8 @@ class PageGroupeListener
         $groupe         = $event->getParameters()['item'];
         $categorieId    = $groupe->getGroupeType()->getGroupeCategorie()->getId();
         $typeId         = $groupe->getGroupeType()->getId();
-        $uniteId        = $this->params->getValue('bs', 'groupe_categorie.unite_id');
-        $brancheId      = $this->params->getValue('bs', 'groupe_type.branche_id');
+        $uniteId        = $this->params->getValueOrNull('bs', 'groupe_categorie.unite_id');
+        $brancheId      = $this->params->getValueOrNull('bs', 'groupe_type.branche_id');
         $config         = $event->getConfigurator();
         $column         = $config->getRow(0)->getColumns()[0];
 

@@ -35,7 +35,9 @@ class NoAdabsbinder extends BaseBinder
         if(!$form->getData())
             return;
 
-        $adabsId    = $this->params->getValue('bs', "groupe.adabs_id");
+        $adabsId    = $this->params->getValueOrNull('bs', "groupe.adabs_id");
+        if ($adabsId === null)
+            return;
 
         $qb         = $this->manager->createQueryBuilder()->select('m.id')
             ->from($this->config->getMembreClass(), 'm');

@@ -14,6 +14,7 @@ use NetBS\CoreBundle\Settings\SettingsRegistry;
 use NetBS\CoreBundle\Settings\SettingType;
 use NetBS\CoreBundle\Settings\SettingValidator;
 use Psr\Cache\CacheItemPoolInterface as AdapterInterface;
+use Psr\Log\LoggerInterface;
 use Symfony\Contracts\Service\ResetInterface;
 
 class ParameterManager implements ResetInterface
@@ -35,6 +36,7 @@ class ParameterManager implements ResetInterface
         AdapterInterface $cache,
         private SettingsRegistry $registry,
         private SettingValidator $validator,
+        private LoggerInterface $logger,
     ) {
         $this->manager  = $manager;
         $this->cache    = $cache;
@@ -108,6 +110,21 @@ class ParameterManager implements ResetInterface
             throw new SettingNotConfiguredException($definition);
 
         return $raw;
+    }
+
+    /**
+     * getValue(), but a setting that is not configured logs a warning and gives null: for
+     * features that should quietly do nothing until an admin sets them up (the settings
+     * banner already reports the missing setting).
+     */
+    public function getValueOrNull($namespace, $key): ?string {
+
+        try {
+            return $this->getValue($namespace, $key);
+        } catch (SettingNotConfiguredException $e) {
+            $this->logger->warning($e->getMessage());
+            return null;
+        }
     }
 
     /**
