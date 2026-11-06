@@ -3,18 +3,13 @@
 namespace App\Listener;
 
 use Doctrine\ORM\Event\LifecycleEventArgs;
-use NetBS\CoreBundle\Service\ParameterManager;
-use NetBS\CoreBundle\Settings\SettingNotConfiguredException;
 use App\Entity\BSMembre;
-use Psr\Log\LoggerInterface;
+use App\Settings\BsReferences;
 
 class DoctrineMembreAdabsIdListener
 {
-    private $params;
-
-    public function __construct(ParameterManager $params, private LoggerInterface $logger)
+    public function __construct(private readonly BsReferences $refs)
     {
-        $this->params = $params;
     }
 
     public function postLoad(LifecycleEventArgs $args) {
@@ -22,14 +17,9 @@ class DoctrineMembreAdabsIdListener
         if (!$entity instanceof BSMembre)
             return;
 
-        // Runs on every membre load: a missing setting must not break every page.
-        try {
-            $entity->_setAdabsId($this->params->getValue('bs', 'groupe.adabs_id'));
-        } catch (SettingNotConfiguredException $e) {
-            // Keep the stored id while its groupe is in the trash: BSMembre::setStatut() would
-            // otherwise close the ADABS attribution of a member being unsubscribed.
-            $entity->_setAdabsId($this->params->getStoredValue('bs', 'groupe.adabs_id'));
-            $this->logger->warning($e->getMessage());
-        }
+        // Runs on every membre load: a cached read, no existence check. An unset or stale id
+        // matches no attribution. Keeping the id of a groupe in the trash is what lets
+        // BSMembre::setStatut() still close the ADABS attribution of a member being unsubscribed.
+        $entity->_setAdabsId($this->refs->id('groupe.adabs_id'));
     }
 }

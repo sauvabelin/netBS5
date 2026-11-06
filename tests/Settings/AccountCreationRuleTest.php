@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Tests\Settings;
 
+use App\Settings\BsReferences;
 use App\Subscriber\DoctrineUserAccountSubscriber;
 use App\Tests\Support\InMemoryFichierTrait;
 use App\Tests\Support\RealRuleEngineTrait;
@@ -28,8 +29,8 @@ final class AccountCreationRuleTest extends TestCase
         $params->method('getValue')->willReturnMap([
             ['bs', 'comptes.creation', true, $rule],
             ['bs', 'groupe.adabs_id', true, '50'],
+            ['bs', 'fonction.weight.user_account', true, '100'],
         ]);
-        $params->method('getStoredValue')->willReturnMap([['bs', 'fonction.weight.user_account', '100']]);
 
         return new DoctrineUserAccountSubscriber(
             $this->createMock(UserPasswordHasherInterface::class),
@@ -38,6 +39,7 @@ final class AccountCreationRuleTest extends TestCase
             $params,
             new NullLogger(),
             $this->fichierRuleEvaluator(),
+            new BsReferences($params),
         );
     }
 

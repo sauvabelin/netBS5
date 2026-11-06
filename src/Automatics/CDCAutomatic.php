@@ -6,7 +6,6 @@ use NetBS\CoreBundle\Form\Type\SwitchType;
 use NetBS\CoreBundle\Model\BaseAutomatic;
 use NetBS\CoreBundle\Model\ConfigurableAutomaticInterface;
 use NetBS\CoreBundle\Utils\Traits\EntityManagerTrait;
-use NetBS\CoreBundle\Utils\Traits\ParamTrait;
 use NetBS\CoreBundle\Utils\Traits\SessionTrait;
 use NetBS\FichierBundle\Exporter\PDFEtiquettesV2;
 use NetBS\FichierBundle\Mapping\BaseAdresse;
@@ -19,10 +18,11 @@ use NetBS\ListBundle\Model\ListColumnsConfiguration;
 use NetBS\SecureBundle\Mapping\BaseUser;
 use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
 use Symfony\Component\Form\FormBuilderInterface;
+use App\Settings\BsReferencesTrait;
 
 class CDCAutomatic extends BaseAutomatic implements ConfigurableAutomaticInterface
 {
-    use FichierConfigTrait, EntityManagerTrait, ParamTrait, SessionTrait;
+    use FichierConfigTrait, EntityManagerTrait, SessionTrait, BsReferencesTrait;
 
     /**
      * @return string
@@ -53,12 +53,12 @@ class CDCAutomatic extends BaseAutomatic implements ConfigurableAutomaticInterfa
      */
     protected function getItems($data = null)
     {
-        $adabsId = $this->parameterManager->getValueOrNull('bs', 'groupe.adabs_id');
+        $adabsId = $this->refs->id('groupe.adabs_id');
         $membres = !$data['actifs'] ? [] : array_filter($this->entityManager->getRepository($this->fichierConfig->getMembreClass())->findBy(['statut' => BaseMembre::INSCRIT]),
             function(BaseMembre $membre) use ($adabsId) {
                 if (count($membre->getAttributions()) === 0) return false;
                 foreach ($membre->getAttributions() as $attribution) {
-                    if ($attribution->getGroupeId() === intval($adabsId)) {
+                    if ($attribution->getGroupeId() === $adabsId) {
                         return false;
                     }
                 }
@@ -67,7 +67,7 @@ class CDCAutomatic extends BaseAutomatic implements ConfigurableAutomaticInterfa
 
         $adabs = !$data['adabs'] || $adabsId === null ? [] : array_map(function(BaseAttribution $attribution) {
             return $attribution->getMembre();
-        }, $this->entityManager->getRepository($this->fichierConfig->getGroupeClass())->find($adabsId)->getActivesAttributions());
+        }, $this->entityManager->getRepository($this->fichierConfig->getGroupeClass())->find($adabsId)?->getActivesAttributions() ?? []);
 
 
         $items = array_unique(array_merge($membres, $adabs));

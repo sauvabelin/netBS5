@@ -7,13 +7,12 @@ namespace App\Tests\Settings;
 use App\Tests\Support\FichierRowsTrait;
 use App\Tests\Support\UserFactoryTrait;
 use Doctrine\ORM\EntityManagerInterface;
-use NetBS\CoreBundle\Service\ParameterManager;
 use Symfony\Bundle\FrameworkBundle\KernelBrowser;
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 
 /**
- * netbs5_test has no bs.* / galerie.* settings at all: pages and endpoints that read an
- * important setting must degrade the way they did before the settings rework, not 500.
+ * netbs5_test has no bs.* / galerie.* settings at all: pages and endpoints that read one must
+ * degrade quietly, not 500.
  */
 final class UnconfiguredSettingsTest extends WebTestCase
 {
@@ -34,14 +33,6 @@ final class UnconfiguredSettingsTest extends WebTestCase
     {
         $this->removeFichierRows($this->em);
         parent::tearDown();
-    }
-
-    public function test_value_or_null_returns_null_when_not_configured(): void
-    {
-        $params = static::getContainer()->get(ParameterManager::class);
-
-        $this->assertNull($params->getValueOrNull('bs', 'groupe.adabs_id'));
-        $this->assertSame('2000', $params->getValueOrNull('search', 'max_results'), 'a default still applies');
     }
 
     public function test_groupe_page_renders(): void

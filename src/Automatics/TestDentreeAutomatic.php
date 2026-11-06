@@ -4,16 +4,16 @@ namespace App\Automatics;
 
 use NetBS\CoreBundle\Model\BaseAutomatic;
 use NetBS\CoreBundle\Utils\Traits\EntityManagerTrait;
-use NetBS\CoreBundle\Utils\Traits\ParamTrait;
 use NetBS\FichierBundle\Mapping\BaseAttribution;
 use NetBS\FichierBundle\Utils\ListModel\MembreListHelper;
 use NetBS\FichierBundle\Utils\Traits\FichierConfigTrait;
 use App\Model\GarsQuiBougentData;
+use App\Settings\BsReferencesTrait;
 use NetBS\FichierBundle\Entity\Attribution;
 
 class TestDentreeAutomatic extends BaseAutomatic
 {
-    use FichierConfigTrait, ParamTrait, EntityManagerTrait, MembreListHelper;
+    use FichierConfigTrait, EntityManagerTrait, MembreListHelper, BsReferencesTrait;
 
     /**
      * @return string
@@ -41,15 +41,10 @@ class TestDentreeAutomatic extends BaseAutomatic
     {
         $now        = new \DateTime();
         $deuxieme   = intval($now->format('Y')) - 1;
-        $fnIds      = array_filter([
-            $this->parameterManager->getValueOrNull('bs', 'fonction.cp_id'),
-            $this->parameterManager->getValueOrNull('bs', 'fonction.cl_id'),
-            $this->parameterManager->getValueOrNull('bs', 'fonction.rouge_id')
-        ], fn($id) => $id !== null);
+        $fnIds      = $this->refs->ids('fonction.cp_id', 'fonction.cl_id', 'fonction.rouge_id');
         if (empty($fnIds))
             return [];
 
-        $fnIds  = array_map(function($i) {return intval($i);}, $fnIds);
         $query  = $this->entityManager->getRepository(Attribution::class)
             ->createQueryBuilder('attr');
 

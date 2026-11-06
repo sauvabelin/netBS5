@@ -5,7 +5,7 @@ namespace App\Binder;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\QueryBuilder;
 use NetBS\CoreBundle\Model\BaseBinder;
-use NetBS\CoreBundle\Service\ParameterManager;
+use App\Settings\BsReferences;
 use NetBS\FichierBundle\Service\FichierConfig;
 use App\Form\Search\SearchNoAdabsType;
 use Symfony\Component\Form\Form;
@@ -18,7 +18,7 @@ class NoAdabsbinder extends BaseBinder
 
     private $manager;
 
-    public function __construct(FichierConfig $config, EntityManagerInterface $manager, ParameterManager $params)
+    public function __construct(FichierConfig $config, EntityManagerInterface $manager, BsReferences $params)
     {
         $this->config   = $config;
         $this->params   = $params;
@@ -35,7 +35,7 @@ class NoAdabsbinder extends BaseBinder
         if(!$form->getData())
             return;
 
-        $adabsId    = $this->params->getValueOrNull('bs', "groupe.adabs_id");
+        $adabsId    = $this->params->id('groupe.adabs_id');
         if ($adabsId === null)
             return;
 

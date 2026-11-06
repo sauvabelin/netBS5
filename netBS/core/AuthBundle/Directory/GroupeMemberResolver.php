@@ -6,6 +6,7 @@ namespace NetBS\AuthBundle\Directory;
 
 use NetBS\AuthBundle\Entity\DirectoryPublicationRule;
 use NetBS\CoreBundle\Rule\RuleEvaluationException;
+use NetBS\CoreBundle\Rule\Rule;
 use NetBS\CoreBundle\Rule\RuleEvaluator;
 use NetBS\FichierBundle\Mapping\BaseGroupe;
 use NetBS\FichierBundle\Rule\AttributionInSousGroupe;
@@ -25,11 +26,11 @@ final class GroupeMemberResolver
     }
 
     /**
-     * @param string|null $rule rule JSON, for the "regle" mode
+     * @param Rule|string|null $rule for the "regle" mode
      * @return int[] unique membre ids
      * @throws RuleEvaluationException when the rule is broken or fails for an attribution
      */
-    public function membreIds(BaseGroupe $groupe, string $sousGroupes, ?string $rule = null): array
+    public function membreIds(BaseGroupe $groupe, string $sousGroupes, Rule|string|null $rule = null): array
     {
         if (!in_array($sousGroupes, DirectoryPublicationRule::getSousGroupesChoices(), true)) {
             throw new \InvalidArgumentException(sprintf('Unknown sous-groupes mode "%s".', $sousGroupes));

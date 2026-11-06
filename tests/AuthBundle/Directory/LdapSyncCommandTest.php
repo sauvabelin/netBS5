@@ -41,7 +41,7 @@ final class LdapSyncCommandTest extends KernelTestCase
         return $tester;
     }
 
-    public function testReportsFrozenGroupsAndFails(): void
+    public function testBrokenRuleFailsWithoutSyncing(): void
     {
         $this->seedPublishedTree();
         $this->computedGroup('dirproj-cassé', '{nope');
@@ -50,34 +50,18 @@ final class LdapSyncCommandTest extends KernelTestCase
         $display = preg_replace('/\s+/', ' ', $tester->getDisplay());
 
         self::assertSame(Command::FAILURE, $tester->getStatusCode());
-        self::assertStringContainsString('1 groups, 0 computed groups, 2 role groups, 1 frozen', $display);
-        self::assertStringContainsString('gelé : dirproj-cassé — Groupe LDAP calculé « dirproj-cassé »', $display);
+        self::assertStringContainsString('Groupe calculé « dirproj-cassé »', $display);
+        self::assertStringContainsString('suspendue', $display);
+        self::assertSame([], $this->lldap->groups, 'nothing synced');
     }
 
-    public function testBrokenSelectionRuleListsOnlyGroupsHeldBackInLldap(): void
-    {
-        $ids = $this->seedGroupeTree();
-        $this->publicationRule('dirproj-GC', self::blockRule('groupe.parmi', ['groupes' => [$ids['gc']]]));
-        $this->publicationRule('dirproj-cassée', self::blockRule('groupe.parmi', ['groupes' => [999999999]]));
-        $this->lldap->groups[7] = ['id' => 7, 'displayName' => 'dirproj-GA', 'netbsId' => $ids['ga'], 'netbsRole' => null, 'netbsComputedId' => null, 'members' => []];
-
-        $tester = $this->sync();
-        $display = preg_replace('/\s+/', ' ', $tester->getDisplay());
-
-        self::assertSame(Command::FAILURE, $tester->getStatusCode());
-        self::assertStringContainsString('gelé : dirproj-GA — Règle LDAP « dirproj-cassée »', $display);
-        self::assertStringNotContainsString('gelé : dirproj-GB', $display, 'not in lldap: nothing held back');
-        self::assertMatchesRegularExpression('/\d+ autre\(s\) groupe\(s\) en attente — Règle LDAP « dirproj-cassée »/', $display);
-        self::assertSame(1, substr_count($display, 'en attente'), 'one line per broken rule');
-    }
-
-    public function testSucceedsWithoutFrozenGroups(): void
+    public function testSucceeds(): void
     {
         $this->seedPublishedTree();
 
         $tester = $this->sync();
 
         self::assertSame(Command::SUCCESS, $tester->getStatusCode());
-        self::assertStringContainsString('0 frozen', $tester->getDisplay());
+        self::assertStringContainsString('1 groups, 0 computed groups, 2 role groups', $tester->getDisplay());
     }
 }

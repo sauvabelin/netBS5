@@ -15,10 +15,11 @@ use NetBS\SecureBundle\Mapping\BaseUser;
 use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Contracts\Service\Attribute\Required;
+use App\Settings\BsReferencesTrait;
 
 class CotisationsAutomatic extends BaseAutomatic implements ConfigurableAutomaticInterface
 {
-    use MembreListHelper, FichierConfigTrait, EntityManagerTrait, ParamTrait;
+    use MembreListHelper, FichierConfigTrait, EntityManagerTrait, ParamTrait, BsReferencesTrait;
 
     private RuleEvaluator $ruleEvaluator;
 
@@ -130,7 +131,7 @@ class CotisationsAutomatic extends BaseAutomatic implements ConfigurableAutomati
             return $split;
         }
 
-        $smtId = intval($this->parameterManager->getStoredValue('bs', 'groupe.branche_smt_id'));
+        $smtId = $this->refs->id('groupe.branche_smt_id');
 
         $normal = [];
         $reduit = [];
@@ -143,7 +144,7 @@ class CotisationsAutomatic extends BaseAutomatic implements ConfigurableAutomati
                     $isReduit = true;
                     break;
                 }
-                if($smtId > 0 && ($attribution->getGroupe()->getId() == $smtId || ($attribution->getGroupe()->getParent() && $attribution->getGroupe()->getParent()->getId() == $smtId))) {
+                if($smtId !== null && ($attribution->getGroupe()->getId() == $smtId || ($attribution->getGroupe()->getParent() && $attribution->getGroupe()->getParent()->getId() == $smtId))) {
                     $isReduit = true;
                     break;
                 }

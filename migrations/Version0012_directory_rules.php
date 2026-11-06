@@ -23,6 +23,11 @@ final class Version0012_directory_rules extends AbstractMigration
         $this->addSql('ALTER TABLE netbs_auth_directory_publication_rules ADD CONSTRAINT FK_E741ECBE3910D587 FOREIGN KEY (sous_groupes_rule_id) REFERENCES netbs_core_rules (id) ON DELETE SET NULL');
         // The per-type directory settings are dropped, not converted: until an
         // admin adds rules, the sync reports « not configured » and leaves lldap alone.
+        // Once the first rule or computed group is saved, the sync deletes every id:* group
+        // that rule does not select, and re-creates groups with new ids as rules are added.
+        // That churn is accepted on purpose: when this migration was written, nothing
+        // consumed the lldap groups yet. Convert the old flags into rules instead if that
+        // is no longer true when this is deployed.
         $this->addSql('ALTER TABLE netbs_fichier_groupe_types DROP cree_groupe, DROP sous_groupes');
     }
 

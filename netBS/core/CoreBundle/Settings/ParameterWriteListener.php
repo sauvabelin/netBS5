@@ -2,7 +2,6 @@
 
 namespace NetBS\CoreBundle\Settings;
 
-use Doctrine\Bundle\DoctrineBundle\Attribute\AsDoctrineListener;
 use Doctrine\Bundle\DoctrineBundle\Attribute\AsEntityListener;
 use Doctrine\ORM\Events;
 use NetBS\CoreBundle\Entity\Parameter;
@@ -13,7 +12,6 @@ use NetBS\CoreBundle\Service\ParameterManager;
  * Validates declared settings on every write path (Paramètres page, XEditable endpoint,
  * fixtures, ad-hoc code) and keeps the ParameterManager cache in sync with the table.
  */
-#[AsDoctrineListener(event: Events::postFlush)]
 #[AsEntityListener(event: Events::prePersist, method: 'validate', entity: Parameter::class, lazy: true)]
 #[AsEntityListener(event: Events::preUpdate, method: 'validate', entity: Parameter::class, lazy: true)]
 #[AsEntityListener(event: Events::postPersist, method: 'refresh', entity: Parameter::class, lazy: true)]
@@ -45,10 +43,5 @@ class ParameterWriteListener
     public function forget(Parameter $parameter): void
     {
         $this->parameters->forgetCache($parameter);
-    }
-
-    public function postFlush(): void
-    {
-        $this->parameters->forgetResolvedReferences();
     }
 }

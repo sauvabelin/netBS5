@@ -3,7 +3,7 @@ import { Controller } from '@hotwired/stimulus';
 /*
  * Fills counts on hover: when the pointer enters a table row, every
  * [data-lazy-count-url] element in it is replaced by the "count" the URL
- * returns ({"count": n}, or {"frozen": reason} for a group left as it is), once. On failure shows "?" and retries on the next
+ * returns ({"count": n}), once. On failure shows "?" and retries on the next
  * hover. Attach to a container, since list rows can't carry attributes.
  *
  * Usage:
@@ -26,9 +26,9 @@ export default class extends Controller {
                 return r.json();
             })
             .then((data) => {
-                el.textContent = 'frozen' in data ? 'gelé' : data.count;
+                el.textContent = data.count;
                 el.classList.remove('text-muted');
-                if ('frozen' in data) el.title = data.frozen; else el.removeAttribute('title');
+                el.removeAttribute('title');
                 el.removeAttribute('data-lazy-count-url');
             })
             .catch(() => {

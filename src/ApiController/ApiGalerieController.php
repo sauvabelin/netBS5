@@ -8,7 +8,6 @@ use App\Model\Markdown;
 use Doctrine\ORM\EntityManager;
 use Doctrine\ORM\EntityManagerInterface;
 use NetBS\CoreBundle\Service\ParameterManager;
-use NetBS\CoreBundle\Settings\SettingNotConfiguredException;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
@@ -106,12 +105,8 @@ class ApiGalerieController extends AbstractController
         $token          = $request->headers->get('x-authorization');
         $token          = str_replace("Bearer ", "", $token);
         // not configured: nobody gets in (an empty list would let an empty token through)
-        try {
-            $actualToken = $manager->getValue('galerie', 'parent_token', false);
-        } catch (SettingNotConfiguredException) {
-            return new JsonResponse("access denied", 401);
-        }
-        if($token === '' || !in_array($token, explode('|', $actualToken), true))
+        $actualToken    = trim((string) $manager->getValue('galerie', 'parent_token', false));
+        if($actualToken === '' || $token === '' || !in_array($token, explode('|', $actualToken), true))
             return new JsonResponse("access denied", 401);
 
         return $this->generateDirectoryResponse($request, $config, $serializer);

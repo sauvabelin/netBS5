@@ -20,32 +20,27 @@ class SettingsBuilder
         return $this;
     }
 
-    public function text(string $ns, string $key, string $label, ?string $default = null, bool $important = false, ?string $help = null): self
+    public function text(string $ns, string $key, string $label, ?string $default = null, ?string $help = null): self
     {
-        return $this->add($ns, $key, SettingType::Text, $label, help: $help, important: $important, default: $default);
+        return $this->add($ns, $key, SettingType::Text, $label, help: $help, default: $default);
     }
 
-    public function int(string $ns, string $key, string $label, ?int $default = null, bool $important = false, ?int $min = null, ?int $max = null, ?string $help = null): self
+    public function int(string $ns, string $key, string $label, ?int $default = null, ?int $min = null, ?int $max = null, ?string $help = null): self
     {
-        return $this->add($ns, $key, SettingType::Int, $label, help: $help, important: $important,
+        return $this->add($ns, $key, SettingType::Int, $label, help: $help,
             default: $default === null ? null : (string) $default, min: $min, max: $max);
     }
 
-    public function secret(string $ns, string $key, string $label, bool $important = false, ?int $minLength = null, ?string $help = null): self
+    /** No default: unset means the feature is closed. */
+    public function secret(string $ns, string $key, string $label, ?int $minLength = null, ?string $help = null): self
     {
-        return $this->add($ns, $key, SettingType::Secret, $label, help: $help, important: $important, minLength: $minLength);
+        return $this->add($ns, $key, SettingType::Secret, $label, help: $help, minLength: $minLength);
     }
 
     /** @param array<string,string> $choices value => label */
-    public function choice(string $ns, string $key, string $label, array $choices, ?string $default = null, bool $important = false, ?string $help = null): self
+    public function choice(string $ns, string $key, string $label, array $choices, ?string $default = null, ?string $help = null): self
     {
-        return $this->add($ns, $key, SettingType::Choice, $label, help: $help, important: $important,
-            default: $default, choices: $choices);
-    }
-
-    public function entity(string $ns, string $key, string $label, string $target, bool $important = false, ?string $help = null): self
-    {
-        return $this->add($ns, $key, SettingType::Entity, $label, help: $help, important: $important, target: $target);
+        return $this->add($ns, $key, SettingType::Choice, $label, help: $help, default: $default, choices: $choices);
     }
 
     /** Stored in the rules table by code = "<ns>.<key>"; unset means the legacy logic applies. */

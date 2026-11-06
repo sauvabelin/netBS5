@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Tests\CoreBundle\Controller;
 
-use App\Tests\Support\FichierRowsTrait;
 use App\Tests\Support\ParametersSnapshotTrait;
 use App\Tests\Support\UserFactoryTrait;
 use Doctrine\ORM\EntityManagerInterface;
@@ -19,7 +18,6 @@ use Symfony\Component\DomCrawler\Crawler;
 final class ParameterControllerTest extends WebTestCase
 {
     use UserFactoryTrait;
-    use FichierRowsTrait;
     use ParametersSnapshotTrait;
 
     private KernelBrowser $client;
@@ -34,7 +32,6 @@ final class ParameterControllerTest extends WebTestCase
 
     protected function tearDown(): void
     {
-        $this->removeFichierRows($this->em);
         $this->restoreParameters($this->em);
         $this->em->getConnection()->executeStatement("DELETE FROM netbs_core_rules WHERE code LIKE 'test.%'");
         parent::tearDown();
@@ -56,10 +53,9 @@ final class ParameterControllerTest extends WebTestCase
 
         $this->assertResponseIsSuccessful();
         $titles = implode(' | ', $crawler->filter('.card-title')->each(fn(Crawler $c) => $c->text()));
-        foreach (['Application', 'Recherche', 'Galerie', 'Brigade', 'Legacy'] as $section) {
+        foreach (['Application', 'Recherche', 'Galerie', 'Cotisations', 'Legacy'] as $section) {
             $this->assertStringContainsString($section, $titles);
         }
-        $this->assertStringContainsString('Non configuré', $crawler->filter('#setting-galerie-parent_token')->text());
         $this->assertStringNotContainsString('bousillez', $this->client->getResponse()->getContent());
     }
 
@@ -122,31 +118,6 @@ final class ParameterControllerTest extends WebTestCase
         $this->assertSame('secret-token-1', $this->storedValue('galerie', 'parent_token'));
     }
 
-    public function test_broken_reference_is_flagged(): void
-    {
-        $groupe = $this->createGroupe($this->em);
-        $id     = $groupe->getId();
-        $this->params()->setValue('bs', 'groupe.adabs_id', (string) $id);
-        $this->em->remove($groupe);
-        $this->em->flush();
-
-        $crawler = $this->openAsAdmin();
-
-        $this->assertResponseIsSuccessful();
-        $this->assertStringContainsString("Référence supprimée (id $id).", $crawler->filter('#setting-bs-groupe-adabs_id')->text());
-    }
-
-    public function test_configured_reference_shows_its_current_name(): void
-    {
-        $groupe = $this->createGroupe($this->em, 'ADABS renommé');
-        $this->params()->setValue('bs', 'groupe.adabs_id', (string) $groupe->getId());
-
-        $crawler = $this->openAsAdmin();
-
-        $this->assertResponseIsSuccessful();
-        $this->assertStringContainsString('ADABS renommé', $crawler->filter('#setting-bs-groupe-adabs_id')->html());
-    }
-
     public function test_date_format_is_not_a_setting(): void
     {
         $crawler = $this->openAsAdmin();
@@ -157,12 +128,14 @@ final class ParameterControllerTest extends WebTestCase
     public function test_legacy_card_lists_only_undeclared_keys(): void
     {
         $this->params()->setValue('bs', 'usernames_cordelettes', 'a,b');
+        $this->params()->setValue('bs', 'groupe.adabs_id', '12');
         $this->params()->setValue('app', 'organization', 'Org X');
 
         $crawler = $this->openAsAdmin();
 
         $legacy = $crawler->filter('#settings-legacy')->text();
         $this->assertStringContainsString('usernames_cordelettes', $legacy);
+        $this->assertStringContainsString('groupe.adabs_id', $legacy, 'bs.*_id references are legacy');
         $this->assertStringNotContainsString('organization', $legacy);
     }
 
@@ -210,11 +183,10 @@ final class ParameterControllerTest extends WebTestCase
         $this->assertNull($this->ruleRow());
     }
 
-    /** Stores the test section's other (important) values, so the rendered form can be saved as is. */
+    /** Stores the test section's other values, so the rendered form can be saved as is. */
     private function validTestSection(): array
     {
-        $this->params()->setValue('test', 'important_text', 'x');
-        $this->params()->setValue('test', 'ref', (string) $this->createGroupe($this->em)->getId());
+        $this->params()->setValue('test', 'plain_text', 'x');
 
         return [];
     }

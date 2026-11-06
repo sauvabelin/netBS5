@@ -14,10 +14,6 @@ final class GroupOutline
         /** Set for groupe groups. */
         public readonly ?int $groupeId,
         public readonly string $origin,
-        /** Set when the group is frozen. */
-        public readonly ?string $frozenReason = null,
-        /** See {@see FrozenGroup::$uncertain}. */
-        public readonly bool $uncertain = false,
     ) {
     }
 }

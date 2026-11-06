@@ -16,16 +16,12 @@ class ParameterController extends AbstractController
     #[IsGranted('ROLE_ADMIN')]
     public function listParametersAction(Request $request, SettingsRegistry $registry, SettingsFormFactory $factory, ParameterManager $parameters)
     {
-        $problems = [];
-        foreach ($parameters->problems() as $problem)
-            $problems[$problem->definition->id()] = $problem->message;
-
         $forms = [];
         foreach ($registry->sections() as $section => $label) {
 
             // Only the submitted section is handled; the others are rendered fresh.
             $submitted          = $request->isMethod('POST') && $request->request->has(SettingsFormFactory::formName($section));
-            $forms[$section]    = $form = $factory->create($section, $submitted ? [] : $problems);
+            $forms[$section]    = $form = $factory->create($section);
 
             if (!$submitted)
                 continue;

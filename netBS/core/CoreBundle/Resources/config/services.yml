@@ -130,10 +130,6 @@ services:
         tags:
             - { name: twig.extension }
 
-    NetBS\CoreBundle\Twig\Extension\SettingsProblemsExtension:
-        tags:
-            - { name: twig.extension }
-
     NetBS\CoreBundle\Searcher\SearcherManager: ~
 
     NetBS\CoreBundle\Searcher\EqualBinder:

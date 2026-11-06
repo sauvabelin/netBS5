@@ -7,7 +7,6 @@ namespace App\Tests\AuthBundle\Directory;
 use NetBS\AuthBundle\Directory\DirectoryGroup;
 use NetBS\AuthBundle\Directory\DirectoryNotConfiguredException;
 use NetBS\AuthBundle\Directory\DirectoryProjection;
-use NetBS\AuthBundle\Directory\FrozenGroup;
 use NetBS\AuthBundle\Directory\GroupOutline;
 use NetBS\CoreBundle\Rule\Rule;
 use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
@@ -118,36 +117,13 @@ final class DirectoryProjectionTest extends KernelTestCase
         self::assertSame('dirproj-GA', array_values($snapshot->computedGroups)[0]->name);
     }
 
-    public function testDeletedReferenceFreezesGroupesReachingTheRule(): void
+    public function testDeletedReferenceSuspendsTheSync(): void
     {
         $ids = $this->seedGroupeTree();
         $this->publicationRule('dirproj-GC', $this->parmi($ids['gc']));
         $this->publicationRule('dirproj-cassée', $this->parmi(999999999));
 
-        $snapshot = $this->projection->snapshot();
-
-        self::assertArrayHasKey($ids['gc'], $snapshot->groups);
-        foreach (['ga', 'gb'] as $groupe) {
-            $frozen = $snapshot->frozen['id:' . $ids[$groupe]] ?? null;
-            self::assertInstanceOf(FrozenGroup::class, $frozen, $groupe);
-            self::assertStringContainsString('Règle LDAP « dirproj-cassée »', $frozen->reason);
-            self::assertStringContainsString('Référence supprimée', $frozen->reason);
-            self::assertTrue($frozen->uncertain, 'only frozen because the broken rule might pick it');
-        }
-        self::assertArrayNotHasKey('id:' . $ids['gc'], $snapshot->frozen);
-    }
-
-    public function testFrozenGroupesDoNotTakeNamesFromPublishedOnes(): void
-    {
-        $ids = $this->seedGroupeTree();
-        $this->publicationRule('dirproj-GC', $this->parmi($ids['gc']));
-        $this->publicationRule('dirproj-cassée', $this->parmi(999999999));
-        $this->db->update('sauvabelin_netbs_groupes', ['nom' => 'dirproj-GC'], ['id' => $ids['ga']]);
-
-        $snapshot = $this->projection->snapshot();
-
-        self::assertSame('dirproj-GC', $snapshot->groups[$ids['gc']]->name, 'the healthy group keeps its name');
-        self::assertSame(sprintf('dirproj-GC [%d]', $ids['ga']), $snapshot->frozen['id:' . $ids['ga']]->name);
+        $this->assertSuspendedBy('Règle LDAP « dirproj-cassée »', 'Référence supprimée');
     }
 
     public function testReservedLldapNamesGetASuffix(): void
@@ -169,56 +145,70 @@ final class DirectoryProjectionTest extends KernelTestCase
         }
     }
 
-    public function testBrokenSousGroupesRuleFreezesOnlyThatGroup(): void
+    public function testBrokenSousGroupesRuleSuspendsTheSync(): void
     {
         $ids = $this->seedGroupeTree();
         $this->publicationRule('dirproj-GA', $this->parmi($ids['ga']), 'regle', '{nope');
         $this->publicationRule('dirproj-GC', $this->parmi($ids['gc']));
 
-        $snapshot = $this->projection->snapshot();
-
-        self::assertArrayHasKey('id:' . $ids['ga'], $snapshot->frozen);
-        self::assertFalse($snapshot->frozen['id:' . $ids['ga']]->uncertain, 'its rule does select it');
-        self::assertArrayNotHasKey($ids['ga'], $snapshot->groups);
-        self::assertArrayHasKey($ids['gc'], $snapshot->groups);
+        $this->assertSuspendedBy('Règle LDAP « dirproj-GA »');
     }
 
-    public function testSousGroupesRuntimeErrorFreezesOnlyThatGroup(): void
+    public function testSousGroupesRuntimeErrorSuspendsTheSync(): void
     {
         $ids = $this->seedGroupeTree();
         $this->publicationRule('dirproj-GA', $this->parmi($ids['ga']), 'regle', Rule::expert('membre.getFamille().getNom() == "x"')->toJson());
         $this->publicationRule('dirproj-GC', $this->parmi($ids['gc']));
 
-        $snapshot = $this->projection->snapshot();
-
-        self::assertArrayHasKey('id:' . $ids['ga'], $snapshot->frozen);
-        self::assertArrayHasKey($ids['gc'], $snapshot->groups);
+        $this->assertSuspendedBy('Règle LDAP « dirproj-GA »');
     }
 
-    public function testExpertRuntimeErrorFreezesComputedGroup(): void
+    public function testExpertRuntimeErrorInComputedGroupSuspendsTheSync(): void
     {
-        $ids = $this->seedPublishedTree();
+        $this->seedPublishedTree();
         $id = $this->computedGroup('dirproj-cassé', Rule::expert('membre.getFamille().getNom() == "x"')->toJson());
 
-        $snapshot = $this->projection->snapshot();
-
-        self::assertArrayHasKey("computed:$id", $snapshot->frozen);
-        self::assertSame('dirproj-cassé', $snapshot->frozen["computed:$id"]->name);
-        self::assertStringContainsString('Groupe LDAP calculé « dirproj-cassé »', $snapshot->frozen["computed:$id"]->reason);
-        self::assertArrayNotHasKey($id, $snapshot->computedGroups);
-        self::assertArrayHasKey($ids['ga'], $snapshot->groups);
+        $this->assertSuspendedBy('Groupe calculé « dirproj-cassé »');
+        try {
+            $this->projection->group("c$id");
+            self::fail('expected DirectoryNotConfiguredException');
+        } catch (DirectoryNotConfiguredException $e) {
+            self::assertStringContainsString('dirproj-cassé', $e->getMessage());
+        }
     }
 
-    public function testAllRulesBrokenStillSnapshotsWithFrozenGroups(): void
+    public function testProblemsAreReportedPerRule(): void
     {
-        $this->seedGroupeTree();
-        $this->publicationRule('dirproj-cassée', '{nope');
+        $ids = $this->seedGroupeTree();
+        $this->publicationRule('dirproj-ok', $this->parmi($ids['ga']));
+        $this->publicationRule('dirproj-cassée', $this->parmi(999999999));
+        $this->computedGroup('dirproj-cassé', '{nope');
+        $em = static::getContainer()->get('doctrine.orm.entity_manager');
 
-        $snapshot = $this->projection->snapshot();
+        $problems = [];
+        foreach ($em->getRepository(\NetBS\AuthBundle\Entity\DirectoryPublicationRule::class)->findAll() as $rule) {
+            $problems[$rule->getLabel()] = $this->projection->ruleProblem($rule);
+        }
+        foreach ($em->getRepository(\NetBS\AuthBundle\Entity\DirectoryComputedGroup::class)->findAll() as $group) {
+            $problems[$group->getName()] = $this->projection->computedProblem($group);
+        }
 
-        self::assertSame([], $snapshot->groups);
-        self::assertNotSame([], $snapshot->frozen);
-        self::assertSame(['ROLE_NEXTCLOUD_ADMIN', 'ROLE_WIKI_ADMIN'], array_keys($snapshot->roleGroups));
+        self::assertNull($problems['dirproj-ok']);
+        self::assertStringContainsString('Référence supprimée', $problems['dirproj-cassée']);
+        self::assertNotNull($problems['dirproj-cassé']);
+    }
+
+    private function assertSuspendedBy(string ...$needles): void
+    {
+        try {
+            $this->projection->snapshot();
+            self::fail('expected DirectoryNotConfiguredException');
+        } catch (DirectoryNotConfiguredException $e) {
+            foreach ($needles as $needle) {
+                self::assertStringContainsString($needle, $e->getMessage());
+            }
+            self::assertStringContainsString('suspendue', $e->getMessage());
+        }
     }
 
     public function testRoleGroupsHoldDirectoryUsersWithTheRole(): void
@@ -257,7 +247,6 @@ final class DirectoryProjectionTest extends KernelTestCase
         $this->grantUserRole($ids['user'], 'ROLE_WIKI_ADMIN');
         $this->db->update('sauvabelin_netbs_groupes', ['nom' => 'nextcloud-admins'], ['id' => $ids['ga']]);
         $computed = $this->computedGroup('dirproj-chefs', self::blockRule('membre.fonctions', ['fonctions' => [$ids['fonction']]]));
-        $broken = $this->computedGroup('dirproj-cassé', '{nope');
 
         $snapshot = $this->projection->snapshot();
         static::getContainer()->get('doctrine.orm.entity_manager')->clear();
@@ -265,7 +254,6 @@ final class DirectoryProjectionTest extends KernelTestCase
         self::assertEquals($snapshot->groups[$ids['ga']], $this->projection->group((string) $ids['ga']));
         self::assertEquals($snapshot->roleGroups['ROLE_WIKI_ADMIN'], $this->projection->group('ROLE_WIKI_ADMIN'));
         self::assertEquals($snapshot->computedGroups[$computed], $this->projection->group("c$computed"));
-        self::assertEquals($snapshot->frozen["computed:$broken"], $this->projection->group("c$broken"));
         self::assertNull($this->projection->group((string) $ids['gb']), 'not selected');
         self::assertNull($this->projection->group('ROLE_ADMIN'), 'role not published');
         self::assertNull($this->projection->group('c999999999'));
@@ -275,11 +263,9 @@ final class DirectoryProjectionTest extends KernelTestCase
             self::assertInstanceOf(GroupOutline::class, $outline);
             $outlines[$outline->key] = $outline;
         }
-        self::assertSame(['ROLE_NEXTCLOUD_ADMIN', 'ROLE_WIKI_ADMIN', "c$computed", "c$broken", (string) $ids['ga']], array_map('strval', array_keys($outlines)));
+        self::assertSame(['ROLE_NEXTCLOUD_ADMIN', 'ROLE_WIKI_ADMIN', "c$computed", (string) $ids['ga']], array_map('strval', array_keys($outlines)));
         self::assertSame(sprintf('nextcloud-admins [%d]', $ids['ga']), $outlines[(string) $ids['ga']]->name);
         self::assertSame($ids['ga'], $outlines[(string) $ids['ga']]->groupeId);
         self::assertSame($snapshot->groups[$ids['ga']]->origin, $outlines[(string) $ids['ga']]->origin);
-        self::assertNull($outlines[(string) $ids['ga']]->frozenReason);
-        self::assertNotNull($outlines["c$broken"]->frozenReason);
     }
 }

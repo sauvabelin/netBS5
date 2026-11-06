@@ -15,7 +15,7 @@ use App\Entity\BSUser;
 use App\Entity\LatestCreatedAccount;
 use NetBS\CoreBundle\Rule\RuleEvaluator;
 use NetBS\CoreBundle\Service\ParameterManager;
-use NetBS\CoreBundle\Settings\SettingNotConfiguredException;
+use App\Settings\BsReferences;
 use Psr\Log\LoggerInterface;
 use NetBS\SecureBundle\Entity\Role;
 use Symfony\Component\HttpFoundation\RequestStack;
@@ -43,6 +43,7 @@ class DoctrineUserAccountSubscriber implements EventSubscriber
         private readonly ParameterManager $params,
         private readonly LoggerInterface $logger,
         private readonly RuleEvaluator $ruleEvaluator,
+        private readonly BsReferences $refs,
     ) {
         $this->encoder  = $encoder;
         $this->mailer   = $mailer;
@@ -133,23 +134,17 @@ class DoctrineUserAccountSubscriber implements EventSubscriber
         if($membre->getStatut() !== BaseMembre::INSCRIT)
             return false;
 
-        try {
-            $rule = $this->params->getValue('bs', 'comptes.creation');
-            if ($rule !== null) {
-                // The attribution flows only call setMembre(); the rule must see the attribution being saved.
-                if (!$membre->getAttributions()->contains($attribution))
-                    $membre->getAttributions()->add($attribution);
+        $rule = $this->params->getValue('bs', 'comptes.creation');
+        if ($rule !== null) {
+            // The attribution flows only call setMembre(); the rule must see the attribution being saved.
+            if (!$membre->getAttributions()->contains($attribution))
+                $membre->getAttributions()->add($attribution);
 
-                return $this->ruleEvaluator->matches($rule, 'membre', $membre);
-            }
-
-            $adabsId    = intval($this->params->getValue('bs', 'groupe.adabs_id'));
-        } catch (SettingNotConfiguredException $e) {
-            $this->logger->warning($e->getMessage());
-            return false;
+            return $this->ruleEvaluator->matches($rule, 'membre', $membre);
         }
 
-        $fnWeight   = $this->params->getStoredValue('bs', 'fonction.weight.user_account');
+        $adabsId    = $this->refs->id('groupe.adabs_id');
+        $fnWeight   = $this->params->getValue('bs', 'fonction.weight.user_account');
         if ($fnWeight === null) {
             $this->logger->warning('Paramètre legacy bs.fonction.weight.user_account manquant : aucun compte créé automatiquement.');
             return false;

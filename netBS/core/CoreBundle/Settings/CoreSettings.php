@@ -19,7 +19,7 @@ class CoreSettings implements SettingsProvider
                 help: "Nombre maximum de résultats affichés par une recherche");
 
         $s->section('galerie', 'Galerie')
-            ->secret('galerie', 'parent_token', 'Mot de passe parents', important: true, minLength: 8,
-                help: 'Mot de passe commun donné aux parents pour accéder aux photos');
+            ->secret('galerie', 'parent_token', 'Mot de passe parents', minLength: 8,
+                help: 'Mot de passe commun donné aux parents pour accéder aux photos; sans mot de passe, la galerie est fermée');
     }
 }

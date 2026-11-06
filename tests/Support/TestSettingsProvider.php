@@ -14,9 +14,8 @@ class TestSettingsProvider implements SettingsProvider
     public function define(SettingsBuilder $s): void
     {
         $s->section('test', 'Test')
-            ->text('test', 'important_text', 'Texte important', important: true)
+            ->text('test', 'plain_text', 'Texte sans défaut')
             ->int('test', 'defaulted_int', 'Entier par défaut', default: 7, min: 1)
-            ->entity('test', 'ref', 'Référence test', 'groupe', important: true)
             ->rule('test', 'rule', 'Règle test', 'test', help: 'Une règle de test');
     }
 }

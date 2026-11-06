@@ -6,19 +6,19 @@ use NetBS\CoreBundle\Form\Type\SexeType;
 use NetBS\CoreBundle\Model\BaseAutomatic;
 use NetBS\CoreBundle\Model\ConfigurableAutomaticInterface;
 use NetBS\CoreBundle\Utils\Traits\EntityManagerTrait;
-use NetBS\CoreBundle\Utils\Traits\ParamTrait;
 use NetBS\FichierBundle\Mapping\BaseAttribution;
 use NetBS\FichierBundle\Mapping\BaseGroupe;
 use NetBS\FichierBundle\Mapping\Personne;
 use NetBS\FichierBundle\Utils\ListModel\MembreListHelper;
 use NetBS\FichierBundle\Utils\Traits\FichierConfigTrait;
 use App\Model\GarsQuiBougentData;
+use App\Settings\BsReferencesTrait;
 use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
 use Symfony\Component\Form\FormBuilderInterface;
 
 class GarsQuiBougentAutomatic extends BaseAutomatic implements ConfigurableAutomaticInterface
 {
-    use FichierConfigTrait, ParamTrait, EntityManagerTrait, MembreListHelper;
+    use FichierConfigTrait, EntityManagerTrait, MembreListHelper, BsReferencesTrait;
 
     /**
      * @return string
@@ -44,9 +44,7 @@ class GarsQuiBougentAutomatic extends BaseAutomatic implements ConfigurableAutom
      */
     protected function getItems($data = null)
     {
-        $fnId       = $data->getAge() === 'louveteaux'
-            ? $this->parameterManager->getValueOrNull('bs', 'fonction.louveteau_id')
-            : $this->parameterManager->getValueOrNull('bs', 'fonction.eclaireur_id');
+        $fnId       = $this->refs->id($data->getAge() === 'louveteaux' ? 'fonction.louveteau_id' : 'fonction.eclaireur_id');
         if ($fnId === null)
             return [];
 
@@ -86,25 +84,17 @@ class GarsQuiBougentAutomatic extends BaseAutomatic implements ConfigurableAutom
 
     private function getGroupes(GarsQuiBougentData $data) {
 
-        /** @var BaseGroupe $branche */
-        $branche    = null;
-        $repo       = $this->entityManager->getRepository($this->getFichierConfig()->getGroupeClass());
+        $louveteaux = $data->getAge() === 'louveteaux';
+        $brancheId  = $this->refs->id($data->getSexe() === Personne::HOMME
+            ? ($louveteaux ? 'groupe.branche_louveteaux_id' : 'groupe.branche_eclaireurs_id')
+            : ($louveteaux ? 'groupe.branche_louvettes_id' : 'groupe.branche_eclaireuses_id'));
 
-        if($data->getSexe() === Personne::HOMME) {
+        // find(null) throws in Doctrine 2: check the id before looking it up.
+        if ($brancheId === null)
+            return [];
 
-            if($data->getAge() === 'louveteaux')
-                $branche = $repo->find($this->parameterManager->getValueOrNull('bs', 'groupe.branche_louveteaux_id'));
-            else
-                $branche = $repo->find($this->parameterManager->getValueOrNull('bs', 'groupe.branche_eclaireurs_id'));
-        }
-
-        else {
-            if($data->getAge() === 'louveteaux')
-                $branche = $repo->find($this->parameterManager->getValueOrNull('bs', 'groupe.branche_louvettes_id'));
-            else
-                $branche = $repo->find($this->parameterManager->getValueOrNull('bs', 'groupe.branche_eclaireuses_id'));
-        }
-
+        /** @var BaseGroupe|null $branche */
+        $branche = $this->entityManager->getRepository($this->getFichierConfig()->getGroupeClass())->find($brancheId);
         if ($branche === null)
             return [];
 

@@ -7,7 +7,6 @@ namespace NetBS\AuthBundle\Entity;
 use Doctrine\ORM\Mapping as ORM;
 use NetBS\AuthBundle\Repository\DirectoryPublicationRuleRepository;
 use NetBS\CoreBundle\Entity\StoredRule;
-use NetBS\CoreBundle\Rule\Rule;
 use Symfony\Component\Validator\Constraints as Assert;
 use Symfony\Component\Validator\Context\ExecutionContextInterface;
 
@@ -102,10 +101,10 @@ class DirectoryPublicationRule
         return $this->selection?->getDefinition();
     }
 
-    /** An empty rule is kept, so validation reports it. */
+    /** An empty rule leaves no row; validation reports it. */
     public function setSelectionJson(?string $json): void
     {
-        $this->selection = StoredRules::update($this->selection, 'groupe', $json ?? Rule::empty()->toJson(), true);
+        $this->selection = StoredRule::assign($this->selection, 'groupe', $json);
     }
 
     public function getSousGroupes(): string
@@ -136,18 +135,18 @@ class DirectoryPublicationRule
     /** Creates, updates or (empty rule) removes the rule row. */
     public function setSousGroupesRuleJson(?string $json): void
     {
-        $this->sousGroupesRule = StoredRules::update($this->sousGroupesRule, 'attribution_sous_groupe', $json, false);
+        $this->sousGroupesRule = StoredRule::assign($this->sousGroupesRule, 'attribution_sous_groupe', $json);
     }
 
     #[Assert\Callback]
     public function validateRules(ExecutionContextInterface $context): void
     {
-        if (StoredRules::isEmpty($this->selection)) {
+        if ($this->selection === null) {
             $context->buildViolation('Choisissez au moins une condition.')
                 ->atPath('selectionJson')
                 ->addViolation();
         }
-        if ($this->sousGroupes === self::SOUS_GROUPES_REGLE && StoredRules::isEmpty($this->sousGroupesRule)) {
+        if ($this->sousGroupes === self::SOUS_GROUPES_REGLE && $this->sousGroupesRule === null) {
             $context->buildViolation('Choisissez au moins une condition pour le mode « selon une règle ».')
                 ->atPath('sousGroupesRuleJson')
                 ->addViolation();

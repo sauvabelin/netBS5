@@ -65,10 +65,10 @@ final class LdapRulesController extends AbstractController
 
         $ordered = $this->rules->ordered();
         $index = array_search($rule, $ordered, true);
-        $neighbour = $ordered[$direction === 'up' ? $index - 1 : $index + 1] ?? null;
-        if ($neighbour !== null) {
+        $other = $direction === 'up' ? $index - 1 : $index + 1;
+        if (isset($ordered[$other])) {
             // Renumbered, so equal or missing positions can't make the swap a no-op.
-            [$ordered[$index], $ordered[array_search($neighbour, $ordered, true)]] = [$neighbour, $rule];
+            [$ordered[$index], $ordered[$other]] = [$ordered[$other], $rule];
             foreach ($ordered as $position => $each) {
                 $each->setPosition($position + 1);
             }

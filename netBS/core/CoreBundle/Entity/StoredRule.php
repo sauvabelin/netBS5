@@ -4,6 +4,7 @@ namespace NetBS\CoreBundle\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
 use NetBS\CoreBundle\Repository\StoredRuleRepository;
+use NetBS\CoreBundle\Rule\InvalidRuleException;
 use NetBS\CoreBundle\Rule\Rule;
 
 /**
@@ -28,11 +29,44 @@ class StoredRule
     #[ORM\Column(name: 'code', type: 'string', length: 128, nullable: true, unique: true)]
     private ?string $code;
 
+    /** rule(), parsed once: a sync evaluates the same rule for every groupe / membre. */
+    private ?Rule $parsed = null;
+
     public function __construct(string $context, string $definition, ?string $code = null)
     {
         $this->context    = $context;
         $this->definition = $definition;
         $this->code       = $code;
+    }
+
+    /**
+     * The owner's rule row after setting $json on it: updated in place, created, or (no rule, empty
+     * rule) null. Malformed JSON is kept, so the owner's validation reports it rather than silently
+     * dropping it. The one place owners turn rule JSON into a row.
+     */
+    public static function assign(?self $row, string $context, ?string $json): ?self
+    {
+        if (self::isEmptyJson($json)) {
+            return null;
+        }
+        if ($row === null) {
+            return new self($context, $json);
+        }
+
+        return $row->setDefinition($json);
+    }
+
+    /** No rule, or one without any condition. Malformed JSON is not empty. */
+    public static function isEmptyJson(?string $json): bool
+    {
+        if ($json === null) {
+            return true;
+        }
+        try {
+            return Rule::fromJson($json)->isEmpty();
+        } catch (InvalidRuleException) {
+            return false;
+        }
     }
 
     public function getId(): ?int
@@ -58,13 +92,14 @@ class StoredRule
     public function setDefinition(string $json): self
     {
         $this->definition = $json;
+        $this->parsed     = null;
 
         return $this;
     }
 
     public function rule(): Rule
     {
-        return Rule::fromJson($this->definition);
+        return $this->parsed ??= Rule::fromJson($this->definition);
     }
 
     public function copy(): self

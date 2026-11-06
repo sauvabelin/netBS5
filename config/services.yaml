@@ -79,10 +79,6 @@ services:
           resolver: ovesco.galerie_cache_resolver,
         }
 
-  App\Subscriber\OldFichierMapperSubscriber:
-    tags:
-      - { name: doctrine.event_subscriber, connection: default }
-
   App\Subscriber\DoctrineUserAccountSubscriber:
     tags:
       - { name: doctrine.event_subscriber, connection: default }

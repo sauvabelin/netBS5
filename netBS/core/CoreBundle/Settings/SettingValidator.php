@@ -2,66 +2,13 @@
 
 namespace NetBS\CoreBundle\Settings;
 
-use Doctrine\ORM\EntityManagerInterface;
-use NetBS\CoreBundle\Rule\EntityTargets;
 use NetBS\CoreBundle\Rule\RuleValidator;
 
-/**
- * Checks a raw stored value against its declaration. Entity references are looked up with
- * the softdeleteable filter left on, so a row moved to the trash counts as deleted.
- */
+/** Checks a raw value against its declaration, on every write path. */
 class SettingValidator
 {
-    public function __construct(
-        private EntityManagerInterface $em,
-        private EntityTargets $targets,
-        private RuleValidator $rules,
-    ) {
-    }
-
-    /**
-     * Validates several stored values at once, checking references with one query per target
-     * class instead of one per setting (the admin banner runs this on every page).
-     *
-     * @param list<array{SettingDefinition,string}> $values
-     * @return array<string,string> setting id => error message, for the invalid ones only
-     */
-    public function validateAll(array $values): array
+    public function __construct(private RuleValidator $rules)
     {
-        $idsByClass = [];
-        foreach ($values as [$d, $raw]) {
-            if ($d->type === SettingType::Entity && preg_match('/^\d+$/', $raw)) {
-                $idsByClass[$this->targetClass($d)][] = (int) $raw;
-            }
-        }
-
-        $existing = [];
-        foreach ($idsByClass as $class => $ids) {
-            $found = $this->em->createQueryBuilder()
-                ->select('e.id')
-                ->from($class, 'e')
-                ->where('e.id IN (:ids)')
-                ->setParameter('ids', array_unique($ids))
-                ->getQuery()
-                ->getSingleColumnResult();
-            $existing[$class] = array_flip(array_map('intval', $found));
-        }
-
-        $errors = [];
-        foreach ($values as [$d, $raw]) {
-            if ($d->type === SettingType::Entity && trim($raw) !== '') {
-                $found = preg_match('/^\d+$/', $raw) && isset($existing[$this->targetClass($d)][(int) $raw]);
-                $error = $found ? null : "Référence supprimée (id $raw).";
-            } else {
-                $error = $this->validate($d, $raw);
-            }
-
-            if ($error !== null) {
-                $errors[$d->id()] = $error;
-            }
-        }
-
-        return $errors;
     }
 
     /** @return string|null French error message, or null when valid */
@@ -80,31 +27,8 @@ class SettingValidator
             SettingType::Secret => $this->validateSecret($d, $raw),
             SettingType::Int    => $this->validateInt($d, $raw),
             SettingType::Choice => array_key_exists($raw, $d->choices) ? null : 'Valeur non autorisée.',
-            SettingType::Entity => $this->resolveEntity($d, $raw) === null ? "Référence supprimée (id $raw)." : null,
             SettingType::Rule   => null,
         };
-    }
-
-    public function resolveEntity(SettingDefinition $d, string $raw): ?object
-    {
-        if (!preg_match('/^\d+$/', $raw)) {
-            return null;
-        }
-
-        // A query rather than find(): find() serves the identity map, which still holds a row
-        // soft-deleted earlier in the same request.
-        return $this->em->createQueryBuilder()
-            ->select('e')
-            ->from($this->targetClass($d), 'e')
-            ->where('e.id = :id')
-            ->setParameter('id', (int) $raw)
-            ->getQuery()
-            ->getOneOrNullResult();
-    }
-
-    public function targetClass(SettingDefinition $d): string
-    {
-        return $this->targets->classFor($d->target);
     }
 
     private function validateSecret(SettingDefinition $d, string $raw): ?string

@@ -2,7 +2,6 @@
 
 namespace NetBS\CoreBundle\Settings;
 
-use NetBS\CoreBundle\Form\Type\AjaxSelect2DocumentType;
 use NetBS\CoreBundle\Form\Type\RuleType;
 use NetBS\CoreBundle\Service\ParameterManager;
 use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
@@ -42,10 +41,7 @@ class SettingsFormFactory
         return str_replace('.', '__', $d->id());
     }
 
-    /**
-     * @param array<string,string> $problems setting id => message, shown on the fields of a fresh form
-     */
-    public function create(string $section, array $problems = []): FormInterface
+    public function create(string $section): FormInterface
     {
         $builder = $this->formFactory->createNamedBuilder(self::formName($section), FormType::class, null, [
             'csrf_token_id' => self::formName($section),
@@ -55,12 +51,11 @@ class SettingsFormFactory
 
         foreach ($definitions as $definition) {
             [$type, $options] = $this->fieldType($definition);
-            $data = $this->initialData($definition);
             $builder->add(self::fieldName($definition), $type, $options + [
                 'label'    => $definition->label,
                 'help'     => $definition->help,
                 'required' => true,
-                'data'     => $data,
+                'data'     => $this->initialData($definition),
             ]);
         }
 
@@ -75,15 +70,7 @@ class SettingsFormFactory
             }
         });
 
-        $form = $builder->getForm();
-
-        foreach ($definitions as $definition) {
-            if (isset($problems[$definition->id()])) {
-                $form->get(self::fieldName($definition))->addError(new FormError($problems[$definition->id()]));
-            }
-        }
-
-        return $form;
+        return $builder->getForm();
     }
 
     /**
@@ -113,8 +100,6 @@ class SettingsFormFactory
             // shown in plain text: admins hand these passwords out, they are not personal
             SettingType::Secret => [TextType::class, ['attr' => ['maxlength' => 255, 'autocomplete' => 'off']]],
             SettingType::Choice => [ChoiceType::class, ['choices' => array_flip($d->choices)]],
-            // data_class null: the picker's view data is the id, not the entity.
-            SettingType::Entity => [AjaxSelect2DocumentType::class, ['class' => $this->validator->targetClass($d), 'data_class' => null]],
             // an empty rule deletes the row, so no condition means the legacy logic
             SettingType::Rule   => [RuleType::class, ['context' => $d->context, 'required' => false, 'empty_text' => self::RULE_NOT_SET]],
         };
@@ -122,25 +107,13 @@ class SettingsFormFactory
 
     private function initialData(SettingDefinition $d): mixed
     {
-        try {
-            $raw = $this->parameters->getValue($d->namespace, $d->key);
-        } catch (SettingNotConfiguredException) {
-            return null;
-        }
+        $raw = $this->parameters->getValue($d->namespace, $d->key);
 
-        return match ($d->type) {
-            SettingType::Int    => preg_match('/^-?\d+$/', (string) $raw) ? (int) $raw : null,
-            SettingType::Entity => $raw === null ? null : $this->validator->resolveEntity($d, $raw),
-            default             => $raw,
-        };
+        return $d->type === SettingType::Int ? (preg_match('/^-?\d+$/', (string) $raw) ? (int) $raw : null) : $raw;
     }
 
     private static function toRaw(mixed $data): ?string
     {
-        return match (true) {
-            $data === null           => null,
-            is_object($data)         => (string) $data->getId(),
-            default                  => (string) $data,
-        };
+        return $data === null ? null : (string) $data;
     }
 }

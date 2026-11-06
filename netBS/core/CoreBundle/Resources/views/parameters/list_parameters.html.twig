@@ -21,7 +21,7 @@
 
                             {% for definition in registry.inSection(section) %}
                                 {% set field = form[definition.namespace ~ '__' ~ definition.key|replace({'.': '__'})] %}
-                                {{ _self.setting_row(field, 'setting-' ~ definition.namespace ~ '-' ~ definition.key|replace({'.': '-'}), definition.important, definition.type.value == 'rule') }}
+                                {{ _self.setting_row(field, 'setting-' ~ definition.namespace ~ '-' ~ definition.key|replace({'.': '-'}), definition.type.value == 'rule') }}
                             {% endfor %}
 
                             <div class="d-flex justify-content-end">
@@ -55,13 +55,10 @@
 {% endblock %}
 
 {# wide: label above a full-width field (rule editors need the room to keep a condition on one line) #}
-{% macro setting_row(field, anchor, important, wide = false) %}
+{% macro setting_row(field, anchor, wide = false) %}
     <div class="row mb-3" id="{{ anchor }}">
         <div class="col-12 {{ wide ? 'mb-2' : 'col-md-4' }}">
             {{ form_label(field, null, {label_attr: {class: 'fw-semibold mb-0'}}) }}
-            {% if important %}
-                <span class="badge bg-primary-subtle text-primary ms-1">important</span>
-            {% endif %}
             {% if field.vars.help %}
                 <div class="form-text mt-0">{{ field.vars.help }}</div>
             {% endif %}

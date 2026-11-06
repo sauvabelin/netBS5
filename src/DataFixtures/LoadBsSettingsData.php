@@ -10,9 +10,9 @@ use NetBS\CoreBundle\Service\ParameterManager;
 use NetBS\FichierBundle\Service\FichierConfig;
 
 /**
- * Points the important settings, and the legacy keys the Nextcloud SQL views read, at the dummy
- * structure, so a `netbs:install --dummy=true` ends with nothing to fix on the Paramètres page.
- * Fails loudly if a row it expects is missing.
+ * Points the legacy `bs.*_id` keys (read by netBS through BsReferences and by the Nextcloud SQL
+ * views) at the dummy structure, and sets the galerie password, so a `netbs:install --dummy=true`
+ * ends with nothing to bind by hand. Fails loudly if a row it expects is missing.
  */
 class LoadBsSettingsData extends Fixture implements OrderedFixtureInterface, FixtureGroupInterface
 {

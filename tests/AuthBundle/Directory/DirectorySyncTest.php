@@ -8,7 +8,6 @@ use NetBS\AuthBundle\Directory\DirectoryGroup;
 use NetBS\AuthBundle\Directory\DirectorySnapshot;
 use NetBS\AuthBundle\Directory\DirectorySync;
 use NetBS\AuthBundle\Directory\DirectoryUser;
-use NetBS\AuthBundle\Directory\FrozenGroup;
 use PHPUnit\Framework\TestCase;
 
 final class DirectorySyncTest extends TestCase
@@ -149,34 +148,6 @@ final class DirectorySyncTest extends TestCase
         self::assertNotNull($this->lldap->groupId('chefs'));
     }
 
-    public function testFrozenExistingGroupIsLeftUntouched(): void
-    {
-        $this->sync([$this->user('alice'), $this->user('bob')], [new DirectoryGroup(5, 'Troupe X', ['alice'])]);
-
-        $report = $this->sync([$this->user('alice'), $this->user('bob')], [], frozen: [new FrozenGroup('id:5', 'Troupe X renamed', 'cassée')]);
-
-        self::assertSame(['alice'], $this->lldap->membersOf('Troupe X'));
-        self::assertSame([], $report->changes);
-    }
-
-    public function testFrozenMissingGroupIsNotCreated(): void
-    {
-        $report = $this->sync([$this->user('alice')], [], frozen: [new FrozenGroup('computed:2', 'chefs', 'cassée')]);
-
-        self::assertNull($this->lldap->groupId('chefs'));
-        self::assertSame([], $report->errors);
-    }
-
-    public function testUnfrozenUndesiredGroupIsStillDeleted(): void
-    {
-        $this->sync([$this->user('alice')], [new DirectoryGroup(5, 'Troupe X', []), new DirectoryGroup(6, 'Meute Y', [])]);
-
-        $this->sync([$this->user('alice')], [], frozen: [new FrozenGroup('id:5', 'Troupe X', 'cassée')]);
-
-        self::assertNotNull($this->lldap->groupId('Troupe X'));
-        self::assertNull($this->lldap->groupId('Meute Y'));
-    }
-
     public function testAddsComputedAttributeWhenMissing(): void
     {
         $this->lldap->attributes = ['netbs-id', 'netbs-role'];
@@ -189,9 +160,8 @@ final class DirectorySyncTest extends TestCase
     /**
      * @param DirectoryUser[] $users
      * @param DirectoryGroup[] $groups groupe, computed and role groups
-     * @param FrozenGroup[] $frozen
      */
-    private function sync(array $users, array $groups, bool $dryRun = false, array $frozen = [])
+    private function sync(array $users, array $groups, bool $dryRun = false)
     {
         $usersByUid = [];
         foreach ($users as $user) {
@@ -209,11 +179,7 @@ final class DirectorySyncTest extends TestCase
                 $groupsById[$group->netbsId] = $group;
             }
         }
-        $frozenByKey = [];
-        foreach ($frozen as $group) {
-            $frozenByKey[$group->key] = $group;
-        }
-        return (new DirectorySync($this->lldap))->sync(new DirectorySnapshot($usersByUid, $groupsById, $roleGroups, $computedGroups, $frozenByKey), $dryRun);
+        return (new DirectorySync($this->lldap))->sync(new DirectorySnapshot($usersByUid, $groupsById, $roleGroups, $computedGroups), $dryRun);
     }
 
     private function user(string $uid): DirectoryUser

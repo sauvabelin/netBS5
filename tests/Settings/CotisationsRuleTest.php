@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Tests\Settings;
 
+use App\Settings\BsReferences;
 use App\Automatics\CotisationsAutomatic;
 use App\Tests\Support\CollectingLogger;
 use App\Tests\Support\InMemoryFichierTrait;
@@ -43,11 +44,14 @@ final class CotisationsRuleTest extends TestCase
     private function split(?string $rule, ?CollectingLogger $logger = null): array
     {
         $params = $this->createMock(ParameterManager::class);
-        $params->method('getValue')->willReturnMap([['bs', 'cotisations.tarif_reduit', true, $rule]]);
-        $params->method('getStoredValue')->willReturnMap([['bs', 'groupe.branche_smt_id', '10']]);
+        $params->method('getValue')->willReturnMap([
+            ['bs', 'cotisations.tarif_reduit', true, $rule],
+            ['bs', 'groupe.branche_smt_id', true, '10'],
+        ]);
 
         $automatic = new CotisationsAutomatic();
         $automatic->setParameterManager($params);
+        $automatic->setBsReferences(new BsReferences($params));
         $automatic->setRuleEvaluator($this->fichierRuleEvaluator($logger));
 
         $split = $automatic->splitTarif(array_values($this->membres));

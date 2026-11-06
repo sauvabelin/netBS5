@@ -14,8 +14,6 @@ final class LdapGroupRow
         /** Set for groupe groups, to link to the groupe page. */
         public readonly ?int $groupeId,
         public readonly string $origin,
-        /** Set when the group is frozen: left as it is in lldap. */
-        public readonly ?string $frozenReason = null,
     ) {
     }
 

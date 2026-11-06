@@ -14,7 +14,6 @@ namespace NetBS\AuthBundle\Directory;
  *     (groupe groups), {@see LldapClientInterface::NETBS_COMPUTED_ATTRIBUTE}
  *     (computed groups) or {@see LldapClientInterface::NETBS_ROLE_ATTRIBUTE}
  *     (role groups) attribute
- * Frozen groups ({@see DirectorySnapshot::$frozen}) are left exactly as they are.
  * The marker group doubles as the LDAP filter services use to find netBS users.
  */
 final class DirectorySync
@@ -70,10 +69,9 @@ final class DirectorySync
         foreach ([...array_values($snapshot->groups), ...array_values($snapshot->computedGroups), ...array_values($snapshot->roleGroups)] as $group) {
             $desired[DirectoryGroup::key($group->netbsId, $group->role, $group->computedId)] = $group;
         }
-        $this->syncGroups($desired, $snapshot->frozen, $currentGroups, $dryRun);
-        [$frozen, $pending] = FrozenGroup::split($snapshot->frozen, array_map(fn () => true, self::managedGroups($currentGroups)));
+        $this->syncGroups($desired, $currentGroups, $dryRun);
 
-        return new DirectorySyncReport($this->changes, $this->errors, $snapshot, $frozen, $pending);
+        return new DirectorySyncReport($this->changes, $this->errors, $snapshot);
     }
 
     private function findMarkerGroup(array $currentGroups): ?array
@@ -153,9 +151,8 @@ final class DirectorySync
 
     /**
      * @param array<string, DirectoryGroup> $groups keyed by {@see DirectoryGroup::key()}
-     * @param array<string, FrozenGroup> $frozen same keys; never created, changed nor deleted
      */
-    private function syncGroups(array $groups, array $frozen, array $currentGroups, bool $dryRun): void
+    private function syncGroups(array $groups, array $currentGroups, bool $dryRun): void
     {
         $managed = self::managedGroups($currentGroups);
 
@@ -197,7 +194,7 @@ final class DirectorySync
         }
 
         foreach ($managed as $key => $current) {
-            if (!isset($groups[$key]) && !isset($frozen[$key])) {
+            if (!isset($groups[$key])) {
                 $this->apply($dryRun, sprintf('delete group "%s"', $current['displayName']),
                     fn () => $this->client->deleteGroup($current['id']));
             }

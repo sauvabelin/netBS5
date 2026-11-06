@@ -8,6 +8,5 @@ enum SettingType: string
     case Int    = 'int';
     case Secret = 'secret';
     case Choice = 'choice';
-    case Entity = 'entity';
     case Rule   = 'rule';
 }

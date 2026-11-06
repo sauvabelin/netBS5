@@ -6,7 +6,6 @@ namespace NetBS\AuthBundle\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
 use NetBS\CoreBundle\Entity\StoredRule;
-use NetBS\CoreBundle\Rule\Rule;
 use Symfony\Component\Validator\Constraints as Assert;
 use Symfony\Component\Validator\Context\ExecutionContextInterface;
 
@@ -74,16 +73,16 @@ class DirectoryComputedGroup
         return $this->membres?->getDefinition();
     }
 
-    /** An empty rule is kept, so validation reports it. */
+    /** An empty rule leaves no row; validation reports it. */
     public function setMembresJson(?string $json): void
     {
-        $this->membres = StoredRules::update($this->membres, 'membre', $json ?? Rule::empty()->toJson(), true);
+        $this->membres = StoredRule::assign($this->membres, 'membre', $json);
     }
 
     #[Assert\Callback]
     public function validateRule(ExecutionContextInterface $context): void
     {
-        if (StoredRules::isEmpty($this->membres)) {
+        if ($this->membres === null) {
             $context->buildViolation('Choisissez au moins une condition.')
                 ->atPath('membresJson')
                 ->addViolation();
