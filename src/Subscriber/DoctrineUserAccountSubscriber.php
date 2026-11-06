@@ -13,7 +13,10 @@ use NetBS\SecureBundle\Mapping\BaseUser;
 use App\Entity\BSMembre;
 use App\Entity\BSUser;
 use App\Entity\LatestCreatedAccount;
-use NetBS\CoreBundle\Entity\Parameter;
+use NetBS\CoreBundle\Rule\RuleEvaluator;
+use NetBS\CoreBundle\Service\ParameterManager;
+use App\Settings\BsReferences;
+use Psr\Log\LoggerInterface;
 use NetBS\SecureBundle\Entity\Role;
 use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Component\Mailer\MailerInterface;
@@ -31,16 +34,16 @@ class DoctrineUserAccountSubscriber implements EventSubscriber
 
     private $mailer;
 
-    private $fnWeight = null;
-
     private $roleUser = null;
-
-    private $adabsId  = null;
 
     public function __construct(
         UserPasswordHasherInterface $encoder,
         MailerInterface $mailer,
         private readonly RequestStack $requestStack,
+        private readonly ParameterManager $params,
+        private readonly LoggerInterface $logger,
+        private readonly RuleEvaluator $ruleEvaluator,
+        private readonly BsReferences $refs,
     ) {
         $this->encoder  = $encoder;
         $this->mailer   = $mailer;
@@ -91,33 +94,11 @@ class DoctrineUserAccountSubscriber implements EventSubscriber
 
     private function handleCreation(BaseAttribution $attribution, ObjectManager $manager) {
 
-        // Skip if the attribution is being soft-deleted
-        if($attribution->getDeletedAt() !== null)
+        if (!$this->shouldCreateAccount($attribution))
             return;
 
         /** @var BSMembre $membre */
         $membre     = $attribution->getMembre();
-
-        if($membre->getStatut() !== BaseMembre::INSCRIT)
-            return;
-
-        $fonction   = $attribution->getFonction();
-
-        if($this->adabsId === null)
-            $this->adabsId = intval($manager->getRepository(Parameter::class)
-                ->findOneBy(array('namespace' => 'bs', 'paramKey'  => 'groupe.adabs_id'))->getValue());
-
-        if($this->fnWeight === null)
-            $this->fnWeight = $manager->getRepository(Parameter::class)
-                ->findOneBy(array('namespace' => 'bs', 'paramKey' => 'fonction.weight.user_account'))->getValue();
-
-        //Fonction pas assez balèze pour créer un compte
-        if($fonction->getPoids() < intval($this->fnWeight))
-            return;
-
-        foreach($membre->getActivesAttributions() as $attribution)
-            if(intval($attribution->getGroupe()->getId()) === $this->adabsId)
-                return;
 
         // Check including soft-deleted users to avoid unique constraint violations
         $filters = $manager->getFilters();
@@ -133,6 +114,51 @@ class DoctrineUserAccountSubscriber implements EventSubscriber
             return;
 
         $this->createUser($membre, $manager);
+    }
+
+    /**
+     * Whether saving this attribution earns its (inscrit) membre an account: the « création
+     * automatique de compte » rule on the membre, or without a rule the legacy logic (the saved
+     * attribution's fonction has poids >= legacy key bs.fonction.weight.user_account, and the
+     * membre is not in ADABS). Runs on every attribution save: a missing setting skips account
+     * creation instead of failing the save.
+     */
+    public function shouldCreateAccount(BaseAttribution $attribution): bool {
+
+        // Skip if the attribution is being soft-deleted
+        if($attribution->getDeletedAt() !== null)
+            return false;
+
+        $membre     = $attribution->getMembre();
+
+        if($membre->getStatut() !== BaseMembre::INSCRIT)
+            return false;
+
+        $rule = $this->params->getValue('bs', 'comptes.creation');
+        if ($rule !== null) {
+            // The attribution flows only call setMembre(); the rule must see the attribution being saved.
+            if (!$membre->getAttributions()->contains($attribution))
+                $membre->getAttributions()->add($attribution);
+
+            return $this->ruleEvaluator->matches($rule, 'membre', $membre);
+        }
+
+        $adabsId    = $this->refs->id('groupe.adabs_id');
+        $fnWeight   = $this->params->getValue('bs', 'fonction.weight.user_account');
+        if ($fnWeight === null) {
+            $this->logger->warning('Paramètre legacy bs.fonction.weight.user_account manquant : aucun compte créé automatiquement.');
+            return false;
+        }
+
+        //Fonction pas assez balèze pour créer un compte
+        if($attribution->getFonction()->getPoids() < intval($fnWeight))
+            return false;
+
+        foreach($membre->getActivesAttributions() as $active)
+            if(intval($active->getGroupe()->getId()) === $adabsId)
+                return false;
+
+        return true;
     }
 
     private function createUser(BaseMembre $membre, ObjectManager $manager) {

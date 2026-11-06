@@ -1,13 +1,13 @@
 {% extends '@NetBSCore/layout/backend.layout.twig' %}
 
-{% set title %}Authentication — LDAP — {{ group.name }}{% endset %}
+{% set title %}Groupes — {{ group.name }}{% endset %}
 
 {% block main %}
     <div class="container-fluid">
         {% include '@NetBSCore/includes/header.include.twig' with {
             header: group.name,
-            subHeader: 'Groupe de l\'annuaire LDAP',
-            actions: ['<a href="' ~ path('auth.admin.ldap.index') ~ '" class="btn btn-secondary"><i class="fas fa-arrow-left"></i> Annuaire LDAP</a>']
+            subHeader: 'Groupe partagé',
+            actions: ['<a href="' ~ path('auth.admin.ldap.index') ~ '" class="btn btn-secondary"><i class="fas fa-arrow-left"></i> Groupes</a>']
         } %}
 
         <div class="row">
@@ -18,15 +18,16 @@
                             {% if group.role is not null %}
                                 <dt class="col-sm-3">Rôle</dt>
                                 <dd class="col-sm-9"><code>{{ group.role }}</code></dd>
+                            {% elseif group.computedId is not null %}
+                                <dt class="col-sm-3">Origine</dt>
+                                <dd class="col-sm-9">{{ group.origin }}</dd>
                             {% else %}
                                 <dt class="col-sm-3">Groupe netBS</dt>
                                 <dd class="col-sm-9">
                                     <a href="{{ path('netbs.fichier.groupe.page_groupe', {id: group.netbsId}) }}">{{ group.name }}</a>
                                 </dd>
-                                <dt class="col-sm-3">Type</dt>
-                                <dd class="col-sm-9">{{ group.typeName }}</dd>
-                                <dt class="col-sm-3">Sous-groupes</dt>
-                                <dd class="col-sm-9">{{ sousGroupes ?? '—' }}</dd>
+                                <dt class="col-sm-3">Règle</dt>
+                                <dd class="col-sm-9">{{ group.origin }}</dd>
                             {% endif %}
                             <dt class="col-sm-3">Membres</dt>
                             <dd class="col-sm-9">{{ group.members|length }}</dd>

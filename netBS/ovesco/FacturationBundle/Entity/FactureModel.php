@@ -3,6 +3,8 @@
 namespace Ovesco\FacturationBundle\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
+use NetBS\CoreBundle\Entity\StoredRule;
+use NetBS\CoreBundle\Rule\Rule;
 
 #[ORM\Table(name: 'ovesco_facturation_facture_models')]
 #[ORM\Entity]
@@ -27,6 +29,23 @@ class FactureModel
      */
     #[ORM\Column(name: 'application_rule', type: 'text', length: 255, nullable: true)]
     protected $applicationRule;
+
+    /**
+     * « S'applique quand » rule. Until one is set, the legacy applicationRule expression applies.
+     */
+    #[ORM\OneToOne(targetEntity: StoredRule::class, cascade: ['persist', 'remove'], orphanRemoval: true)]
+    #[ORM\JoinColumn(name: 'rule_id', nullable: true, onDelete: 'SET NULL')]
+    protected ?StoredRule $rule = null;
+
+    const TEXTES_ANCIEN  = 1;
+    const TEXTES_NOUVEAU = 2;
+
+    /**
+     * Format of titre / topDescription / bottomSalutations: TEXTES_ANCIEN ([expression] parsed the
+     * old way) until the model is saved from the new editor; new models use TEXTES_NOUVEAU.
+     */
+    #[ORM\Column(name: 'textes_format', type: 'smallint', options: ['default' => 1])]
+    protected int $textesFormat = self::TEXTES_ANCIEN;
 
     /**
      * @var string
@@ -82,6 +101,21 @@ class FactureModel
     #[ORM\Column(name: 'poids', type: 'integer')]
     protected $poids;
 
+    public function __construct()
+    {
+        $this->textesFormat = self::TEXTES_NOUVEAU;
+    }
+
+    public function getTextesFormat(): int
+    {
+        return $this->textesFormat;
+    }
+
+    public function setTextesFormat(int $textesFormat): void
+    {
+        $this->textesFormat = $textesFormat;
+    }
+
     public function __toString() {
 
         return $this->name;
@@ -125,6 +159,43 @@ class FactureModel
     public function setApplicationRule($applicationRule)
     {
         $this->applicationRule = $applicationRule;
+    }
+
+    public function getRule(): ?StoredRule
+    {
+        return $this->rule;
+    }
+
+    public function setRule(?StoredRule $rule): void
+    {
+        $this->rule = $rule;
+    }
+
+    /**
+     * The rule as the form edits it: the rule row's JSON, else the legacy expression as an
+     * expert rule, else null (no condition).
+     */
+    public function getRuleJson(): ?string
+    {
+        if ($this->rule !== null) {
+            return $this->rule->getDefinition();
+        }
+
+        return trim((string) $this->applicationRule) !== '' ? Rule::expert($this->applicationRule)->toJson() : null;
+    }
+
+    /**
+     * Unchanged: nothing happens, so an untouched legacy expression stays as it is. Otherwise the
+     * rule row is created, updated or (empty rule) removed, and the legacy expression cleared.
+     */
+    public function setRuleJson(?string $json): void
+    {
+        if ($json === $this->getRuleJson()) {
+            return;
+        }
+
+        $this->applicationRule = null;
+        $this->rule            = StoredRule::assign($this->rule, 'facture', $json);
     }
 
     /**

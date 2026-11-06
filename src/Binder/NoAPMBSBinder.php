@@ -5,7 +5,7 @@ namespace App\Binder;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\QueryBuilder;
 use NetBS\CoreBundle\Model\BaseBinder;
-use NetBS\CoreBundle\Service\ParameterManager;
+use App\Settings\BsReferences;
 use NetBS\FichierBundle\Service\FichierConfig;
 use App\Form\Search\SearchNoAPMBSType;
 use Symfony\Component\Form\Form;
@@ -18,7 +18,7 @@ class NoAPMBSBinder extends BaseBinder
 
     private $manager;
 
-    public function __construct(FichierConfig $config, EntityManagerInterface $manager, ParameterManager $params)
+    public function __construct(FichierConfig $config, EntityManagerInterface $manager, BsReferences $params)
     {
         $this->config   = $config;
         $this->params   = $params;
@@ -35,7 +35,9 @@ class NoAPMBSBinder extends BaseBinder
         if(!$form->getData())
             return;
 
-        $apmbsId    = $this->params->getValue('bs', "groupe.apmbs_id");
+        $apmbsId    = $this->params->id('groupe.apmbs_id');
+        if ($apmbsId === null)
+            return;
 
         $qb         = $this->manager->createQueryBuilder()->select('m.id')
             ->from($this->config->getMembreClass(), 'm');

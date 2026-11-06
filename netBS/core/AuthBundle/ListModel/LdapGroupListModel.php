@@ -55,11 +55,8 @@ final class LdapGroupListModel extends BaseListModel
                 },
             ])
             // The netbs renderer prints cells raw, so every value is escaped here.
-            ->addColumn('Type', null, ClosureColumn::class, [
-                ClosureColumn::CLOSURE => fn (LdapGroupRow $row) => htmlspecialchars($row->type, ENT_QUOTES, 'UTF-8'),
-            ])
-            ->addColumn('Sous-groupes', null, ClosureColumn::class, [
-                ClosureColumn::CLOSURE => fn (LdapGroupRow $row) => htmlspecialchars($row->sousGroupes, ENT_QUOTES, 'UTF-8'),
+            ->addColumn('Origine', null, ClosureColumn::class, [
+                ClosureColumn::CLOSURE => fn (LdapGroupRow $row) => htmlspecialchars($row->origin, ENT_QUOTES, 'UTF-8'),
             ])
             ->addColumn('Membres', null, ClosureColumn::class, [
                 // Counted on hover (lazy-count controller): resolving every group is slow.

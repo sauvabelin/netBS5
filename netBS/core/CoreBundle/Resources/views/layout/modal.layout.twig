@@ -1,8 +1,10 @@
 {% set _modal %}
 
     {% set title %}{% block title %}{% endblock %}{% endset %}
+    {# narrow | wide — see assets/styles/bootstrap/_modals.scss #}
+    {% set modal_size %}{% block size %}narrow{% endblock %}{% endset %}
 
-    <div class="modal-dialog {% block widthClass %}custom-width{% endblock %}" {% block modalAttrs %}{% endblock %}>
+    <div class="modal-dialog modal-{{ modal_size|trim }}" {% block modalAttrs %}{% endblock %}>
         <div class="modal-content">
             {% if title %}
                 <div class="modal-header">

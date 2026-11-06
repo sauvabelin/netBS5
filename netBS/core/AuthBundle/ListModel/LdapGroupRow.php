@@ -8,13 +8,12 @@ namespace NetBS\AuthBundle\ListModel;
 final class LdapGroupRow
 {
     public function __construct(
-        /** Groupe id (as a string) or role name; also the members endpoint key. */
+        /** Groupe id (as a string), "c" + computed group id, or role name; also the members endpoint key. */
         public readonly string $key,
         public readonly string $name,
         /** Set for groupe groups, to link to the groupe page. */
         public readonly ?int $groupeId,
-        public readonly string $type,
-        public readonly string $sousGroupes,
+        public readonly string $origin,
     ) {
     }
 

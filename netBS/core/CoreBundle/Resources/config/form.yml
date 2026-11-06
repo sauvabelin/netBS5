@@ -35,3 +35,7 @@ services:
     NetBS\CoreBundle\Form\Type\AjaxSelect2DocumentType:
         tags:
             - { name: form.type }
+
+    NetBS\CoreBundle\Form\Type\RuleType:
+        tags:
+            - { name: form.type }

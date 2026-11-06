@@ -7,18 +7,65 @@
             header: "Paramètres système"
         } %}
 
-        <div class="col-12">
+        <div class="row">
+            <div class="col-12 col-xl-10">
 
-            <div class="card card-table">
-                <div class="card-header">
-                    <h5 class="card-title">Paramètres système</h5>
-                    <h6 class="card-subtitle">Attention, ne bousillez pas tout en mettant une valeur invalide à un de ces petits bails inchallah</h6>
+                {% for section, label in sections %}
+                    {% set form = forms[section] %}
+                    <div class="card mb-3" id="section-{{ section }}">
+                        <div class="card-header">
+                            <h5 class="card-title mb-0">{{ label }}</h5>
+                        </div>
+                        <div class="card-body">
+                            {{ form_start(form) }}
+
+                            {% for definition in registry.inSection(section) %}
+                                {% set field = form[definition.namespace ~ '__' ~ definition.key|replace({'.': '__'})] %}
+                                {{ _self.setting_row(field, 'setting-' ~ definition.namespace ~ '-' ~ definition.key|replace({'.': '-'}), definition.type.value == 'rule') }}
+                            {% endfor %}
+
+                            <div class="d-flex justify-content-end">
+                                <button type="submit" class="btn btn-primary">Enregistrer</button>
+                            </div>
+                            {{ form_end(form) }}
+                        </div>
+                    </div>
+                {% endfor %}
+
+                <div class="card card-table mb-3">
+                    <div class="card-header">
+                        <h5 class="card-title mb-0">
+                            <a class="text-reset text-decoration-none" data-bs-toggle="collapse" href="#settings-legacy"
+                               role="button" aria-expanded="false" aria-controls="settings-legacy">
+                                <i class="fas fa-chevron-right me-1"></i> Anciens paramètres
+                            </a>
+                        </h5>
+                        <h6 class="card-subtitle text-muted">Paramètres pas encore migrés, modifiables tels quels. À ne changer qu'en connaissance de cause.</h6>
+                    </div>
+                    <div class="collapse" id="settings-legacy">
+                        <div class="card-body">
+                            {{ render_list('netbs.core.parameters', 'netbs') }}
+                        </div>
+                    </div>
                 </div>
 
-                <div class="card-body">
-                    {{ render_list('netbs.core.parameters', 'netbs') }}
-                </div>
             </div>
         </div>
     </div>
 {% endblock %}
+
+{# wide: label above a full-width field (rule editors need the room to keep a condition on one line) #}
+{% macro setting_row(field, anchor, wide = false) %}
+    <div class="row mb-3" id="{{ anchor }}">
+        <div class="col-12 {{ wide ? 'mb-2' : 'col-md-4' }}">
+            {{ form_label(field, null, {label_attr: {class: 'fw-semibold mb-0'}}) }}
+            {% if field.vars.help %}
+                <div class="form-text mt-0">{{ field.vars.help }}</div>
+            {% endif %}
+        </div>
+        <div class="col-12 {{ wide ? '' : 'col-md-8' }}">
+            {{ form_widget(field, {attr: field.vars.errors|length ? {class: 'is-invalid'} : {}}) }}
+            {{ form_errors(field) }}
+        </div>
+    </div>
+{% endmacro %}

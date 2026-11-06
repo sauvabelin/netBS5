@@ -1,0 +1,62 @@
+[
+ {
+  "id": 1,
+  "titre": "Facture pour [debiteur]",
+  "top": "Madame, Monsieur,\\n\\n\r\nNous nous permettons de vous faire parvenir une facture pour l'objet suivant :",
+  "bottom": "En vous remerciant d'avance pour votre paiement, nous vous prions de bien vouloir utiliser le bulletin QR ci-dessous pour votre virement. En cas de problèmes, vous pouvez nous contacter par email à l'adresse qm@sauvabelin.ch.\\n\r\nVeuillez recevoir, Madame, Monsieur, nos sincères salutations."
+ },
+ {
+  "id": 3,
+  "titre": "1er rappel pour [debiteur]",
+  "top": "Madame, Monsieur,\\n\r\n\\n\r\nNous nous permettons de vous faire parvenir un rappel correspondant à la facture numéro [facture.getFactureId()] et concernant [(facture.getCreances().count() == 1 ? \"l'objet suivant\" : \"les objets suivants\")]",
+  "bottom": "En vous remerciant d'avance pour votre paiement rapide, nous vous prions de bien vouloir utiliser le bulletin de versement ci-dessous.  En cas de problèmes, vous pouvez nous contacter par email à l'adresse suivante : qm@sauvabelin.ch.\\n\r\nSi votre paiement s'est croisé avec cette lettre, veuillez nous excuser et ne pas tenir compte de ce rappel.\\n\r\n\\n\r\nVeuillez recevoir nos sincères salutations."
+ },
+ {
+  "id": 4,
+  "titre": "[facture.getRappels().count()]ème rappel pour [debiteur]",
+  "top": "Madame, Monsieur,\\n\r\n\\n\r\nNous nous permettons de vous faire parvenir un nouveau rappel correspondant à la facture n°[facture.getFactureId()] pour laquelle un précédent rappel vous avait déjà été envoyé le [facture.getLatestImpression().format(\"d.m.Y\")] et concernait [(facture.getCreances().count() == 1 ? \"l'objet suivant\" : \"les objets suivants\")]",
+  "bottom": "En vous remerciant d'avance pour votre paiement rapide, nous vous prions de bien vouloir utiliser le bulletin de versement ci-dessous pour votre paiement.  En cas de problèmes vous pouvez me contacter par email à l'adresse qm@sauvabelin.ch\\n\r\nSi votre paiement s'est croisé avec cette lettre, veuillez nous excuser et ne pas tenir compte de ce rappel.\\n\r\n\\n\r\nVeuillez recevoir nos sincères salutations."
+ },
+ {
+  "id": 5,
+  "titre": "Facture pour [debiteur]",
+  "top": "Madame, Monsieur,\\n\\n\r\nSi vous recevez cette facture, c'est que le paiement du weekend de Branche 2026 de votre enfant ne nous est toujours pas parvenu. \\n\r\nIl est possible que votre paiement ait croisé notre rappel. Si tel était le cas merci de nous transmettre une preuve de paiement via l'adresse mail ci-dessous.",
+  "bottom": "En vous remerciant d'avance pour votre paiement, nous vous prions de bien vouloir utiliser le QR code ci-dessous pour votre virement. En cas de questions ou de difficultés financières, vous pouvez nous contacter par email à l'adresse qm@sauvabelin.ch.\\n\r\n\r\nVeuillez recevoir, Madame, Monsieur, nos sincères salutations.\\n"
+ },
+ {
+  "id": 7,
+  "titre": "Facture pour [debiteur]",
+  "top": "Madame, Monsieur,\\n\\n\r\nSi vous recevez cette facture, c'est que le paiement du semestre d'équipe 2025 ne nous est toujours pas parvenu. \\n\r\nIl est possible que votre paiement ait croisé notre rappel. Si tel était le cas merci de nous transmettre une preuve de paiement via l'adresse mail ci-dessous.",
+  "bottom": "En vous remerciant d'avance pour votre paiement, nous vous prions de bien vouloir utiliser le bulletin de versement ci-dessous pour votre virement. En cas de problèmes, vous pouvez nous contacter par email à l'adresse qm@sauvabelin.ch.\r\nVeuillez recevoir, Madame, Monsieur, nos sincères salutations.\\n"
+ },
+ {
+  "id": 8,
+  "titre": "Facture pour [debiteur]",
+  "top": "Madame, Monsieur,\\n\r\nNous nous permettons de vous faire parvenir une facture pour l'objet suivant :",
+  "bottom": "En cas de difficultés financières, nous bénéficions d'un fonds de soutien appelé « Fonds J.-L. Dufour ». De plus, depuis cette année, les personnes détentrices d'une Carte Culture bénéficient d'un rabais de 40% sur nos cotisations. \r\nPour toutes demandes, vous pouvez nous contacter par email à l'adresse qm@sauvabelin.ch. \\n\r\nSi vous souhaitez soutenir nos activités, vous pouvez faire un don sur le compte CH44 0900 0000 1002 5574 1. Nous enverrons une attestation de don aux personnes nous ayant transmis leurs coordonnées, afin de pouvoir déduire ce montant de vos impôts. \\n\\n\r\nNous vous rappelons également que, par la signature de l'inscription, vous acceptez que des photos de votre enfant puissent être publiées sur nos canaux officiels (site, galerie photo et compte instagram). En cas de désaccord, veuillez-nous en informer à communication@sauvabelin.ch.\\n\\n\r\nVeuillez recevoir, Madame, Monsieur, nos sincères salutations."
+ },
+ {
+  "id": 11,
+  "titre": "test",
+  "top": "test",
+  "bottom": "test"
+ },
+ {
+  "id": 12,
+  "titre": "[facture.getRappels().count()]ème rappel pour [debiteur]",
+  "top": "Madame, Monsieur,\\n\r\n\\n\r\nNous nous permettons de vous faire parvenir un nouveau rappel concernant l'objet suivant :",
+  "bottom": "En vous remerciant d'avance pour votre paiement, nous vous prions de bien vouloir utiliser le bulletin de versement ci-dessous.  Pour toutes demandes,  vous pouvez nous contacter par email à l'adresse qm@sauvabelin.ch\\n\r\nSi votre paiement s'est croisé avec cette lettre, veuillez nous excuser et ne pas tenir compte de ce rappel.\\n\r\n\\n\r\nVeuillez recevoir nos sincères salutations."
+ },
+ {
+  "id": 13,
+  "titre": "[facture.getRappels().count()]ème rappel pour [debiteur]",
+  "top": "Madame, Monsieur,\\n\r\n\\n\r\nNous nous permettons de vous faire parvenir un nouveau rappel concernant l'objet suivant :",
+  "bottom": "En vous remerciant d'avance pour votre paiement, nous vous prions de bien vouloir utiliser le bulletin de versement ci-dessous.  Pour toutes demandes,  vous pouvez nous contacter par email à l'adresse qm@sauvabelin.ch\\n\r\nSi votre paiement s'est croisé avec cette lettre, veuillez nous excuser et ne pas tenir compte de ce rappel.\\n\r\n\\n\r\nVeuillez recevoir nos sincères salutations."
+ },
+ {
+  "id": 14,
+  "titre": "Rappel Camp d'été 2026 pour [debiteur]",
+  "top": "Madame, Monsieur,\\n\\n\nSi vous recevez cette facture, c'est que le paiement du camp d'été 2026 ne nous est toujours pas parvenu. \\n\nIl est possible que votre paiement ait croisé notre rappel. Si tel était le cas merci de nous transmettre une preuve de paiement via l'adresse mail ci-dessous.",
+  "bottom": "En vous remerciant d'avance pour votre paiement, nous vous prions de bien vouloir utiliser le bulletin de versement ci-dessous pour votre virement. En cas de problèmes, vous pouvez nous contacter par email à l'adresse qm@sauvabelin.ch.\nVeuillez recevoir, Madame, Monsieur, nos sincères salutations.\\n"
+ }
+]

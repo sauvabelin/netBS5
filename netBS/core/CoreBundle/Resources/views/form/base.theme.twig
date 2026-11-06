@@ -133,3 +133,29 @@
         </div>
     </div>
 {% endblock %}
+
+{# rule editor, driven by assets/controllers/rule_builder_controller.js #}
+{# RuleType extends HiddenType, whose row has no label, errors or help: use the normal row #}
+{% block rule_row %}
+    {{- block('form_row') -}}
+{% endblock %}
+
+{% block rule_widget %}
+    <div class="rule-builder" data-controller="rule-builder"
+         data-rule-builder-context-value="{{ rule_context.id }}"
+         data-rule-builder-config-value="{{ rule_config }}"
+         data-rule-builder-describe-url-value="{{ path('netbs.core.rule.describe') }}"
+         data-rule-builder-select2-url-value="{{ path('netbs.core.select2.results') }}">
+        <input type="hidden" {{ block('widget_attributes') }} value="{{ value }}" data-rule-builder-target="input">
+        {# replaced by the controller; without JavaScript the rule still reads as a sentence #}
+        <div data-rule-builder-target="editor">
+            {% if value is empty %}<div class="rule-empty">{{ rule_empty_text }}</div>{% endif %}
+        </div>
+        <div class="rule-summary mb-1" data-rule-builder-target="summary" {{ value is empty or rule_expert ? 'hidden' }}>
+            <i class="fas fa-info-circle me-1"></i><span data-rule-builder-target="sentence">{{ rule_sentence }}</span>
+        </div>
+        <div class="text-danger small" data-rule-builder-target="errors"></div>
+        <div class="rule-mode" data-rule-builder-target="mode"></div>
+        {% include '@NetBSCore/rule/_glossary.html.twig' with {variables: rule_glossary, example: rule_context.example, hidden: not rule_expert} %}
+    </div>
+{% endblock %}

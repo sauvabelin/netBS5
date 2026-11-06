@@ -4,7 +4,7 @@ namespace App\Listener;
 
 use NetBS\CoreBundle\Block\TemplateBlock;
 use NetBS\CoreBundle\Event\PreRenderLayoutEvent;
-use NetBS\CoreBundle\Service\ParameterManager;
+use App\Settings\BsReferences;
 use NetBS\FichierBundle\Mapping\BaseGroupe;
 use Symfony\Component\HttpFoundation\RequestStack;
 use Twig\Environment;
@@ -17,7 +17,7 @@ class PageGroupeListener
 
     protected $params;
 
-    public function __construct(RequestStack $stack, ParameterManager $params, Environment $twig)
+    public function __construct(RequestStack $stack, BsReferences $params, Environment $twig)
     {
         $this->twig     = $twig;
         $this->stack    = $stack;
@@ -39,12 +39,12 @@ class PageGroupeListener
         $groupe         = $event->getParameters()['item'];
         $categorieId    = $groupe->getGroupeType()->getGroupeCategorie()->getId();
         $typeId         = $groupe->getGroupeType()->getId();
-        $uniteId        = $this->params->getValue('bs', 'groupe_categorie.unite_id');
-        $brancheId      = $this->params->getValue('bs', 'groupe_type.branche_id');
+        $uniteId        = $this->params->id('groupe_categorie.unite_id');
+        $brancheId      = $this->params->id('groupe_type.branche_id');
         $config         = $event->getConfigurator();
         $column         = $config->getRow(0)->getColumns()[0];
 
-        if($categorieId === intval($uniteId) || $typeId === intval($brancheId)) {
+        if($categorieId === $uniteId || $typeId === $brancheId) {
 
             $column->addRow()->addColumn(0, 12)->setBlock(TemplateBlock::class, [
                 'template' => 'block/etiquettes_groupe.block.twig',
@@ -53,7 +53,7 @@ class PageGroupeListener
                 ]
             ]);
 
-            if($categorieId === intval($uniteId)) {
+            if($categorieId === $uniteId) {
                 $column->addRow()->addColumn(0, 12)->setBlock(TemplateBlock::class, [
                     'template' => 'block/liste_unite.block.twig',
                     'params' => [

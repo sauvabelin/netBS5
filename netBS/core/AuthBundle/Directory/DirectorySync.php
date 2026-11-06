@@ -11,7 +11,8 @@ namespace NetBS\AuthBundle\Directory;
  * (admin, lldap_admin, ...) are left alone:
  *   - users: members of the {@see MANAGED_USERS_GROUP} marker group
  *   - groups: groups carrying a {@see LldapClientInterface::NETBS_ID_ATTRIBUTE}
- *     (groupe groups) or {@see LldapClientInterface::NETBS_ROLE_ATTRIBUTE}
+ *     (groupe groups), {@see LldapClientInterface::NETBS_COMPUTED_ATTRIBUTE}
+ *     (computed groups) or {@see LldapClientInterface::NETBS_ROLE_ATTRIBUTE}
  *     (role groups) attribute
  * The marker group doubles as the LDAP filter services use to find netBS users.
  */
@@ -23,6 +24,7 @@ final class DirectorySync
     private const GROUP_ATTRIBUTES = [
         LldapClientInterface::NETBS_ID_ATTRIBUTE => 'INTEGER',
         LldapClientInterface::NETBS_ROLE_ATTRIBUTE => 'STRING',
+        LldapClientInterface::NETBS_COMPUTED_ATTRIBUTE => 'INTEGER',
     ];
 
     /** @var string[] */
@@ -64,8 +66,8 @@ final class DirectorySync
 
         $this->syncUsers($snapshot->users, $managedUids, $markerId, $dryRun);
         $desired = [];
-        foreach ([...array_values($snapshot->groups), ...array_values($snapshot->roleGroups)] as $group) {
-            $desired[DirectoryGroup::key($group->netbsId, $group->role)] = $group;
+        foreach ([...array_values($snapshot->groups), ...array_values($snapshot->computedGroups), ...array_values($snapshot->roleGroups)] as $group) {
+            $desired[DirectoryGroup::key($group->netbsId, $group->role, $group->computedId)] = $group;
         }
         $this->syncGroups($desired, $currentGroups, $dryRun);
 
@@ -131,23 +133,35 @@ final class DirectorySync
     }
 
     /**
+     * The lldap groups netBS manages (those carrying a netbs-* marker).
+     *
+     * @param list<array> $lldapGroups as {@see LldapClientInterface::listGroups()} returns them
+     * @return array<string, array> keyed by {@see DirectoryGroup::key()}
+     */
+    public static function managedGroups(array $lldapGroups): array
+    {
+        $managed = [];
+        foreach ($lldapGroups as $group) {
+            if ($group['netbsId'] !== null || $group['netbsRole'] !== null || $group['netbsComputedId'] !== null) {
+                $managed[DirectoryGroup::key($group['netbsId'], $group['netbsRole'], $group['netbsComputedId'])] = $group;
+            }
+        }
+        return $managed;
+    }
+
+    /**
      * @param array<string, DirectoryGroup> $groups keyed by {@see DirectoryGroup::key()}
      */
     private function syncGroups(array $groups, array $currentGroups, bool $dryRun): void
     {
-        $managed = [];
-        foreach ($currentGroups as $group) {
-            if ($group['netbsId'] !== null || $group['netbsRole'] !== null) {
-                $managed[DirectoryGroup::key($group['netbsId'], $group['netbsRole'])] = $group;
-            }
-        }
+        $managed = self::managedGroups($currentGroups);
 
         foreach ($groups as $key => $group) {
             $current = $managed[$key] ?? null;
 
             if ($current === null) {
                 $groupId = $this->apply($dryRun, sprintf('create group "%s"', $group->name),
-                    fn () => $this->client->createGroup($group->name, $group->netbsId, $group->role));
+                    fn () => $this->client->createGroup($group->name, $group->netbsId, $group->role, $group->computedId));
                 $currentMembers = [];
             } else {
                 $groupId = $current['id'];

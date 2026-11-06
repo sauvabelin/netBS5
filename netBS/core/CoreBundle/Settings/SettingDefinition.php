@@ -1,0 +1,40 @@
+<?php
+
+namespace NetBS\CoreBundle\Settings;
+
+/**
+ * One declared setting. Its storage identity is (namespace, key) in netbs_core_parameters, except
+ * rule settings, stored in netbs_core_rules with code = id();
+ * the section only decides on which card of the Paramètres page it is shown.
+ */
+final class SettingDefinition
+{
+    /**
+     * @param array<string,string> $choices value => label, for SettingType::Choice
+     * @param string|null $context rule context id, for SettingType::Rule
+     */
+    public function __construct(
+        public readonly string $namespace,
+        public readonly string $key,
+        public readonly SettingType $type,
+        public readonly string $label,
+        public readonly string $section,
+        public readonly ?string $help = null,
+        public readonly ?string $default = null,
+        public readonly ?int $min = null,
+        public readonly ?int $max = null,
+        public readonly ?int $minLength = null,
+        public readonly array $choices = [],
+        public readonly ?string $context = null,
+    ) {
+        // No rule set means the feature's legacy logic applies, so a rule has no default.
+        if ($type === SettingType::Rule && ($default !== null || $context === null)) {
+            throw new \LogicException(sprintf('Rule setting "%s" needs a context and no default.', $this->id()));
+        }
+    }
+
+    public function id(): string
+    {
+        return $this->namespace . '.' . $this->key;
+    }
+}

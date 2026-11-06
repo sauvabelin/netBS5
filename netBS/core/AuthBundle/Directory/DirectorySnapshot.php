@@ -11,11 +11,13 @@ final class DirectorySnapshot
      * @param array<string, DirectoryUser> $users keyed by uid
      * @param array<int, DirectoryGroup> $groups groupe groups, keyed by netBS groupe id
      * @param array<string, DirectoryGroup> $roleGroups keyed by role
+     * @param array<int, DirectoryGroup> $computedGroups keyed by computed group id
      */
     public function __construct(
         public readonly array $users,
         public readonly array $groups,
         public readonly array $roleGroups,
+        public readonly array $computedGroups = [],
     ) {
     }
 }

@@ -24,6 +24,27 @@ final class LldapClientTest extends TestCase
         self::assertSame(4, $http->getRequestsCount());
     }
 
+    public function testComputedGroupAttributeIsReadAndWritten(): void
+    {
+        $sent = [];
+        $http = new MockHttpClient(function (string $method, string $url, array $options) use (&$sent) {
+            $sent[] = json_decode($options['body'] ?? 'null', true);
+            return match (count($sent)) {
+                1 => $this->json(['token' => 't']),
+                2 => $this->json(['data' => ['groups' => [[
+                    'id' => 7, 'displayName' => 'chefs', 'users' => [['id' => 'alice']],
+                    'attributes' => [['name' => 'netbs-computed-id', 'value' => ['3']]],
+                ]]]]),
+                default => $this->json(['data' => ['createGroupWithDetails' => ['id' => 8]]]),
+            };
+        }, 'http://lldap.test');
+        $client = $this->client($http);
+
+        self::assertSame([['id' => 7, 'displayName' => 'chefs', 'netbsId' => null, 'netbsRole' => null, 'netbsComputedId' => 3, 'members' => ['alice']]], $client->listGroups());
+        self::assertSame(8, $client->createGroup('chefs', null, null, 3));
+        self::assertSame([['name' => 'netbs-computed-id', 'value' => ['3']]], $sent[2]['variables']['request']['attributes']);
+    }
+
     private function client(MockHttpClient $http): LldapClient
     {
         return new LldapClient($http, 'admin', 'secret');

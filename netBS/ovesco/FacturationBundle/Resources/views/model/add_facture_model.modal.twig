@@ -1,16 +1,26 @@
 {% extends '@NetBSCore/layout/modal.layout.twig' %}
 
-{% block content %}
-    <div class="alert alert-primary">
-        <p>Le texte du haut, texte du bas et le titre sont basés sur
-            <a href="https://symfony.com/doc/current/components/expression_language.html">l'expression language</a>.
-            Les variables suivantes sont disponibles
-        </p>
-        <ul>
-            <li>debiteur: le débiteur</li>
-            <li>facture: la facture courante</li>
-        </ul>
+{% block size %}wide{% endblock %}
+
+{% macro text_with_picker(field, placeholders) %}
+    <div data-controller="placeholder-picker">
+        {{ form_row(field) }}
+        <select class="form-select form-select-sm w-auto mw-100 mb-3" data-action="change->placeholder-picker#insert" aria-label="Insérer une variable">
+            <option value="">Insérer une variable…</option>
+            {% for placeholder, description in placeholders %}
+                <option value="{{ placeholder }}" title="{{ description }}">{{ placeholder }} — {{ description }}</option>
+            {% endfor %}
+        </select>
     </div>
+{% endmacro %}
+
+{% block content %}
+    {% if form.vars.textes_converted %}
+        <div class="alert alert-info small">
+            Les variables de ce modèle ont été mises à jour vers le nouveau format, par exemple {facture.numero}.
+            Relisez les textes avant d'enregistrer.
+        </div>
+    {% endif %}
 
     {{ form_start(form) }}
     <div class="row">
@@ -18,7 +28,7 @@
         <div class="col-md-3">{{ form_row(form.poids) }}</div>
     </div>
     <div class="row">
-        <div class="col-md-12">{{ form_row(form.applicationRule) }}</div>
+        <div class="col-md-12">{{ form_row(form.ruleJson) }}</div>
     </div>
     <div class="row">
         <div class="col-md-6">{{ form_row(form.signataire) }}</div>
@@ -30,13 +40,22 @@
         <div class="col-md-4">{{ form_row(form.cityFrom) }}</div>
     </div>
     <div class="row">
-        <div class="col-md-12">{{ form_row(form.titre) }}</div>
+        <div class="col-md-12">{{ _self.text_with_picker(form.titre, form.vars.placeholders) }}</div>
     </div>
     <div class="row">
-        <div class="col-md-12">{{ form_row(form.topDescription) }}</div>
+        <div class="col-md-12">{{ _self.text_with_picker(form.topDescription, form.vars.placeholders) }}</div>
     </div>
     <div class="row">
-        <div class="col-md-12">{{ form_row(form.bottomSalutations) }}</div>
+        <div class="col-md-12">{{ _self.text_with_picker(form.bottomSalutations, form.vars.placeholders) }}</div>
+    </div>
+    <div class="rule-builder mb-3">
+        {% include '@NetBSCore/rule/_glossary.html.twig' with {
+            variables: form.ruleJson.vars.rule_glossary,
+            example: form.ruleJson.vars.rule_context.example,
+            open: false,
+            title: 'Aide : expressions dans les textes',
+            intro: "Quand aucune variable ne convient, un administrateur peut écrire une expression entre crochets dans les textes, par exemple [facture.getMontant()].",
+        } %}
     </div>
     {{ form_end(form) }}
 {% endblock %}

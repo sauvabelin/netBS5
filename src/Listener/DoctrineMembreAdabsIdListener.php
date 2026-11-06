@@ -3,23 +3,23 @@
 namespace App\Listener;
 
 use Doctrine\ORM\Event\LifecycleEventArgs;
-use NetBS\CoreBundle\Service\ParameterManager;
 use App\Entity\BSMembre;
+use App\Settings\BsReferences;
 
 class DoctrineMembreAdabsIdListener
 {
-    private $params;
-
-
-
-    public function __construct(ParameterManager $params)
+    public function __construct(private readonly BsReferences $refs)
     {
-        $this->params = $params;
     }
 
     public function postLoad(LifecycleEventArgs $args) {
         $entity = $args->getEntity();
-        if ($entity instanceof BSMembre)
-            $entity->_setAdabsId($this->params->getValue('bs', 'groupe.adabs_id'));
+        if (!$entity instanceof BSMembre)
+            return;
+
+        // Runs on every membre load: a cached read, no existence check. An unset or stale id
+        // matches no attribution. Keeping the id of a groupe in the trash is what lets
+        // BSMembre::setStatut() still close the ADABS attribution of a member being unsubscribed.
+        $entity->_setAdabsId($this->refs->id('groupe.adabs_id'));
     }
 }

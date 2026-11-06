@@ -20,6 +20,10 @@ services:
         resource: '../../DataFixtures'
         tags: ['doctrine.fixture.orm']
 
+    NetBS\FichierBundle\Rule\:
+        resource: '../../Rule'
+        exclude: '../../Rule/{AttributionInSousGroupe.php,Ids.php}'
+
     NetBS\FichierBundle\Service\FichierConfig:
         arguments:
             - "%netbs.fichier.config%"

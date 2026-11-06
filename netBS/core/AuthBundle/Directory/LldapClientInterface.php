@@ -12,7 +12,7 @@ namespace NetBS\AuthBundle\Directory;
  *   users:  [['id' => string, 'email' => string, 'displayName' => string,
  *             'firstName' => string, 'lastName' => string]]
  *   groups: [['id' => int, 'displayName' => string, 'netbsId' => ?int,
- *             'netbsRole' => ?string, 'members' => string[]]]
+ *             'netbsRole' => ?string, 'netbsComputedId' => ?int, 'members' => string[]]]
  */
 interface LldapClientInterface
 {
@@ -20,6 +20,8 @@ interface LldapClientInterface
     public const NETBS_ID_ATTRIBUTE = 'netbs-id';
     /** Group attribute holding the role of a role group. */
     public const NETBS_ROLE_ATTRIBUTE = 'netbs-role';
+    /** Group attribute holding the id of a computed group. */
+    public const NETBS_COMPUTED_ATTRIBUTE = 'netbs-computed-id';
 
     public function listUsers(): array;
 
@@ -38,7 +40,7 @@ interface LldapClientInterface
     public function deleteUser(string $uid): void;
 
     /** @return int the lldap id of the new group */
-    public function createGroup(string $displayName, ?int $netbsId, ?string $netbsRole = null): int;
+    public function createGroup(string $displayName, ?int $netbsId, ?string $netbsRole = null, ?int $netbsComputedId = null): int;
 
     public function renameGroup(int $groupId, string $displayName): void;
 

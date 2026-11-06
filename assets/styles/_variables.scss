@@ -44,5 +44,12 @@ $btn-font-weight: 700;
 $input-padding-y: 0.5625rem;
 $input-padding-x: 0.5rem;
 
+// Every entry box has the same height: the small variants (.form-control-sm, .form-select-sm,
+// .input-group-sm) keep the default size, so mixed rows of fields line up.
+$input-padding-y-sm:     $input-padding-y;
+$input-padding-x-sm:     $input-padding-x;
+$input-font-size-sm:     $font-size-base;
+$input-border-radius-sm: $border-radius;
+
 // Tables — BS5 defaults to visible row borders; match BS4's lighter look
 $table-border-color: transparent;

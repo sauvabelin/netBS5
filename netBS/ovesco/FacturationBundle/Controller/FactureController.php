@@ -6,14 +6,12 @@ use Doctrine\ORM\EntityManagerInterface;
 use NetBS\CoreBundle\Searcher\SearcherManager;
 use NetBS\CoreBundle\Service\PreviewerManager;
 use NetBS\CoreBundle\Utils\Modal;
-use NetBS\FichierBundle\Entity\BaseFamille;
 use Ovesco\FacturationBundle\Entity\Facture;
-use Ovesco\FacturationBundle\Entity\FactureModel;
+use Ovesco\FacturationBundle\Service\FactureModelResolver;
 use Ovesco\FacturationBundle\Exporter\PDFQrFacture;
 use Ovesco\FacturationBundle\Form\MassAssignModelType;
 use Ovesco\FacturationBundle\Model\MassAssignModel;
 use Ovesco\FacturationBundle\Model\QrFactureConfig;
-use Symfony\Component\ExpressionLanguage\ExpressionLanguage;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
@@ -167,36 +165,14 @@ class FactureController extends AbstractController
     }
 
     #[Route('/resolve-model/{id}', name: 'ovesco.facturation.facture.resolve_model', methods: ['GET'])]
-    public function resolveModelAction(Facture $facture, EntityManagerInterface $em) {
-        $engine = new ExpressionLanguage();
-        $models = $em->getRepository(FactureModel::class)
-            ->createQueryBuilder('m')->orderBy('m.poids', 'DESC')->getQuery()->getResult();
-
-        $resolved = null;
-        foreach ($models as $model) {
-            $rule = $model->getApplicationRule();
-            if ($rule === null) {
-                $resolved = $model;
-                break;
-            }
-            try {
-                $result = $engine->evaluate($rule, [
-                    'facture' => $facture,
-                    'debiteur' => $facture->getDebiteur(),
-                    'isFamille' => $facture->getDebiteur() instanceof BaseFamille,
-                ]);
-                if ($result) {
-                    $resolved = $model;
-                    break;
-                }
-            } catch (\Exception $e) {
-                continue;
-            }
+    public function resolveModelAction(Facture $facture, FactureModelResolver $resolver) {
+        try {
+            $model = $resolver->resolve($facture)->getName();
+        } catch (\RuntimeException) {
+            $model = 'Aucun modèle applicable';
         }
 
-        return new JsonResponse([
-            'model' => $resolved ? $resolved->getName() : 'Aucun modèle applicable',
-        ]);
+        return new JsonResponse(['model' => $model]);
     }
 
     #[Route('/unmark-printed', name: 'ovesco.facturation.facture.unmark_printed', methods: ['POST'])]

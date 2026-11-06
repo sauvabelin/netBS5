@@ -5,8 +5,9 @@ declare(strict_types=1);
 namespace NetBS\AuthBundle\Directory;
 
 /**
- * A group netBS owns in lldap: either a groupe group ($netbsId set) or a role
- * group ($role set, see {@see DirectoryProjection::ROLE_GROUPS}).
+ * A group netBS owns in lldap: a groupe group ($netbsId set), a computed
+ * group ($computedId set) or a role group ($role set, see
+ * {@see DirectoryProjection::ROLE_GROUPS}).
  */
 final class DirectoryGroup
 {
@@ -21,16 +22,20 @@ final class DirectoryGroup
         public readonly array $members,
         /** Role the group publishes; stored on the lldap group like $netbsId. */
         public readonly ?string $role = null,
-        /** Groupe type name, for display only. */
-        public readonly ?string $typeName = null,
-        /** Groupe type "sous-groupes" mode (BaseGroupeType::SOUS_GROUPES_*), for display only. */
-        public readonly ?string $sousGroupes = null,
+        /** Id of the computed group; stored on the lldap group like $netbsId. */
+        public readonly ?int $computedId = null,
+        /** Where the group comes from, for display only. */
+        public readonly ?string $origin = null,
     ) {
     }
 
     /** Identifies a managed group across runs, whatever its name. */
-    public static function key(?int $netbsId, ?string $role): string
+    public static function key(?int $netbsId, ?string $role, ?int $computedId = null): string
     {
-        return $role !== null ? "role:$role" : "id:$netbsId";
+        return match (true) {
+            $role !== null       => "role:$role",
+            $computedId !== null => "computed:$computedId",
+            default              => "id:$netbsId",
+        };
     }
 }

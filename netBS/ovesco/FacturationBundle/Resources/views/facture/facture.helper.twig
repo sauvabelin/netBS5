@@ -30,8 +30,8 @@
         <tbody>
         {% for rappel in facture.sortRappelsByImpression %}
             <tr>
-                <td>{{ rappel.date|date(param('format', 'php_date')) }}</td>
-                <td>{% if rappel.dateImpression %}{{ rappel.dateImpression|date(param('format', 'php_date')) }}{% endif %}</td>
+                <td>{{ rappel.date|date(date_format) }}</td>
+                <td>{% if rappel.dateImpression %}{{ rappel.dateImpression|date(date_format) }}{% endif %}</td>
             </tr>
         {% else %}
             <tr>
@@ -53,7 +53,7 @@
     <tbody>
     {% for paiement in facture.paiements %}
         <tr>
-            <td>{{ paiement.dateEffectivePaiement|date(param('format', 'php_date')) }}</td>
+            <td>{{ paiement.dateEffectivePaiement|date(date_format) }}</td>
             <td>{{ paiement.montant }}</td>
         </tr>
     {% else %}

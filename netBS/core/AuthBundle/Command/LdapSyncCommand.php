@@ -49,7 +49,8 @@ final class LdapSyncCommand extends Command
         }
 
         $snapshot = $report->snapshot;
-        $io->writeln(sprintf('netBS: %d users, %d groups, %d role groups', count($snapshot->users), count($snapshot->groups), count($snapshot->roleGroups)));
+        $io->writeln(sprintf('netBS: %d users, %d groups, %d computed groups, %d role groups',
+            count($snapshot->users), count($snapshot->groups), count($snapshot->computedGroups), count($snapshot->roleGroups)));
 
         if ($report->changes !== []) {
             $io->listing($report->changes);

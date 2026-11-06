@@ -104,8 +104,9 @@ class ApiGalerieController extends AbstractController
 
         $token          = $request->headers->get('x-authorization');
         $token          = str_replace("Bearer ", "", $token);
-        $actualToken    = $manager->getValue('galerie', 'parent_token', false);
-        if(!in_array($token, explode('|', $actualToken)))
+        // not configured: nobody gets in (an empty list would let an empty token through)
+        $actualToken    = trim((string) $manager->getValue('galerie', 'parent_token', false));
+        if($actualToken === '' || $token === '' || !in_array($token, explode('|', $actualToken), true))
             return new JsonResponse("access denied", 401);
 
         return $this->generateDirectoryResponse($request, $config, $serializer);

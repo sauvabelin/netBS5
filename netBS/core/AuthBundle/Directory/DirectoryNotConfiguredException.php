@@ -5,14 +5,20 @@ declare(strict_types=1);
 namespace NetBS\AuthBundle\Directory;
 
 /**
- * No groupe would become a directory group: no groupe type is set to "Crée un
- * groupe", or the ticked types have no groupes. Syncing anyway would delete
- * every netBS-managed group in lldap, so the sync refuses to run.
+ * The sync refuses to run: either no group would be published (syncing would delete every
+ * netBS-managed group in lldap), or a rule is broken (invalid, deleted reference, failing at run
+ * time), which could publish wrong groups. All or nothing: nothing is synced until it is fixed.
  */
 final class DirectoryNotConfiguredException extends \RuntimeException
 {
-    public function __construct()
+    public function __construct(?string $message = null)
     {
-        parent::__construct('No groupe would become a directory group (check "Crée un groupe" on the groupe types); refusing to sync (it would delete every directory group).');
+        parent::__construct($message ?? "Aucun groupe n'est partagé : ajoutez une règle de partage ou un groupe automatique. La synchronisation est en pause, sinon elle supprimerait tous les groupes partagés.");
+    }
+
+    /** @param string $owner e.g. « Règle « Unités » » */
+    public static function brokenRule(string $owner, string $problem): self
+    {
+        return new self(sprintf('%s : %s. La synchronisation est suspendue jusqu\'à sa correction.', $owner, rtrim($problem, '.')));
     }
 }

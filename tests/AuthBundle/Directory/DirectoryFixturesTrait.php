@@ -5,6 +5,9 @@ declare(strict_types=1);
 namespace App\Tests\AuthBundle\Directory;
 
 use Doctrine\DBAL\Connection;
+use NetBS\CoreBundle\Rule\Rule;
+use NetBS\CoreBundle\Rule\RuleCondition;
+use NetBS\CoreBundle\Rule\RuleGroup;
 
 /**
  * Directory fixtures inserted with plain SQL (so the attribution subscriber
@@ -16,17 +19,17 @@ trait DirectoryFixturesTrait
     private Connection $db;
 
     /**
-     * Type A (creates a group, "tous") with groupe GA <- child GB of type B
-     * (doesn't), plus GC of type B. One active nextcloud user is attributed
-     * in GB.
+     * Groupe GA (type A) <- child GB (type B), plus GC (type B). One active
+     * nextcloud user is attributed in GB. No publication rule: callers add
+     * theirs ({@see publicationRule()}).
      *
-     * @return array{ga: int, gb: int, gc: int, fonction: int, membre: int, user: int, attribution: int}
+     * @return array{ga: int, gb: int, gc: int, typeA: int, typeB: int, fonction: int, membre: int, user: int, attribution: int}
      */
     private function seedGroupeTree(): array
     {
         $categorie = $this->insert('netbs_fichier_groupe_categories', ['nom' => 'dirproj-categorie']);
-        $typeA = $this->insert('netbs_fichier_groupe_types', ['nom' => 'dirproj-a', 'affichageEffectifs' => 0, 'groupeCategorie_id' => $categorie, 'cree_groupe' => 1, 'sous_groupes' => 'tous']);
-        $typeB = $this->insert('netbs_fichier_groupe_types', ['nom' => 'dirproj-b', 'affichageEffectifs' => 0, 'groupeCategorie_id' => $categorie, 'cree_groupe' => 0, 'sous_groupes' => 'tous']);
+        $typeA = $this->insert('netbs_fichier_groupe_types', ['nom' => 'dirproj-a', 'affichageEffectifs' => 0, 'groupeCategorie_id' => $categorie]);
+        $typeB = $this->insert('netbs_fichier_groupe_types', ['nom' => 'dirproj-b', 'affichageEffectifs' => 0, 'groupeCategorie_id' => $categorie]);
         $ga = $this->groupe('dirproj-GA', $typeA, null);
         $gb = $this->groupe('dirproj-GB', $typeB, $ga);
         $gc = $this->groupe('dirproj-GC', $typeB, null);
@@ -43,7 +46,52 @@ trait DirectoryFixturesTrait
             'dateDebut' => '2020-01-01', 'createdAt' => $this->now(), 'updatedAt' => $this->now(),
         ]);
 
-        return ['ga' => $ga, 'gb' => $gb, 'gc' => $gc, 'fonction' => $fonction, 'membre' => $membre, 'user' => $user, 'attribution' => $attribution];
+        return ['ga' => $ga, 'gb' => $gb, 'gc' => $gc, 'typeA' => $typeA, 'typeB' => $typeB, 'fonction' => $fonction, 'membre' => $membre, 'user' => $user, 'attribution' => $attribution];
+    }
+
+    /**
+     * {@see seedGroupeTree()} plus one rule publishing the type A groupes
+     * (GA) with all their sub-groupes' members.
+     *
+     * @return array{ga: int, gb: int, gc: int, typeA: int, typeB: int, fonction: int, membre: int, user: int, attribution: int, rule: int}
+     */
+    private function seedPublishedTree(): array
+    {
+        $ids = $this->seedGroupeTree();
+        $ids['rule'] = $this->publicationRule('dirproj-unités', self::blockRule('groupe.types', ['types' => [$ids['typeA']]]));
+        return $ids;
+    }
+
+    /**
+     * Inserts a publication rule after the existing ones (or at $position).
+     *
+     * @param string $selection rule JSON, context groupe ({@see blockRule()})
+     */
+    private function publicationRule(string $label, string $selection, string $mode = 'tous', ?string $sousRule = null, ?int $position = null): int
+    {
+        $position ??= 1 + (int) $this->db->fetchOne('SELECT COALESCE(MAX(position), 0) FROM netbs_auth_directory_publication_rules');
+        return $this->insert('netbs_auth_directory_publication_rules', [
+            'label' => $label, 'position' => $position, 'sous_groupes' => $mode,
+            'selection_rule_id' => $this->storedRule('groupe', $selection),
+            'sous_groupes_rule_id' => $sousRule === null ? null : $this->storedRule('attribution_sous_groupe', $sousRule),
+        ]);
+    }
+
+    /** @param string $membres rule JSON, context membre */
+    private function computedGroup(string $name, string $membres): int
+    {
+        return $this->insert('netbs_auth_directory_computed_groups', ['name' => $name, 'membres_rule_id' => $this->storedRule('membre', $membres)]);
+    }
+
+    private function storedRule(string $context, string $definition): int
+    {
+        return $this->insert('netbs_core_rules', ['context' => $context, 'definition' => $definition]);
+    }
+
+    /** A one-condition rule. */
+    private static function blockRule(string $block, array $params): string
+    {
+        return Rule::blocks(new RuleGroup('and', [new RuleCondition($block, $params)]))->toJson();
     }
 
     /** Active account with nextcloud_account = 1, unless $overrides says otherwise. */

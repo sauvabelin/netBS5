@@ -99,6 +99,8 @@ class FactureModelController extends AbstractController
         $duplicate->setCityFrom($model->getCityFrom());
         $duplicate->setPoids($model->getPoids());
         $duplicate->setApplicationRule($model->getApplicationRule());
+        $duplicate->setRule($model->getRule()?->copy());
+        $duplicate->setTextesFormat($model->getTextesFormat());
 
         $form = $this->createForm(FactureModelType::class, $duplicate);
         $form->handleRequest($request);

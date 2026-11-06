@@ -4,16 +4,20 @@ declare(strict_types=1);
 
 namespace NetBS\AuthBundle\Controller\Admin;
 
+use Doctrine\ORM\EntityManagerInterface;
 use NetBS\AuthBundle\Contract\DirectoryUserProviderInterface;
 use NetBS\AuthBundle\Directory\DirectoryGroup;
 use NetBS\AuthBundle\Directory\DirectoryNotConfiguredException;
 use NetBS\AuthBundle\Directory\DirectoryProjection;
 use NetBS\AuthBundle\Directory\DirectoryUser;
+use NetBS\AuthBundle\Directory\GroupOutline;
 use NetBS\AuthBundle\Directory\LldapClientException;
 use NetBS\AuthBundle\Directory\LldapClientInterface;
+use NetBS\AuthBundle\Entity\DirectoryComputedGroup;
+use NetBS\AuthBundle\Entity\DirectoryPublicationRule;
 use NetBS\AuthBundle\ListModel\LdapGroupRow;
 use NetBS\AuthBundle\ListModel\LdapMemberRow;
-use NetBS\FichierBundle\Mapping\BaseGroupeType;
+use NetBS\AuthBundle\Repository\DirectoryPublicationRuleRepository;
 use Psr\Log\LoggerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -21,10 +25,10 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 
 /**
- * Administration › Authentication › LDAP: the groups the directory sync
- * produces (same projection as `netbs:ldap:sync`), and per group its members
- * compared with lldap. The group rules are edited on
- * Structure › Types de groupes and Fonctions.
+ * Administration › Authentication › LDAP: the publication rules and computed
+ * groups (edited through {@see LdapRulesController}), the groups the
+ * directory sync produces from them (same projection as `netbs:ldap:sync`),
+ * and per group its members compared with lldap.
  */
 #[Route('/ldap')]
 final class LdapController extends AbstractController
@@ -34,6 +38,8 @@ final class LdapController extends AbstractController
         private readonly DirectoryUserProviderInterface $userProvider,
         private readonly LldapClientInterface $lldap,
         private readonly LoggerInterface $logger,
+        private readonly DirectoryPublicationRuleRepository $rules,
+        private readonly EntityManagerInterface $em,
     ) {
     }
 
@@ -42,17 +48,38 @@ final class LdapController extends AbstractController
     {
         $this->denyAccessUnlessGranted('ROLE_ADMIN');
 
+        $rules = array_map(fn (DirectoryPublicationRule $rule) => [
+            'rule'      => $rule,
+            'selection' => $this->projection->describeSelection($rule),
+            'membres'   => $this->projection->describeMembres($rule),
+            'problem'   => $this->projection->ruleProblem($rule),
+        ], $this->rules->ordered());
+        $computedGroups = array_map(fn (DirectoryComputedGroup $group) => [
+            'group'   => $group,
+            'membres' => $this->projection->describeComputed($group),
+            'problem' => $this->projection->computedProblem($group),
+        ], $this->em->getRepository(DirectoryComputedGroup::class)->findBy([], ['id' => 'ASC']));
+
+        // All or nothing: while a rule is broken, the sync is suspended and no group is listed.
         // Members aren't resolved here: that takes the whole snapshot. The
         // page fetches each group's count on hover, see memberCount().
-        try {
-            $outlines = $this->projection->groupOutlines();
-        } catch (DirectoryNotConfiguredException $e) {
-            return $this->render('@NetBSAuth/admin/ldap/index.html.twig', ['notConfigured' => $e->getMessage()]);
+        $groupRows = [];
+        $notConfigured = null;
+        if (array_filter([...$rules, ...$computedGroups], fn (array $view) => $view['problem'] !== null)) {
+            $notConfigured = 'Une règle est en erreur (voir ci-dessus) : la synchronisation est suspendue jusqu\'à sa correction.';
+        } else {
+            try {
+                $groupRows = $this->groupRows($this->projection->groupOutlines());
+            } catch (DirectoryNotConfiguredException $e) {
+                $notConfigured = $e->getMessage();
+            }
         }
 
         return $this->render('@NetBSAuth/admin/ldap/index.html.twig', [
-            'notConfigured' => null,
-            'groupRows'     => $this->groupRows($outlines),
+            'notConfigured'  => $notConfigured,
+            'groupRows'      => $groupRows,
+            'rules'          => $rules,
+            'computedGroups' => $computedGroups,
         ]);
     }
 
@@ -61,7 +88,11 @@ final class LdapController extends AbstractController
     {
         $this->denyAccessUnlessGranted('ROLE_ADMIN');
 
-        $group = $this->projection->group($key) ?? throw $this->createNotFoundException();
+        try {
+            $group = $this->projection->group($key) ?? throw $this->createNotFoundException();
+        } catch (DirectoryNotConfiguredException $e) {
+            return new JsonResponse(['error' => $e->getMessage()], Response::HTTP_CONFLICT);
+        }
         return new JsonResponse(['count' => count($group->members)]);
     }
 
@@ -72,15 +103,20 @@ final class LdapController extends AbstractController
         $this->denyAccessUnlessGranted('ROLE_ADMIN');
 
         $users = $this->userProvider->directoryUsers();
-        $group = $this->projection->group($key, $users) ?? throw $this->createNotFoundException();
+        try {
+            $group = $this->projection->group($key, $users) ?? throw $this->createNotFoundException();
+        } catch (DirectoryNotConfiguredException $e) {
+            $this->addFlash('danger', $e->getMessage());
+            return $this->redirectToRoute('auth.admin.ldap.index');
+        }
 
         $lldapGroup = null;
         $lldapError = null;
         try {
-            $wanted = DirectoryGroup::key($group->netbsId, $group->role);
+            $wanted = DirectoryGroup::key($group->netbsId, $group->role, $group->computedId);
             foreach ($this->lldap->listGroups() as $candidate) {
-                if (($candidate['netbsId'] !== null || $candidate['netbsRole'] !== null)
-                    && DirectoryGroup::key($candidate['netbsId'], $candidate['netbsRole']) === $wanted) {
+                if (($candidate['netbsId'] !== null || $candidate['netbsRole'] !== null || $candidate['netbsComputedId'] !== null)
+                    && DirectoryGroup::key($candidate['netbsId'], $candidate['netbsRole'], $candidate['netbsComputedId']) === $wanted) {
                     $lldapGroup = $candidate;
                     break;
                 }
@@ -96,7 +132,6 @@ final class LdapController extends AbstractController
             'lldapGroup'  => $lldapGroup,
             'lldapError'  => $lldapError,
             'memberRows'  => $this->memberRows($group, $users, $lldapError === null ? $lldapGroup['members'] ?? [] : null),
-            'sousGroupes' => array_flip(BaseGroupeType::getSousGroupesChoices())[$group->sousGroupes] ?? null,
         ]);
     }
 
@@ -129,29 +164,20 @@ final class LdapController extends AbstractController
     }
 
     /**
-     * Role groups first, then groupe groups by name.
+     * Role groups first, then computed groups, then groupe groups by name.
      *
-     * @param array<int, array{name: string, typeName: string, sousGroupes: string}> $outlines
+     * @param list<GroupOutline> $outlines
      * @return LdapGroupRow[]
      */
     private function groupRows(array $outlines): array
     {
-        $rows = [];
-        foreach (DirectoryProjection::ROLE_GROUPS as $role => $name) {
-            $rows[] = new LdapGroupRow($role, $name, null, "Rôle $role", '—');
-        }
+        $rank = fn (GroupOutline $o) => match (true) {
+            isset(DirectoryProjection::ROLE_GROUPS[$o->key]) => 0,
+            $o->groupeId === null                           => 1,
+            default                                         => 2,
+        };
+        usort($outlines, fn (GroupOutline $a, GroupOutline $b) => [$rank($a), mb_strtolower($a->name)] <=> [$rank($b), mb_strtolower($b->name)]);
 
-        $sousGroupesLabels = array_flip(BaseGroupeType::getSousGroupesChoices());
-        uasort($outlines, fn ($a, $b) => strcasecmp($a['name'], $b['name']));
-        foreach ($outlines as $netbsId => $outline) {
-            $rows[] = new LdapGroupRow(
-                (string) $netbsId,
-                $outline['name'],
-                $netbsId,
-                $outline['typeName'],
-                $sousGroupesLabels[$outline['sousGroupes']] ?? '—',
-            );
-        }
-        return $rows;
+        return array_map(fn (GroupOutline $o) => new LdapGroupRow($o->key, $o->name, $o->groupeId, $o->origin), $outlines);
     }
 }
