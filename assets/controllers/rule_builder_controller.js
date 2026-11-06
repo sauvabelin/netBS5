@@ -213,7 +213,7 @@ export default class extends Controller {
         } else {
             this.editorTarget.innerHTML = this._root();
             this.modeTarget.innerHTML = canExpert
-                ? '<button type="button" class="btn btn-link text-muted" data-action-name="to-expert">Écrire une expression (avancé)<i class="fas fa-chevron-right ms-1"></i></button>'
+                ? '<button type="button" class="btn btn-link text-muted" data-action-name="to-expert">Écrire une expression avancée<i class="fas fa-chevron-right ms-1"></i></button>'
                 : '';
         }
         this._renderSummary();

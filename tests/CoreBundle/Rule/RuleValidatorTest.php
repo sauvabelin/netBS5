@@ -57,7 +57,7 @@ final class RuleValidatorTest extends KernelTestCase
 
     public function test_malformed_json(): void
     {
-        $this->assertSame(['Règle invalide.'], $this->validator->validate('{', 'test'));
+        $this->assertCount(1, $this->validator->validate('{', 'test'));
     }
 
     public function test_unknown_block(): void

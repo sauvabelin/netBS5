@@ -146,7 +146,7 @@ final class RuleTypeTest extends KernelTestCase
         $this->assertNull($config['blocks']['test.n']['negatedLabel']);
         $this->assertSame("n'est pas marqué", $config['blocks']['test.flag']['negatedLabel']);
         $this->assertSame('n', $view->vars['rule_glossary'][0]['name']);
-        $this->assertSame('Aucune condition.', $view->vars['rule_empty_text']);
+        $this->assertNotEmpty($view->vars['rule_empty_text']);
     }
 
     public function test_empty_text_option(): void

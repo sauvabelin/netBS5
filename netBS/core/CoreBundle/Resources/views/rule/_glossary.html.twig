@@ -1,9 +1,9 @@
 {#
  # Glossary for expert expressions: the context's variables, and for each the methods read from
- # its class (NetBS\CoreBundle\Rule\RuleGlossary). Expects: variables, example; optional hidden, open, intro.
+ # its class (NetBS\CoreBundle\Rule\RuleGlossary). Expects: variables, example; optional hidden, open, intro, title.
  #}
 <details class="rule-glossary mt-2" {{ open ?? true ? 'open' }} {{ hidden ?? false ? 'hidden' }} data-rule-builder-target="glossary">
-    <summary class="text-muted">Aide pour écrire une expression</summary>
+    <summary class="text-muted">{{ title ?? 'Aide pour écrire une expression' }}</summary>
     <div class="mt-2">
         {% if intro is defined %}<p class="mb-1">{{ intro }}</p>{% endif %}
         <p class="mb-1">

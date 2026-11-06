@@ -26,7 +26,7 @@ class FactureModelType extends AbstractType
     const TEXTS = [
         'titre'             => [TextType::class, 'Titre de la facture'],
         'topDescription'    => [TextareaType::class, 'Texte du haut'],
-        'bottomSalutations' => [TextareaType::class, 'Texte du bas'],
+        'bottomSalutations' => [TextareaType::class, 'Texte du bas (salutations)'],
     ];
 
     public function __construct(private FactureTextRenderer $renderer)
@@ -37,17 +37,17 @@ class FactureModelType extends AbstractType
     {
         $builder
             ->add('name', TextType::class, ['label' => 'Nom du modèle'])
-            ->add('poids', NumberType::class, ['label' => 'Poids'])
+            ->add('poids', NumberType::class, ['label' => 'Poids', 'help' => 'Si plusieurs modèles conviennent, celui au poids le plus élevé est utilisé.'])
             ->add('ruleJson', RuleType::class, [
                 'context' => 'facture',
-                'label'      => "S'applique quand",
-                'empty_text' => "Aucune condition : le modèle s'applique à toutes les factures.",
+                'label'      => 'Quand utiliser ce modèle ?',
+                'empty_text' => 'Toujours (aucune condition).',
             ])
             ->add('signataire', TextType::class, ['label' => "Signataire"])
-            ->add('groupName', TextType::class, ['label' => "Nom du groupe"])
+            ->add('groupName', TextType::class, ['label' => 'Expéditeur', 'help' => "Imprimé en haut de la facture avec l'adresse."])
             ->add('rue', TextType::class, ['label' => "Rue"])
             ->add('npaVille', TextType::class, ['label' => "NPA et ville"])
-            ->add('cityFrom', TextType::class, ['label' => "Ville date"])
+            ->add('cityFrom', TextType::class, ['label' => 'Lieu (avant la date)', 'help' => 'ex. « Lausanne », imprimé « Lausanne le 06.11.2026 »'])
         ;
 
         // Old-format texts are shown converted to the new format; saving stores them as such.

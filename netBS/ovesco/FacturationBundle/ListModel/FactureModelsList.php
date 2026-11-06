@@ -90,7 +90,7 @@ class FactureModelsList extends BaseListModel
                 XEditableColumn::TYPE_CLASS => TextType::class,
                 XEditableColumn::PROPERTY => 'signataire',
             ])
-            ->addColumn('Nom du groupe', null, XEditableColumn::class, [
+            ->addColumn('Expéditeur', null, XEditableColumn::class, [
                 XEditableColumn::TYPE_CLASS => TextType::class,
                 XEditableColumn::PROPERTY => 'groupName',
             ])
@@ -98,26 +98,26 @@ class FactureModelsList extends BaseListModel
                 XEditableColumn::TYPE_CLASS => TextType::class,
                 XEditableColumn::PROPERTY => 'rue',
             ])
-            ->addColumn('Npa & Ville', null, XEditableColumn::class, [
+            ->addColumn('NPA et ville', null, XEditableColumn::class, [
                 XEditableColumn::TYPE_CLASS => TextType::class,
                 XEditableColumn::PROPERTY => 'npaVille',
             ])
-            ->addColumn('Origine', null, XEditableColumn::class, [
+            ->addColumn('Lieu', null, XEditableColumn::class, [
                 XEditableColumn::TYPE_CLASS => TextType::class,
                 XEditableColumn::PROPERTY => 'cityFrom',
             ])
-            ->addColumn('Règle', null, ClosureColumn::class, [
+            ->addColumn('Utilisé quand', null, ClosureColumn::class, [
                 ClosureColumn::CLOSURE => function(FactureModel $model) {
                     $json = $model->getRuleJson();
-                    if ($json === null) return '<span class="badge text-bg-secondary">Aucune</span>';
+                    if ($json === null) return '<span class="badge text-bg-secondary">Toujours</span>';
 
                     $lines = [$this->ruleDescriber->describe($json, 'facture')];
-                    if ($model->getRule() === null) $lines[] = '(ancienne expression)';
+                    if ($model->getRule() === null) $lines[] = '(ancienne expression, à remplacer par des conditions)';
 
                     $errors = $this->ruleValidator->validate($json, 'facture');
-                    if ($errors) return $this->ruleBadge('danger', 'Invalide', array_merge($lines, $errors));
+                    if ($errors) return $this->ruleBadge('danger', 'Erreur', array_merge($lines, $errors));
 
-                    return $this->ruleBadge('warning', 'Active', $lines);
+                    return $this->ruleBadge('warning', 'Conditions', $lines);
                 }
             ])
             ->addColumn('Poids', null, XEditableColumn::class, [

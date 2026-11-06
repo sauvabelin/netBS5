@@ -17,8 +17,8 @@
 {% block content %}
     {% if form.vars.textes_converted %}
         <div class="alert alert-info small">
-            Les textes de ce modèle ont été convertis au nouveau format (variables entre accolades).
-            Vérifiez-les : ils seront enregistrés ainsi.
+            Les variables de ce modèle ont été mises à jour vers le nouveau format, par exemple {facture.numero}.
+            Relisez les textes avant d'enregistrer.
         </div>
     {% endif %}
 
@@ -53,6 +53,7 @@
             variables: form.ruleJson.vars.rule_glossary,
             example: form.ruleJson.vars.rule_context.example,
             open: false,
+            title: 'Aide : expressions dans les textes',
             intro: "Quand aucune variable ne convient, un administrateur peut écrire une expression entre crochets dans les textes, par exemple [facture.getMontant()].",
         } %}
     </div>
