@@ -21,7 +21,7 @@ class AttributionProfondeurBlock implements RuleBlock
 
     public function label(): string
     {
-        return 'le sous-groupe est à une profondeur';
+        return 'le niveau du sous-groupe (1 = enfant direct) est';
     }
 
     public function negatedLabel(): ?string
@@ -36,7 +36,7 @@ class AttributionProfondeurBlock implements RuleBlock
 
     public function describe(array $display, bool $not): string
     {
-        return ($not ? "le sous-groupe n'est pas à une profondeur " : "le sous-groupe est à une profondeur ") . $display['op'] . ' ' . $display['profondeur'];
+        return ($not ? "le niveau du sous-groupe n'est pas " : "le niveau du sous-groupe est ") . $display['op'] . ' ' . $display['profondeur'];
     }
 
     /** @param AttributionInSousGroupe $subject */

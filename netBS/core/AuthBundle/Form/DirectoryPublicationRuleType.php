@@ -20,17 +20,17 @@ class DirectoryPublicationRuleType extends AbstractType
             ->add('label', TextType::class, ['label' => 'Nom de la règle'])
             ->add('selectionJson', RuleType::class, [
                 'context'    => 'groupe',
-                'label'      => 'Groupes publiés',
+                'label'      => 'Quels groupes partager ?',
                 'empty_text' => 'Choisissez au moins une condition.',
             ])
             ->add('sousGroupes', ChoiceType::class, [
-                'label'   => 'Membres du groupe LDAP',
+                'label'   => 'Qui est membre du groupe partagé ?',
                 'choices' => DirectoryPublicationRule::getSousGroupesChoices(),
             ])
             ->add('sousGroupesRuleJson', RuleType::class, [
                 'context'    => 'attribution_sous_groupe',
-                'label'      => 'Sous-groupes dont les membres sont ajoutés (mode « selon une règle »)',
-                'empty_text' => 'Aucune condition : à définir pour le mode « selon une règle ».',
+                'label'      => 'Quels sous-groupes ? (seulement pour « certains sous-groupes »)',
+                'empty_text' => 'Aucune condition : à définir si vous avez choisi « certains sous-groupes ».',
             ]);
     }
 

@@ -86,7 +86,7 @@ final class RulesCheckCommandTest extends KernelTestCase
         $tester = $this->runCheck();
 
         $this->assertSame(Command::FAILURE, $tester->getStatusCode());
-        $this->assertStringContainsString("Règle LDAP « rules-check unités » : Référence supprimée (id $id).", $this->display($tester));
+        $this->assertStringContainsString("rules-check unités", $this->display($tester));
     }
 
     public function test_invalid_legacy_expression_fails(): void

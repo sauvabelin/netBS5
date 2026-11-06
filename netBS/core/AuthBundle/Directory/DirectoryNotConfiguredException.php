@@ -13,7 +13,7 @@ final class DirectoryNotConfiguredException extends \RuntimeException
 {
     public function __construct(?string $message = null)
     {
-        parent::__construct($message ?? "Aucun groupe n'est publié : ajoutez une règle de publication ou un groupe calculé sur cette page (Administration › Authentication › LDAP). La synchronisation est suspendue, elle supprimerait tous les groupes de l'annuaire.");
+        parent::__construct($message ?? "Aucun groupe n'est partagé : ajoutez une règle de partage ou un groupe automatique. La synchronisation est en pause, sinon elle supprimerait tous les groupes partagés.");
     }
 
     /** @param string $owner e.g. « Règle « Unités » » */

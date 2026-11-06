@@ -23,7 +23,7 @@ final class RuleDescriber
             return 'Aucune condition';
         }
         if ($rule->mode === Rule::EXPERT) {
-            return 'Règle experte : ' . $rule->expression;
+            return 'Expression avancée : ' . $rule->expression;
         }
 
         return $this->group($rule->root, $this->entityLabels($rule), false);
@@ -44,7 +44,7 @@ final class RuleDescriber
     {
         $block = $this->registry->block($condition->block);
         if ($block === null) {
-            return sprintf('condition inconnue (%s)', $condition->block);
+            return sprintf('condition supprimée ou inconnue (%s)', $condition->block);
         }
 
         $display = [];

@@ -21,12 +21,12 @@ class MembreGroupeTypesBlock implements RuleBlock
 
     public function label(): string
     {
-        return 'le membre a une attribution dans un groupe de type';
+        return "le membre fait partie d'un groupe de type";
     }
 
     public function negatedLabel(): ?string
     {
-        return "le membre n'a pas d'attribution dans un groupe de type";
+        return "le membre ne fait partie d'aucun groupe de type";
     }
 
     public function params(): array
@@ -36,7 +36,7 @@ class MembreGroupeTypesBlock implements RuleBlock
 
     public function describe(array $display, bool $not): string
     {
-        return ($not ? "le membre n'a pas d'attribution dans un groupe de type " : 'le membre a une attribution dans un groupe de type ') . $display['types'];
+        return ($not ? "le membre ne fait partie d'aucun groupe de type " : "le membre fait partie d'un groupe de type ") . $display['types'];
     }
 
     /** @param BaseMembre $subject */

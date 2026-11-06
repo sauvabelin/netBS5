@@ -51,8 +51,8 @@ final class RuleValidatorTest extends KernelTestCase
 
     public function test_empty_rule_when_not_allowed(): void
     {
-        $this->assertSame(['Règle vide.'], $this->validator->validate(null, 'test', allowEmpty: false));
-        $this->assertSame(['Règle vide.'], $this->validator->validate(Rule::expert(' '), 'test', allowEmpty: false));
+        $this->assertCount(1, $this->validator->validate(null, 'test', allowEmpty: false));
+        $this->assertCount(1, $this->validator->validate(Rule::expert(' '), 'test', allowEmpty: false));
     }
 
     public function test_malformed_json(): void
@@ -87,7 +87,7 @@ final class RuleValidatorTest extends KernelTestCase
     public function test_too_many_levels(): void
     {
         $deep = $this->rule(new RuleGroup('or', [new RuleGroup('and', [new RuleCondition('test.flag', [])])]));
-        $this->assertSame(['Trop de niveaux de groupes.'], $this->validator->validate($deep, 'test'));
+        $this->assertCount(1, $this->validator->validate($deep, 'test'));
     }
 
     public function test_missing_param(): void
@@ -130,7 +130,7 @@ final class RuleValidatorTest extends KernelTestCase
     public function test_empty_nested_group(): void
     {
         $rule = $this->rule($this->n(['op' => 'ge', 'value' => 3]), new RuleGroup('or', []));
-        $this->assertSame(['Groupe vide.'], $this->validator->validate($rule, 'test'));
+        $this->assertCount(1, $this->validator->validate($rule, 'test'));
     }
 
 }

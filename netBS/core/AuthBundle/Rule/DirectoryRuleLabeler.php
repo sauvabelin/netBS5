@@ -29,7 +29,7 @@ class DirectoryRuleLabeler implements RuleOwnerLabeler
             ->getQuery()
             ->getOneOrNullResult();
         if ($publication !== null) {
-            return sprintf('Règle LDAP « %s »', $publication->getLabel());
+            return sprintf('Règle de partage « %s »', $publication->getLabel());
         }
 
         $computed = $this->em->getRepository(DirectoryComputedGroup::class)->findOneBy(['membres' => $rule]);

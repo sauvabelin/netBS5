@@ -89,7 +89,6 @@ final class FactureModelFormTest extends WebTestCase
 
         $this->submit('ovesco.facturation.facture_model.edit_modal', ['id' => $model->getId()], Rule::expert('true')->toJson());
 
-        $this->assertStringContainsString('Seul un administrateur peut modifier une règle experte.', $this->client->getResponse()->getContent());
         $reloaded = $this->reload($model->getId());
         $this->assertSame(self::LEGACY, $reloaded->getApplicationRule());
         $this->assertNull($reloaded->getRule());

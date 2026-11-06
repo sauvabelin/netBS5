@@ -23,12 +23,12 @@ class MembreAttributionGroupesBlock implements RuleBlock
 
     public function label(): string
     {
-        return 'le membre a une attribution dans';
+        return 'le membre fait partie de';
     }
 
     public function negatedLabel(): ?string
     {
-        return "le membre n'a pas d'attribution dans";
+        return "le membre ne fait pas partie de";
     }
 
     public function params(): array
@@ -48,7 +48,7 @@ class MembreAttributionGroupesBlock implements RuleBlock
         // « sans sous-groupes » is the plain case: the sentence leaves it out
         $suffix = $display['sous_groupes'] === self::SANS_SOUS_GROUPES ? '' : ' ' . $display['sous_groupes'];
 
-        return ($not ? "le membre n'a pas d'attribution dans " : 'le membre a une attribution dans ') . $display['groupes'] . $suffix;
+        return ($not ? "le membre ne fait pas partie de " : 'le membre fait partie de ') . $display['groupes'] . $suffix;
     }
 
     /** @param BaseMembre $subject */

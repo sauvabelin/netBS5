@@ -129,11 +129,11 @@ final class DirectoryProjection
         return $this->describer->describe($rule->getSelectionJson(), 'groupe');
     }
 
-    /** « Avec les membres de tous ses sous-groupes », ... */
+    /** « Membres du groupe et de tous ses sous-groupes », ... */
     public function describeMembres(DirectoryPublicationRule $rule): string
     {
         return $rule->getSousGroupes() === DirectoryPublicationRule::SOUS_GROUPES_REGLE
-            ? 'Avec les membres des sous-groupes quand ' . $this->describer->describe($rule->getSousGroupesRuleJson(), 'attribution_sous_groupe')
+            ? 'Membres du groupe et des sous-groupes quand ' . $this->describer->describe($rule->getSousGroupesRuleJson(), 'attribution_sous_groupe')
             : array_flip(DirectoryPublicationRule::getSousGroupesChoices())[$rule->getSousGroupes()];
     }
 
@@ -252,12 +252,12 @@ final class DirectoryProjection
 
     private static function ruleOwner(DirectoryPublicationRule $rule): string
     {
-        return sprintf('Règle LDAP « %s »', $rule->getLabel());
+        return sprintf('Règle de partage « %s »', $rule->getLabel());
     }
 
     private static function computedOwner(DirectoryComputedGroup $entity): string
     {
-        return sprintf('Groupe calculé « %s »', $entity->getName());
+        return sprintf('Groupe automatique « %s »', $entity->getName());
     }
 
     /**
@@ -368,7 +368,7 @@ final class DirectoryProjection
 
     private function computedOrigin(DirectoryComputedGroup $entity): string
     {
-        return 'Groupe calculé — ' . $this->describeComputed($entity);
+        return 'Groupe automatique — ' . $this->describeComputed($entity);
     }
 
     /**

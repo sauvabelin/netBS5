@@ -35,13 +35,13 @@ final class LdapRulesController extends AbstractController
     public function addRule(Request $request): Response
     {
         $rule = (new DirectoryPublicationRule())->setPosition($this->rules->maxPosition() + 1);
-        return $this->ruleModal($request, $rule, 'Nouvelle règle de publication', 'Règle ajoutée');
+        return $this->ruleModal($request, $rule, 'Nouvelle règle de partage', 'Règle ajoutée');
     }
 
     #[Route('/rules/{id}/edit', name: 'auth.admin.ldap.rule.edit', requirements: ['id' => '\d+'], methods: ['GET', 'POST'])]
     public function editRule(Request $request, int $id): Response
     {
-        return $this->ruleModal($request, $this->findRule($id), 'Modifier la règle de publication', 'Règle mise à jour');
+        return $this->ruleModal($request, $this->findRule($id), 'Modifier la règle de partage', 'Règle mise à jour');
     }
 
     #[Route('/rules/{id}/delete', name: 'auth.admin.ldap.rule.delete', requirements: ['id' => '\d+'], methods: ['POST'])]
@@ -80,13 +80,13 @@ final class LdapRulesController extends AbstractController
     #[Route('/computed/add', name: 'auth.admin.ldap.computed.add', methods: ['GET', 'POST'])]
     public function addComputed(Request $request): Response
     {
-        return $this->computedModal($request, new DirectoryComputedGroup(), 'Nouveau groupe calculé', 'Groupe calculé ajouté');
+        return $this->computedModal($request, new DirectoryComputedGroup(), 'Nouveau groupe automatique', 'Groupe automatique ajouté');
     }
 
     #[Route('/computed/{id}/edit', name: 'auth.admin.ldap.computed.edit', requirements: ['id' => '\d+'], methods: ['GET', 'POST'])]
     public function editComputed(Request $request, int $id): Response
     {
-        return $this->computedModal($request, $this->findComputed($id), 'Modifier le groupe calculé', 'Groupe calculé mis à jour');
+        return $this->computedModal($request, $this->findComputed($id), 'Modifier le groupe automatique', 'Groupe automatique mis à jour');
     }
 
     #[Route('/computed/{id}/delete', name: 'auth.admin.ldap.computed.delete', requirements: ['id' => '\d+'], methods: ['POST'])]
@@ -97,7 +97,7 @@ final class LdapRulesController extends AbstractController
 
         $this->em->remove($group);
         $this->em->flush();
-        $this->addFlash('success', sprintf('Groupe calculé « %s » supprimé', $group->getName()));
+        $this->addFlash('success', sprintf('Groupe automatique « %s » supprimé', $group->getName()));
         return $this->redirectToRoute('auth.admin.ldap.index');
     }
 

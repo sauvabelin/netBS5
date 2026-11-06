@@ -27,7 +27,7 @@ final class RuleValidator
         }
 
         if ($rule->isEmpty()) {
-            return $allowEmpty ? [] : ['Règle vide.'];
+            return $allowEmpty ? [] : ['Ajoutez au moins une condition.'];
         }
 
         if ($rule->mode === Rule::EXPERT) {
@@ -44,11 +44,11 @@ final class RuleValidator
         foreach ($rule->root->items as $item) {
             if ($item instanceof RuleGroup) {
                 if ($item->items === []) {
-                    $errors[] = 'Groupe vide.';
+                    $errors[] = 'Ensemble de conditions vide.';
                 }
                 foreach ($item->items as $nested) {
                     if ($nested instanceof RuleGroup) {
-                        $errors[] = 'Trop de niveaux de groupes.';
+                        $errors[] = "Trop de niveaux d'ensembles imbriqués.";
                     }
                 }
             }

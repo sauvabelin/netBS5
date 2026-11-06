@@ -20,7 +20,7 @@ use Symfony\Component\Security\Core\Authentication\Token\UsernamePasswordToken;
 
 final class RuleTypeTest extends KernelTestCase
 {
-    private const EXPERT_ERROR = 'Seul un administrateur peut modifier une règle experte.';
+    private const EXPERT_ERROR = RuleType::EXPERT_DENIED;
 
     protected function setUp(): void
     {

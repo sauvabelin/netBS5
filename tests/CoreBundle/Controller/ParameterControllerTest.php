@@ -11,6 +11,7 @@ use NetBS\CoreBundle\Rule\Rule;
 use NetBS\CoreBundle\Rule\RuleCondition;
 use NetBS\CoreBundle\Rule\RuleGroup;
 use NetBS\CoreBundle\Service\ParameterManager;
+use NetBS\CoreBundle\Settings\SettingsFormFactory;
 use Symfony\Bundle\FrameworkBundle\KernelBrowser;
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 use Symfony\Component\DomCrawler\Crawler;
@@ -52,10 +53,10 @@ final class ParameterControllerTest extends WebTestCase
         $crawler = $this->openAsAdmin();
 
         $this->assertResponseIsSuccessful();
-        $titles = implode(' | ', $crawler->filter('.card-title')->each(fn(Crawler $c) => $c->text()));
-        foreach (['Application', 'Recherche', 'Galerie', 'Cotisations', 'Legacy'] as $section) {
-            $this->assertStringContainsString($section, $titles);
+        foreach (['application', 'recherche', 'galerie', 'cotisations'] as $section) {
+            $this->assertCount(1, $crawler->filter('#section-' . $section));
         }
+        $this->assertCount(1, $crawler->filter('#settings-legacy'));
         $this->assertStringNotContainsString('bousillez', $this->client->getResponse()->getContent());
     }
 
@@ -144,7 +145,7 @@ final class ParameterControllerTest extends WebTestCase
         $crawler = $this->openAsAdmin();
 
         $this->assertResponseIsSuccessful();
-        $this->assertStringContainsString("Règle non définie, l'ancienne logique est utilisée.", $crawler->filter('#setting-test-rule')->text());
+        $this->assertStringContainsString(SettingsFormFactory::RULE_NOT_SET, $crawler->filter('#setting-test-rule')->text());
     }
 
     public function test_rule_setting_saves_from_page(): void

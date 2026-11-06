@@ -21,12 +21,12 @@ class AttributionFonctionsBlock implements RuleBlock
 
     public function label(): string
     {
-        return 'la fonction est';
+        return 'sa fonction dans le sous-groupe est';
     }
 
     public function negatedLabel(): ?string
     {
-        return "la fonction n'est pas";
+        return "sa fonction dans le sous-groupe n'est pas";
     }
 
     public function params(): array
@@ -36,7 +36,7 @@ class AttributionFonctionsBlock implements RuleBlock
 
     public function describe(array $display, bool $not): string
     {
-        return ($not ? "la fonction n'est pas " : "la fonction est ") . $display['fonctions'];
+        return ($not ? "sa fonction dans le sous-groupe n'est pas " : "sa fonction dans le sous-groupe est ") . $display['fonctions'];
     }
 
     /** @param AttributionInSousGroupe $subject */

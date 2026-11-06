@@ -25,7 +25,7 @@ class DirectoryComputedGroupType extends AbstractType
     {
         $builder
             ->add('name', TextType::class, [
-                'label'       => 'Nom du groupe LDAP',
+                'label'       => 'Nom du groupe',
                 'constraints' => [new Callback($this->validateName(...))],
             ])
             ->add('description', TextType::class, ['label' => 'Description', 'required' => false])
@@ -57,7 +57,7 @@ class DirectoryComputedGroupType extends AbstractType
             }
         }
         if (in_array($safe, $taken, true)) {
-            $context->addViolation('Ce nom est déjà utilisé par un autre groupe LDAP.');
+            $context->addViolation('Ce nom est déjà utilisé par un autre groupe.');
         }
     }
 

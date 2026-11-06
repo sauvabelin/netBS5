@@ -21,12 +21,12 @@ class GroupeCategoriesBlock implements RuleBlock
 
     public function label(): string
     {
-        return 'le type du groupe est de la catégorie';
+        return 'le groupe est de la catégorie';
     }
 
     public function negatedLabel(): ?string
     {
-        return "le type du groupe n'est pas de la catégorie";
+        return "le groupe n'est pas de la catégorie";
     }
 
     public function params(): array
@@ -36,7 +36,7 @@ class GroupeCategoriesBlock implements RuleBlock
 
     public function describe(array $display, bool $not): string
     {
-        return ($not ? "le type du groupe n'est pas de la catégorie " : 'le type du groupe est de la catégorie ') . $display['categories'];
+        return ($not ? "le groupe n'est pas de la catégorie " : 'le groupe est de la catégorie ') . $display['categories'];
     }
 
     /** @param BaseGroupe $subject */

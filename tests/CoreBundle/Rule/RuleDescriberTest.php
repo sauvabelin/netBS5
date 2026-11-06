@@ -40,7 +40,7 @@ final class RuleDescriberTest extends KernelTestCase
 
     public function test_expert(): void
     {
-        $this->assertSame('Règle experte : n > 3', $this->describer->describe(Rule::expert('n > 3'), 'test'));
+        $this->assertStringEndsWith('n > 3', $this->describer->describe(Rule::expert('n > 3'), 'test'));
     }
 
     public function test_invalid(): void

@@ -56,9 +56,9 @@ class DirectoryPublicationRule
     public static function getSousGroupesChoices(): array
     {
         return [
-            'Membres du groupe seulement'                   => self::SOUS_GROUPES_DIRECT,
-            'Avec les membres de tous ses sous-groupes'     => self::SOUS_GROUPES_TOUS,
-            'Avec les membres des sous-groupes selon une règle' => self::SOUS_GROUPES_REGLE,
+            'Membres directs seulement'                        => self::SOUS_GROUPES_DIRECT,
+            'Membres du groupe et de tous ses sous-groupes'    => self::SOUS_GROUPES_TOUS,
+            'Membres du groupe et de certains sous-groupes'    => self::SOUS_GROUPES_REGLE,
         ];
     }
 

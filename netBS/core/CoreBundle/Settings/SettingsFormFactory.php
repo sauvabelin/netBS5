@@ -21,7 +21,7 @@ use Symfony\Component\Form\FormInterface;
  */
 class SettingsFormFactory
 {
-    const RULE_NOT_SET = "Règle non définie, l'ancienne logique est utilisée.";
+    const RULE_NOT_SET = "Aucune condition : le comportement par défaut s'applique (voir description).";
 
     public function __construct(
         private FormFactoryInterface $formFactory,

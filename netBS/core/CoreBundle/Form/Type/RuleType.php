@@ -28,7 +28,7 @@ use Symfony\Component\OptionsResolver\OptionsResolver;
  */
 class RuleType extends AbstractType
 {
-    const EXPERT_DENIED = 'Seul un administrateur peut modifier une règle experte.';
+    const EXPERT_DENIED = 'Seul un administrateur peut modifier une expression avancée.';
 
     public function __construct(
         private RuleRegistry $registry,

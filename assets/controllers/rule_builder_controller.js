@@ -202,8 +202,8 @@ export default class extends Controller {
 
         if (expert && !canExpert) {
             this.editorTarget.innerHTML = `<div class="mb-2">
-                <span class="badge text-bg-warning">Expression</span>
-                <span class="small text-muted">écrite par un administrateur, modifiable par un administrateur seulement</span>
+                <span class="badge text-bg-warning">Expression avancée</span>
+                <span class="small text-muted">seul un administrateur peut la modifier</span>
                 <pre class="bg-body-tertiary border rounded p-2 mt-1 mb-0 small">${esc(this.rule.expression)}</pre></div>`;
             this.modeTarget.innerHTML = '<button type="button" class="btn btn-link" data-action-name="to-blocks">Remplacer par des conditions</button>';
         } else if (expert) {
@@ -233,7 +233,7 @@ export default class extends Controller {
         return `${this._rows(root, '', true)}
             <div class="rule-add">
                 ${this._addButton('add-condition', '', 'Ajouter une condition')}
-                ${this._addButton('add-group', '', 'Ajouter un groupe')}
+                ${this._addButton('add-group', '', 'Ajouter un ensemble de conditions')}
             </div>`;
     }
 
@@ -246,7 +246,7 @@ export default class extends Controller {
         return group.items.map((item, i) => {
             const itemPath = `${prefix}${i}`;
             const body = item.items ? this._nested(item, itemPath) : `<div class="rule-body">${this._condition(item, itemPath)}</div>`;
-            const title = item.items ? 'Retirer le groupe' : 'Retirer la condition';
+            const title = item.items ? 'Retirer l\'ensemble' : 'Retirer la condition';
             return `<div class="rule-row">
                 <div class="rule-connector">${this._connector(group, path, i, root)}</div>
                 ${body}
@@ -281,7 +281,7 @@ export default class extends Controller {
         const selected = condition.not ? `!${condition.block}` : condition.block;
 
         const options = [];
-        if (!block) options.push([selected, `condition inconnue (${condition.block})`]);
+        if (!block) options.push([selected, `condition supprimée ou inconnue (${condition.block})`]);
         Object.entries(blocks).forEach(([id, b]) => {
             options.push([id, b.label]);
             if (b.negatedLabel) options.push([`!${id}`, b.negatedLabel]);

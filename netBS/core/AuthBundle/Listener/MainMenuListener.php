@@ -29,8 +29,8 @@ final class MainMenuListener
         $menu = $event->getMenu();
         $cat = $menu->getCategory('secure.admin')
             ?? $menu->registerCategory('secure.admin', 'Administration', 500);
-        $cat->addSubMenu('secure.admin.auth', 'Authentication', 'fas fa-shield-alt')
+        $cat->addSubMenu('secure.admin.auth', 'Authentification', 'fas fa-shield-alt')
             ->addSubLink('OIDC', 'auth.admin.oidc_clients.index')
-            ->addSubLink('LDAP', 'auth.admin.ldap.index');
+            ->addSubLink('Groupes', 'auth.admin.ldap.index');
     }
 }

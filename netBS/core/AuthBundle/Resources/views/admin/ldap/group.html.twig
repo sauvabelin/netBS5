@@ -1,13 +1,13 @@
 {% extends '@NetBSCore/layout/backend.layout.twig' %}
 
-{% set title %}Authentication — LDAP — {{ group.name }}{% endset %}
+{% set title %}Groupes — {{ group.name }}{% endset %}
 
 {% block main %}
     <div class="container-fluid">
         {% include '@NetBSCore/includes/header.include.twig' with {
             header: group.name,
-            subHeader: 'Groupe de l\'annuaire LDAP',
-            actions: ['<a href="' ~ path('auth.admin.ldap.index') ~ '" class="btn btn-secondary"><i class="fas fa-arrow-left"></i> Annuaire LDAP</a>']
+            subHeader: 'Groupe partagé',
+            actions: ['<a href="' ~ path('auth.admin.ldap.index') ~ '" class="btn btn-secondary"><i class="fas fa-arrow-left"></i> Groupes</a>']
         } %}
 
         <div class="row">

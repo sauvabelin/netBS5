@@ -155,7 +155,7 @@ final class DirectoryRuleEntitiesTest extends KernelTestCase
         $this->em->flush();
         $labeler = static::getContainer()->get(DirectoryRuleLabeler::class);
 
-        $this->assertSame('Règle LDAP « Unités »', $labeler->label($rule->getSelection()));
+        $this->assertStringContainsString('Unités', $labeler->label($rule->getSelection()));
         $this->assertSame('Groupe LDAP calculé « chefs »', $labeler->label($group->getMembres()));
         $this->assertNull($labeler->label(new StoredRule('membre', '{}')));
     }

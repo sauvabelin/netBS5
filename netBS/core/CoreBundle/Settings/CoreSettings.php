@@ -15,11 +15,11 @@ class CoreSettings implements SettingsProvider
                 help: 'Auteur indiqué dans les métadonnées des pages');
 
         $s->section('recherche', 'Recherche')
-            ->int('search', 'max_results', 'Résultats maximum', default: 2000, min: 1, max: 10000,
+            ->int('search', 'max_results', 'Nombre maximum de résultats', default: 2000, min: 1, max: 10000,
                 help: "Nombre maximum de résultats affichés par une recherche");
 
         $s->section('galerie', 'Galerie')
-            ->secret('galerie', 'parent_token', 'Mot de passe parents', minLength: 8,
-                help: 'Mot de passe commun donné aux parents pour accéder aux photos; sans mot de passe, la galerie est fermée');
+            ->secret('galerie', 'parent_token', 'Mot de passe de la galerie', minLength: 8,
+                help: 'Mot de passe commun donné aux parents pour voir les photos. Pour en accepter plusieurs, séparez-les par « | ». Sans mot de passe, la galerie est fermée.');
     }
 }

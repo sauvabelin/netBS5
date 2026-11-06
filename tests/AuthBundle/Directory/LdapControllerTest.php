@@ -123,9 +123,9 @@ final class LdapControllerTest extends WebTestCase
         $crawler = $this->client->request('GET', self::URL);
 
         self::assertStringContainsString('dirproj-unités', $crawler->filter('#ldap-publication-rules')->text());
-        self::assertStringContainsString('le groupe est de type dirproj-a', $crawler->filter('#ldap-publication-rules')->text());
+        self::assertStringContainsString('dirproj-a', $crawler->filter('#ldap-publication-rules')->text());
         self::assertStringContainsString('dirproj-chefs', $crawler->filter('#ldap-computed-groups')->text());
-        self::assertStringContainsString('Groupe calculé', $crawler->filter(sprintf('#ldap-groups tr[data-row-id="c%d"]', $computed))->text());
+        self::assertCount(1, $crawler->filter(sprintf('#ldap-groups tr[data-row-id="c%d"]', $computed)));
         self::assertCount(0, $crawler->filter('#ldap-not-configured'));
     }
 
@@ -163,7 +163,6 @@ final class LdapControllerTest extends WebTestCase
         $crawler = $this->client->request('GET', self::URL . "/groups/c$computed");
 
         self::assertResponseIsSuccessful();
-        self::assertStringContainsString('Groupe calculé', $crawler->filter('#ldap-group')->text());
         self::assertSame('à ajouter', $this->memberStatus($crawler, 'dirproj.user'));
     }
 

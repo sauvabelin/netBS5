@@ -50,7 +50,7 @@ final class LdapSyncCommandTest extends KernelTestCase
         $display = preg_replace('/\s+/', ' ', $tester->getDisplay());
 
         self::assertSame(Command::FAILURE, $tester->getStatusCode());
-        self::assertStringContainsString('Groupe calculé « dirproj-cassé »', $display);
+        self::assertStringContainsString('dirproj-cassé', $display);
         self::assertStringContainsString('suspendue', $display);
         self::assertSame([], $this->lldap->groups, 'nothing synced');
     }

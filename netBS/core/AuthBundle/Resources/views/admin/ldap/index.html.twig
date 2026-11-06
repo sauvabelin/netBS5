@@ -1,6 +1,6 @@
 {% extends '@NetBSCore/layout/backend.layout.twig' %}
 
-{% set title %}Authentication — LDAP{% endset %}
+{% set title %}Groupes{% endset %}
 
 {% macro problem_badge(problem) %}
     {% if problem is not null %}
@@ -12,27 +12,27 @@
 {% block main %}
     <div class="container-fluid">
         {% include '@NetBSCore/includes/header.include.twig' with {
-            header: 'Authentication',
-            subHeader: 'Annuaire LDAP'
+            header: 'Authentification',
+            subHeader: 'Groupes'
         } %}
 
         <div class="row">
             <div class="col-12">
                 <div class="card" id="ldap-publication-rules">
                     <div class="card-header d-flex align-items-center">
-                        <h5 class="card-title mb-0 me-auto">Règles de publication</h5>
+                        <h5 class="card-title mb-0 me-auto">Groupes partagés</h5>
                         <button class="btn btn-primary btn-sm" data-controller="modal" data-modal-url-value="{{ path('auth.admin.ldap.rule.add') }}" data-action="click->modal#open">
                             <i class="fas fa-plus"></i> Ajouter une règle
                         </button>
                     </div>
                     <div class="card-body">
-                        <p class="text-muted small">Chaque groupe suit la première règle qui le sélectionne. Un groupe qu'aucune règle ne sélectionne n'est pas publié.</p>
+                        <p class="text-muted small">Choisissez quels groupes netBS sont partagés avec les autres outils (Nextcloud, wiki…). Les règles sont lues dans l'ordre : un groupe suit la première règle qui le concerne. Un groupe qu'aucune règle ne concerne n'est pas partagé.</p>
                         {% if rules is empty %}
-                            <p class="mb-0">Aucune règle : aucun groupe n'est publié.</p>
+                            <p class="mb-0">Aucune règle : aucun groupe n'est partagé.</p>
                         {% else %}
                             <table class="table table-sm align-middle mb-0">
                                 <thead>
-                                    <tr><th>Nom</th><th>Groupes publiés</th><th>Membres</th><th class="text-end">Actions</th></tr>
+                                    <tr><th>Règle</th><th>Groupes concernés</th><th>Qui est membre</th><th class="text-end">Actions</th></tr>
                                 </thead>
                                 <tbody>
                                     {% for view in rules %}
@@ -69,15 +69,15 @@
             <div class="col-12">
                 <div class="card" id="ldap-computed-groups">
                     <div class="card-header d-flex align-items-center">
-                        <h5 class="card-title mb-0 me-auto">Groupes calculés</h5>
+                        <h5 class="card-title mb-0 me-auto">Groupes automatiques</h5>
                         <button class="btn btn-primary btn-sm" data-controller="modal" data-modal-url-value="{{ path('auth.admin.ldap.computed.add') }}" data-action="click->modal#open">
-                            <i class="fas fa-plus"></i> Ajouter un groupe calculé
+                            <i class="fas fa-plus"></i> Ajouter un groupe
                         </button>
                     </div>
                     <div class="card-body">
-                        <p class="text-muted small">Des groupes LDAP qui ne correspondent à aucun groupe netBS : leurs membres sont les membres qui remplissent la règle.</p>
+                        <p class="text-muted small">Des groupes sans équivalent dans netBS : leurs membres sont tous ceux qui remplissent les conditions (ex. « tous les chefs actifs »).</p>
                         {% if computedGroups is empty %}
-                            <p class="mb-0">Aucun groupe calculé.</p>
+                            <p class="mb-0">Aucun groupe automatique.</p>
                         {% else %}
                             <table class="table table-sm align-middle mb-0">
                                 <thead>
@@ -92,7 +92,7 @@
                                             <td>{{ group.description }}</td>
                                             <td class="text-end text-nowrap">
                                                 <button class="btn btn-outline-secondary btn-sm" title="Modifier" data-controller="modal" data-modal-url-value="{{ path('auth.admin.ldap.computed.edit', {id: group.id}) }}" data-action="click->modal#open"><i class="fas fa-edit"></i></button>
-                                                <form method="post" action="{{ path('auth.admin.ldap.computed.delete', {id: group.id}) }}" class="d-inline" data-turbo-confirm="Supprimer le groupe calculé « {{ group.name }} » ?">
+                                                <form method="post" action="{{ path('auth.admin.ldap.computed.delete', {id: group.id}) }}" class="d-inline" data-turbo-confirm="Supprimer le groupe automatique « {{ group.name }} » ?">
                                                     <input type="hidden" name="_token" value="{{ csrf_token('ldap-computed-' ~ group.id) }}">
                                                     <button type="submit" class="btn btn-outline-danger btn-sm" title="Supprimer"><i class="fas fa-trash"></i></button>
                                                 </form>
@@ -115,7 +115,7 @@
                     {# Member counts are fetched per row on hover: resolving every group up front is slow. #}
                     <div class="card card-table" id="ldap-groups" data-controller="lazy-count" data-action="mouseover->lazy-count#load">
                         <div class="card-header">
-                            <h5 class="card-title mb-0">Groupes</h5>
+                            <h5 class="card-title mb-0">Aperçu des groupes partagés</h5>
                         </div>
                         <div class="card-body">
                             {{ render_list('netbs.auth.ldap.groups', 'netbs', {rows: groupRows}) }}

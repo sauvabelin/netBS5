@@ -15,10 +15,10 @@ class BsSettings implements SettingsProvider
     {
         $s->section('cotisations', 'Cotisations')
             ->rule('bs', 'cotisations.tarif_reduit', 'Tarif réduit', 'membre',
-                help: 'Les membres qui remplissent cette règle paient le tarif réduit');
+                help: 'Les membres qui remplissent ces conditions paient la cotisation réduite. Par défaut : membres ayant une fonction de poids supérieur à 99 ou faisant partie de la branche SMT.');
 
         $s->section('comptes', 'Comptes utilisateurs')
             ->rule('bs', 'comptes.creation', 'Création automatique de compte', 'membre',
-                help: 'Un compte est créé quand une attribution est enregistrée pour un membre inscrit qui remplit cette règle');
+                help: 'Quand on attribue une fonction à un membre inscrit qui remplit ces conditions, un compte netBS lui est créé. Par défaut : fonctions dont le poids atteint le minimum fixé dans les anciens paramètres, sauf pour les membres ADABS.');
     }
 }
