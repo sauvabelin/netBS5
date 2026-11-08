@@ -9,6 +9,7 @@ use NetBS\FichierBundle\Mapping\BaseMembre;
 use NetBS\FichierBundle\Service\FichierConfig;
 use NetBS\SecureBundle\Mapping\BaseUser;
 use NetBS\SecureBundle\Service\SecureConfig;
+use NetBS\SecureBundle\Voter\CRUD;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -72,8 +73,13 @@ class MailingListController extends AbstractController
                 ->execute();
         }
 
-        $membreClass = $fichierConfig->getMembreClass();
-        return $listBridgeManager->convertItems($elements, $membreClass);
+        $membres = $listBridgeManager->convertItems($elements, $fichierConfig->getMembreClass());
+
+        // Ids and class come from the client: only reveal membres the user may read.
+        return array_values(array_filter(
+            is_array($membres) ? $membres : iterator_to_array($membres),
+            fn($membre) => $this->isGranted(CRUD::READ, $membre)
+        ));
     }
 
     /**

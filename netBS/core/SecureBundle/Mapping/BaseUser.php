@@ -26,6 +26,9 @@ class BaseUser implements
 {
     use SoftDeleteableEntity;
 
+    /** Fields a non-admin may change on their own account through XEditable. */
+    public const SELF_EDITABLE_FIELDS = ['email'];
+
     /**
      * @var int
      */

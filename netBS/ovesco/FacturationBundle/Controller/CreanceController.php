@@ -2,6 +2,7 @@
 
 namespace Ovesco\FacturationBundle\Controller;
 
+use Ovesco\FacturationBundle\Util\IdList;
 use Doctrine\ORM\EntityManagerInterface;
 use NetBS\CoreBundle\Searcher\SearcherManager;
 use NetBS\CoreBundle\Service\ListBridgeManager;
@@ -43,14 +44,14 @@ class CreanceController extends AbstractController
         $mass = new MassCreances();
         $mass->setItemsClass($request->request->get('itemsClass'));
         if ($request->request->all('selectedIds'))
-            $mass->setSelectedIds(serialize($request->request->all('selectedIds')));
+            $mass->setSelectedIds(IdList::encode($request->request->all('selectedIds')));
 
         $form = $this->createForm(MassCreanceType::class, $mass);
         $form->handleRequest($request);
 
         if($form->isSubmitted() && $form->isValid()) {
 
-            $selectedIds    = unserialize($mass->getSelectedIds());
+            $selectedIds    = IdList::decode($mass->getSelectedIds());
             $class          = base64_decode($mass->getItemsClass());
             $items          = [];
 
@@ -120,11 +121,11 @@ class CreanceController extends AbstractController
     public function mergeCreances(Request $request, EntityManagerInterface $em) {
 
         $merger = new MergeCreancesToFacture();
-        $merger->setCreanceIds(serialize($request->request->all('creanceIds')));
+        $merger->setCreanceIds(IdList::encode($request->request->all('creanceIds')));
         $form = $this->createForm(MergeCreancesToFactureType::class, $merger);
         $form->handleRequest($request);
 
-        $creanceIds = unserialize($merger->getCreanceIds());
+        $creanceIds = IdList::decode($merger->getCreanceIds());
         $creances = $this->extractCreances($creanceIds, $em);
         try {
             $factures = $this->generatePack($creances);

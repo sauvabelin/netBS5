@@ -91,22 +91,13 @@ class CamtController extends AbstractController
 
                     if ($facture) {
 
-                        $alreadyPaid = false;
+                        // Paiement à double: already booked on this facture (re-imported file)
                         $samePaiement = false;
-                        // Check paiement à double
-                        if (count($facture->getPaiements()) === 1) {
-
-                            $p = $facture->getLatestPaiement();
-
-                            $refPaiement = $transactionDetail?->getReference()?->getInstructionId();
-                            $refExisting = $p->getTransactionDetails()?->getReference()?->getInstructionId();
-
-                            // mêmes refs de paiement
-                            if ($refPaiement !== null && $refExisting !== null)
-                                if ($refPaiement === $refExisting)
-                                    $samePaiement = true;
-                                else if($p->getMontant() === $paiement->getMontant() && $p->getDateEffectivePaiement()->getTimestamp() === $paiement->getDateEffectivePaiement()->getTimestamp())
-                                    $samePaiement = true;
+                        foreach ($facture->getPaiements() as $existing) {
+                            if ($existing->isSamePaymentAs($paiement)) {
+                                $samePaiement = true;
+                                break;
+                            }
                         }
 
                         // facture déjà payée avant le paiement

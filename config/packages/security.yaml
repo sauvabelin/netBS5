@@ -71,4 +71,7 @@ security:
         - { path: ^/oidc-error, roles: PUBLIC_ACCESS }
         - { path: ^/netBS/secure/user/my-account, roles: ROLE_USER }
         - { path: ^/netBS/secure, roles: ROLE_ADMIN }
+        # Role checks go through NetBS RoleVoter, which resolves inherited and
+        # fonction-granted roles, so admins/commandants/QM pass too.
+        - { path: ^/netBS/facturation, roles: ROLE_TRESORIER }
         - { path: ^/netBS, roles: [IS_AUTHENTICATED_FULLY, ROLE_USER] }

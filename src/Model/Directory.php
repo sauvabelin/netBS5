@@ -124,4 +124,26 @@ class Directory
         $data = array_map(function ($item) { return preg_replace("/^galerie-/", '', StrUtil::slugify($item));}, $data);
         return implode('/', $data);
     }
+
+    /** Maps a hashed path (as given to API clients) back to the real directory under $root. */
+    public static function resolveHashPath(string $root, string $hashPath): string
+    {
+        $currentRealPath = $root;
+        $currentPath = $root;
+        foreach (explode('/', $hashPath) as $pathPart) {
+            foreach (scandir($currentRealPath) as $possibleDir) {
+                // '..' hashes to itself and would climb out of the galerie root.
+                if ($possibleDir === '.' || $possibleDir === '..') {
+                    continue;
+                }
+                $possibleHash = $currentPath . "/" . self::hash2($possibleDir);
+                if ($possibleHash === $currentPath . "/" . $pathPart) {
+                    $currentPath .= "/" . $pathPart;
+                    $currentRealPath .= "/" . $possibleDir;
+                }
+            }
+        }
+
+        return $currentRealPath;
+    }
 }

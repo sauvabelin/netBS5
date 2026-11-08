@@ -97,6 +97,9 @@ class DynamicListController extends AbstractController
     #[Route('/modal/add-share-to-list/{id}', name: 'netbs.core.dynamic_list.modal_add_share')]
     public function addShareModalAction(Request $request, DynamicList $list, EntityManagerInterface $em) {
 
+        if(!$this->isGranted(CRUD::UPDATE, $list))
+            throw $this->createAccessDeniedException();
+
         $form = $this->createForm(DynamicListShareType::class, $list);
         $form->handleRequest($request);
 

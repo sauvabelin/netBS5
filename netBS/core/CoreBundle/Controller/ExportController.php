@@ -12,6 +12,7 @@ use NetBS\CoreBundle\Service\ExporterManager;
 use NetBS\CoreBundle\Service\ListBridgeManager;
 use NetBS\CoreBundle\Service\LoaderManager;
 use NetBS\CoreBundle\Service\PreviewerManager;
+use NetBS\SecureBundle\Voter\CRUD;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\RequestStack;
@@ -262,7 +263,13 @@ class ExportController extends AbstractController
                 ->execute();
         }
 
-        return $listBridgeManager->convertItems($elements, $exporter->getExportableClass());
+        $items = $listBridgeManager->convertItems($elements, $exporter->getExportableClass());
+
+        // Ids and class come from the client: only export what the user may read.
+        return array_values(array_filter(
+            is_array($items) ? $items : iterator_to_array($items),
+            fn($item) => $this->isGranted(CRUD::READ, $item)
+        ));
     }
 
     /**

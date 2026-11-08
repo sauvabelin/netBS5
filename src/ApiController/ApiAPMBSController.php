@@ -102,6 +102,8 @@ class ApiAPMBSController extends AbstractController
             ->where('r.start <= :end')
             ->andWhere('r.end >= :start')
             ->andWhere('r.status = :status')
+            ->andWhere('r.cabane = :cabane')
+            ->setParameter('cabane', $cabane)
             ->setParameter('start', $start)
             ->setParameter('end', $end)
             ->setParameter('status', APMBSReservation::PENDING)
