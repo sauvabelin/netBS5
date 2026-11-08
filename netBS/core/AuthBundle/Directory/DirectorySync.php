@@ -62,9 +62,15 @@ final class DirectorySync
             ? $marker['id']
             : $this->apply($dryRun, sprintf('create group %s', self::MANAGED_USERS_GROUP),
                 fn () => $this->client->createGroup(self::MANAGED_USERS_GROUP, null));
-        $managedUids = array_fill_keys($marker['members'] ?? [], true);
+        $managedUids = array_fill_keys(array_map('mb_strtolower', $marker['members'] ?? []), true);
 
-        $this->syncUsers($snapshot->users, $managedUids, $markerId, $dryRun);
+        if ($markerId === null && !$dryRun) {
+            // Users created now couldn't be marked as netBS's and would stay
+            // unmanaged for good: leave them to the next run.
+            $this->skippedUids = array_fill_keys(array_keys($snapshot->users), true);
+        } else {
+            $this->syncUsers($snapshot->users, $managedUids, $markerId, $dryRun);
+        }
         $desired = [];
         foreach ([...array_values($snapshot->groups), ...array_values($snapshot->computedGroups), ...array_values($snapshot->roleGroups)] as $group) {
             $desired[DirectoryGroup::key($group->netbsId, $group->role, $group->computedId)] = $group;
@@ -99,8 +105,16 @@ final class DirectorySync
             if (!isset($current[$uid])) {
                 $created = $this->apply($dryRun, "create user $uid", function () use ($user, $markerId) {
                     $this->client->createUser($user);
-                    if ($markerId !== null) {
+                    try {
                         $this->client->addUserToGroup($user->uid, $markerId);
+                    } catch (LldapClientException $e) {
+                        // Outside the marker group the user would be unmanaged
+                        // for good; remove it so the next run creates it again.
+                        try {
+                            $this->client->deleteUser($user->uid);
+                        } catch (LldapClientException) {
+                        }
+                        throw $e;
                     }
                     return true;
                 });

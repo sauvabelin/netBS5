@@ -6,6 +6,7 @@ use App\Entity\BSUser;
 use Doctrine\ORM\EntityManagerInterface;
 use NetBS\SecureBundle\Event\PasswordResetCompletedEvent;
 use NetBS\SecureBundle\Event\PasswordResetRequestedEvent;
+use NetBS\SecureBundle\Event\UserPasswordChangeEvent;
 use NetBS\SecureBundle\Form\ChangePasswordType;
 use NetBS\SecureBundle\Form\ResetPasswordRequestFormType;
 use NetBS\SecureBundle\Model\ChangePassword;
@@ -112,6 +113,8 @@ class ResetPasswordController extends AbstractController
             $user->setPasswordChangedAt(new \DateTimeImmutable());
             $this->em->flush();
             $this->cleanSessionAfterReset();
+            // Same consequences as a change from the account page (e.g. clears an initial password).
+            $this->dispatcher->dispatch(new UserPasswordChangeEvent($user, $plain), UserPasswordChangeEvent::NAME);
             $this->dispatcher->dispatch(new PasswordResetCompletedEvent($user, $request->getClientIp()));
             $this->addFlash('success', 'Mot de passe mis à jour. Veuillez vous connecter.');
             return $this->redirectToRoute('netbs.secure.login.login');
