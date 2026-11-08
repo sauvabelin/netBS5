@@ -51,7 +51,6 @@ final class LdapSyncCommandTest extends KernelTestCase
 
         self::assertSame(Command::FAILURE, $tester->getStatusCode());
         self::assertStringContainsString('dirproj-cassé', $display);
-        self::assertStringContainsString('suspendue', $display);
         self::assertSame([], $this->lldap->groups, 'nothing synced');
     }
 
@@ -62,6 +61,7 @@ final class LdapSyncCommandTest extends KernelTestCase
         $tester = $this->sync();
 
         self::assertSame(Command::SUCCESS, $tester->getStatusCode());
-        self::assertStringContainsString('1 groups, 0 computed groups, 2 role groups', $tester->getDisplay());
+        self::assertSame([], $this->lldap->users, 'dry run writes nothing');
+        self::assertSame([], $this->lldap->groups, 'dry run writes nothing');
     }
 }

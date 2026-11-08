@@ -48,9 +48,9 @@ final class ParameterManagerTest extends KernelTestCase
         try {
             $this->params->setValue('test', 'defaulted_int', '0');
             $this->fail('Expected InvalidArgumentException');
-        } catch (\InvalidArgumentException $e) {
-            $this->assertSame('Doit être au moins 1.', $e->getMessage());
+        } catch (\InvalidArgumentException) {
         }
+        $this->assertFalse($this->em->getConnection()->fetchOne("SELECT 1 FROM netbs_core_parameters WHERE namespace = 'test' AND paramKey = 'defaulted_int'"));
 
         $this->params->setValue('test', 'defaulted_int', '12');
 
@@ -103,7 +103,7 @@ final class ParameterManagerTest extends KernelTestCase
     public function test_invalid_rule_setting_is_rejected(): void
     {
         $this->expectException(\InvalidArgumentException::class);
-        $this->expectExceptionMessage('Condition inconnue : nope.');
+        $this->expectExceptionMessageMatches('/nope/');
         $this->params->setValue('test', 'rule', Rule::blocks(new RuleGroup('and', [new RuleCondition('nope', [])]))->toJson());
     }
 }

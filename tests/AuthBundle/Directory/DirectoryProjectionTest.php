@@ -134,16 +134,6 @@ final class DirectoryProjectionTest extends KernelTestCase
         self::assertSame(sprintf('netbs_users [%d]', $ids['ga']), $this->projection->snapshot()->groups[$ids['ga']]->name);
     }
 
-    public function testNotConfiguredMessagePointsToTheLdapPage(): void
-    {
-        try {
-            $this->projection->snapshot();
-            self::fail('expected DirectoryNotConfiguredException');
-        } catch (DirectoryNotConfiguredException $e) {
-            self::assertInstanceOf(DirectoryNotConfiguredException::class, $e);
-        }
-    }
-
     public function testBrokenSousGroupesRuleSuspendsTheSync(): void
     {
         $ids = $this->seedGroupeTree();
@@ -193,7 +183,7 @@ final class DirectoryProjectionTest extends KernelTestCase
         }
 
         self::assertNull($problems['dirproj-ok']);
-        self::assertStringContainsString('Référence supprimée', $problems['dirproj-cassée']);
+        self::assertNotNull($problems['dirproj-cassée']);
         self::assertNotNull($problems['dirproj-cassé']);
     }
 

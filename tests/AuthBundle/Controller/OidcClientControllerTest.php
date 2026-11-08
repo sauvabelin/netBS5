@@ -25,10 +25,8 @@ use Twig\Environment;
 /**
  * Unit-level coverage for the Hydra-backed OAuth admin controller.
  *
- * The bundle does not ship a kernel-level test bootstrap (no application
- * services are wired in `tests/bootstrap.php`), so a {@see \Symfony\Bundle\FrameworkBundle\Test\WebTestCase}
- * end-to-end harness is not viable here. Instead we exercise each action
- * directly against a PSR container that exposes the same service ids
+ * Plain unit test: no kernel is booted. Each action is invoked directly
+ * against a PSR container that exposes the same service ids
  * AbstractController subscribes to, with hand-rolled fakes for the parts
  * we actually touch:
  *
@@ -41,9 +39,8 @@ use Twig\Environment;
  *   - `twig`                            → captures view name / parameters
  *
  * {@see HydraAdminClient} is `final`, so PHPUnit cannot double it. We
- * reuse the test pattern from {@see \App\Tests\AuthBundle\Service\HydraAdminClientTest}:
- * instantiate the real client via reflection (no ctor) and back it with
- * a {@see MockHttpClient} so we can shape every Hydra response.
+ * construct the real client around a {@see MockHttpClient} so we can shape
+ * every Hydra response.
  */
 final class OidcClientControllerTest extends TestCase
 {

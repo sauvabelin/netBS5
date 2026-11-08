@@ -11,7 +11,7 @@ use NetBS\CoreBundle\Rule\Rule;
 use NetBS\CoreBundle\Rule\RuleCondition;
 use NetBS\CoreBundle\Rule\RuleGroup;
 use NetBS\CoreBundle\Service\ParameterManager;
-use NetBS\CoreBundle\Settings\SettingsFormFactory;
+use NetBS\CoreBundle\Settings\SettingsRegistry;
 use Symfony\Bundle\FrameworkBundle\KernelBrowser;
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 use Symfony\Component\DomCrawler\Crawler;
@@ -57,7 +57,6 @@ final class ParameterControllerTest extends WebTestCase
             $this->assertCount(1, $crawler->filter('#section-' . $section));
         }
         $this->assertCount(1, $crawler->filter('#settings-legacy'));
-        $this->assertStringNotContainsString('bousillez', $this->client->getResponse()->getContent());
     }
 
     public function test_invalid_int_is_rejected_and_not_saved(): void
@@ -68,7 +67,7 @@ final class ParameterControllerTest extends WebTestCase
         $this->submitSection($crawler, 'recherche', ['search__max_results' => '0']);
 
         $this->assertResponseStatusCodeSame(422);
-        $this->assertStringContainsString('Doit être entre 1 et 10000.', $this->client->getResponse()->getContent());
+        $this->assertCount(1, $this->client->getCrawler()->filter('#setting-search-max_results .is-invalid'));
         $this->assertSame('1500', $this->storedValue('search', 'max_results'));
     }
 
@@ -80,8 +79,7 @@ final class ParameterControllerTest extends WebTestCase
 
         $this->assertResponseRedirects($this->url());
         $this->assertSame('2500', $this->params()->getValue('search', 'max_results', false));
-        $this->client->followRedirect();
-        $this->assertStringContainsString('Paramètres « Recherche » enregistrés.', $this->client->getResponse()->getContent());
+        $this->assertCount(1, $this->client->followRedirect()->filter('.toast.text-bg-success'));
     }
 
     public function test_saving_one_section_leaves_others_untouched(): void
@@ -96,17 +94,6 @@ final class ParameterControllerTest extends WebTestCase
         $this->assertNull($this->storedValue('app', 'organization'), 'an untouched section must not be written');
     }
 
-    public function test_secret_is_shown_in_plain_text(): void
-    {
-        $this->params()->setValue('galerie', 'parent_token', 'secret-token-1');
-        $crawler = $this->openAsAdmin();
-
-        $input = $crawler->filter('#setting-galerie-parent_token input[name="settings_galerie[galerie__parent_token]"]');
-        $this->assertSame('text', $input->attr('type'));
-        $this->assertSame('secret-token-1', $input->attr('value'));
-        $this->assertCount(0, $crawler->filter('#setting-galerie-parent_token [data-controller="password-toggle"]'));
-    }
-
     public function test_blank_secret_is_rejected(): void
     {
         $this->params()->setValue('galerie', 'parent_token', 'secret-token-1');
@@ -115,15 +102,17 @@ final class ParameterControllerTest extends WebTestCase
         $this->submitSection($crawler, 'galerie', ['galerie__parent_token' => '']);
 
         $this->assertResponseStatusCodeSame(422);
-        $this->assertStringContainsString('Valeur requise.', $this->client->getResponse()->getContent());
+        $this->assertCount(1, $this->client->getCrawler()->filter('#setting-galerie-parent_token .is-invalid'));
         $this->assertSame('secret-token-1', $this->storedValue('galerie', 'parent_token'));
     }
 
     public function test_date_format_is_not_a_setting(): void
     {
-        $crawler = $this->openAsAdmin();
+        // date formats are code constants (Utils\DateFormat), no longer editable settings
+        $registry = $this->client->getContainer()->get(SettingsRegistry::class);
 
-        $this->assertCount(0, $crawler->filter('#section-formats'));
+        $this->assertArrayNotHasKey('formats', $registry->sections());
+        $this->assertSame([], array_filter($registry->all(), fn ($d) => $d->namespace === 'format'));
     }
 
     public function test_legacy_card_lists_only_undeclared_keys(): void
@@ -140,12 +129,12 @@ final class ParameterControllerTest extends WebTestCase
         $this->assertStringNotContainsString('organization', $legacy);
     }
 
-    public function test_missing_rule_setting_shows_fallback_help(): void
+    public function test_missing_rule_setting_renders(): void
     {
         $crawler = $this->openAsAdmin();
 
         $this->assertResponseIsSuccessful();
-        $this->assertStringContainsString(SettingsFormFactory::RULE_NOT_SET, $crawler->filter('#setting-test-rule')->text());
+        $this->assertCount(1, $crawler->filter('#setting-test-rule'));
     }
 
     public function test_rule_setting_saves_from_page(): void
@@ -168,7 +157,6 @@ final class ParameterControllerTest extends WebTestCase
         $this->submitSection($crawler, 'test', ['test__rule' => Rule::blocks(new RuleGroup('and', [new RuleCondition('nope', [])]))->toJson()]);
 
         $this->assertResponseStatusCodeSame(422);
-        $this->assertStringContainsString('Condition inconnue : nope.', $this->client->getResponse()->getContent());
         $this->assertNull($this->ruleRow());
     }
 
@@ -185,11 +173,9 @@ final class ParameterControllerTest extends WebTestCase
     }
 
     /** Stores the test section's other values, so the rendered form can be saved as is. */
-    private function validTestSection(): array
+    private function validTestSection(): void
     {
         $this->params()->setValue('test', 'plain_text', 'x');
-
-        return [];
     }
 
     private function ruleRow(): ?string

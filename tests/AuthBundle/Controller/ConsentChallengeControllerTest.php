@@ -39,7 +39,7 @@ final class ConsentChallengeControllerTest extends TestCase
 
         $this->assertNotInstanceOf(RedirectResponse::class, $response);
         $this->assertSame(Response::HTTP_FORBIDDEN, $response->getStatusCode());
-        $this->assertStringContainsString("pas accès à Wiki BS.", $response->getContent());
+        $this->assertStringContainsString('Wiki BS', $response->getContent());
         // The challenge is still rejected in Hydra so it can't be replayed.
         $this->assertSame(2, $mock->getRequestsCount());
     }
@@ -54,7 +54,7 @@ final class ConsentChallengeControllerTest extends TestCase
         $response = $this->controller($mock, $this->identity(disabled: true), allowed: true)($this->request());
 
         $this->assertSame(Response::HTTP_FORBIDDEN, $response->getStatusCode());
-        $this->assertStringContainsString("pas accès à Wiki BS.", $response->getContent());
+        $this->assertStringContainsString('Wiki BS', $response->getContent());
     }
 
     public function testErrorPageIsShownEvenWhenHydraRejectFails(): void

@@ -4,7 +4,7 @@
 
 {% macro problem_badge(problem) %}
     {% if problem is not null %}
-        <span class="badge bg-danger" title="{{ problem }}">en erreur</span>
+        <span class="badge bg-danger" data-rule-problem title="{{ problem }}">en erreur</span>
         <div class="small text-danger">{{ problem }}</div>
     {% endif %}
 {% endmacro %}

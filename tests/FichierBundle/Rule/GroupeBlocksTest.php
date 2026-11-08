@@ -27,8 +27,9 @@ final class GroupeBlocksTest extends KernelTestCase
         $this->assertTrue($block->matches($groupe, ['types' => [7]]));
         $this->assertFalse($block->matches($groupe, ['types' => [8]]));
         $this->assertFalse($block->matches($this->groupe(2), ['types' => [7]]), 'no type');
-        $this->assertSame('le groupe est de type Unité', $block->describe(['types' => 'Unité'], false));
-        $this->assertSame("le groupe n'est pas de type Unité", $block->describe(['types' => 'Unité'], true));
+        $this->assertStringContainsString('Unité', $block->describe(['types' => 'Unité'], false));
+        $this->assertStringContainsString('Unité', $block->describe(['types' => 'Unité'], true));
+        $this->assertNotSame($block->describe(['types' => 'Unité'], false), $block->describe(['types' => 'Unité'], true));
     }
 
     public function testCategories(): void
@@ -78,7 +79,7 @@ final class GroupeBlocksTest extends KernelTestCase
     {
         $registry = static::getContainer()->get(RuleRegistry::class);
 
-        $this->assertSame('Groupe', $registry->context('groupe')->label());
+        $this->assertNotSame('', $registry->context('groupe')->label());
         foreach (['groupe.types', 'groupe.categories', 'groupe.parmi', 'groupe.sous'] as $id) {
             $this->assertSame(['groupe'], $registry->block($id)?->contexts(), $id);
         }

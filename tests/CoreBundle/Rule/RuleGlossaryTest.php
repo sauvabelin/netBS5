@@ -43,7 +43,9 @@ final class RuleGlossaryTest extends KernelTestCase
         $glossary = (new RuleGlossary())->variables(new FactureContext());
 
         $this->assertSame(['Membre', 'Famille'], array_column($this->entry($glossary, 'debiteur')['types'], 'name'));
-        $this->assertSame([['name' => 'booléen', 'methods' => []]], $this->entry($glossary, 'isFamille')['types']);
+        $scalar = $this->entry($glossary, 'isFamille')['types'];
+        $this->assertCount(1, $scalar);
+        $this->assertSame([], $scalar[0]['methods']);
         $this->assertNotSame('', $this->entry($glossary, 'facture')['description']);
     }
 

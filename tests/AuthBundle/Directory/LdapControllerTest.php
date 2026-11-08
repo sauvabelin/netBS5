@@ -138,8 +138,8 @@ final class LdapControllerTest extends WebTestCase
         $crawler = $this->client->request('GET', self::URL);
 
         self::assertResponseIsSuccessful();
-        self::assertStringContainsString('en erreur', $crawler->filter('#ldap-computed-groups')->text());
-        self::assertStringContainsString('suspendue', $crawler->filter('#ldap-not-configured')->text());
+        self::assertCount(1, $crawler->filter('#ldap-computed-groups [data-rule-problem]'));
+        self::assertCount(1, $crawler->filter('#ldap-not-configured'));
         self::assertCount(0, $crawler->filter('#ldap-groups'));
     }
 
@@ -163,7 +163,7 @@ final class LdapControllerTest extends WebTestCase
         $crawler = $this->client->request('GET', self::URL . "/groups/c$computed");
 
         self::assertResponseIsSuccessful();
-        self::assertSame('à ajouter', $this->memberStatus($crawler, 'dirproj.user'));
+        self::assertSame('to-add', $this->memberStatus($crawler, 'dirproj.user'));
     }
 
     public function testCountEndpointReportsBrokenRule(): void
@@ -186,16 +186,16 @@ final class LdapControllerTest extends WebTestCase
 
         $crawler = $this->client->request('GET', $url);
         self::assertResponseIsSuccessful();
-        self::assertStringContainsString('pas encore créé', $crawler->filter('#ldap-group')->text());
-        self::assertSame('à ajouter', $this->memberStatus($crawler, 'dirproj.user'));
+        self::assertSame('missing', $crawler->filter('#ldap-group-state')->attr('data-lldap-state'));
+        self::assertSame('to-add', $this->memberStatus($crawler, 'dirproj.user'));
 
         $this->client->getContainer()->get(SyncDirectoryHandler::class)(new SyncDirectory());
         $groupId = $this->lldap->groupId('dirproj-GA');
         $this->lldap->groups[$groupId]['members'][] = 'stale.user';
 
         $crawler = $this->client->request('GET', $url);
-        self::assertSame('à jour', $this->memberStatus($crawler, 'dirproj.user'));
-        self::assertSame('à retirer', $this->memberStatus($crawler, 'stale.user'));
+        self::assertSame('up-to-date', $this->memberStatus($crawler, 'dirproj.user'));
+        self::assertSame('to-remove', $this->memberStatus($crawler, 'stale.user'));
         self::assertSame(['stale.user', 'dirproj.user'], $crawler->filter('#ldap-members tr[data-row-id]')->each(fn ($tr) => $tr->attr('data-row-id')), 'pending changes first');
     }
 
@@ -207,7 +207,7 @@ final class LdapControllerTest extends WebTestCase
 
         $crawler = $this->client->request('GET', self::URL . '/groups/ROLE_WIKI_ADMIN');
         self::assertResponseIsSuccessful();
-        self::assertSame('à ajouter', $this->memberStatus($crawler, 'dirproj.user'));
+        self::assertSame('to-add', $this->memberStatus($crawler, 'dirproj.user'));
 
         // A groupe no rule selects, a role that isn't published, an unknown computed group.
         foreach ([(string) $ids['gb'], 'ROLE_ADMIN', 'c999999999'] as $key) {
@@ -218,7 +218,7 @@ final class LdapControllerTest extends WebTestCase
 
     private function memberStatus(Crawler $crawler, string $uid): string
     {
-        return $crawler->filter(sprintf('#ldap-members tr[data-row-id="%s"] .badge', $uid))->text();
+        return $crawler->filter(sprintf('#ldap-members tr[data-row-id="%s"] .badge', $uid))->attr('data-status');
     }
 
     private function loginAdmin(): void

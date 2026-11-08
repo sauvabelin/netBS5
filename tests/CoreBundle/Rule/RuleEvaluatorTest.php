@@ -10,6 +10,7 @@ use App\Tests\Support\TestNBlock;
 use App\Tests\Support\TestRuleContext;
 use NetBS\CoreBundle\Rule\Rule;
 use NetBS\CoreBundle\Rule\RuleCondition;
+use NetBS\CoreBundle\Rule\RuleEvaluationException;
 use NetBS\CoreBundle\Rule\RuleEvaluator;
 use NetBS\CoreBundle\Rule\RuleGroup;
 use NetBS\CoreBundle\Rule\RuleRegistry;
@@ -66,6 +67,7 @@ final class RuleEvaluatorTest extends TestCase
         $this->assertFalse($this->eval(null));
         $this->assertFalse($this->eval(Rule::empty()));
         $this->assertFalse($this->eval(Rule::expert('')));
+        $this->assertSame(0, $this->logger->count(LogLevel::WARNING), 'empty rule is not a warning');
     }
 
     public function test_expert_expression(): void
@@ -90,5 +92,42 @@ final class RuleEvaluatorTest extends TestCase
     {
         $this->assertFalse($this->eval(Rule::blocks(new RuleGroup('or', [new RuleCondition('nope', [])]))));
         $this->assertSame(1, $this->logger->count(LogLevel::WARNING));
+    }
+
+    // matchesStrict(): the directory's path, where a broken rule must not count as "no match".
+
+    private function strict(Rule|string|null $rule): bool
+    {
+        return $this->evaluator->matchesStrict($rule, 'test', $this->subject);
+    }
+
+    public function test_strict_throws_on_unknown_block(): void
+    {
+        $this->expectException(RuleEvaluationException::class);
+        $this->strict(Rule::blocks(new RuleGroup('or', [new RuleCondition('nope', [])])));
+    }
+
+    public function test_strict_throws_on_expert_runtime_error(): void
+    {
+        $this->expectException(RuleEvaluationException::class);
+        $this->strict(Rule::expert('n.foo()'));
+    }
+
+    public function test_strict_throws_on_malformed_json(): void
+    {
+        $this->expectException(RuleEvaluationException::class);
+        $this->strict('{nope');
+    }
+
+    /** @dataProvider emptyRules */
+    public function test_strict_throws_on_empty_rule(Rule|string|null $rule): void
+    {
+        $this->expectException(RuleEvaluationException::class);
+        $this->strict($rule);
+    }
+
+    public static function emptyRules(): array
+    {
+        return [[null], ['{}'], [Rule::empty()], [Rule::expert('')]];
     }
 }

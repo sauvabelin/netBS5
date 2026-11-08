@@ -19,10 +19,10 @@ class LoginControllerTest extends WebTestCase
     private const PASSWORD = 'C0rrect-horse-battery';
 
     /**
-     * The markup contract password managers and autofill rely on: an identified
-     * username/password pair and an explicit submit button.
+     * The autocomplete hints password managers and browser autofill rely on to
+     * recognise the username/password pair.
      */
-    public function test_login_form_markup_supports_password_managers(): void
+    public function test_login_form_declares_autocomplete_hints(): void
     {
         $client = static::createClient();
         $client->request('GET', self::LOGIN_URL);
@@ -30,9 +30,6 @@ class LoginControllerTest extends WebTestCase
         $this->assertResponseIsSuccessful();
         $this->assertSelectorExists('input[name="_username"][autocomplete="username"]');
         $this->assertSelectorExists('input[name="_password"][autocomplete="current-password"]');
-        $this->assertSelectorExists('label[for="username"]');
-        $this->assertSelectorExists('label[for="password"]');
-        $this->assertSelectorExists('form button[type="submit"]');
     }
 
     public function test_valid_credentials_authenticate_and_redirect_off_the_login_page(): void

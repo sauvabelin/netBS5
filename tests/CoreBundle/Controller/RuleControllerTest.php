@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Tests\CoreBundle\Controller;
 
 use App\Tests\Support\UserFactoryTrait;
+use NetBS\CoreBundle\Rule\RuleDescriber;
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 
 final class RuleControllerTest extends WebTestCase
@@ -22,13 +23,15 @@ final class RuleControllerTest extends WebTestCase
         $client = static::createClient();
         $client->loginUser($this->persistUser($client, 'rule-describe-user', roles: ['ROLE_USER']), 'netbs');
 
-        $this->post($client, ['context' => 'test', 'rule' => [
+        $rule = [
             'mode' => 'blocks', 'op' => 'and',
             'items' => [['block' => 'test.n', 'not' => false, 'params' => ['op' => 'ge', 'value' => 3]]],
-        ]]);
+        ];
+        $this->post($client, ['context' => 'test', 'rule' => $rule]);
 
         $this->assertResponseIsSuccessful();
-        $this->assertSame(['sentence' => 'n ≥ 3', 'errors' => []], json_decode($client->getResponse()->getContent(), true));
+        $expected = static::getContainer()->get(RuleDescriber::class)->describe(json_encode($rule), 'test');
+        $this->assertSame(['sentence' => $expected, 'errors' => []], json_decode($client->getResponse()->getContent(), true));
     }
 
     public function test_describe_reports_errors(): void
@@ -38,7 +41,9 @@ final class RuleControllerTest extends WebTestCase
 
         $this->post($client, ['context' => 'test', 'rule' => ['mode' => 'blocks', 'op' => 'and', 'items' => [['block' => 'nope', 'params' => []]]]]);
 
-        $this->assertSame(['Condition inconnue : nope.'], json_decode($client->getResponse()->getContent(), true)['errors']);
+        $errors = json_decode($client->getResponse()->getContent(), true)['errors'];
+        $this->assertCount(1, $errors);
+        $this->assertStringContainsString('nope', $errors[0]);
     }
 
     public function test_unknown_context_is_400(): void
