@@ -74,6 +74,35 @@ class MailingDomains
         return $target === null ? $address : substr($address, 0, strrpos($address, '@') + 1) . $target;
     }
 
+    /**
+     * @return array<string, string> forwarded domain => domain its list mail is forwarded to
+     */
+    public function forwardedDomains(): array
+    {
+        return $this->forwarded;
+    }
+
+    /**
+     * The forwards the domain's host must have for these addresses to reach
+     * the mail node; addresses on other domains need none.
+     *
+     * @param iterable<string> $addresses
+     * @return array<string, string> address => address it must be forwarded to
+     */
+    public function forwardsFor(iterable $addresses): array
+    {
+        $forwards = [];
+        foreach ($addresses as $address) {
+            $address = strtolower(trim($address));
+            $target = $this->nodeAddress($address);
+            if ($target !== $address) {
+                $forwards[$address] = $target;
+            }
+        }
+
+        return $forwards;
+    }
+
     private function domainOf(string $address): ?string
     {
         $address = trim($address);

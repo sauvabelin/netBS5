@@ -132,6 +132,21 @@ class MailingList
         return $this->aliases;
     }
 
+    /**
+     * Every address the list receives mail on: its base address, then its aliases.
+     *
+     * @return list<string>
+     */
+    public function getAddresses(): array
+    {
+        $addresses = [(string) $this->baseAddress];
+        foreach ($this->aliases as $alias) {
+            $addresses[] = (string) $alias->getAddress();
+        }
+
+        return $addresses;
+    }
+
     public function addAlias(MailingListAlias $alias): self
     {
         if (!$this->aliases->contains($alias)) {

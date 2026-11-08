@@ -10,6 +10,7 @@ use Iacopo\MailingBundle\Form\MailingListAliasType;
 use Iacopo\MailingBundle\Form\MailingTargetType;
 use Iacopo\MailingBundle\ListModel\MailingTargetListModel;
 use Iacopo\MailingBundle\ListModel\MailingAliasListModel;
+use Iacopo\MailingBundle\Service\MailingDomains;
 use Iacopo\MailingBundle\Service\MailingTargetResolver;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\Routing\Annotation\Route;
@@ -28,19 +29,22 @@ class DefaultController extends AbstractController
     private $aliasListModel;
     private $targetResolver;
     private $logger;
+    private $domains;
 
     public function __construct(
         EntityManagerInterface $em,
         MailingTargetListModel $targetListModel,
         MailingAliasListModel $aliasListModel,
         MailingTargetResolver $targetResolver,
-        LoggerInterface $logger
+        LoggerInterface $logger,
+        MailingDomains $domains
     ) {
         $this->em = $em;
         $this->targetListModel = $targetListModel;
         $this->aliasListModel = $aliasListModel;
         $this->targetResolver = $targetResolver;
         $this->logger = $logger;
+        $this->domains = $domains;
     }
 
     /**
@@ -246,6 +250,7 @@ class DefaultController extends AbstractController
             'aliasForm' => $aliasForm->createView(),
             'lastType' => $lastType,
             'recipientCount' => $recipientCount,
+            'forwards' => $this->domains->forwardsFor($mailingList->getAddresses()),
         ], new Response('', $status));
     }
 

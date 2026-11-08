@@ -62,6 +62,36 @@
             </div>
 
             <div class="col-md-4">
+                {% if forwards is not empty %}
+                    <div class="card mb-3 border-warning">
+                        <div class="card-header">
+                            <h5 class="card-title mb-0">
+                                <i class="fas fa-share text-warning"></i> Renvois à configurer
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <p class="small text-muted">
+                                Ces adresses ne reçoivent rien tant que l'hébergeur de leur domaine
+                                ne les renvoie pas vers l'adresse indiquée. Seule l'adresse de gauche
+                                est à communiquer.
+                            </p>
+                            {% for address, target in forwards %}
+                                <div class="mb-2">
+                                    <div class="small"><code>{{ address }}</code> &rarr;</div>
+                                    <div class="input-group input-group-sm">
+                                        <input type="text" class="form-control" readonly
+                                               id="mailing-forward-{{ loop.index }}" value="{{ target }}">
+                                        <button type="button" class="btn btn-primary"
+                                                data-controller="clipboard"
+                                                data-clipboard-source-selector-value="#mailing-forward-{{ loop.index }}"
+                                                data-action="click->clipboard#copy">Copier</button>
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                {% endif %}
+
                 <div class="card mb-3">
                     <div class="card-header">
                         <h5 class="card-title mb-0">Ajouter une adresse alternative</h5>

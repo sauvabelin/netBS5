@@ -3,6 +3,7 @@
 namespace Iacopo\MailingBundle\Form;
 
 use Iacopo\MailingBundle\Entity\MailingList;
+use Iacopo\MailingBundle\Service\MailingDomains;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\Form\Extension\Core\Type\TextareaType;
@@ -11,6 +12,10 @@ use Symfony\Component\OptionsResolver\OptionsResolver;
 
 class MailingListType extends AbstractType
 {
+    public function __construct(private readonly MailingDomains $domains)
+    {
+    }
+
     public function buildForm(FormBuilderInterface $builder, array $options)
     {
         $builder
@@ -21,7 +26,8 @@ class MailingListType extends AbstractType
             ->add('baseAddress', TextType::class, [
                 'label' => 'Adresse de base',
                 'required' => true,
-                'attr' => ['placeholder' => 'ex: newsletter@sauvabelin.ch']
+                'attr' => ['placeholder' => 'ex: newsletter@sauvabelin.ch'],
+                'help' => ForwardingHelp::for($this->domains)
             ])
             ->add('description', TextareaType::class, [
                 'label' => 'Description',

@@ -54,13 +54,8 @@ class PostfixVirtualMapBuilder
                 $recipients[$email] = true;
             }
 
-            $sources = [$list->getBaseAddress()];
-            foreach ($list->getAliases() as $alias) {
-                $sources[] = $alias->getAddress();
-            }
-
-            foreach ($sources as $source) {
-                $source = strtolower(trim((string) $source));
+            foreach ($list->getAddresses() as $source) {
+                $source = strtolower(trim($source));
                 if (!preg_match(self::SAFE_ADDRESS, $source)) {
                     $warnings[] = sprintf('%s: skipped malformed address "%s"', $listLabel, $source);
                     continue;
