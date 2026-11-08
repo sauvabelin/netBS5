@@ -61,13 +61,23 @@ abstract class NetBSVoter extends Voter
         if(!$user instanceof BaseUser)
             return false;
 
-        if ($user->hasRole("ROLE_" . strtoupper($attribute) . "_EVERYWHERE"))
+        if ($this->everywhereRolesApply() && $user->hasRole("ROLE_" . strtoupper($attribute) . "_EVERYWHERE"))
             return true;
 
         if($this->specialRule($user))
             return true;
 
         return $this->accept($attribute, $subject, $user);
+    }
+
+    /**
+     * Whether ROLE_<OPERATION>_EVERYWHERE grants the operation on this voter's subjects.
+     * ROLE_SG inherits all four, so voters guarding accounts, rights or a user's own
+     * objects turn it off: those are for their owner or ROLE_ADMIN only.
+     */
+    protected function everywhereRolesApply(): bool
+    {
+        return true;
     }
 
     /**

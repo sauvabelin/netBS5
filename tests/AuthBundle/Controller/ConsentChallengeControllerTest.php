@@ -80,6 +80,42 @@ final class ConsentChallengeControllerTest extends TestCase
         $this->assertSame('http://wiki.localhost:8080/cb?code=abc', $response->getTargetUrl());
     }
 
+    public function testUnknownSubjectIsRejected(): void
+    {
+        $mock = new MockHttpClient([
+            $this->json(self::consentRequest()),
+            $this->json(['redirect_to' => 'http://wiki.localhost:8080/cb?error=access_denied']),
+        ]);
+
+        $response = $this->controller($mock, null, allowed: true)($this->request());
+
+        $this->assertSame(Response::HTTP_FORBIDDEN, $response->getStatusCode());
+        $this->assertSame(2, $mock->getRequestsCount(), 'get + reject, never accept');
+    }
+
+    /** @dataProvider malformedConsentRequests */
+    public function testMalformedHydraPayloadIsRejectedNotAccepted(array $consentRequest): void
+    {
+        $mock = new MockHttpClient([
+            $this->json($consentRequest),
+            $this->json(['redirect_to' => 'http://wiki.localhost:8080/cb?error=invalid_request']),
+        ]);
+
+        $response = $this->controller($mock, $this->identity(), allowed: true)($this->request());
+
+        $this->assertInstanceOf(RedirectResponse::class, $response);
+        $this->assertSame('http://wiki.localhost:8080/cb?error=invalid_request', $response->getTargetUrl());
+        $this->assertSame(2, $mock->getRequestsCount(), 'get + reject, never accept');
+    }
+
+    public static function malformedConsentRequests(): iterable
+    {
+        yield 'no subject' => [['client' => ['client_id' => 'client-wiki']]];
+        yield 'array subject' => [['subject' => ['alice'], 'client' => ['client_id' => 'client-wiki']]];
+        yield 'no client' => [['subject' => 'alice']];
+        yield 'empty client id' => [['subject' => 'alice', 'client' => ['client_id' => '']]];
+    }
+
     private static function consentRequest(): array
     {
         return [
@@ -89,7 +125,7 @@ final class ConsentChallengeControllerTest extends TestCase
         ];
     }
 
-    private function controller(MockHttpClient $http, IdentityDTO $identity, bool $allowed): ConsentChallengeController
+    private function controller(MockHttpClient $http, ?IdentityDTO $identity, bool $allowed): ConsentChallengeController
     {
         $resolver = $this->createMock(IdentityUserResolverInterface::class);
         $resolver->method('resolveBySub')->willReturn($identity);

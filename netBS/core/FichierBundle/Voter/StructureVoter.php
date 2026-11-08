@@ -21,5 +21,7 @@ class StructureVoter extends FichierVoter
 
     protected function accept($operation, $subject, BaseUser $user)
     {
+        // Structure (distinctions, types, catégories, fonctions) is managed by the SG only.
+        return false;
     }
 }

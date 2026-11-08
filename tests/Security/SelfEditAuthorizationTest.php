@@ -56,6 +56,18 @@ final class SelfEditAuthorizationTest extends WebTestCase
         $this->assertFalse($this->reloadUser($this->client, 'self-edit-user')->isNextcloudAdmin());
     }
 
+    /** ROLE_SG inherits ROLE_UPDATE_EVERYWHERE; that must not reach other accounts (email → reset → takeover). */
+    public function test_sg_cannot_change_another_users_email(): void
+    {
+        $sg = $this->persistUser($this->client, 'self-edit-sg', roles: ['ROLE_SG']);
+        $this->client->loginUser($sg, 'netbs');
+
+        $this->editSelf(['field' => 'email', 'type' => 'email'], 'attacker@example.test');
+
+        $this->assertResponseStatusCodeSame(403);
+        $this->assertSame('self-edit@example.test', $this->reloadUser($this->client, 'self-edit-user')->getEmail());
+    }
+
     public function test_user_can_change_their_own_email(): void
     {
         $this->editSelf(['field' => 'email', 'type' => 'email'], 'self-edit-new@example.test');

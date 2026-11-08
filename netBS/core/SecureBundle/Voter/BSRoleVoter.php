@@ -34,4 +34,9 @@ class BSRoleVoter extends NetBSVoter
     {
         return false;
     }
+
+    protected function everywhereRolesApply(): bool
+    {
+        return false;
+    }
 }

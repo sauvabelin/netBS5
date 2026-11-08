@@ -17,24 +17,31 @@ class NetBSRoleHierarchy implements RoleHierarchyInterface
     }
 
     /**
-     * @param BaseRole[] $roles
+     * A role reaches itself and every role below it (its children, recursively).
+     *
+     * @param string[] $roles role names
      *
      * @return string[]
      */
     public function getReachableRoleNames(array $roles): array
     {
+        $byName = [];
+        foreach ($this->roles as $role) {
+            $byName[$role->getRole()] = $role;
+        }
+
         $reachable = [];
-        foreach ($this->roles as $current) {
-            $stack = [];
-            $parent = $current;
-            while ($parent !== null) {
-                $stack[] = $parent->getRole();
-                if ($parent->getRole() === $current->getRole()) {
-                    $reachable = array_unique(array_merge($reachable, $stack));
-                    break;
-                }
+        foreach ($roles as $name) {
+            $name = $name instanceof BaseRole ? $name->getRole() : (string) $name;
+            if (!isset($byName[$name])) {
+                $reachable[$name] = true;
+                continue;
+            }
+            foreach ($byName[$name]->getChildrenRecursive() as $implied) {
+                $reachable[$implied->getRole()] = true;
             }
         }
-        return $reachable;
+
+        return array_keys($reachable);
     }
 }

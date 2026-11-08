@@ -29,4 +29,9 @@ class DynamicListVoter extends NetBSVoter
     {
         return $subject->getOwner()->isEqualTo($user);
     }
+
+    protected function everywhereRolesApply(): bool
+    {
+        return false;
+    }
 }
