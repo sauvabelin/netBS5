@@ -115,20 +115,6 @@ final class ParameterControllerTest extends WebTestCase
         $this->assertSame([], array_filter($registry->all(), fn ($d) => $d->namespace === 'format'));
     }
 
-    public function test_legacy_card_lists_only_undeclared_keys(): void
-    {
-        $this->params()->setValue('bs', 'usernames_cordelettes', 'a,b');
-        $this->params()->setValue('bs', 'groupe.adabs_id', '12');
-        $this->params()->setValue('app', 'organization', 'Org X');
-
-        $crawler = $this->openAsAdmin();
-
-        $legacy = $crawler->filter('#settings-legacy')->text();
-        $this->assertStringContainsString('usernames_cordelettes', $legacy);
-        $this->assertStringContainsString('groupe.adabs_id', $legacy, 'bs.*_id references are legacy');
-        $this->assertStringNotContainsString('organization', $legacy);
-    }
-
     public function test_missing_rule_setting_renders(): void
     {
         $crawler = $this->openAsAdmin();

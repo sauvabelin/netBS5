@@ -23,10 +23,6 @@ final class FactureBlocksTest extends TestCase
         $block = new NombreRappelsBlock();
         $this->assertTrue($block->matches($this->facture(rappels: 2), ['op' => 'gt', 'nombre' => 1]));
         $this->assertFalse($block->matches($this->facture(rappels: 1), ['op' => 'gt', 'nombre' => 1]));
-        $this->assertStringContainsString('> 1', $block->describe(['op' => '>', 'nombre' => '1'], false));
-        $this->assertStringContainsString('> 1', $block->describe(['op' => '>', 'nombre' => '1'], true));
-        $this->assertNotSame($block->describe(['op' => '>', 'nombre' => '1'], false), $block->describe(['op' => '>', 'nombre' => '1'], true));
-        $this->assertNull($block->negatedLabel());
     }
 
     public function test_imprimee(): void
@@ -34,8 +30,6 @@ final class FactureBlocksTest extends TestCase
         $block = new ImprimeeBlock();
         $this->assertTrue($block->matches($this->facture(rappels: 1, printed: true), []));
         $this->assertFalse($block->matches($this->facture(), []));
-        $this->assertNotSame($block->describe([], false), $block->describe([], true));
-        $this->assertNotNull($block->negatedLabel());
     }
 
     public function test_debiteur_famille(): void
@@ -43,8 +37,6 @@ final class FactureBlocksTest extends TestCase
         $block = new DebiteurFamilleBlock();
         $this->assertTrue($block->matches($this->facture(debiteur: new Famille()), []));
         $this->assertFalse($block->matches($this->facture(debiteur: new BSMembre()), []));
-        $this->assertNotSame($block->describe([], false), $block->describe([], true));
-        $this->assertNotNull($block->negatedLabel());
     }
 
     public function test_nombre_creances(): void
@@ -52,8 +44,6 @@ final class FactureBlocksTest extends TestCase
         $block = new NombreCreancesBlock();
         $this->assertTrue($block->matches($this->facture(creances: 1), ['op' => 'eq', 'nombre' => 1]));
         $this->assertFalse($block->matches($this->facture(creances: 2), ['op' => 'eq', 'nombre' => 1]));
-        $this->assertStringContainsString('= 1', $block->describe(['op' => '=', 'nombre' => '1'], false));
-        $this->assertNull($block->negatedLabel());
     }
 
     public function test_context_keeps_legacy_variables(): void

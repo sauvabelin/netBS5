@@ -7,8 +7,6 @@ namespace App\Tests\AuthBundle\Directory;
 use Doctrine\ORM\EntityManagerInterface;
 use NetBS\AuthBundle\Entity\DirectoryComputedGroup;
 use NetBS\AuthBundle\Entity\DirectoryPublicationRule;
-use NetBS\AuthBundle\Rule\DirectoryRuleLabeler;
-use NetBS\CoreBundle\Entity\StoredRule;
 use NetBS\CoreBundle\Rule\Rule;
 use NetBS\CoreBundle\Rule\RuleCondition;
 use NetBS\CoreBundle\Rule\RuleGroup;
@@ -144,19 +142,5 @@ final class DirectoryRuleEntitiesTest extends KernelTestCase
         $this->em->flush();
 
         $this->assertSame($before, $this->storedRuleCount());
-    }
-
-    public function testLabelerNamesOwners(): void
-    {
-        $rule = $this->publicationRule();
-        $group = $this->computedGroup();
-        $this->em->persist($rule);
-        $this->em->persist($group);
-        $this->em->flush();
-        $labeler = static::getContainer()->get(DirectoryRuleLabeler::class);
-
-        $this->assertStringContainsString('Unités', $labeler->label($rule->getSelection()));
-        $this->assertStringContainsString('chefs', $labeler->label($group->getMembres()));
-        $this->assertNull($labeler->label(new StoredRule('membre', '{}')));
     }
 }

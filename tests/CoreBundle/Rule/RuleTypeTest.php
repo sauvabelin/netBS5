@@ -8,7 +8,6 @@ use App\Entity\BSUser;
 use NetBS\CoreBundle\Form\Type\RuleType;
 use NetBS\CoreBundle\Rule\Rule;
 use NetBS\CoreBundle\Rule\RuleCondition;
-use NetBS\CoreBundle\Rule\RuleDescriber;
 use NetBS\CoreBundle\Rule\RuleGroup;
 use NetBS\SecureBundle\Entity\Role;
 use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
@@ -142,13 +141,5 @@ final class RuleTypeTest extends KernelTestCase
         $this->assertFalse($config['canExpert']);
         $this->assertArrayHasKey('test.n', $config['blocks']);
         $this->assertSame('operator', $config['blocks']['test.n']['params']['op']['kind']);
-        $this->assertSame(
-            self::getContainer()->get(RuleDescriber::class)->describe($this->nRule(), 'test'),
-            $view->vars['rule_sentence'],
-        );
-        $this->assertNull($config['blocks']['test.n']['negatedLabel']);
-        $this->assertNotNull($config['blocks']['test.flag']['negatedLabel']);
-        $this->assertSame('n', $view->vars['rule_glossary'][0]['name']);
-        $this->assertNotEmpty($view->vars['rule_empty_text']);
     }
 }

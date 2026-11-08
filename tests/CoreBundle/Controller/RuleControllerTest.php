@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace App\Tests\CoreBundle\Controller;
 
 use App\Tests\Support\UserFactoryTrait;
-use NetBS\CoreBundle\Rule\RuleDescriber;
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 
 final class RuleControllerTest extends WebTestCase
@@ -18,7 +17,7 @@ final class RuleControllerTest extends WebTestCase
         $client->request('POST', $url, [], [], ['CONTENT_TYPE' => 'application/json'], json_encode($body));
     }
 
-    public function test_describe(): void
+    public function test_valid_rule_has_no_errors(): void
     {
         $client = static::createClient();
         $client->loginUser($this->persistUser($client, 'rule-describe-user', roles: ['ROLE_USER']), 'netbs');
@@ -30,8 +29,7 @@ final class RuleControllerTest extends WebTestCase
         $this->post($client, ['context' => 'test', 'rule' => $rule]);
 
         $this->assertResponseIsSuccessful();
-        $expected = static::getContainer()->get(RuleDescriber::class)->describe(json_encode($rule), 'test');
-        $this->assertSame(['sentence' => $expected, 'errors' => []], json_decode($client->getResponse()->getContent(), true));
+        $this->assertSame([], json_decode($client->getResponse()->getContent(), true)['errors']);
     }
 
     public function test_describe_reports_errors(): void

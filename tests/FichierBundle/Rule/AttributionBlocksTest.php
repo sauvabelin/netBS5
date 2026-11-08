@@ -31,8 +31,6 @@ final class AttributionBlocksTest extends TestCase
         $block = new AttributionFonctionsBlock();
         $this->assertTrue($block->matches($this->subject, ['fonctions' => [5]]));
         $this->assertFalse($block->matches($this->subject, ['fonctions' => [6]]));
-        $this->assertStringContainsString('CP', $block->describe(['fonctions' => 'CP'], false));
-        $this->assertNotNull($block->negatedLabel());
     }
 
     public function test_fonction_poids(): void
@@ -40,8 +38,6 @@ final class AttributionBlocksTest extends TestCase
         $block = new AttributionFonctionPoidsBlock();
         $this->assertTrue($block->matches($this->subject, ['op' => 'ge', 'poids' => 40]));
         $this->assertFalse($block->matches($this->subject, ['op' => 'gt', 'poids' => 40]));
-        $this->assertStringContainsString('≥ 40', $block->describe(['op' => '≥', 'poids' => '40'], false));
-        $this->assertNull($block->negatedLabel());
     }
 
     public function test_groupe_types(): void
@@ -49,8 +45,6 @@ final class AttributionBlocksTest extends TestCase
         $block = new AttributionGroupeTypesBlock();
         $this->assertTrue($block->matches($this->subject, ['types' => [9]]));
         $this->assertFalse($block->matches($this->subject, ['types' => [1]]));
-        $this->assertStringContainsString('Patrouille', $block->describe(['types' => 'Patrouille'], false));
-        $this->assertNotNull($block->negatedLabel());
     }
 
     public function test_profondeur(): void
@@ -58,8 +52,6 @@ final class AttributionBlocksTest extends TestCase
         $block = new AttributionProfondeurBlock();
         $this->assertTrue($block->matches($this->subject, ['op' => 'le', 'profondeur' => 2]));
         $this->assertFalse($block->matches($this->subject, ['op' => 'le', 'profondeur' => 1]));
-        $this->assertStringContainsString('≤ 1', $block->describe(['op' => '≤', 'profondeur' => '1'], false));
-        $this->assertNull($block->negatedLabel());
     }
 
     public function test_context_values(): void

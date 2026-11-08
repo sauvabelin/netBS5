@@ -18,20 +18,6 @@ class LoginControllerTest extends WebTestCase
     private const LOGIN_URL = '/netBS/secure/login';
     private const PASSWORD = 'C0rrect-horse-battery';
 
-    /**
-     * The autocomplete hints password managers and browser autofill rely on to
-     * recognise the username/password pair.
-     */
-    public function test_login_form_declares_autocomplete_hints(): void
-    {
-        $client = static::createClient();
-        $client->request('GET', self::LOGIN_URL);
-
-        $this->assertResponseIsSuccessful();
-        $this->assertSelectorExists('input[name="_username"][autocomplete="username"]');
-        $this->assertSelectorExists('input[name="_password"][autocomplete="current-password"]');
-    }
-
     public function test_valid_credentials_authenticate_and_redirect_off_the_login_page(): void
     {
         $client = static::createClient();

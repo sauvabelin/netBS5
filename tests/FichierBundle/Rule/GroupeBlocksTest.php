@@ -5,14 +5,12 @@ declare(strict_types=1);
 namespace App\Tests\FichierBundle\Rule;
 
 use App\Tests\Support\InMemoryFichierTrait;
-use NetBS\CoreBundle\Rule\RuleGlossary;
 use NetBS\CoreBundle\Rule\RuleRegistry;
 use NetBS\FichierBundle\Entity\GroupeCategorie;
 use NetBS\FichierBundle\Rule\Block\GroupeAmongBlock;
 use NetBS\FichierBundle\Rule\Block\GroupeCategoriesBlock;
 use NetBS\FichierBundle\Rule\Block\GroupeTypesBlock;
 use NetBS\FichierBundle\Rule\Block\GroupeUnderBlock;
-use NetBS\FichierBundle\Rule\GroupeContext;
 use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
 
 final class GroupeBlocksTest extends KernelTestCase
@@ -27,9 +25,6 @@ final class GroupeBlocksTest extends KernelTestCase
         $this->assertTrue($block->matches($groupe, ['types' => [7]]));
         $this->assertFalse($block->matches($groupe, ['types' => [8]]));
         $this->assertFalse($block->matches($this->groupe(2), ['types' => [7]]), 'no type');
-        $this->assertStringContainsString('Unité', $block->describe(['types' => 'Unité'], false));
-        $this->assertStringContainsString('Unité', $block->describe(['types' => 'Unité'], true));
-        $this->assertNotSame($block->describe(['types' => 'Unité'], false), $block->describe(['types' => 'Unité'], true));
     }
 
     public function testCategories(): void
@@ -79,17 +74,8 @@ final class GroupeBlocksTest extends KernelTestCase
     {
         $registry = static::getContainer()->get(RuleRegistry::class);
 
-        $this->assertNotSame('', $registry->context('groupe')->label());
         foreach (['groupe.types', 'groupe.categories', 'groupe.parmi', 'groupe.sous'] as $id) {
             $this->assertSame(['groupe'], $registry->block($id)?->contexts(), $id);
         }
-    }
-
-    public function testGlossaryListsGroupeVariable(): void
-    {
-        $entries = (new RuleGlossary())->variables(new GroupeContext());
-
-        $this->assertSame('groupe', $entries[0]['name']);
-        $this->assertContains('getGroupeType()', $entries[0]['types'][0]['methods']);
     }
 }

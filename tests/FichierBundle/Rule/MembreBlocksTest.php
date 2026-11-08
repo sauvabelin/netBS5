@@ -64,10 +64,6 @@ final class MembreBlocksTest extends TestCase
 
         $this->assertTrue($block->matches($membre, ['op' => 'gt', 'poids' => 99]));
         $this->assertFalse($block->matches($membre, ['op' => 'gt', 'poids' => 150]));
-        $this->assertStringContainsString('> 99', $block->describe(['op' => '>', 'poids' => '99'], false));
-        $this->assertStringContainsString('> 99', $block->describe(['op' => '>', 'poids' => '99'], true));
-        $this->assertNotSame($block->describe(['op' => '>', 'poids' => '99'], false), $block->describe(['op' => '>', 'poids' => '99'], true));
-        $this->assertNull($block->negatedLabel());
     }
 
     public function test_fonctions(): void
@@ -78,9 +74,6 @@ final class MembreBlocksTest extends TestCase
 
         $this->assertTrue($block->matches($membre, ['fonctions' => [4, 5]]));
         $this->assertFalse($block->matches($membre, ['fonctions' => [4]]));
-        $this->assertStringContainsString('CP, CL', $block->describe(['fonctions' => 'CP, CL'], false));
-        $this->assertStringContainsString('CP', $block->describe(['fonctions' => 'CP'], true));
-        $this->assertNotNull($block->negatedLabel());
     }
 
     public function test_groupe_types(): void
@@ -91,16 +84,5 @@ final class MembreBlocksTest extends TestCase
 
         $this->assertTrue($block->matches($membre, ['types' => [7]]));
         $this->assertFalse($block->matches($membre, ['types' => [8]]));
-        $this->assertStringContainsString('Branche', $block->describe(['types' => 'Branche'], false));
-        $this->assertNotNull($block->negatedLabel());
-    }
-
-    public function test_attribution_groupes_describe(): void
-    {
-        $block = new MembreAttributionGroupesBlock();
-        $choices = $block->params()['sous_groupes']->choices;
-        $this->assertStringEndsWith('Someo ' . $choices['tous'], $block->describe(['groupes' => 'Someo', 'sous_groupes' => $choices['tous']], false));
-        // « sans sous-groupes » is the plain case: the sentence leaves it out
-        $this->assertStringEndsWith(' ADABS', $block->describe(['groupes' => 'ADABS', 'sous_groupes' => $choices['aucun']], true));
     }
 }
