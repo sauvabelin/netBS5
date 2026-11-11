@@ -9,7 +9,6 @@ use App\Entity\ReservationLog;
 use App\Service\APMBSClientLinks;
 use App\Service\GoogleCalendarManager;
 use Doctrine\ORM\EntityManagerInterface;
-use Psr\Log\LoggerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
@@ -66,7 +65,7 @@ class ApiAPMBSController extends AbstractController
      * @return Response
      */
     #[Route('/cabane-reservation/{id}', name: 'apmbs.api.cabane_reservation', methods: ['POST'])]
-    public function reservationAction(Request $request, EntityManagerInterface $em, GoogleCalendarManager $gcm, ValidatorInterface $validator, LoggerInterface $logger, Cabane $cabane) {
+    public function reservationAction(Request $request, EntityManagerInterface $em, GoogleCalendarManager $gcm, ValidatorInterface $validator, Cabane $cabane) {
         $parameters = json_decode($request->getContent(), true);
         if (!is_array($parameters)) {
             return $this->badRequest('Invalid JSON body');
@@ -130,16 +129,9 @@ class ApiAPMBSController extends AbstractController
         // We currently do NOT write pending reservations to GC
         // $gcm->updateReservation($reservation);
 
-        // The reservation is saved at this point: a mailer failure must not turn into an error
-        // response, otherwise the client retries and creates duplicate reservations.
-        try {
-            $gcm->sendEmailToClient($reservation, 'Votre demande de réservation');
-        } catch (\Throwable $e) {
-            $logger->error('APMBS: failed to send pending reservation email', [
-                'reservation' => $reservation->getId(),
-                'exception'   => $e,
-            ]);
-        }
+        // Never throws: the reservation is saved, and an error response would make the client retry
+        // and create duplicate reservations
+        $gcm->sendEmailToClient($reservation, 'Votre demande de réservation');
 
         return new Response('ok');
     }
@@ -194,12 +186,12 @@ class ApiAPMBSController extends AbstractController
     }
 
     #[Route('/client/accept/{id}/{token}', name: 'apmbs.api.client.accept', methods: ['GET', 'POST'])]
-    public function clientAcceptReservation(Request $request, APMBSReservation $reservation, string $token, EntityManagerInterface $em, GoogleCalendarManager $gcm, APMBSClientLinks $links, CacheInterface $cache, LoggerInterface $logger) {
+    public function clientAcceptReservation(Request $request, APMBSReservation $reservation, string $token, EntityManagerInterface $em, GoogleCalendarManager $gcm, APMBSClientLinks $links, CacheInterface $cache) {
         if (!$links->isValid($reservation, $token)) {
-            return $this->handleInvalidClientLink($reservation, $token, $em, $gcm, $cache, $logger);
+            return $this->handleInvalidClientLink($reservation, $token, $em, $gcm, $cache);
         }
 
-        // Link opened again after accepting: show the same confirmation instead of an error
+        // Result page: reached through the redirect after the client's answer, or when the link is opened again
         if ($reservation->getStatus() === APMBSReservation::MODIFICATION_ACCEPTED) {
             return $this->render('reservation/client_validate.html.twig', [
                 'reservation' => $reservation,
@@ -221,15 +213,23 @@ class ApiAPMBSController extends AbstractController
         $em->persist($log);
         $em->flush();
 
-        return $this->render('reservation/client_validate.html.twig', [
-            'reservation' => $reservation,
-        ]);
+        // Confirms the client's answer, the APMBS copy tells the intendants the reservation can be validated
+        $emailSent = $gcm->sendEmailToClient($reservation, 'Vous avez accepté la modification');
+
+        return $this->redirectAfterClientAnswer('apmbs.api.client.accept', $reservation, $token, $emailSent);
     }
 
     #[Route('/client/reject/{id}/{token}', name: 'apmbs.api.client.reject', methods: ['GET', 'POST'])]
-    public function clientRejectReservation(Request $request, APMBSReservation $reservation, string $token, EntityManagerInterface $em, GoogleCalendarManager $gcm, APMBSClientLinks $links, CacheInterface $cache, LoggerInterface $logger) {
+    public function clientRejectReservation(Request $request, APMBSReservation $reservation, string $token, EntityManagerInterface $em, GoogleCalendarManager $gcm, APMBSClientLinks $links, CacheInterface $cache) {
         if (!$links->isValid($reservation, $token)) {
-            return $this->handleInvalidClientLink($reservation, $token, $em, $gcm, $cache, $logger);
+            return $this->handleInvalidClientLink($reservation, $token, $em, $gcm, $cache);
+        }
+
+        // Result page: reached through the redirect after the client's answer, or when the link is opened again
+        if ($reservation->getStatus() === APMBSReservation::CANCELLED) {
+            return $this->render('reservation/client_reject.html.twig', [
+                'reservation' => $reservation,
+            ]);
         }
 
         if ($response = $this->clientConfirmationStep($request, $reservation, $token, 'reject')) {
@@ -247,19 +247,26 @@ class ApiAPMBSController extends AbstractController
         $em->persist($log);
         $em->flush();
 
-        // Cancellation is already saved, don't show an error page if only the email fails
-        try {
-            $gcm->sendEmailToClient($reservation, 'Vous avez annulé votre demande de réservation');
-        } catch (\Throwable $e) {
-            $logger->error('APMBS: failed to send client cancellation email', [
-                'reservation' => $reservation->getId(),
-                'exception'   => $e,
-            ]);
+        $emailSent = $gcm->sendEmailToClient($reservation, 'Vous avez annulé votre demande de réservation');
+
+        return $this->redirectAfterClientAnswer('apmbs.api.client.reject', $reservation, $token, $emailSent);
+    }
+
+    /**
+     * Post/Redirect/Get: the result page is the GET of the same link, so refreshing it doesn't resubmit the
+     * answer. The flash message tells the client their click was registered.
+     */
+    private function redirectAfterClientAnswer(string $route, APMBSReservation $reservation, string $token, bool $emailSent): Response {
+        if ($emailSent) {
+            $this->addFlash('success', 'Votre réponse a bien été enregistrée. Un e-mail de confirmation vous a été envoyé.');
+        } else {
+            $this->addFlash('warning', "Votre réponse a bien été enregistrée, mais l'e-mail de confirmation n'a pas pu vous être envoyé.");
         }
 
-        return $this->render('reservation/client_reject.html.twig', [
-            'reservation' => $reservation,
-        ]);
+        return $this->redirectToRoute($route, [
+            'id'    => $reservation->getId(),
+            'token' => $token,
+        ], Response::HTTP_SEE_OTHER);
     }
 
     /**
@@ -295,7 +302,7 @@ class ApiAPMBSController extends AbstractController
      * (at most once per hour). This branch can be removed once no reservation modified before signed links
      * were introduced is still MODIFICATION_PENDING.
      */
-    private function handleInvalidClientLink(APMBSReservation $reservation, string $token, EntityManagerInterface $em, GoogleCalendarManager $gcm, CacheInterface $cache, LoggerInterface $logger): Response {
+    private function handleInvalidClientLink(APMBSReservation $reservation, string $token, EntityManagerInterface $em, GoogleCalendarManager $gcm, CacheInterface $cache): Response {
         if ($token !== $reservation->getEmail()) {
             return $this->clientMessage(
                 'Lien invalide',
@@ -313,17 +320,15 @@ class ApiAPMBSController extends AbstractController
             );
         }
 
-        try {
-            $cache->get('apmbs_client_links_resent_' . $reservation->getId(), function (ItemInterface $item) use ($reservation, $em, $gcm) {
-                $item->expiresAfter(3600);
-                $this->resendModificationEmail($reservation, $em, $gcm);
-                return true;
-            });
-        } catch (\Throwable $e) {
-            $logger->error('APMBS: failed to resend modification email with signed links', [
-                'reservation' => $reservation->getId(),
-                'exception'   => $e,
-            ]);
+        $cacheKey = 'apmbs_client_links_resent_' . $reservation->getId();
+        $sent = $cache->get($cacheKey, function (ItemInterface $item) use ($reservation, $em, $gcm) {
+            $item->expiresAfter(3600);
+            return $this->resendModificationEmail($reservation, $em, $gcm);
+        });
+
+        if (!$sent) {
+            // Already logged by sendEmailToClient. Forget the attempt so the client can retry right away.
+            $cache->delete($cacheKey);
 
             return $this->clientMessage(
                 'Lien expiré',
@@ -340,7 +345,7 @@ class ApiAPMBSController extends AbstractController
         );
     }
 
-    private function resendModificationEmail(APMBSReservation $reservation, EntityManagerInterface $em, GoogleCalendarManager $gcm): void {
+    private function resendModificationEmail(APMBSReservation $reservation, EntityManagerInterface $em, GoogleCalendarManager $gcm): bool {
         // Rebuild the original email from the log written when the intendant proposed the modification
         $log = $em->getRepository(ReservationLog::class)->findOneBy(
             ['reservation' => $reservation, 'action' => ReservationLog::MODIFY],
@@ -354,7 +359,7 @@ class ApiAPMBSController extends AbstractController
             return $date ?: $fallback;
         };
 
-        $gcm->sendEmailToClient($reservation, 'Demande de réservation en attente', $payload['message'] ?? null, 'modification', [
+        return $gcm->sendEmailToClient($reservation, 'Demande de réservation en attente', $payload['message'] ?? null, 'modification', [
             'oldStart' => $parseDate($payload['oldStart'] ?? null, $reservation->getStart()),
             'oldEnd'   => $parseDate($payload['oldEnd'] ?? null, $reservation->getEnd()),
         ]);

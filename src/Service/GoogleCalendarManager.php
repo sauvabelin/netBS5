@@ -7,11 +7,25 @@ use App\Entity\Cabane;
 use Doctrine\ORM\EntityManagerInterface;
 use Google\Service\Calendar\Event;
 use Google_Client;
+use Psr\Log\LoggerInterface;
 use Symfony\Bridge\Twig\Mime\TemplatedEmail;
 use Symfony\Component\Mailer\MailerInterface;
 use Symfony\Component\Mime\Address;
 
 class GoogleCalendarManager {
+
+    /**
+     * Email template (templates/emails/<name>.html.twig) sent for each reservation status
+     */
+    private const STATUS_EMAIL_TEMPLATES = [
+        APMBSReservation::PENDING               => 'pending',
+        APMBSReservation::MODIFICATION_PENDING  => 'modification',
+        APMBSReservation::MODIFICATION_ACCEPTED => 'modification_accepted',
+        APMBSReservation::ACCEPTED              => 'accepted',
+        APMBSReservation::REFUSED               => 'refused',
+        APMBSReservation::CANCELLED             => 'cancelled',
+        APMBSReservation::INVOICE_SENT          => 'invoice',
+    ];
 
     /**
      * @var \Google\Service\Calendar
@@ -28,7 +42,12 @@ class GoogleCalendarManager {
      */
     private $mailer;
 
-    public function __construct($serviceAccountJson, EntityManagerInterface $em, MailerInterface $mailer)
+    /**
+     * @var LoggerInterface
+     */
+    private $logger;
+
+    public function __construct($serviceAccountJson, EntityManagerInterface $em, MailerInterface $mailer, LoggerInterface $logger)
     {
         $client = new \Google\Client();
         $client->setAuthConfig($serviceAccountJson);
@@ -36,6 +55,7 @@ class GoogleCalendarManager {
         $this->service = new \Google\Service\Calendar($client);
         $this->em = $em;
         $this->mailer = $mailer;
+        $this->logger = $logger;
     }
 
     public function removeReservation(APMBSReservation $reservation) {
@@ -47,45 +67,65 @@ class GoogleCalendarManager {
         }
     }
 
-    public function sendEmailToClient(APMBSReservation $reservation, $title, $message = null, $state = null, array $data = [], $attachment = null, $toApmbs = false) {
+    /**
+     * Sends a reservation email to the client, then a copy to the cabane's address.
+     *
+     * Never throws: the action that triggered the email (status change, log...) is already done or must
+     * go on, so a mailer or template failure is logged instead of breaking it.
+     *
+     * @param string|null $state reservation status (defaults to the current one) or template name,
+     *                           which selects the template in templates/emails/
+     * @return bool whether the email (to the client, or to the APMBS for the copy) was sent
+     */
+    public function sendEmailToClient(APMBSReservation $reservation, $title, $message = null, $state = null, array $data = [], $attachment = null, $toApmbs = false): bool {
 
         if (!$state) {
             $state = $reservation->getStatus();
         }
 
-        $template = explode('_', $state);
-        $tplName = count($template) > 1 ? $template[1] : $template[0];
-        $to = $toApmbs ? $reservation->getCabane()->getFromEmail() : $reservation->getEmail();
-        $subject = $toApmbs ? "suivi res. {$reservation->getId()}" : "[APMBS {$reservation->getId()}] - $title";
+        $tplName = self::STATUS_EMAIL_TEMPLATES[$state] ?? $state;
 
-        $email = (new TemplatedEmail())
-            ->from(new Address($reservation->getCabane()->getFromEmail(), "APMBS {$reservation->getCabane()->getNom()}"))
-            ->to(new Address($to))
-            ->subject($subject)
-            ->htmlTemplate("emails/$tplName.html.twig")
-            ->context(array_merge($data, [
-                'reservation' => $reservation,
-                'message' => $message,
-                'toApmbs' => $toApmbs,
-            ]));
+        try {
+            $to = $toApmbs ? $reservation->getCabane()->getFromEmail() : $reservation->getEmail();
+            $subject = $toApmbs ? "suivi res. {$reservation->getId()}" : "[APMBS {$reservation->getId()}] - $title";
 
-        if ($attachment) {
-            $email = $email->attach(
-                $attachment['file'],
-                $attachment['filename'],
-                $attachment['mimetype']
-            );
+            $email = (new TemplatedEmail())
+                ->from(new Address($reservation->getCabane()->getFromEmail(), "APMBS {$reservation->getCabane()->getNom()}"))
+                ->to(new Address($to))
+                ->subject($subject)
+                ->htmlTemplate("emails/$tplName.html.twig")
+                ->context(array_merge($data, [
+                    'reservation' => $reservation,
+                    'message' => $message,
+                    'toApmbs' => $toApmbs,
+                ]));
+
+            if ($attachment) {
+                $email = $email->attach(
+                    $attachment['file'],
+                    $attachment['filename'],
+                    $attachment['mimetype']
+                );
+            }
+
+            $this->mailer->send($email);
+        } catch (\Throwable $e) {
+            $this->logger->error('APMBS: failed to send reservation email', [
+                'reservation' => $reservation->getId(),
+                'template'    => $tplName,
+                'toApmbs'     => $toApmbs,
+                'exception'   => $e,
+            ]);
+
+            return false;
         }
-
-        $this->mailer->send($email);
 
         if (!$toApmbs) {
-            try {
-                $this->sendEmailToClient($reservation, $title, $message, $state, $data, $attachment, true);
-            } catch (\Exception $e) {
-                // Handle exception
-            }
+            // A failed copy is logged but doesn't change the result: the client did get their email
+            $this->sendEmailToClient($reservation, $title, $message, $state, $data, $attachment, true);
         }
+
+        return true;
     }
 
     public function listCalendarEvents(string $calendarId, \DateTimeInterface $start, \DateTimeInterface $end): array {
@@ -260,7 +300,10 @@ class GoogleCalendarManager {
                 $reservation->getGCEventId()
             );
         } catch (\Exception $e) {
-            dump($e);
+            $this->logger->error('APMBS: failed to delete Google Calendar event', [
+                'reservation' => $reservation->getId(),
+                'exception'   => $e,
+            ]);
         }
 
         $reservation->setGCEventId(null);
