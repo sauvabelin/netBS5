@@ -1,0 +1,29 @@
+{% extends '@NetBSCore/layout/base.layout.twig' %}
+
+{% block bodyClass %}be-splash-screen{% endblock %}
+
+{% block body %}
+<div class="container" style="max-width:480px;margin:3rem auto;">
+    <div class="card">
+        <div class="card-body">
+            <h1 class="h4">Bienvenue&nbsp;!</h1>
+            <p>
+                Tu t'es connecté avec un mot de passe temporaire. Choisis ton propre mot de passe
+                pour continuer&nbsp;: tu seras ensuite redirigé là où tu voulais aller.
+            </p>
+
+            {{ form_start(form, { attr: { 'data-turbo': 'false' } }) }}
+                {{ form_errors(form) }}
+                {% include '@NetBSSecure/_username_field.html.twig' with { username: username } only %}
+                {{ form_row(form.new_password) }}
+                {{ form_row(form.email) }}
+                <button type="submit" class="btn btn-primary w-100">Enregistrer et continuer</button>
+            {{ form_end(form) }}
+
+            <div class="text-center mt-3">
+                <a href="{{ path('netbs.secure.login.logout') }}" class="text-muted small">Se déconnecter</a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

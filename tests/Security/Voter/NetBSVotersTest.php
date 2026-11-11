@@ -65,6 +65,25 @@ final class NetBSVotersTest extends KernelTestCase
         $this->assertGranted($this->vote(new BSRoleVoter($this->secureConfig()), $admin, new Role('ROLE_X'), CRUD::UPDATE));
     }
 
+    // --- Temporary password -----------------------------------------------------
+
+    public function test_a_temporary_password_denies_everything(): void
+    {
+        $admin = $this->user(['ROLE_ADMIN']);
+        $admin->setNewPasswordRequired(true);
+
+        $this->assertSame([], $admin->getAllRoles());
+        $this->assertFalse($admin->hasRole('ROLE_USER'));
+        $this->assertDenied($this->vote(new ParameterVoter(), $admin, new Parameter('ns', 'key', 'v'), CRUD::READ));
+        $this->assertDenied($this->vote(new UserVoter($this->secureConfig()), $admin, $admin, CRUD::READ), 'not even their own account');
+        $this->assertSame(VoterInterface::ACCESS_DENIED, (new \NetBS\SecureBundle\Voter\RoleVoter())->vote(
+            new \Symfony\Component\Security\Core\Authentication\Token\UsernamePasswordToken($admin, 'netbs', []), null, ['ROLE_USER'],
+        ));
+
+        $admin->setNewPasswordRequired(false);
+        $this->assertTrue($admin->hasRole('ROLE_ADMIN'), 'the roles come back with the new password');
+    }
+
     public function test_non_crud_attributes_and_foreign_subjects_are_abstained(): void
     {
         $voter = new ParameterVoter();

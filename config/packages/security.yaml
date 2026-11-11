@@ -70,6 +70,8 @@ security:
         - { path: ^/oidc-logout, roles: PUBLIC_ACCESS }
         - { path: ^/oidc-error, roles: PUBLIC_ACCESS }
         - { path: ^/netBS/secure/user/my-account, roles: ROLE_USER }
+        # A temporary-password account has no role; FirstLoginGuard sends it here.
+        - { path: ^/netBS/secure/first-login, roles: IS_AUTHENTICATED_FULLY }
         - { path: ^/netBS/secure, roles: ROLE_ADMIN }
         # Role checks go through NetBS RoleVoter, which resolves inherited and
         # fonction-granted roles, so admins/commandants/QM pass too.

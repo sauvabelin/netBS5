@@ -67,10 +67,11 @@ final class InitialPasswordLifecycleTest extends WebTestCase
         $this->assertSame([], $this->em->getRepository(LatestCreatedAccount::class)->findBy(['user' => $user]));
     }
 
-    public function test_changing_the_password_on_my_account_clears_the_initial_password(): void
+    public function test_changing_the_password_on_my_account_keeps_the_session(): void
     {
-        $user = $this->newAccount('initialpw-self');
-        $this->client->loginUser($user, 'netbs');
+        // Other sessions are logged out by a password change; the one that made it is not.
+        $this->persistUser($this->client, 'initialpw-self', null, self::INITIAL_PASSWORD, ['ROLE_USER']);
+        $this->passwordLogin($this->client, 'initialpw-self', self::INITIAL_PASSWORD);
 
         $crawler = $this->client->request('GET', '/netBS/secure/user/my-account');
         $this->assertResponseIsSuccessful();
@@ -81,8 +82,8 @@ final class InitialPasswordLifecycleTest extends WebTestCase
         $this->client->submit($form);
         $this->assertResponseRedirects();
 
-        $this->assertInitialPasswordCleared('initialpw-self');
-
+        // A cleared session still serves the request that cleared it: check two.
+        $this->client->request('GET', '/netBS/');
         $this->client->request('GET', '/netBS/');
         $this->assertResponseIsSuccessful();
     }
@@ -132,24 +133,5 @@ final class InitialPasswordLifecycleTest extends WebTestCase
     public function forceChange(): array
     {
         return ['forced' => [true], 'not forced' => [false]];
-    }
-
-    public function test_a_user_who_must_change_the_password_is_sent_to_my_account(): void
-    {
-        $this->client->loginUser($this->newAccount('initialpw-forced'), 'netbs');
-
-        $this->client->request('GET', '/netBS/');
-        $this->assertResponseRedirects('/netBS/secure/user/my-account');
-
-        $this->client->request('GET', '/netBS/secure/user/my-account');
-        $this->assertResponseIsSuccessful();
-    }
-
-    public function test_an_admin_is_not_forced_to_change_the_password(): void
-    {
-        $this->client->loginUser($this->newAccount('initialpw-admin', ['ROLE_USER', 'ROLE_ADMIN']), 'netbs');
-
-        $this->client->request('GET', '/netBS/');
-        $this->assertResponseIsSuccessful();
     }
 }

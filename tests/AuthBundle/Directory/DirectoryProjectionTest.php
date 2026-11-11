@@ -256,4 +256,22 @@ final class DirectoryProjectionTest extends KernelTestCase
         self::assertSame($ids['ga'], $outlines[(string) $ids['ga']]->groupeId);
         self::assertSame($snapshot->groups[$ids['ga']]->origin, $outlines[(string) $ids['ga']]->origin);
     }
+
+    public function testATemporaryPasswordKeepsTheUserButInNoGroup(): void
+    {
+        $ids = $this->seedPublishedTree();
+        $this->grantUserRole($ids['user'], 'ROLE_NEXTCLOUD_ADMIN');
+        $computed = $this->computedGroup('dirproj-chefs', self::blockRule('membre.fonctions', ['fonctions' => [$ids['fonction']]]));
+        $this->db->update('sauvabelin_netbs_users', ['new_password_required' => 1], ['id' => $ids['user']]);
+
+        $snapshot = $this->projection->snapshot();
+        static::getContainer()->get('doctrine.orm.entity_manager')->clear();
+
+        self::assertArrayHasKey('dirproj.user', $snapshot->users);
+        self::assertSame([], $snapshot->groups[$ids['ga']]->members);
+        self::assertSame([], $snapshot->computedGroups[$computed]->members);
+        self::assertSame([], $snapshot->roleGroups['ROLE_NEXTCLOUD_ADMIN']->members);
+        self::assertSame([], $this->projection->group((string) $ids['ga'])->members, 'single-group lookup agrees');
+        self::assertSame([], $this->projection->group("c$computed")->members);
+    }
 }

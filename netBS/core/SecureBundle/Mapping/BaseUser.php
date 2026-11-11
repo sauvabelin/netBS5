@@ -309,6 +309,10 @@ class BaseUser implements
      */
     public function getAllRoles()
     {
+        // A temporary password grants nothing until the user chooses their own.
+        if ($this->mustChangePassword())
+            return [];
+
         $roles  = [];
         foreach($this->roles as $role)
             $roles = array_merge($roles, $role->getChildrenRecursive());
@@ -319,6 +323,15 @@ class BaseUser implements
                     $roles = array_merge($roles, $role->getChildrenRecursive());
 
         return $roles;
+    }
+
+    /**
+     * Whether the account still uses a temporary password. Such an account is denied
+     * everything except choosing its own password.
+     */
+    public function mustChangePassword(): bool
+    {
+        return false;
     }
 
     public function getRoles(): array

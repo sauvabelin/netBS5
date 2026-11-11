@@ -63,10 +63,17 @@ final class IdentityUserResolverTest extends TestCase
         $this->assertSame([], $dto->groups);
     }
 
+    public function testATemporaryPasswordGetsNoToken(): void
+    {
+        $dto = (new IdentityUserResolver($this->emReturning($this->user(temporaryPassword: true))))->resolveBySub('alice');
+
+        $this->assertTrue($dto->isDisabled);
+    }
+
     /**
      * @param list<string> $roles
      */
-    private function user(?string $email = null, ?string $emailBS = null, string $username = 'alice', array $roles = []): BSUser
+    private function user(?string $email = null, ?string $emailBS = null, string $username = 'alice', array $roles = [], bool $temporaryPassword = false): BSUser
     {
         $user = $this->createMock(BSUser::class);
         $user->method('getUsername')->willReturn($username);
@@ -74,6 +81,7 @@ final class IdentityUserResolverTest extends TestCase
         $user->method('getEmail')->willReturn($email);
         $user->method('getEmailBS')->willReturn($emailBS);
         $user->method('getIsActive')->willReturn(true);
+        $user->method('mustChangePassword')->willReturn($temporaryPassword);
         $user->method('getRolesAsString')->willReturn($roles);
         return $user;
     }

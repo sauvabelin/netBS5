@@ -394,7 +394,7 @@ final class DirectoryProjection
     {
         $uids = [];
         foreach ($users as $uid => $user) {
-            if ($user->membreId !== null) {
+            if ($user->membreId !== null && !$user->groupsSuspended) {
                 $uids[$user->membreId] = $uid;
             }
         }

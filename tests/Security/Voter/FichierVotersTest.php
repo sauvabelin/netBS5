@@ -168,6 +168,18 @@ final class FichierVotersTest extends KernelTestCase
         $this->assertDenied($this->vote($voter, $user, $membre->getFamille(), CRUD::DELETE));
     }
 
+    public function test_a_temporary_password_denies_even_the_own_membre(): void
+    {
+        $voter  = new MembreFamilleVoter($this->fichierConfig());
+        $membre = $this->membre(703);
+        $membre->setFamille($this->famille(73));
+        $user   = $this->user(['ROLE_USER'], $membre);
+        $user->setNewPasswordRequired(true);
+
+        $this->assertDenied($this->vote($voter, $user, $membre, CRUD::READ));
+        $this->assertDenied($this->vote($voter, $user, $membre->getFamille(), CRUD::READ));
+    }
+
     public function test_user_whose_membre_has_no_famille_is_denied_on_other_familles(): void
     {
         $voter = new MembreFamilleVoter($this->fichierConfig());

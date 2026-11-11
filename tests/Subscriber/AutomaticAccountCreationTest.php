@@ -172,7 +172,8 @@ final class AutomaticAccountCreationTest extends KernelTestCase
         $user = $users[0];
         $this->assertSame(self::USERNAME, $user->getUsername());
         $this->assertTrue($user->isNewPasswordRequired());
-        $this->assertTrue($user->hasRole('ROLE_USER'));
+        // Assigned, but inactive until the user chooses a password.
+        $this->assertSame(['ROLE_USER'], array_map(fn ($r) => $r->getRole(), $user->getDirectRoles()));
 
         $initialPassword = self::USERNAME . '-03-02-2001';
         $hasher = static::getContainer()->get(UserPasswordHasherInterface::class);

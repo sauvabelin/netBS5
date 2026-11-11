@@ -50,6 +50,8 @@ services:
 
     NetBS\SecureBundle\EventSubscriber\SessionInvalidationListener: ~
 
+    NetBS\SecureBundle\EventSubscriber\FirstLoginGuard: ~
+
     NetBS\SecureBundle\Service\SecureConfig:
         arguments:
             - "%netbs.secure.config%"

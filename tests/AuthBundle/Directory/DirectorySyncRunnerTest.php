@@ -105,6 +105,20 @@ final class DirectorySyncRunnerTest extends KernelTestCase
         self::assertSame([], $this->transport()->getSent());
     }
 
+    public function testTemporaryPasswordFlagChangeQueuesASync(): void
+    {
+        // A temporary password takes the user out of every lldap group; choosing a
+        // password puts them back.
+        $ids = $this->seedPublishedTree();
+        $user = $this->em->find(BSUser::class, $ids['user']);
+
+        $user->setPassword('changed');
+        $user->setNewPasswordRequired(true);
+        $this->em->flush();
+
+        self::assertCount(1, $this->transport()->getSent());
+    }
+
     public function testHandlerLogsAWarningWhenTheReportHasErrors(): void
     {
         $this->seedPublishedTree();

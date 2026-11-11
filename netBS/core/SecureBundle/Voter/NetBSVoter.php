@@ -58,7 +58,7 @@ abstract class NetBSVoter extends Voter
     {
         $user   = $token->getUser();
 
-        if(!$user instanceof BaseUser)
+        if(!$user instanceof BaseUser || $user->mustChangePassword())
             return false;
 
         if ($this->everywhereRolesApply() && $user->hasRole("ROLE_" . strtoupper($attribute) . "_EVERYWHERE"))
