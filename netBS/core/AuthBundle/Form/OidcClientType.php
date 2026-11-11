@@ -23,16 +23,21 @@ final class OidcClientType extends AbstractType
         $builder
             ->add('name', TextType::class, [
                 'label' => 'Name',
+                // The DTO property is a non-nullable string: an emptied field must
+                // reach NotBlank, not crash the property accessor.
+                'empty_data' => '',
                 'constraints' => [new NotBlank()],
             ])
             ->add('scopes', TextType::class, [
                 'label' => 'Scopes',
                 'help'  => 'Space-separated list, e.g. openid profile email',
+                'empty_data' => '',
                 'constraints' => [new NotBlank()],
             ])
             ->add('redirectUris', CollectionType::class, [
                 'label' => 'Redirect URIs',
                 'entry_type' => UrlType::class,
+                'entry_options' => ['constraints' => [new NotBlank(), new Url(['protocols' => ['http', 'https']])]],
                 'allow_add' => true,
                 'allow_delete' => true,
                 'prototype' => true,
@@ -42,6 +47,7 @@ final class OidcClientType extends AbstractType
             ->add('postLogoutRedirectUris', CollectionType::class, [
                 'label' => 'Post-logout redirect URIs',
                 'entry_type' => UrlType::class,
+                'entry_options' => ['constraints' => [new NotBlank(), new Url(['protocols' => ['http', 'https']])]],
                 'allow_add' => true,
                 'allow_delete' => true,
                 'required' => false,
@@ -51,6 +57,7 @@ final class OidcClientType extends AbstractType
             ->add('backchannelLogoutUri', UrlType::class, [
                 'label' => 'Backchannel logout URI',
                 'required' => false,
+                'constraints' => [new Url(['protocols' => ['http', 'https']])],
             ])
             ->add('logoUri', UrlType::class, [
                 'label' => 'Logo URL',

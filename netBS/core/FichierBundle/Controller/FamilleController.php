@@ -121,19 +121,26 @@ class FamilleController extends AbstractController
         $config = $this->config;
         /** @var BaseFamille $famille */
         $famille = $em->find($config->getFamilleClass(), $id);
+        if (!$famille)
+            throw $this->createNotFoundException();
 
+        // Listeners delete linked data as they go, so a later refusal must undo it all
+        $em->getConnection()->beginTransaction();
         try {
+            $dispatcher->dispatch(new RemoveFamilleEvent($famille, $em), RemoveFamilleEvent::NAME);
+
             foreach($famille->getMembres() as $membre) {
                 $dispatcher->dispatch(new RemoveMembreEvent($membre, $em), RemoveMembreEvent::NAME);
                 $em->remove($membre);
             }
 
-            $dispatcher->dispatch(new RemoveFamilleEvent($famille, $em), RemoveFamilleEvent::NAME);
-
             $em->remove($famille);
             $em->flush();
+            $em->getConnection()->commit();
             $this->addFlash('success', 'Famille supprimée');
         } catch (UserConstraintException $e) {
+            $em->getConnection()->rollBack();
+            $em->clear();
             $this->addFlash('danger', $e->getMessage());
         }
 

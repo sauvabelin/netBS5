@@ -2,15 +2,20 @@
 
 namespace App\Tests\Controller;
 
-use App\Entity\BSUser;
-use Doctrine\ORM\EntityManagerInterface;
-use Symfony\Bundle\FrameworkBundle\KernelBrowser;
+use App\Tests\Support\UserFactoryTrait;
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 
+/**
+ * Anti-enumeration contract: every submission of the request form — known,
+ * unknown or inactive user — gets the same redirect to the static check-email
+ * page (which renders no request-specific data); only the email differs.
+ */
 class ResetPasswordControllerTest extends WebTestCase
 {
+    use UserFactoryTrait;
+
     private const REQUEST_URL = '/netBS/secure/forgot-password';
-    private const GENERIC_BANNER = 'Si un compte correspond';
+    private const CHECK_EMAIL_URL = '/netBS/secure/forgot-password/check-email';
 
     public function test_request_unknown_username_shows_generic_response_and_sends_no_email(): void
     {
@@ -20,8 +25,7 @@ class ResetPasswordControllerTest extends WebTestCase
         $form['reset_password_request_form[username]'] = 'no-such-user';
         $client->submit($form);
 
-        $client->followRedirect();
-        $this->assertSelectorTextContains('body', self::GENERIC_BANNER);
+        $this->assertResponseRedirects(self::CHECK_EMAIL_URL);
         $this->assertEmailCount(0);
     }
 
@@ -29,7 +33,7 @@ class ResetPasswordControllerTest extends WebTestCase
     {
         $client = static::createClient();
         $client->enableProfiler();
-        $user = $this->createUser($client, 'reset-test-alice', 'reset-test-alice@example.test');
+        $user = $this->persistUser($client, 'reset-test-alice', 'reset-test-alice@example.test');
 
         $crawler = $client->request('GET', self::REQUEST_URL);
         $form = $crawler->selectButton('Envoyer le lien')->form();
@@ -38,23 +42,22 @@ class ResetPasswordControllerTest extends WebTestCase
 
         // Assert on the POST response's profile, before follow-redirect would
         // swap to the (email-less) GET /check-email profile.
-        $this->assertResponseRedirects();
+        $this->assertResponseRedirects(self::CHECK_EMAIL_URL);
         $this->assertEmailCount(1);
         $email = $this->getMailerMessage(0);
         $this->assertEmailAddressContains($email, 'To', 'reset-test-alice@example.test');
         $this->assertEmailHtmlBodyContains($email, '/reset-password/');
         $this->assertEmailTextBodyContains($email, '/reset-password/');
 
-        // Sanity-check the follow-through page renders the generic banner.
         $client->followRedirect();
-        $this->assertSelectorTextContains('body', self::GENERIC_BANNER);
+        $this->assertResponseIsSuccessful();
     }
 
     public function test_request_by_renamed_login_handle_sends_one_email(): void
     {
         $client = static::createClient();
         $client->enableProfiler();
-        $user = $this->createUser($client, 'reset-test-handle', 'reset-test-handle@example.test');
+        $user = $this->persistUser($client, 'reset-test-handle', 'reset-test-handle@example.test');
         $user->setLoginUsername('reset-test-handle.renamed');
         $client->getContainer()->get('doctrine.orm.entity_manager')->flush();
 
@@ -63,7 +66,7 @@ class ResetPasswordControllerTest extends WebTestCase
         $form['reset_password_request_form[username]'] = 'reset-test-handle.renamed';
         $client->submit($form);
 
-        $this->assertResponseRedirects();
+        $this->assertResponseRedirects(self::CHECK_EMAIL_URL);
         $this->assertEmailCount(1);
     }
 
@@ -71,13 +74,13 @@ class ResetPasswordControllerTest extends WebTestCase
     {
         $client = static::createClient();
         $client->enableProfiler();
-        $user = $this->createUser($client, 'reset-test-resubmit', 'reset-test-resubmit@example.test');
+        $user = $this->persistUser($client, 'reset-test-resubmit', 'reset-test-resubmit@example.test');
 
         // Re-submit issues a brand-new link (GitHub-style; anti-abuse is the
         // per-IP limiter, not a per-user throttle). Each request emits exactly
         // one email, and the two tokens must differ.
-        $token1 = $this->requestAndExtractToken($client, $user->getUsername());
-        $token2 = $this->requestAndExtractToken($client, $user->getUsername());
+        $token1 = $this->requestResetAndExtractToken($client, $user->getUsername());
+        $token2 = $this->requestResetAndExtractToken($client, $user->getUsername());
         $this->assertNotSame($token1, $token2, 're-submit must mint a fresh token');
 
         // The old token must no longer resolve: using it bounces back to the
@@ -92,58 +95,14 @@ class ResetPasswordControllerTest extends WebTestCase
     public function test_request_inactive_user_sends_no_email(): void
     {
         $client = static::createClient();
-        $user = $this->createUser($client, 'reset-test-inactive', 'reset-test-inactive@example.test', active: false);
+        $user = $this->persistUser($client, 'reset-test-inactive', 'reset-test-inactive@example.test', active: false);
 
         $crawler = $client->request('GET', self::REQUEST_URL);
         $form = $crawler->selectButton('Envoyer le lien')->form();
         $form['reset_password_request_form[username]'] = $user->getUsername();
         $client->submit($form);
 
-        $client->followRedirect();
-        $this->assertSelectorTextContains('body', self::GENERIC_BANNER);
+        $this->assertResponseRedirects(self::CHECK_EMAIL_URL);
         $this->assertEmailCount(0);
-    }
-
-    private function requestAndExtractToken(KernelBrowser $client, string $username): string
-    {
-        $crawler = $client->request('GET', self::REQUEST_URL);
-        $form = $crawler->selectButton('Envoyer le lien')->form();
-        $form['reset_password_request_form[username]'] = $username;
-        $client->submit($form);
-
-        $this->assertEmailCount(1);
-        $body = $this->getMailerMessage(0)->getHtmlBody();
-        $this->assertSame(1, preg_match('#/reset-password/([A-Za-z0-9_\-]+)#', $body, $m), 'email must contain a reset link');
-
-        return $m[1];
-    }
-
-    private function createUser(KernelBrowser $client, string $username, ?string $email, bool $active = true): BSUser
-    {
-        /** @var EntityManagerInterface $em */
-        $em = $client->getContainer()->get('doctrine.orm.entity_manager');
-
-        // Hard-delete any leftover from a prior run; the soft-delete filter would
-        // otherwise hide the row and we'd hit a UNIQUE(username) violation on insert.
-        $em->getFilters()->disable('softdeleteable');
-        $em->createQuery('DELETE FROM App\\Entity\\BSUser u WHERE u.username = :u')
-            ->setParameter('u', $username)
-            ->execute();
-        if ($email !== null) {
-            $em->createQuery('DELETE FROM App\\Entity\\BSUser u WHERE u.email = :e')
-                ->setParameter('e', $email)
-                ->execute();
-        }
-        $em->getFilters()->enable('softdeleteable');
-
-        $user = new BSUser();
-        $user->setUsername($username);
-        $user->setEmail($email);
-        $user->setIsActive($active);
-        $user->setPassword('placeholder-hash');
-        $em->persist($user);
-        $em->flush();
-
-        return $user;
     }
 }

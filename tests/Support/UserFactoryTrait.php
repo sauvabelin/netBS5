@@ -60,4 +60,38 @@ trait UserFactoryTrait
             ->getRepository(BSUser::class)
             ->findOneBy(['username' => $username]);
     }
+
+    /**
+     * Logs in through the real login form, so the session records its login time like a
+     * real password login does (loginUser() skips that).
+     */
+    protected function passwordLogin(KernelBrowser $client, string $username, string $password): void
+    {
+        $crawler = $client->request('GET', '/netBS/secure/login');
+        $form = $crawler->filter('form')
+            ->reduce(fn ($f) => $f->filter('input[name="_username"]')->count() > 0)
+            ->form();
+        $form['_username'] = $username;
+        $form['_password'] = $password;
+        $client->submit($form);
+    }
+
+    /**
+     * Submits the forgot-password form for $username and returns the token from
+     * the reset link in the single email sent. Call after enableProfiler() so the
+     * mailer assertions can read the POST response's profile.
+     */
+    protected function requestResetAndExtractToken(KernelBrowser $client, string $username): string
+    {
+        $crawler = $client->request('GET', '/netBS/secure/forgot-password');
+        $form = $crawler->selectButton('Envoyer le lien')->form();
+        $form['reset_password_request_form[username]'] = $username;
+        $client->submit($form);
+
+        $this->assertEmailCount(1);
+        $body = $this->getMailerMessage(0)->getHtmlBody();
+        $this->assertSame(1, preg_match('#/reset-password/([A-Za-z0-9_\-]+)#', $body, $m), 'email must contain a reset link');
+
+        return $m[1];
+    }
 }

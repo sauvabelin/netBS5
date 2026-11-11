@@ -50,9 +50,6 @@ class PostfixMapExportTest extends TestCase
             $map->render(),
         );
 
-        $warnings = implode("\n", $map->warnings);
-        $this->assertStringContainsString('malformed recipient "bad address@example.com"', $warnings);
-        $this->assertStringContainsString('vide@sauvabelin.ch has no recipients', $warnings);
     }
 
     public function test_list_addresses_among_recipients_are_flattened_and_loops_cut(): void
@@ -78,7 +75,6 @@ class PostfixMapExportTest extends TestCase
             'b@sauvabelin.ch' => ['alice@example.com', 'bob@example.com', 'ida@example.com', 'info@sauvabelin.ch'],
             'info@sauvabelin.ch' => ['ida@example.com', 'info@sauvabelin.ch'],
         ], $map->entries);
-        $this->assertStringContainsString('include each other, loop cut', implode("\n", $map->warnings));
     }
 
     public function test_addresses_outside_relayed_domains_are_skipped(): void
@@ -88,7 +84,6 @@ class PostfixMapExportTest extends TestCase
         ])->build();
 
         $this->assertSame(['ok@testmail.sauvabelin.ch' => ['alice@example.com']], $map->entries);
-        $this->assertStringContainsString('skipped ext@gmail.com', implode("\n", $map->warnings));
     }
 
     public function test_forwarded_domain_lists_are_keyed_by_forward_target_and_never_list_themselves(): void

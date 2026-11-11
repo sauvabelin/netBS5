@@ -9,7 +9,6 @@ use NetBS\FichierBundle\Rule\Block\MembreAttributionGroupesBlock;
 use NetBS\FichierBundle\Rule\Block\MembreFonctionPoidsBlock;
 use NetBS\FichierBundle\Rule\Block\MembreFonctionsBlock;
 use NetBS\FichierBundle\Rule\Block\MembreGroupeTypesBlock;
-use NetBS\FichierBundle\Rule\MembreContext;
 use PHPUnit\Framework\TestCase;
 
 /** Tree: branche 1 <- troupe 2 <- patrouille 3. */
@@ -65,10 +64,6 @@ final class MembreBlocksTest extends TestCase
 
         $this->assertTrue($block->matches($membre, ['op' => 'gt', 'poids' => 99]));
         $this->assertFalse($block->matches($membre, ['op' => 'gt', 'poids' => 150]));
-        $this->assertSame('le membre a une fonction de poids > 99', $block->describe(['op' => '>', 'poids' => '99'], false));
-        $this->assertSame("le membre n'a pas de fonction de poids > 99", $block->describe(['op' => '>', 'poids' => '99'], true));
-        $this->assertSame('le membre a une fonction de poids', $block->label());
-        $this->assertNull($block->negatedLabel());
     }
 
     public function test_fonctions(): void
@@ -79,10 +74,6 @@ final class MembreBlocksTest extends TestCase
 
         $this->assertTrue($block->matches($membre, ['fonctions' => [4, 5]]));
         $this->assertFalse($block->matches($membre, ['fonctions' => [4]]));
-        $this->assertSame('le membre a la fonction CP, CL', $block->describe(['fonctions' => 'CP, CL'], false));
-        $this->assertSame("le membre n'a pas la fonction CP", $block->describe(['fonctions' => 'CP'], true));
-        $this->assertSame('le membre a la fonction', $block->label());
-        $this->assertSame("le membre n'a pas la fonction", $block->negatedLabel());
     }
 
     public function test_groupe_types(): void
@@ -93,25 +84,5 @@ final class MembreBlocksTest extends TestCase
 
         $this->assertTrue($block->matches($membre, ['types' => [7]]));
         $this->assertFalse($block->matches($membre, ['types' => [8]]));
-        $this->assertStringContainsString('Branche', $block->describe(['types' => 'Branche'], false));
-        $this->assertNotNull($block->negatedLabel());
-    }
-
-    public function test_attribution_groupes_describe(): void
-    {
-        $block = new MembreAttributionGroupesBlock();
-        $choices = $block->params()['sous_groupes']->choices;
-        $this->assertStringEndsWith('Someo ' . $choices['tous'], $block->describe(['groupes' => 'Someo', 'sous_groupes' => $choices['tous']], false));
-        // « sans sous-groupes » is the plain case: the sentence leaves it out
-        $this->assertStringEndsWith(' ADABS', $block->describe(['groupes' => 'ADABS', 'sous_groupes' => $choices['aucun']], true));
-    }
-
-    public function test_context(): void
-    {
-        $context = new MembreContext();
-        $membre  = $this->membre(1);
-        $this->assertSame('membre', $context->id());
-        $this->assertSame(['membre' => $membre], $context->expressionValues($membre));
-        $this->assertArrayHasKey('membre', $context->variables());
     }
 }

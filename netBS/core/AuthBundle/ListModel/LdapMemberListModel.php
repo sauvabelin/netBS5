@@ -23,6 +23,13 @@ final class LdapMemberListModel extends BaseListModel
         LdapMemberRow::TO_REMOVE => 'text-bg-danger',
     ];
 
+    /** Stable machine-readable status, exposed as `data-status` on the badge. */
+    private const STATUS_KEYS = [
+        LdapMemberRow::UP_TO_DATE => 'up-to-date',
+        LdapMemberRow::TO_ADD => 'to-add',
+        LdapMemberRow::TO_REMOVE => 'to-remove',
+    ];
+
     public function configureOptions(OptionsResolver $resolver)
     {
         $resolver->setRequired(self::MEMBERS);
@@ -63,7 +70,7 @@ final class LdapMemberListModel extends BaseListModel
             ->addColumn('Annuaire', null, ClosureColumn::class, [
                 ClosureColumn::CLOSURE => fn (LdapMemberRow $row) => $row->status === null
                     ? '—'
-                    : sprintf('<span class="badge %s">%s</span>', self::STATUS_BADGES[$row->status], $row->status),
+                    : sprintf('<span class="badge %s" data-status="%s">%s</span>', self::STATUS_BADGES[$row->status], self::STATUS_KEYS[$row->status], $row->status),
             ]);
     }
 }

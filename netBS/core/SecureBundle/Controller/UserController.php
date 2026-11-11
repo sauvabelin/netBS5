@@ -42,7 +42,7 @@ class UserController extends AbstractController
      */
     #[Route('/user/edit/{id}', name: 'netbs.secure.user.edit_user')]
     public function updateUserAction(Request $request, $id, UserManager $manager) {
-        $user       = $manager->find($id);
+        $user       = $manager->find($id) ?? throw $this->createNotFoundException();
         $form       = $this->createForm(UserType::class, $user, ['operation' => CRUD::UPDATE]);
 
         $form->handleRequest($request);
@@ -71,7 +71,7 @@ class UserController extends AbstractController
     #[Route('/user/delete/{id}', name: 'netbs.secure.user.delete_user', methods: ['POST'])]
     public function deleteUserAction($id, SecureConfig $secureConfig, UserManager $manager, EntityManagerInterface $em, History $history) {
 
-        $user           = $em->find($secureConfig->getUserClass(), $id);
+        $user           = $em->find($secureConfig->getUserClass(), $id) ?? throw $this->createNotFoundException();
 
         try {
             $manager->deleteUser($user);

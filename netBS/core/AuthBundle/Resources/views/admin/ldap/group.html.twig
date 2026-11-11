@@ -32,7 +32,11 @@
                             <dt class="col-sm-3">Membres</dt>
                             <dd class="col-sm-9">{{ group.members|length }}</dd>
                             <dt class="col-sm-3">Dans lldap</dt>
-                            <dd class="col-sm-9 mb-0">
+                            <dd class="col-sm-9 mb-0" id="ldap-group-state" data-lldap-state="
+                                {%- if lldapError is not null %}error
+                                {%- elseif lldapGroup is null %}missing
+                                {%- elseif lldapGroup.displayName != group.name %}renamed
+                                {%- else %}present{% endif %}">
                                 {% if lldapError is not null %}
                                     <span class="text-danger">lldap ne répond pas : {{ lldapError }}</span>
                                 {% elseif lldapGroup is null %}

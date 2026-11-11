@@ -1,0 +1,37 @@
+{% extends '@NetBSCore/layout/backend.layout.twig' %}
+
+{% set title %}Authentification — Clients OAuth{% endset %}
+
+{% block main %}
+    <div class="container-fluid">
+        {% include '@NetBSCore/includes/header.include.twig' with {
+            header: 'Authentification',
+            subHeader: 'OAuth / OIDC clients'
+        } %}
+
+        <div class="row">
+            <div class="col-12 col-lg-8">
+                <div class="card" data-oidc-unavailable>
+                    <div class="card-body">
+                        <h5 class="card-title">
+                            <i class="fas fa-plug text-danger"></i>
+                            Le serveur d'authentification ne répond pas
+                        </h5>
+                        <p class="mb-3">
+                            Le client n'a pas pu être chargé depuis Hydra. Rien n'a été modifié.
+                            Réessayez dans un instant ; si le problème persiste, vérifiez que le service Hydra tourne.
+                        </p>
+                        {% if app.request.method == 'GET' %}
+                            <a href="{{ app.request.uri }}" class="btn btn-primary">
+                                <i class="fas fa-redo"></i> Réessayer
+                            </a>
+                        {% endif %}
+                        <a href="{{ path('auth.admin.oidc_clients.index') }}" class="btn btn-outline-secondary">
+                            <i class="fas fa-arrow-left"></i> Retour à la liste des clients
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}

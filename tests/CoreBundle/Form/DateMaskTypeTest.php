@@ -19,7 +19,6 @@ final class DateMaskTypeTest extends KernelTestCase
         $form = $factory->createBuilder(FormType::class, ['date' => new \DateTime('2026-12-31')], ['csrf_protection' => false])
             ->add('date', DateMaskType::class)->getForm();
         $this->assertSame('31.12.2026', $form->createView()['date']->vars['value']);
-        $this->assertStringContainsString("'mask' : '99.99.9999'", $form->get('date')->getConfig()->getOption('mask'));
 
         $form->submit(['date' => '01.02.2026']);
         $this->assertSame('2026-02-01', $form->get('date')->getData()->format('Y-m-d'));

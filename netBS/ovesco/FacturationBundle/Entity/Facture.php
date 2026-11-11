@@ -354,8 +354,9 @@ class Facture
         }, 0);
     }
 
+    /** Rounded to the centime, so float noise never keeps a paid facture open. */
     public function getMontantEncoreDu() {
-        return $this->getMontant() - $this->getMontantPaye();
+        return round($this->getMontant() - $this->getMontantPaye(), 2);
     }
 
     public function setLatestImpression(\DateTime $date) {

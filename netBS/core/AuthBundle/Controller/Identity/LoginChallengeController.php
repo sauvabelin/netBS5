@@ -14,6 +14,7 @@ use Psr\Log\LoggerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\Session\FlashBagAwareSessionInterface;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Core\Authentication\Token\SwitchUserToken;
@@ -61,6 +62,11 @@ final class LoginChallengeController extends AbstractController
                 'decision'        => 'drop',
                 'error'           => $e->getMessage(),
             ]);
+            // E.g. the first-login page took longer than the challenge lives.
+            $session = $request->hasSession() ? $request->getSession() : null;
+            if ($session instanceof FlashBagAwareSessionInterface) {
+                $session->getFlashBag()->add('info', "La demande de connexion du service a expiré. Retourne sur le service et reconnecte-toi.");
+            }
 
             return $this->redirectToRoute('netbs.core.home.dashboard');
         }

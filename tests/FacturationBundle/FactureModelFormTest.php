@@ -101,7 +101,7 @@ final class FactureModelFormTest extends WebTestCase
         $this->submit('ovesco.facturation.facture_model.edit_modal', ['id' => $model->getId()], '{bad');
 
         $this->assertNotSame(500, $this->client->getResponse()->getStatusCode(), substr(strip_tags((string) $this->client->getResponse()->getContent()), 0, 300));
-        $this->assertStringContainsString('Règle invalide.', $this->client->getResponse()->getContent());
+        $this->assertCount(1, $this->client->getCrawler()->filter('.invalid-feedback'), 'the rule field carries the error');
         $reloaded = $this->reload($model->getId());
         $this->assertSame(self::LEGACY, $reloaded->getApplicationRule());
         $this->assertNull($reloaded->getRule());

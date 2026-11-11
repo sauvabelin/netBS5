@@ -8,7 +8,10 @@ use NetBS\AuthBundle\Directory\DirectoryUser;
 use NetBS\AuthBundle\Directory\LldapClientException;
 use NetBS\AuthBundle\Directory\LldapClientInterface;
 
-/** In-memory stand-in for lldap. */
+/**
+ * In-memory stand-in for lldap. Like lldap, it stores user ids lowercase
+ * whatever it is sent.
+ */
 final class FakeLldap implements LldapClientInterface
 {
     public array $users = [];
@@ -17,6 +20,11 @@ final class FakeLldap implements LldapClientInterface
     /** @var string[] group attribute names, in creation order */
     public array $attributes = [];
     public ?string $failOnCreateUser = null;
+    public ?string $failOnUpdateUser = null;
+    /** Display name of a group whose creation fails. */
+    public ?string $failOnCreateGroup = null;
+    /** Display name of a group nobody can be added to. */
+    public ?string $failOnAddToGroup = null;
     /** Every read fails, as when lldap is unreachable. */
     public bool $down = false;
     private int $nextGroupId = 1;
@@ -67,16 +75,25 @@ final class FakeLldap implements LldapClientInterface
         if ($user->uid === $this->failOnCreateUser) {
             throw new LldapClientException('boom');
         }
-        $this->users[$user->uid] = ['id' => $user->uid, 'email' => $user->email, 'displayName' => $user->displayName, 'firstName' => $user->firstName, 'lastName' => $user->lastName];
+        $uid = mb_strtolower($user->uid);
+        if (isset($this->users[$uid])) {
+            throw new LldapClientException("user $uid already exists");
+        }
+        $this->users[$uid] = $this->row($uid, $user);
     }
 
     public function updateUser(DirectoryUser $user): void
     {
-        $this->createUser($user);
+        $uid = mb_strtolower($user->uid);
+        if ($user->uid === $this->failOnUpdateUser || !isset($this->users[$uid])) {
+            throw new LldapClientException('boom');
+        }
+        $this->users[$uid] = $this->row($uid, $user);
     }
 
     public function deleteUser(string $uid): void
     {
+        $uid = mb_strtolower($uid);
         unset($this->users[$uid]);
         foreach ($this->groups as &$group) {
             $group['members'] = array_values(array_diff($group['members'], [$uid]));
@@ -85,6 +102,9 @@ final class FakeLldap implements LldapClientInterface
 
     public function createGroup(string $displayName, ?int $netbsId, ?string $netbsRole = null, ?int $netbsComputedId = null): int
     {
+        if ($displayName === $this->failOnCreateGroup) {
+            throw new LldapClientException('boom');
+        }
         $id = $this->nextGroupId++;
         $this->groups[$id] = ['id' => $id, 'displayName' => $displayName, 'netbsId' => $netbsId, 'netbsRole' => $netbsRole, 'netbsComputedId' => $netbsComputedId, 'members' => []];
         return $id;
@@ -102,11 +122,15 @@ final class FakeLldap implements LldapClientInterface
 
     public function addUserToGroup(string $uid, int $groupId): void
     {
-        $this->groups[$groupId]['members'][] = $uid;
+        if (($this->groups[$groupId]['displayName'] ?? null) === $this->failOnAddToGroup) {
+            throw new LldapClientException('boom');
+        }
+        $this->groups[$groupId]['members'][] = mb_strtolower($uid);
     }
 
     public function removeUserFromGroup(string $uid, int $groupId): void
     {
+        $uid = mb_strtolower($uid);
         if (!isset($this->users[$uid])) {
             throw new LldapClientException("unknown user $uid");
         }
@@ -116,6 +140,11 @@ final class FakeLldap implements LldapClientInterface
     /** Stands in for LldapClient, whose service is tagged kernel.reset. */
     public function reset(): void
     {
+    }
+
+    private function row(string $uid, DirectoryUser $user): array
+    {
+        return ['id' => $uid, 'email' => $user->email, 'displayName' => $user->displayName, 'firstName' => $user->firstName, 'lastName' => $user->lastName];
     }
 
     private function failIfDown(): void

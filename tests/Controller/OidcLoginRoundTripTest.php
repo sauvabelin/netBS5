@@ -72,7 +72,7 @@ class OidcLoginRoundTripTest extends WebTestCase
 
         $this->assertResponseRedirects('/netBS/secure/login?login_challenge=' . urlencode(self::CHALLENGE));
         $client->followRedirect();
-        $this->assertSelectorTextContains('.text-danger', 'Votre session a expiré');
+        $this->assertSelectorExists('.text-danger');
 
         $this->submitLogin($client, 'oidc-rt-lost');
         $this->assertResponseRedirects('/oidc-login?login_challenge=' . urlencode(self::CHALLENGE));

@@ -93,7 +93,11 @@ final class OidcClientController extends AbstractController
     {
         $this->denyAccessUnlessGranted('ROLE_ADMIN');
 
-        $hydraClient = $this->hydra->getOAuthClient($slug);
+        try {
+            $hydraClient = $this->hydra->getOAuthClient($slug);
+        } catch (HydraClientException $e) {
+            return $this->hydraUnavailable($e);
+        }
         if ($hydraClient === null) {
             throw $this->createNotFoundException();
         }
@@ -140,7 +144,11 @@ final class OidcClientController extends AbstractController
             throw $this->createAccessDeniedException('Invalid CSRF token.');
         }
 
-        $hydraClient = $this->hydra->getOAuthClient($slug);
+        try {
+            $hydraClient = $this->hydra->getOAuthClient($slug);
+        } catch (HydraClientException $e) {
+            return $this->hydraUnavailable($e);
+        }
         if ($hydraClient === null) {
             throw $this->createNotFoundException();
         }
@@ -181,6 +189,14 @@ final class OidcClientController extends AbstractController
 
         $this->addFlash('success', 'Client deleted.');
         return $this->redirectToRoute('auth.admin.oidc_clients.index');
+    }
+
+    /** Hydra can't be read: an error page inside the admin, not a 500. */
+    private function hydraUnavailable(HydraClientException $e): Response
+    {
+        $this->logger->error('Hydra getOAuthClient failed', ['exception' => $e]);
+
+        return $this->render('@NetBSAuth/admin/oidc/unavailable.html.twig', [], new Response('', Response::HTTP_BAD_GATEWAY));
     }
 
     private function generateSlug(): string
