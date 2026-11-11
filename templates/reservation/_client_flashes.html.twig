@@ -1,0 +1,8 @@
+{# Feedback after the client answered from a link, see ApiAPMBSController::redirectAfterClientAnswer #}
+{% for type, messages in app.flashes %}
+    {% for message in messages %}
+        <div class="alert alert-{{ type == 'error' ? 'danger' : type }} text-center" role="alert" style="margin: 0 0 20px;">
+            {{ message }}
+        </div>
+    {% endfor %}
+{% endfor %}

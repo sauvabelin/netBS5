@@ -327,7 +327,9 @@ class Cabane {
             return [];
         }
 
-        return explode("\n", $this->conditions);
+        // Textarea input is saved with CRLF line endings: split on any newline, drop blank lines
+        $lines = array_map('trim', preg_split('/\R/', $this->conditions));
+        return array_values(array_filter($lines, fn(string $line) => $line !== ''));
     }
 
     public function getInvoiceEmail() {

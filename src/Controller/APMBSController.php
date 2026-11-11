@@ -26,6 +26,7 @@ use Doctrine\ORM\EntityManagerInterface;
 use NetBS\CoreBundle\Searcher\SearcherManager;
 use NetBS\CoreBundle\Utils\Modal;
 use Ovesco\FacturationBundle\Entity\Creance;
+use Psr\Log\LoggerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
 use Sprain\SwissQrBill\Exception\InvalidQrBillDataException;
@@ -132,11 +133,13 @@ class APMBSController extends AbstractController
             ->andWhere('r.end <= :end')
             ->andWhere(
                 $qb->expr()->orX(
-                    $qb->expr()->eq('r.status', "'" . APMBSReservation::PENDING . "'"),
+                    // Modification pending: removed from Google Calendar while the client decides
+                    $qb->expr()->in('r.status', ':dbOnlyStatuses'),
                     $qb->expr()->eq('r.id', ':highlight')
                 )
             )
             ->setParameter('cabane', $cabane)
+            ->setParameter('dbOnlyStatuses', [APMBSReservation::PENDING, APMBSReservation::MODIFICATION_PENDING])
 
             // Take larger range to account for reservations that start before the range
             ->setParameter('start', $start->modify('-1 month'))
@@ -334,11 +337,12 @@ class APMBSController extends AbstractController
             $em->persist($log);
             $em->flush();
 
-            $gcm->sendEmailToClient($reservation, 'Demande de réservation en attente', $modify->message, 'modification', [
+            $emailSent = $gcm->sendEmailToClient($reservation, 'Demande de réservation en attente', $modify->message, 'modification', [
                 'oldStart' => $oldStart,
                 'oldEnd' => $oldEnd,
             ]);
-            $this->addFlash('success', "Notification de modification envoyée");
+            $this->addFlash('success', $emailSent ? "Notification de modification envoyée" : "Modification enregistrée");
+            $this->warnIfEmailFailed($emailSent);
             return Modal::refresh();
         }
 
@@ -373,8 +377,9 @@ class APMBSController extends AbstractController
             $em->persist($log);
             $em->flush();
 
-            $gcm->sendEmailToClient($reservation, 'Réservation validée', $msg->message);
+            $emailSent = $gcm->sendEmailToClient($reservation, 'Réservation validée', $msg->message);
             $this->addFlash('success', "Réservation validée");
+            $this->warnIfEmailFailed($emailSent);
             return Modal::refresh();
         }
 
@@ -405,8 +410,9 @@ class APMBSController extends AbstractController
             $em->persist($log);
             $em->flush();
             
-            $gcm->sendEmailToClient($reservation, 'Demande de réservation refusée', $msg->message);
+            $emailSent = $gcm->sendEmailToClient($reservation, 'Demande de réservation refusée', $msg->message);
             $this->addFlash('info', "Réservation refusée");
+            $this->warnIfEmailFailed($emailSent);
             return Modal::refresh();
         }
 
@@ -437,8 +443,9 @@ class APMBSController extends AbstractController
             $em->persist($log);
             $em->flush();
 
-            $gcm->sendEmailToClient($reservation, 'Demande de réservation annulée', $msg->message);
+            $emailSent = $gcm->sendEmailToClient($reservation, 'Demande de réservation annulée', $msg->message);
             $this->addFlash('info', "Réservation annulée");
+            $this->warnIfEmailFailed($emailSent);
             return Modal::refresh();
         }
 
@@ -468,7 +475,7 @@ class APMBSController extends AbstractController
     }
 
     #[Route('/reservation/{id}/send-invoice', name: 'sauvabelin.apmbs.reservation.send-invoice')]
-    public function reservationSendInvoiceAction(Request $request, APMBSReservation $reservation, EntityManagerInterface $em, GoogleCalendarManager $gcm, APMBSFactureExporter $invoicer) {
+    public function reservationSendInvoiceAction(Request $request, APMBSReservation $reservation, EntityManagerInterface $em, GoogleCalendarManager $gcm, APMBSFactureExporter $invoicer, LoggerInterface $logger) {
         $data = new SendInvoiceReservation();
         $data->montant = $reservation->getEstimatedPrice();
         $data->date = $reservation->getEnd();
@@ -500,26 +507,33 @@ class APMBSController extends AbstractController
             }
 
             try {
-                $gcm->sendEmailToClient(
-                    $reservation, 
-                    'Facture de réservation', 
-                    $data->message, 'invoice',
-                    [
-                        'autreFrais' => $data->autreFraisMontant ? [
-                            'message' => $data->autreFraisDescription,
-                            'montant' => $data->autreFraisMontant
-                        ] : null,
-                    ],
-                    [
-                        'file' => $invoicer->generate([$reservation])->Output('S'),
-                        'filename' => 'facture_apmbs.pdf',
-                        'mimetype' => 'application/pdf'
-                    ]
-                );
-
+                $invoicePdf = $invoicer->generate([$reservation])->Output('S');
             } catch (InvalidQrBillDataException $e) {
-                dump($e);
+                $logger->error('APMBS: invoice generation failed', ['reservation' => $reservation->getId(), 'exception' => $e]);
                 $this->addFlash('error', "Erreur lors de la génération de la facture: " . $e->getMessage());
+                return Modal::refresh();
+            }
+
+            $emailSent = $gcm->sendEmailToClient(
+                $reservation,
+                'Facture de réservation',
+                $data->message, 'invoice',
+                [
+                    'autreFrais' => $data->autreFraisMontant ? [
+                        'message' => $data->autreFraisDescription,
+                        'montant' => $data->autreFraisMontant
+                    ] : null,
+                ],
+                [
+                    'file' => $invoicePdf,
+                    'filename' => 'facture_apmbs.pdf',
+                    'mimetype' => 'application/pdf'
+                ]
+            );
+
+            // Sending the invoice is the whole action: if the email failed, don't mark it as sent
+            if (!$emailSent) {
+                $this->addFlash('error', "La facture n'a pas pu être envoyée par e-mail, merci de réessayer plus tard.");
                 return Modal::refresh();
             }
 
@@ -538,5 +552,15 @@ class APMBSController extends AbstractController
             'alert' => "Vous allez envoyer la facture de réservation au demandeur. Vous pouvez ajouter des frais supplémentaires à la facture",
             'form'  => $form->createView()
         ], Modal::renderModal($form));
+    }
+
+    /**
+     * Emails never interrupt an action (see GoogleCalendarManager::sendEmailToClient): tell the intendant
+     * when the client could not be notified, so they can contact them another way.
+     */
+    private function warnIfEmailFailed(bool $emailSent): void {
+        if (!$emailSent) {
+            $this->addFlash('warning', "L'e-mail au demandeur n'a pas pu être envoyé, merci de le contacter directement.");
+        }
     }
 }
