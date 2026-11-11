@@ -132,11 +132,13 @@ class APMBSController extends AbstractController
             ->andWhere('r.end <= :end')
             ->andWhere(
                 $qb->expr()->orX(
-                    $qb->expr()->eq('r.status', "'" . APMBSReservation::PENDING . "'"),
+                    // Modification pending: removed from Google Calendar while the client decides
+                    $qb->expr()->in('r.status', ':dbOnlyStatuses'),
                     $qb->expr()->eq('r.id', ':highlight')
                 )
             )
             ->setParameter('cabane', $cabane)
+            ->setParameter('dbOnlyStatuses', [APMBSReservation::PENDING, APMBSReservation::MODIFICATION_PENDING])
 
             // Take larger range to account for reservations that start before the range
             ->setParameter('start', $start->modify('-1 month'))
