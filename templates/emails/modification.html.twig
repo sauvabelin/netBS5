@@ -58,11 +58,11 @@
         <tr>
         <td style="width: 90px; max-width: 100%"></td>
         <td style="width: 200px; max-width: 100%">
-            <a href="{{ url('apmbs.api.client.accept', {'id': reservation.id, 'email': reservation.email }) }}" style="display: block; border-radius: 4px; background-color: #10b981; padding: 8px 16px; text-align: center; color: #fffffe; box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05); text-decoration: none">Accepter</a>
+            <a href="{{ apmbs_client_url(reservation, 'accept') }}" style="display: block; border-radius: 4px; background-color: #10b981; padding: 8px 16px; text-align: center; color: #fffffe; box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05); text-decoration: none">Accepter</a>
         </td>
         <td style="width: 20px; max-width: 100%"></td>
         <td style="width: 200px; max-width: 100%;">
-            <a href="{{ url('apmbs.api.client.reject', {'id': reservation.id, 'email': reservation.email }) }}" style="display: block; border-radius: 4px; background-color: #ef4444; padding: 8px 16px; text-align: center; color: #fffffe; box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05); text-decoration: none">Refuser</a>
+            <a href="{{ apmbs_client_url(reservation, 'reject') }}" style="display: block; border-radius: 4px; background-color: #ef4444; padding: 8px 16px; text-align: center; color: #fffffe; box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05); text-decoration: none">Refuser</a>
         </td>
         <td style="width: 90px; max-width: 100%;"></td>
         </tr>
