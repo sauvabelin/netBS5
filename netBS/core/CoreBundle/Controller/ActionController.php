@@ -23,6 +23,11 @@ class ActionController extends AbstractController
         $itemClass  = base64_decode($itemClass);
 
         if($manager->getDeleter($itemClass)) {
+            $item = $em->find($itemClass, $itemId);
+            if ($item && !$this->isGranted(CRUD::DELETE, $item))
+                throw $this->createAccessDeniedException();
+
+
             try {
                 $msg = $manager->getDeleter($itemClass)->remove($itemId);
                 $this->addFlash("info", is_string($msg) ? $msg : "élément supprimé avec succès");

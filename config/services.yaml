@@ -124,14 +124,6 @@ services:
           method: extendsPageGroupe,
         }
 
-  App\Listener\ForceNewPasswordListener:
-    tags:
-      - {
-          name: kernel.event_listener,
-          event: kernel.request,
-          method: verifyUser,
-        }
-
   App\Listener\DoctrineMembreAdabsIdListener:
     tags:
       - { name: doctrine.event_listener, event: postLoad }

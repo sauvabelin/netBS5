@@ -127,7 +127,7 @@ class ApiGalerieController extends AbstractController
      */
     private function generateDirectoryResponse(Request $request, GalerieConfig $config, SerializerInterface $serializer) {
 
-        $realPath       = $this->getRealPath($config, $request->get('path'));
+        $realPath       = Directory::resolveHashPath($config->getFullMappedDirectory(), (string) $request->get('path'));
 
         if(!is_dir($realPath))
             throw $this->createNotFoundException("Directory with path $realPath not found");
@@ -146,25 +146,6 @@ class ApiGalerieController extends AbstractController
         ];
 
         return new JsonResponse($serializer->serialize($data, 'json'), 200, [], true);
-    }
-
-    private function getRealPath(GalerieConfig $config, $hashPath) {
-        $parts = explode('/', $hashPath);
-
-        $currentRealPath = $config->getFullMappedDirectory();
-        $currentPath = $config->getFullMappedDirectory();
-        foreach($parts as $pathPart) {
-            $directories = scandir($currentRealPath);
-            foreach($directories as $possibleDir) {
-                $possibleHash = $currentPath . "/" . Directory::hash2($possibleDir);
-                if ($possibleHash === $currentPath . "/" . $pathPart) {
-                    $currentPath .= "/" . $pathPart;
-                    $currentRealPath .= "/" . $possibleDir;
-                }
-            }
-        }
-
-        return $currentRealPath;
     }
 }
 

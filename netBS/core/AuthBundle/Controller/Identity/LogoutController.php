@@ -177,8 +177,8 @@ final class LogoutController extends AbstractController
                 // other federated services.
                 $this->addFlash(
                     'warning',
-                    'Local logout succeeded but the SSO server did not respond. '
-                    . 'You may still be signed in to other connected services.'
+                    'Tu es déconnecté·e de netBS, mais le serveur de connexion n\'a pas répondu. '
+                    . 'Tu es peut-être encore connecté·e à d\'autres services.'
                 );
             }
 

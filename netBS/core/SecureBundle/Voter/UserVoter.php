@@ -34,4 +34,9 @@ class UserVoter extends NetBSVoter
     {
         return $subject->isEqualTo($user);
     }
+
+    protected function everywhereRolesApply(): bool
+    {
+        return false;
+    }
 }

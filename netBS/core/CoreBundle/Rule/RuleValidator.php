@@ -44,11 +44,11 @@ final class RuleValidator
         foreach ($rule->root->items as $item) {
             if ($item instanceof RuleGroup) {
                 if ($item->items === []) {
-                    $errors[] = 'Ensemble de conditions vide.';
+                    $errors[] = 'Un ensemble de conditions est vide.';
                 }
                 foreach ($item->items as $nested) {
                     if ($nested instanceof RuleGroup) {
-                        $errors[] = "Trop de niveaux d'ensembles imbriqués.";
+                        $errors[] = "Trop d'ensembles imbriqués les uns dans les autres.";
                     }
                 }
             }
@@ -63,7 +63,7 @@ final class RuleValidator
             $live = $this->targets->labels($target, $ids);
             foreach (array_unique($ids) as $id) {
                 if (!isset($live[$id])) {
-                    $errors[] = "Référence supprimée (id $id).";
+                    $errors[] = "Un élément utilisé dans la règle a été supprimé (id $id).";
                 }
             }
         }
@@ -76,17 +76,17 @@ final class RuleValidator
     {
         $block = $this->registry->block($condition->block);
         if ($block === null) {
-            return ["Condition inconnue : {$condition->block}."];
+            return ["Cette condition n'existe plus : {$condition->block}."];
         }
         if (!in_array($contextId, $block->contexts(), true)) {
-            return ["Condition « {$block->label()} » non disponible ici."];
+            return ["La condition « {$block->label()} » n'est pas disponible ici."];
         }
 
         $errors = [];
         foreach ($block->params() as $name => $param) {
             $value = $condition->params[$name] ?? null;
             if ($value === null || $value === '' || $value === []) {
-                $errors[] = "Paramètre manquant dans « {$block->label()} » ($name).";
+                $errors[] = "Il manque une valeur dans « {$block->label()} » ($name).";
                 continue;
             }
 

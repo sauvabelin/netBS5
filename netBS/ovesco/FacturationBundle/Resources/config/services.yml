@@ -8,10 +8,6 @@ services:
         resource: '../../Controller'
         tags: ['controller.service_arguments']
 
-    Ovesco\FacturationBundle\DataFixtures\:
-        resource: '../../DataFixtures'
-        tags: ['doctrine.fixture.orm']
-
     Ovesco\FacturationBundle\Rule\:
         resource: '../../Rule'
 

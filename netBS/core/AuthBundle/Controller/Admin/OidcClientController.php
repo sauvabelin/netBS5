@@ -44,7 +44,7 @@ final class OidcClientController extends AbstractController
             $clients = $this->hydra->listOAuthClients();
         } catch (HydraClientException $e) {
             $this->logger->error('Hydra listOAuthClients failed', ['exception' => $e]);
-            $this->addFlash('error', 'Could not list OAuth clients.');
+            $this->addFlash('error', 'Impossible de charger la liste des clients OAuth.');
             $clients = [];
         }
 
@@ -65,7 +65,7 @@ final class OidcClientController extends AbstractController
         $slug = $this->generateSlug();
         $dto = new OidcClientDto();
         $dto->slug = $slug;
-        $dto->name = 'New client';
+        $dto->name = 'Nouveau client';
 
         $plaintext = $this->generateSecret();
 
@@ -73,7 +73,7 @@ final class OidcClientController extends AbstractController
             $created = $this->hydra->createOAuthClient($dto->toHydraPayload($plaintext));
         } catch (HydraClientException $e) {
             $this->logger->error('Hydra createOAuthClient failed', ['exception' => $e]);
-            $this->addFlash('error', 'Could not create OAuth client.');
+            $this->addFlash('error', 'Impossible de créer le client OAuth.');
             return $this->redirectToRoute('auth.admin.oidc_clients.index');
         }
 
@@ -83,7 +83,7 @@ final class OidcClientController extends AbstractController
         $secret = (string) ($created['client_secret'] ?? $plaintext);
 
         $this->addFlash('oidc_one_shot_secret', $secret);
-        $this->addFlash('success', 'OAuth client created. The secret is shown below (only once).');
+        $this->addFlash('success', 'Client OAuth créé. Copiez le secret ci-dessous : il ne sera plus affiché.');
 
         return $this->redirectToRoute('auth.admin.oidc_clients.edit', ['slug' => $slug]);
     }
@@ -93,7 +93,11 @@ final class OidcClientController extends AbstractController
     {
         $this->denyAccessUnlessGranted('ROLE_ADMIN');
 
-        $hydraClient = $this->hydra->getOAuthClient($slug);
+        try {
+            $hydraClient = $this->hydra->getOAuthClient($slug);
+        } catch (HydraClientException $e) {
+            return $this->hydraUnavailable($e);
+        }
         if ($hydraClient === null) {
             throw $this->createNotFoundException();
         }
@@ -108,17 +112,17 @@ final class OidcClientController extends AbstractController
             if ($form->isValid()) {
                 try {
                     $this->hydra->updateOAuthClient($slug, $dto->toHydraPayload());
-                    $this->addFlash('success', 'Client updated.');
+                    $this->addFlash('success', 'Client mis à jour.');
                     return $this->redirectToRoute('auth.admin.oidc_clients.index');
                 } catch (HydraClientException $e) {
                     $this->logger->error('Hydra updateOAuthClient failed', ['exception' => $e]);
-                    $this->addFlash('error', 'Could not update OAuth client.');
+                    $this->addFlash('error', 'Impossible de mettre à jour le client OAuth.');
                     // Turbo ignores a 200 answer to a form POST; an error
                     // status makes it render the page and its flash.
                     $status = Response::HTTP_BAD_GATEWAY;
                 }
             } else {
-                $this->addFlash('error', 'The form contains errors. Please fix them and try again.');
+                $this->addFlash('error', 'Le formulaire contient des erreurs. Corrigez-les puis réessayez.');
                 // Turbo expects 422 on POSTs that re-render an invalid form.
                 $status = Response::HTTP_UNPROCESSABLE_ENTITY;
             }
@@ -140,7 +144,11 @@ final class OidcClientController extends AbstractController
             throw $this->createAccessDeniedException('Invalid CSRF token.');
         }
 
-        $hydraClient = $this->hydra->getOAuthClient($slug);
+        try {
+            $hydraClient = $this->hydra->getOAuthClient($slug);
+        } catch (HydraClientException $e) {
+            return $this->hydraUnavailable($e);
+        }
         if ($hydraClient === null) {
             throw $this->createNotFoundException();
         }
@@ -152,12 +160,12 @@ final class OidcClientController extends AbstractController
             $this->hydra->updateOAuthClient($slug, $dto->toHydraPayload($plaintext));
         } catch (HydraClientException $e) {
             $this->logger->error('Hydra regenerateSecret failed', ['exception' => $e]);
-            $this->addFlash('error', 'Could not regenerate the client secret.');
+            $this->addFlash('error', 'Impossible de générer un nouveau secret.');
             return $this->redirectToRoute('auth.admin.oidc_clients.edit', ['slug' => $slug]);
         }
 
         $this->addFlash('oidc_one_shot_secret', $plaintext);
-        $this->addFlash('success', 'New secret generated (shown only once).');
+        $this->addFlash('success', 'Nouveau secret généré. Copiez-le maintenant : il ne sera plus affiché.');
 
         return $this->redirectToRoute('auth.admin.oidc_clients.edit', ['slug' => $slug]);
     }
@@ -175,12 +183,20 @@ final class OidcClientController extends AbstractController
             $this->hydra->deleteOAuthClient($slug);
         } catch (HydraClientException $e) {
             $this->logger->error('Hydra deleteOAuthClient failed', ['exception' => $e]);
-            $this->addFlash('error', 'Could not delete OAuth client.');
+            $this->addFlash('error', 'Impossible de supprimer le client OAuth.');
             return $this->redirectToRoute('auth.admin.oidc_clients.edit', ['slug' => $slug]);
         }
 
-        $this->addFlash('success', 'Client deleted.');
+        $this->addFlash('success', 'Client supprimé.');
         return $this->redirectToRoute('auth.admin.oidc_clients.index');
+    }
+
+    /** Hydra can't be read: an error page inside the admin, not a 500. */
+    private function hydraUnavailable(HydraClientException $e): Response
+    {
+        $this->logger->error('Hydra getOAuthClient failed', ['exception' => $e]);
+
+        return $this->render('@NetBSAuth/admin/oidc/unavailable.html.twig', [], new Response('', Response::HTTP_BAD_GATEWAY));
     }
 
     private function generateSlug(): string

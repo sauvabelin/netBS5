@@ -2,6 +2,7 @@
 
 namespace Ovesco\FacturationBundle\Controller;
 
+use Ovesco\FacturationBundle\Util\IdList;
 use Doctrine\ORM\EntityManagerInterface;
 use NetBS\CoreBundle\Utils\Modal;
 use Ovesco\FacturationBundle\Entity\Facture;
@@ -28,13 +29,13 @@ class RappelController extends AbstractController
     public function addModalAction(Request $request, EntityManagerInterface $em) {
 
         $mass = new MassRappel();
-        $mass->setSelectedIds(serialize($request->request->all('selectedIds')));
+        $mass->setSelectedIds(IdList::encode($request->request->all('selectedIds')));
         $form = $this->createForm(MassRappelType::class, $mass);
         $form->handleRequest($request);
 
         if($form->isSubmitted() && $form->isValid()) {
 
-            $selectedIds    = unserialize($mass->getSelectedIds());
+            $selectedIds    = IdList::decode($mass->getSelectedIds());
 
             foreach($selectedIds as $selectedId) {
 

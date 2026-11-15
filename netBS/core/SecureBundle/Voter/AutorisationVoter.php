@@ -34,4 +34,9 @@ class AutorisationVoter extends NetBSVoter
     {
         return false; // Only admins can handle autorisations
     }
+
+    protected function everywhereRolesApply(): bool
+    {
+        return false;
+    }
 }

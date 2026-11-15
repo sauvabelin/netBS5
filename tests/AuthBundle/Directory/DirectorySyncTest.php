@@ -157,6 +157,94 @@ final class DirectorySyncTest extends TestCase
         self::assertSame(['netbs-id', 'netbs-role', 'netbs-computed-id'], $this->lldap->attributes);
     }
 
+    public function testUidsAreMatchedWhateverTheCaseLldapWasSent(): void
+    {
+        $this->lldap->createUser(new DirectoryUser('Alice', 'alice@example.org', 'Alice', 'Alice', 'Test'));
+        $this->lldap->addUserToGroup('Alice', $this->lldap->createGroup(DirectorySync::MANAGED_USERS_GROUP, null));
+        $this->lldap->addUserToGroup('Alice', $this->lldap->createGroup('Troupe X', 10));
+        $this->lldap->attributes = ['netbs-id', 'netbs-role', 'netbs-computed-id'];
+
+        $report = $this->sync([$this->user('alice')], [new DirectoryGroup(10, 'Troupe X', ['alice'])]);
+
+        self::assertSame([], $report->errors);
+        self::assertSame([], $report->changes);
+    }
+
+    public function testChangedUserIsUpdated(): void
+    {
+        $this->sync([$this->user('alice')], []);
+
+        $report = $this->sync([new DirectoryUser('alice', 'new@example.org', 'Alice B', 'Alice', 'B')], []);
+
+        self::assertSame([], $report->errors);
+        self::assertCount(1, $report->changes);
+        self::assertSame('new@example.org', $this->lldap->users['alice']['email']);
+        self::assertSame('Alice B', $this->lldap->users['alice']['displayName']);
+        self::assertSame('B', $this->lldap->users['alice']['lastName']);
+    }
+
+    public function testFailedUpdateIsReportedAndMembershipStillFollows(): void
+    {
+        $this->sync([$this->user('alice')], []);
+        $this->lldap->failOnUpdateUser = 'alice';
+
+        $report = $this->sync([new DirectoryUser('alice', 'new@example.org', 'Alice', 'Alice', 'Test')], [new DirectoryGroup(10, 'Troupe X', ['alice'])]);
+
+        self::assertCount(1, $report->errors);
+        self::assertSame('alice@example.org', $this->lldap->users['alice']['email']);
+        self::assertSame(['alice'], $this->lldap->membersOf('Troupe X'));
+    }
+
+    public function testUsersAreStillManagedAfterTheMarkerGroupFailedToBeCreated(): void
+    {
+        $users = [$this->user('alice')];
+        $groups = [new DirectoryGroup(10, 'Troupe X', ['alice'])];
+        $this->lldap->failOnCreateGroup = DirectorySync::MANAGED_USERS_GROUP;
+
+        self::assertNotSame([], $this->sync($users, $groups)->errors);
+
+        $this->lldap->failOnCreateGroup = null;
+        $report = $this->sync($users, $groups);
+
+        self::assertSame([], $report->errors);
+        self::assertSame(['alice'], $this->lldap->membersOf(DirectorySync::MANAGED_USERS_GROUP));
+        self::assertSame(['alice'], $this->lldap->membersOf('Troupe X'));
+        self::assertSame([], $this->sync([], $groups)->errors);
+        self::assertArrayNotHasKey('alice', $this->lldap->users, 'a managed user leaving netBS is deleted');
+    }
+
+    public function testUserIsStillManagedAfterJoiningTheMarkerGroupFailed(): void
+    {
+        $users = [$this->user('alice')];
+        $this->lldap->failOnAddToGroup = DirectorySync::MANAGED_USERS_GROUP;
+
+        self::assertNotSame([], $this->sync($users, [])->errors);
+
+        $this->lldap->failOnAddToGroup = null;
+        $report = $this->sync($users, []);
+
+        self::assertSame([], $report->errors);
+        self::assertSame(['alice'], $this->lldap->membersOf(DirectorySync::MANAGED_USERS_GROUP));
+    }
+
+    public function testFailedGroupCreationSkipsItsMembersAndIsReported(): void
+    {
+        $users = [$this->user('alice'), $this->user('bob')];
+        $groups = [new DirectoryGroup(10, 'Troupe X', ['alice', 'bob']), new DirectoryGroup(11, 'Meute Y', ['alice'])];
+        $this->lldap->failOnCreateGroup = 'Troupe X';
+
+        $report = $this->sync($users, $groups);
+
+        self::assertCount(1, $report->errors);
+        self::assertNull($this->lldap->groupId('Troupe X'));
+        self::assertSame(['alice'], $this->lldap->membersOf('Meute Y'));
+        self::assertArrayHasKey('bob', $this->lldap->users);
+
+        $this->lldap->failOnCreateGroup = null;
+        self::assertSame([], $this->sync($users, $groups)->errors);
+        self::assertSame(['alice', 'bob'], $this->lldap->membersOf('Troupe X'));
+    }
+
     /**
      * @param DirectoryUser[] $users
      * @param DirectoryGroup[] $groups groupe, computed and role groups

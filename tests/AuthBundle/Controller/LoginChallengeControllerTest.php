@@ -30,8 +30,8 @@ use Symfony\Component\Security\Core\User\InMemoryUser;
  * Unit tests for {@see LoginChallengeController}. The controller's main job
  * is to mediate Hydra's `skip=true` shortcut safely — in particular, refusing
  * to re-bind a cached Hydra subject onto whichever user is currently sitting
- * in the Symfony session (the cross-account token-forgery defence at lines
- * 60-68 of the controller).
+ * in the Symfony session (the controller's cross-account token-forgery
+ * defence).
  */
 final class LoginChallengeControllerTest extends TestCase
 {

@@ -28,7 +28,7 @@ class AttributionSousGroupeContext implements RuleContext
             'membre'      => new RuleVariable('Le membre attribué', [BaseMembre::class]),
             'fonction'    => new RuleVariable("La fonction de l'attribution", [BaseFonction::class]),
             'groupe'      => new RuleVariable('Le sous-groupe', [BaseGroupe::class]),
-            'profondeur'  => new RuleVariable('Distance entre le groupe du répertoire et le sous-groupe (1 = enfant direct)', ['nombre']),
+            'profondeur'  => new RuleVariable('Nombre de niveaux entre le groupe partagé et le sous-groupe (1 = enfant direct)', ['nombre']),
         ];
     }
 

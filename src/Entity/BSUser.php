@@ -267,6 +267,11 @@ class BSUser extends BaseUser
     /**
      * @return bool
      */
+    public function mustChangePassword(): bool
+    {
+        return (bool) $this->newPasswordRequired;
+    }
+
     public function isNewPasswordRequired()
     {
         return $this->newPasswordRequired;

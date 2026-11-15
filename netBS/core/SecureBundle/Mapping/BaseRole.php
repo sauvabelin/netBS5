@@ -145,7 +145,7 @@ class BaseRole
         return $this->description;
     }
 
-    public function setParent(BaseRole $role) {
+    public function setParent(?BaseRole $role) {
 
         $this->parent   = $role;
         return $this;

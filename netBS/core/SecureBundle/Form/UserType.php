@@ -34,9 +34,6 @@ class UserType extends AbstractType
             ->add('loginUsername', TextType::class, [
                 'label' => "Nom d'utilisateur",
                 'required' => true,
-                'help' => $options['operation'] === CRUD::CREATE
-                    ? "Sera utilisé pour la connexion. Modifiable plus tard."
-                    : "Ce que vous tapez pour vous connecter. Modifiable.",
             ])
             ->add('email', EmailType::class, array('label' => 'Email du compte', 'required' => false))
             ->add('membre', AjaxSelect2DocumentType::class, array(

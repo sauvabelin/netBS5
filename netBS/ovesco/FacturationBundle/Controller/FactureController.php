@@ -2,6 +2,7 @@
 
 namespace Ovesco\FacturationBundle\Controller;
 
+use Ovesco\FacturationBundle\Util\IdList;
 use Doctrine\ORM\EntityManagerInterface;
 use NetBS\CoreBundle\Searcher\SearcherManager;
 use NetBS\CoreBundle\Service\PreviewerManager;
@@ -142,12 +143,12 @@ class FactureController extends AbstractController
     #[Route('/modal-assign-model', name: 'ovesco.facturation.facture.assign_model_modal')]
     public function assignModelModalAction(Request $request, EntityManagerInterface $em) {
         $mass = new MassAssignModel();
-        $mass->setSelectedIds(serialize($request->request->all('selectedIds')));
+        $mass->setSelectedIds(IdList::encode($request->request->all('selectedIds')));
         $form = $this->createForm(MassAssignModelType::class, $mass);
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
-            $selectedIds = unserialize($mass->getSelectedIds());
+            $selectedIds = IdList::decode($mass->getSelectedIds());
             $factures = $em->getRepository(Facture::class)->findBy(['id' => $selectedIds]);
 
             foreach ($factures as $facture) {

@@ -44,7 +44,7 @@ final class RuleDescriber
     {
         $block = $this->registry->block($condition->block);
         if ($block === null) {
-            return sprintf('condition supprimée ou inconnue (%s)', $condition->block);
+            return sprintf('condition qui n\'existe plus (%s)', $condition->block);
         }
 
         $display = [];

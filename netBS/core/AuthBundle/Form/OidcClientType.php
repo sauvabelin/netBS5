@@ -22,26 +22,32 @@ final class OidcClientType extends AbstractType
     {
         $builder
             ->add('name', TextType::class, [
-                'label' => 'Name',
+                'label' => 'Nom',
+                // The DTO property is a non-nullable string: an emptied field must
+                // reach NotBlank, not crash the property accessor.
+                'empty_data' => '',
                 'constraints' => [new NotBlank()],
             ])
             ->add('scopes', TextType::class, [
                 'label' => 'Scopes',
-                'help'  => 'Space-separated list, e.g. openid profile email',
+                'help'  => 'Séparés par des espaces, par ex. openid profile email',
+                'empty_data' => '',
                 'constraints' => [new NotBlank()],
             ])
             ->add('redirectUris', CollectionType::class, [
-                'label' => 'Redirect URIs',
+                'label' => 'URI de redirection',
                 'entry_type' => UrlType::class,
+                'entry_options' => ['constraints' => [new NotBlank(), new Url(['protocols' => ['http', 'https']])]],
                 'allow_add' => true,
                 'allow_delete' => true,
                 'prototype' => true,
                 'by_reference' => false,
-                'constraints' => [new Count(['min' => 1, 'minMessage' => 'At least one redirect URI is required'])],
+                'constraints' => [new Count(['min' => 1, 'minMessage' => 'Ajoutez au moins une URI de redirection.'])],
             ])
             ->add('postLogoutRedirectUris', CollectionType::class, [
-                'label' => 'Post-logout redirect URIs',
+                'label' => 'URI de redirection après déconnexion',
                 'entry_type' => UrlType::class,
+                'entry_options' => ['constraints' => [new NotBlank(), new Url(['protocols' => ['http', 'https']])]],
                 'allow_add' => true,
                 'allow_delete' => true,
                 'required' => false,
@@ -49,22 +55,23 @@ final class OidcClientType extends AbstractType
                 'by_reference' => false,
             ])
             ->add('backchannelLogoutUri', UrlType::class, [
-                'label' => 'Backchannel logout URI',
+                'label' => 'URI de déconnexion (backchannel)',
                 'required' => false,
+                'constraints' => [new Url(['protocols' => ['http', 'https']])],
             ])
             ->add('logoUri', UrlType::class, [
-                'label' => 'Logo URL',
-                'help'  => 'Shown on the netBS login page when this client initiates a sign-in.',
+                'label' => 'URL du logo',
+                'help'  => 'Affiché sur la page de connexion netBS quand la connexion vient de ce client.',
                 'required' => false,
                 'default_protocol' => 'https',
                 'constraints' => [new Url(['protocols' => ['http', 'https']])],
             ])
             ->add('requiredFlag', ChoiceType::class, [
-                'label' => 'Required account flag',
-                'help'  => 'Only users with this flag set can sign in to this client. Leave empty to allow every active user.',
+                'label' => 'Option de compte requise',
+                'help'  => 'Seuls les comptes avec cette option peuvent se connecter à ce client. Laissez vide pour autoriser tous les comptes actifs.',
                 'choices' => array_combine(OidcClientDto::REQUIRED_FLAGS, OidcClientDto::REQUIRED_FLAGS),
                 'required' => false,
-                'placeholder' => '— none —',
+                'placeholder' => '— aucune —',
             ]);
     }
 

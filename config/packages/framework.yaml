@@ -43,6 +43,11 @@ framework:
 when@test:
     framework:
         test: true
+        cache:
+            pools:
+                # In memory: the suite's failed logins never add up to a login lockout.
+                cache.rate_limiter:
+                    adapter: cache.adapter.array
         session:
             storage_factory_id: session.storage.factory.mock_file
         rate_limiter:

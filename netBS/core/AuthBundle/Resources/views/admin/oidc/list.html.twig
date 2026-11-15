@@ -6,7 +6,7 @@
     <div class="container-fluid">
         {% include '@NetBSCore/includes/header.include.twig' with {
             header: 'Authentification',
-            subHeader: 'OAuth / OIDC clients'
+            subHeader: 'Clients OAuth / OIDC'
         } %}
 
         <div class="row">
@@ -17,18 +17,18 @@
                         <form method="post" action="{{ path('auth.admin.oidc_clients.create') }}" class="m-0">
                             <input type="hidden" name="_token" value="{{ csrf_token('oidc_client_create') }}">
                             <button type="submit" class="btn btn-primary">
-                                <i class="fas fa-plus"></i> New client
+                                <i class="fas fa-plus"></i> Nouveau client
                             </button>
                         </form>
                     </div>
                     <div class="card-body">
                         {% if clients is empty %}
-                            <p class="text-muted mb-0">No OAuth clients yet.</p>
+                            <p class="text-muted mb-0">Aucun client OAuth pour l'instant.</p>
                         {% else %}
                             <table class="table table-striped mb-0">
                                 <thead>
                                     <tr>
-                                        <th>Name</th>
+                                        <th>Nom</th>
                                         <th>client_id</th>
                                         <th class="text-end">Actions</th>
                                     </tr>
@@ -41,7 +41,7 @@
                                             <td class="text-end">
                                                 <a href="{{ path('auth.admin.oidc_clients.edit', { slug: c.client_id }) }}"
                                                    class="btn btn-sm btn-primary"
-                                                   title="Edit">
+                                                   title="Modifier">
                                                     <i class="fas fa-edit"></i>
                                                 </a>
                                             </td>

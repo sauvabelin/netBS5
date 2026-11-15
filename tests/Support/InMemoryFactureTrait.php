@@ -21,7 +21,7 @@ trait InMemoryFactureTrait
         }
         for ($i = 0; $i < $rappels; $i++) {
             $rappel = new Rappel();
-            $rappel->setDate(new \DateTime(sprintf('2026-0%d-01', $i + 2)));
+            $rappel->setDate((new \DateTime('2026-02-01'))->modify("+$i month"));
             $facture->addRappel($rappel);
         }
         if ($printed) {

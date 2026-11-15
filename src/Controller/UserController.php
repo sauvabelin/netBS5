@@ -6,7 +6,7 @@ use NetBS\CoreBundle\Utils\Modal;
 use App\Entity\BSUser;
 use App\Form\AdminChangePasswordType;
 use App\Model\AdminChangePassword;
-use NetBS\SecureBundle\Service\UserManager;
+use App\Service\UserManager;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
@@ -50,8 +50,9 @@ class UserController extends AbstractController
             /** @var AdminChangePassword $data */
             $data   = $form->getData();
 
-            if($data->isForceChange())
-                $user->setNewPasswordRequired(true);
+            // The admin decides whether the user must still pick their own password.
+            $user->setNewPasswordRequired($data->isForceChange());
+            $manager->forgetInitialPassword($user);
 
             $user->setPassword($manager->encodePassword($user, $data->getPassword()));
             // Stamp the change so SessionInvalidationListener logs out the target

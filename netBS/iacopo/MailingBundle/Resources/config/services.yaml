@@ -18,11 +18,6 @@ services:
       $domains: '%env(csv:MAILING_DOMAINS)%'
       $forwarded: '%env(csv:MAILING_FORWARDED_DOMAINS)%'
 
-  # Data Fixtures
-  Iacopo\MailingBundle\DataFixtures\:
-    resource: '../../DataFixtures'
-    tags: ['doctrine.fixture.orm']
-
   # Menu listener
   Iacopo\MailingBundle\Listener\MainMenuListener:
     tags:

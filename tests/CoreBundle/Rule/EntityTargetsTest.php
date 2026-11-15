@@ -35,7 +35,7 @@ final class EntityTargetsTest extends KernelTestCase
         $this->em->flush();
 
         $targets = self::getContainer()->get(EntityTargets::class);
-        $this->assertSame([$live->getId() => 'Rule-test vivant'], $targets->labels('groupe', [$live->getId(), $deleted->getId()]));
+        $this->assertSame([$live->getId() => (string) $live], $targets->labels('groupe', [$live->getId(), $deleted->getId()]));
         $this->assertSame([], $targets->labels('groupe', []));
 
         $this->expectException(\LogicException::class);

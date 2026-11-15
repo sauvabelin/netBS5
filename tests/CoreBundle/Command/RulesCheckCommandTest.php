@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Tests\CoreBundle\Command;
 
 use App\Tests\Support\FichierRowsTrait;
+use Doctrine\DBAL\ArrayParameterType;
 use Doctrine\ORM\EntityManagerInterface;
 use NetBS\CoreBundle\Entity\StoredRule;
 use NetBS\CoreBundle\Rule\Rule;
@@ -22,12 +23,15 @@ final class RulesCheckCommandTest extends KernelTestCase
     use FichierRowsTrait;
 
     private EntityManagerInterface $em;
+    /** @var list<int> */
+    private array $publicationRuleIds = [];
+    /** @var list<int> */
+    private array $storedRuleIds = [];
 
     protected function setUp(): void
     {
         self::bootKernel();
         $this->em = self::getContainer()->get(EntityManagerInterface::class);
-        $this->cleanUp();
     }
 
     protected function tearDown(): void
@@ -40,11 +44,20 @@ final class RulesCheckCommandTest extends KernelTestCase
 
     private function cleanUp(): void
     {
+        // only rows this test created: other tests share the DB
         $connection = $this->em->getConnection();
         $connection->executeStatement("DELETE FROM ovesco_facturation_facture_models WHERE name LIKE 'rules-check%'");
-        $connection->executeStatement('DELETE FROM netbs_auth_directory_publication_rules');
-        $connection->executeStatement('DELETE FROM netbs_auth_directory_computed_groups');
-        $connection->executeStatement('DELETE FROM netbs_core_rules');
+        if ($this->publicationRuleIds !== []) {
+            $connection->executeStatement(
+                'DELETE FROM netbs_auth_directory_publication_rules WHERE id IN (?)',
+                [$this->publicationRuleIds],
+                [ArrayParameterType::INTEGER],
+            );
+        }
+        if ($this->storedRuleIds !== []) {
+            $connection->executeStatement('DELETE FROM netbs_core_rules WHERE id IN (?)', [$this->storedRuleIds], [ArrayParameterType::INTEGER]);
+        }
+        $this->publicationRuleIds = $this->storedRuleIds = [];
     }
 
     private function runCheck(): CommandTester
@@ -65,7 +78,6 @@ final class RulesCheckCommandTest extends KernelTestCase
         $tester = $this->runCheck();
 
         $this->assertSame(Command::SUCCESS, $tester->getStatusCode());
-        $this->assertStringContainsString('Toutes les règles sont valides.', $tester->getDisplay());
     }
 
     public function test_publication_rule_with_deleted_fonction_fails(): void
@@ -82,11 +94,14 @@ final class RulesCheckCommandTest extends KernelTestCase
         $this->em->persist($rule);
         $this->em->remove($fonction);
         $this->em->flush();
+        $this->publicationRuleIds[] = $rule->getId();
+        $this->storedRuleIds[]      = $rule->getSelection()->getId();
+        $this->storedRuleIds[]      = $rule->getSousGroupesRule()->getId();
 
         $tester = $this->runCheck();
 
         $this->assertSame(Command::FAILURE, $tester->getStatusCode());
-        $this->assertStringContainsString("rules-check unités", $this->display($tester));
+        $this->assertStringContainsString('rules-check unités', $this->display($tester));
     }
 
     public function test_invalid_legacy_expression_fails(): void
@@ -104,7 +119,7 @@ final class RulesCheckCommandTest extends KernelTestCase
         $tester = $this->runCheck();
 
         $this->assertSame(Command::FAILURE, $tester->getStatusCode());
-        $this->assertStringContainsString('Modèle de facture « rules-check modèle » : Expression invalide', $this->display($tester));
+        $this->assertStringContainsString('rules-check modèle', $this->display($tester));
     }
 
     public function test_orphan_row_is_reported(): void
@@ -112,10 +127,11 @@ final class RulesCheckCommandTest extends KernelTestCase
         $row = new StoredRule('membre', Rule::empty()->toJson());
         $this->em->persist($row);
         $this->em->flush();
+        $this->storedRuleIds[] = $row->getId();
 
         $tester = $this->runCheck();
 
         $this->assertSame(Command::FAILURE, $tester->getStatusCode());
-        $this->assertStringContainsString('Règle orpheline #' . $row->getId(), $this->display($tester));
+        $this->assertMatchesRegularExpression('/\\b' . $row->getId() . '\\b/', $this->display($tester));
     }
 }

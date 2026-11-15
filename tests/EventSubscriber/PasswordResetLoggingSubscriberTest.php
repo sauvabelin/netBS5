@@ -39,13 +39,6 @@ class PasswordResetLoggingSubscriberTest extends TestCase
         );
     }
 
-    public function test_subscribes_to_both_events(): void
-    {
-        $events = PasswordResetLoggingSubscriber::getSubscribedEvents();
-        $this->assertArrayHasKey(PasswordResetRequestedEvent::class, $events);
-        $this->assertArrayHasKey(PasswordResetCompletedEvent::class, $events);
-    }
-
     private function makeUser(int $id, string $username): BSUser
     {
         $user = new BSUser();

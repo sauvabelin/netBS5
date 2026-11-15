@@ -10,15 +10,19 @@ class UserManager extends UM
 {
     public function deleteUser(BaseUser $user)
     {
-        $latestAccounts = $this->em->getRepository(LatestCreatedAccount::class)->findBy([
-            'user' => $user
-        ]);
-
-        foreach($latestAccounts as $la)
-            $this->em->remove($la);
-
+        $this->forgetInitialPassword($user);
         $this->em->flush();
 
         parent::deleteUser($user);
+    }
+
+    /**
+     * Drops the plaintext initial password stored for the user (LatestCreatedAccount), once it
+     * is no longer the user's password. Not flushed.
+     */
+    public function forgetInitialPassword(BaseUser $user): void
+    {
+        foreach ($this->em->getRepository(LatestCreatedAccount::class)->findBy(['user' => $user]) as $latest)
+            $this->em->remove($latest);
     }
 }

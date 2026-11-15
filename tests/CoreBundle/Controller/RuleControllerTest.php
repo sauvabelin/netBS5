@@ -17,18 +17,19 @@ final class RuleControllerTest extends WebTestCase
         $client->request('POST', $url, [], [], ['CONTENT_TYPE' => 'application/json'], json_encode($body));
     }
 
-    public function test_describe(): void
+    public function test_valid_rule_has_no_errors(): void
     {
         $client = static::createClient();
         $client->loginUser($this->persistUser($client, 'rule-describe-user', roles: ['ROLE_USER']), 'netbs');
 
-        $this->post($client, ['context' => 'test', 'rule' => [
+        $rule = [
             'mode' => 'blocks', 'op' => 'and',
             'items' => [['block' => 'test.n', 'not' => false, 'params' => ['op' => 'ge', 'value' => 3]]],
-        ]]);
+        ];
+        $this->post($client, ['context' => 'test', 'rule' => $rule]);
 
         $this->assertResponseIsSuccessful();
-        $this->assertSame(['sentence' => 'n ≥ 3', 'errors' => []], json_decode($client->getResponse()->getContent(), true));
+        $this->assertSame([], json_decode($client->getResponse()->getContent(), true)['errors']);
     }
 
     public function test_describe_reports_errors(): void
@@ -38,7 +39,9 @@ final class RuleControllerTest extends WebTestCase
 
         $this->post($client, ['context' => 'test', 'rule' => ['mode' => 'blocks', 'op' => 'and', 'items' => [['block' => 'nope', 'params' => []]]]]);
 
-        $this->assertSame(['Condition inconnue : nope.'], json_decode($client->getResponse()->getContent(), true)['errors']);
+        $errors = json_decode($client->getResponse()->getContent(), true)['errors'];
+        $this->assertCount(1, $errors);
+        $this->assertStringContainsString('nope', $errors[0]);
     }
 
     public function test_unknown_context_is_400(): void

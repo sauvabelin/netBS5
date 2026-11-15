@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Modelled on postfinance_camt054_qr_v2019.xml. CamtImportTest fills in the {{PLACEHOLDERS}}. -->
+<Document xmlns="urn:iso:std:iso:20022:tech:xsd:camt.054.001.08">
+  <BkToCstmrDbtCdtNtfctn>
+    <GrpHdr>
+      <MsgId>TEST{{DATE}}</MsgId>
+      <CreDtTm>{{DATE}}T23:41:07</CreDtTm>
+      <MsgPgntn>
+        <PgNb>1</PgNb>
+        <LastPgInd>true</LastPgInd>
+      </MsgPgntn>
+      <AddtlInf>SPS/2.0/PROD</AddtlInf>
+    </GrpHdr>
+    <Ntfctn>
+      <Id>TEST{{DATE}}N</Id>
+      <CreDtTm>{{DATE}}T23:41:07</CreDtTm>
+      <FrToDt>
+        <FrDtTm>{{DATE}}T00:00:00</FrDtTm>
+        <ToDtTm>{{DATE}}T23:59:59</ToDtTm>
+      </FrToDt>
+      <Acct>
+        <Id>
+          <IBAN>{{MAIN_IBAN}}</IBAN>
+        </Id>
+        <Ccy>CHF</Ccy>
+      </Acct>
+      <Ntry>
+        <NtryRef>{{ACCOUNT}}</NtryRef>
+        <Amt Ccy="CHF">{{TOTAL}}</Amt>
+        <CdtDbtInd>CRDT</CdtDbtInd>
+        <RvslInd>false</RvslInd>
+        <Sts>
+          <Cd>BOOK</Cd>
+        </Sts>
+        <BookgDt>
+          <Dt>{{DATE}}</Dt>
+        </BookgDt>
+        <ValDt>
+          <Dt>{{DATE}}</Dt>
+        </ValDt>
+        <AcctSvcrRef>1000000000000000</AcctSvcrRef>
+        <BkTxCd>
+          <Domn>
+            <Cd>PMNT</Cd>
+            <Fmly>
+              <Cd>RCDT</Cd>
+              <SubFmlyCd>VCOM</SubFmlyCd>
+            </Fmly>
+          </Domn>
+        </BkTxCd>
+        <NtryDtls>
+          <Btch>
+            <NbOfTxs>{{COUNT}}</NbOfTxs>
+          </Btch>
+{{TRANSACTIONS}}
+        </NtryDtls>
+        <AddtlNtryInf>SAMMELGUTSCHRIFT FÜR KONTO: {{ACCOUNT}}</AddtlNtryInf>
+      </Ntry>
+    </Ntfctn>
+  </BkToCstmrDbtCdtNtfctn>
+</Document>

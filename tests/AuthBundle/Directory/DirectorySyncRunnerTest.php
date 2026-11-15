@@ -5,12 +5,15 @@ declare(strict_types=1);
 namespace App\Tests\AuthBundle\Directory;
 
 use App\Entity\BSUser;
+use App\Tests\Support\CollectingLogger;
 use Doctrine\ORM\EntityManagerInterface;
 use NetBS\AuthBundle\Directory\DirectorySyncRunner;
 use NetBS\AuthBundle\Directory\LldapClientInterface;
 use NetBS\AuthBundle\Listener\DirectoryChangeListener;
 use NetBS\AuthBundle\Message\SyncDirectory;
 use NetBS\AuthBundle\MessageHandler\SyncDirectoryHandler;
+use NetBS\CoreBundle\Entity\StoredRule;
+use NetBS\SecureBundle\Entity\Role;
 use NetBS\FichierBundle\Service\FichierConfig;
 use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
 use Symfony\Component\Messenger\Stamp\DelayStamp;
@@ -100,6 +103,89 @@ final class DirectorySyncRunnerTest extends KernelTestCase
         $this->em->flush();
 
         self::assertSame([], $this->transport()->getSent());
+    }
+
+    public function testTemporaryPasswordFlagChangeQueuesASync(): void
+    {
+        // A temporary password takes the user out of every lldap group; choosing a
+        // password puts them back.
+        $ids = $this->seedPublishedTree();
+        $user = $this->em->find(BSUser::class, $ids['user']);
+
+        $user->setPassword('changed');
+        $user->setNewPasswordRequired(true);
+        $this->em->flush();
+
+        self::assertCount(1, $this->transport()->getSent());
+    }
+
+    public function testHandlerLogsAWarningWhenTheReportHasErrors(): void
+    {
+        $this->seedPublishedTree();
+        $this->lldap->failOnCreateGroup = 'dirproj-GA';
+        $logger = new CollectingLogger();
+
+        (new SyncDirectoryHandler($this->runner(), $logger))(new SyncDirectory());
+
+        self::assertSame(1, $logger->count('warning'));
+        self::assertSame(0, $logger->count('error'));
+    }
+
+    public function testHandlerLogsNothingOnACleanRun(): void
+    {
+        $this->seedPublishedTree();
+        $logger = new CollectingLogger();
+
+        (new SyncDirectoryHandler($this->runner(), $logger))(new SyncDirectory());
+
+        self::assertSame([], $logger->records);
+    }
+
+    public function testHandlerLogsAnUnconfiguredDirectoryWithoutThrowing(): void
+    {
+        $this->db->executeStatement('DELETE FROM netbs_auth_directory_publication_rules');
+        $this->db->executeStatement('DELETE FROM netbs_auth_directory_computed_groups');
+        $logger = new CollectingLogger();
+
+        (new SyncDirectoryHandler($this->runner(), $logger))(new SyncDirectory());
+
+        self::assertSame(1, $logger->count('error'));
+        self::assertSame([], $this->lldap->users, 'nothing synced');
+    }
+
+    /** @dataProvider ruleContexts */
+    public function testStoredRuleEditQueuesASyncOnlyInADirectoryContext(string $context, bool $queued): void
+    {
+        $rule = $this->em->find(StoredRule::class, $this->storedRule($context, self::blockRule('groupe.types', ['types' => [1]])));
+
+        $rule->setDefinition(self::blockRule('groupe.types', ['types' => [2]]));
+        $this->em->flush();
+
+        self::assertCount($queued ? 1 : 0, $this->transport()->getSent());
+    }
+
+    public function ruleContexts(): array
+    {
+        return [
+            'groupe' => ['groupe', true],
+            'attribution_sous_groupe' => ['attribution_sous_groupe', true],
+            'membre' => ['membre', true],
+            'other' => ['dirproj-other', false],
+        ];
+    }
+
+    public function testRoleGrantQueuesASync(): void
+    {
+        $ids = $this->seedGroupeTree();
+        $user = $this->em->find(BSUser::class, $ids['user']);
+        $role = $this->em->find(Role::class, $this->role('ROLE_WIKI_ADMIN'));
+
+        $user->addRole($role);
+        $this->em->flush();
+
+        $sent = $this->transport()->getSent();
+        self::assertCount(1, $sent);
+        self::assertInstanceOf(SyncDirectory::class, $sent[0]->getMessage());
     }
 
     private function runner(): DirectorySyncRunner

@@ -2,6 +2,7 @@
 
 namespace Ovesco\FacturationBundle\Model;
 
+use Ovesco\FacturationBundle\Util\IdList;
 use Ovesco\FacturationBundle\Entity\Creance;
 
 class MassCreances extends Creance
@@ -35,7 +36,7 @@ class MassCreances extends Creance
     public function setSelectedIds($selectedIds)
     {
         $this->selectedIds = $selectedIds;
-        $this->amount = count(unserialize($selectedIds));
+        $this->amount = count(IdList::decode($selectedIds));
     }
 
     /**

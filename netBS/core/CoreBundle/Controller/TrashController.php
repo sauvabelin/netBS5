@@ -3,6 +3,7 @@
 namespace NetBS\CoreBundle\Controller;
 
 use Doctrine\ORM\EntityManagerInterface;
+use Doctrine\ORM\Mapping\ClassMetadata;
 use NetBS\CoreBundle\Entity\AuditLog;
 use NetBS\FichierBundle\Service\FichierConfig;
 use NetBS\SecureBundle\Service\SecureConfig;
@@ -91,6 +92,7 @@ class TrashController extends AbstractController
 
         try {
             $entity = $em->find($entityClass, $entityId);
+            $deletedParent = $entity ? $this->findDeletedParent($entity, $em) : null;
         } finally {
             if ($filterWasEnabled) {
                 $filters->enable('softdeleteable');
@@ -101,12 +103,38 @@ class TrashController extends AbstractController
             throw $this->createNotFoundException('Élément introuvable');
         }
 
+        if ($deletedParent) {
+            $this->addFlash('warning', 'Restaurez d\'abord ' . $deletedParent . ', qui est aussi dans la corbeille');
+            return $this->redirectToRoute('netbs.core.trash.list', ['type' => $type]);
+        }
+
         $entity->setDeletedAt(null);
         $em->flush();
 
         $this->addFlash('success', 'Élément restauré avec succès');
 
         return $this->redirectToRoute('netbs.core.trash.list', ['type' => $type]);
+    }
+
+    /**
+     * The first parent (many-to-one) of $entity that is itself in the trash:
+     * restoring a membre of a deleted famille would leave it dangling.
+     * Call with the softdeleteable filter disabled.
+     */
+    private function findDeletedParent(object $entity, EntityManagerInterface $em): ?object
+    {
+        $metadata = $em->getClassMetadata(get_class($entity));
+        foreach ($metadata->associationMappings as $mapping) {
+            if ($mapping['type'] !== ClassMetadata::MANY_TO_ONE) {
+                continue;
+            }
+            $parent = $metadata->getFieldValue($entity, $mapping['fieldName']);
+            if ($parent && method_exists($parent, 'getDeletedAt') && $parent->getDeletedAt() !== null) {
+                return $parent;
+            }
+        }
+
+        return null;
     }
 
     private function fetchDeletedEntities(string $entityClass, EntityManagerInterface $em): array

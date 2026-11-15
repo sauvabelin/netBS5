@@ -30,4 +30,9 @@ class ParameterVoter extends NetBSVoter
         //Géré par les règles spéciales avec ROLE_ADMIN
         return false;
     }
+
+    protected function everywhereRolesApply(): bool
+    {
+        return false;
+    }
 }

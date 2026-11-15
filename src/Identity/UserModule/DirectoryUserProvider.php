@@ -55,6 +55,7 @@ final class DirectoryUserProvider implements DirectoryUserProviderInterface
                     array_keys(DirectoryProjection::ROLE_GROUPS),
                     $account->getRolesAsString(),
                 )),
+                groupsSuspended: $account->mustChangePassword(),
             );
         }
 
@@ -66,6 +67,8 @@ final class DirectoryUserProvider implements DirectoryUserProviderInterface
         $rows = $this->directoryAccounts()
             ->select('m.id AS membreId', 'u.username')
             ->join('u.membre', 'm')
+            // A temporary password keeps the account out of every group.
+            ->andWhere('u.newPasswordRequired = false')
             ->getQuery()
             ->getArrayResult();
 

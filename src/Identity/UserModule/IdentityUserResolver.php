@@ -30,7 +30,8 @@ final class IdentityUserResolver implements IdentityUserResolverInterface
             preferredUsername: Subject::fromUsername($user->getUsername()),
             email: BSUserIdentity::email($user),
             displayName: BSUserIdentity::displayName($user),
-            isDisabled: !$user->getIsActive(),
+            // A temporary password gets no token: the sign-in waits on the first-login page.
+            isDisabled: !$user->getIsActive() || $user->mustChangePassword(),
             groups: array_values(array_intersect_key(
                 DirectoryProjection::ROLE_GROUPS,
                 array_flip($user->getRolesAsString()),

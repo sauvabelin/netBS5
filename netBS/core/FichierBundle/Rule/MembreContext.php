@@ -21,7 +21,7 @@ class MembreContext implements RuleContext
     public function variables(): array
     {
         return [
-            'membre' => new RuleVariable('Le membre ; getActivesAttributions() donne ses attributions en cours', [BaseMembre::class]),
+            'membre' => new RuleVariable('Le membre. getActivesAttributions() renvoie ses attributions en cours.', [BaseMembre::class]),
         ];
     }
 

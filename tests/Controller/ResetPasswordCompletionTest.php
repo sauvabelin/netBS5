@@ -3,9 +3,11 @@
 namespace App\Tests\Controller;
 
 use App\Entity\BSUser;
+use App\Tests\Support\UserFactoryTrait;
 use NetBS\SecureBundle\Entity\ResetPasswordRequest;
-use Symfony\Bundle\FrameworkBundle\KernelBrowser;
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
+use Symfony\Component\Clock\Clock;
+use Symfony\Component\Clock\MockClock;
 use Symfony\Component\Mailer\Event\MessageEvent;
 use Symfony\Component\Mailer\Exception\TransportException;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
@@ -17,6 +19,8 @@ use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
  */
 class ResetPasswordCompletionTest extends WebTestCase
 {
+    use UserFactoryTrait;
+
     private const REQUEST_URL = '/netBS/secure/forgot-password';
     private const NEW_PASSWORD = 'C0rrect-Horse-Battery-Staple!';
 
@@ -24,7 +28,7 @@ class ResetPasswordCompletionTest extends WebTestCase
     {
         $client = static::createClient();
         $client->enableProfiler();
-        $user = $this->createUser($client, 'reset-complete-user', 'reset-complete@example.test');
+        $user = $this->persistUser($client, 'reset-complete-user', 'reset-complete@example.test');
 
         $token = $this->requestResetAndExtractToken($client, $user->getUsername());
 
@@ -55,7 +59,7 @@ class ResetPasswordCompletionTest extends WebTestCase
     {
         $client = static::createClient();
         $client->enableProfiler();
-        $user = $this->createUser($client, 'reset-replay-user', 'reset-replay@example.test');
+        $user = $this->persistUser($client, 'reset-replay-user', 'reset-replay@example.test');
 
         $token = $this->requestResetAndExtractToken($client, $user->getUsername());
 
@@ -79,7 +83,7 @@ class ResetPasswordCompletionTest extends WebTestCase
     {
         $client = static::createClient();
         $client->disableReboot();
-        $user = $this->createUser($client, 'reset-mailfail-user', 'reset-mailfail@example.test');
+        $user = $this->persistUser($client, 'reset-mailfail-user', 'reset-mailfail@example.test');
 
         // Force a transport failure without swapping the private mailer service:
         // a MessageEvent listener that throws surfaces out of Mailer::send() as a
@@ -124,64 +128,23 @@ class ResetPasswordCompletionTest extends WebTestCase
     {
         $client = static::createClient();
         $client->enableProfiler();
-        $user = $this->createUser($client, 'reset-expired-user', 'reset-expired@example.test');
+        $user = $this->persistUser($client, 'reset-expired-user', 'reset-expired@example.test');
 
         $token = $this->requestResetAndExtractToken($client, $user->getUsername());
 
-        // Backdate the just-issued request so the bundle reports it expired
-        // (isExpired() compares expiresAt against the clock); the selector/token
-        // still resolve, so this exercises the expiry branch specifically.
-        $em      = $client->getContainer()->get('doctrine.orm.entity_manager');
-        $fresh   = $em->getRepository(BSUser::class)->findOneBy(['username' => $user->getUsername()]);
-        $request = $em->getRepository(ResetPasswordRequest::class)->findOneBy(['user' => $fresh]);
-        $ref     = new \ReflectionProperty($request, 'expiresAt');
-        $ref->setAccessible(true);
-        $ref->setValue($request, new \DateTimeImmutable('-1 hour'));
-        $em->flush();
-
-        $client->request('GET', '/netBS/secure/reset-password/' . $token);
-        $client->followRedirect();   // -> /reset-password
-        $client->followRedirect();   // -> /forgot-password (expired)
+        // Move the bundle's clock past the token lifetime (isExpired() compares
+        // expiresAt against Clock::get()); the selector/token still resolve, so
+        // this exercises the expiry branch specifically.
+        $previousClock = Clock::get();
+        Clock::set(new MockClock('+1 day'));
+        try {
+            $client->request('GET', '/netBS/secure/reset-password/' . $token);
+            $client->followRedirect();   // -> /reset-password
+            $client->followRedirect();   // -> /forgot-password (expired)
+        } finally {
+            Clock::set($previousClock);
+        }
 
         $this->assertSelectorExists('form input[name="reset_password_request_form[username]"]');
-    }
-
-    private function requestResetAndExtractToken(KernelBrowser $client, string $username): string
-    {
-        $crawler = $client->request('GET', self::REQUEST_URL);
-        $form = $crawler->selectButton('Envoyer le lien')->form();
-        $form['reset_password_request_form[username]'] = $username;
-        $client->submit($form);
-
-        $this->assertEmailCount(1);
-        $body = $this->getMailerMessage(0)->getHtmlBody();
-        $this->assertSame(1, preg_match('#/reset-password/([A-Za-z0-9_\-]+)#', $body, $m), 'email must contain a reset link');
-
-        return $m[1];
-    }
-
-    private function createUser(KernelBrowser $client, string $username, ?string $email): BSUser
-    {
-        $em = $client->getContainer()->get('doctrine.orm.entity_manager');
-
-        $em->getFilters()->disable('softdeleteable');
-        $em->createQuery('DELETE FROM App\\Entity\\BSUser u WHERE u.username = :u')
-            ->setParameter('u', $username)
-            ->execute();
-        if ($email !== null) {
-            $em->createQuery('DELETE FROM App\\Entity\\BSUser u WHERE u.email = :e')
-                ->setParameter('e', $email)
-                ->execute();
-        }
-        $em->getFilters()->enable('softdeleteable');
-
-        $user = new BSUser();
-        $user->setUsername($username);
-        $user->setEmail($email);
-        $user->setPassword('placeholder-hash');
-        $em->persist($user);
-        $em->flush();
-
-        return $user;
     }
 }

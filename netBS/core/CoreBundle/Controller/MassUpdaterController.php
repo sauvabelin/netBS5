@@ -148,8 +148,17 @@ class MassUpdaterController extends AbstractController
 
     private function isLocalUrl(string $url, Request $request): bool
     {
-        return str_starts_with($url, '/')
-            || str_starts_with($url, $request->getSchemeAndHttpHost());
+        return self::isSafeReturnUrl($url, $request->getSchemeAndHttpHost());
+    }
+
+    public static function isSafeReturnUrl(string $url, string $schemeAndHost): bool
+    {
+        // "//host" and "/\host" are protocol-relative to browsers.
+        if (str_starts_with($url, '/')) {
+            return !str_starts_with($url, '//') && !str_starts_with($url, '/\\');
+        }
+
+        return $url === $schemeAndHost || str_starts_with($url, $schemeAndHost . '/');
     }
 
     /**

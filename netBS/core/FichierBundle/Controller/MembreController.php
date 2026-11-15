@@ -131,13 +131,20 @@ class MembreController extends AbstractController
             throw $this->createAccessDeniedException("Opération refusée!");
 
         $membre = $em->find($this->config->getMembreClass(), $id);
+        if (!$membre)
+            throw $this->createNotFoundException();
 
+        // Listeners delete linked data as they go, so a later refusal must undo it all
+        $em->getConnection()->beginTransaction();
         try {
             $dispatcher->dispatch(new RemoveMembreEvent($membre, $em), RemoveMembreEvent::NAME);
             $em->remove($membre);
             $em->flush();
+            $em->getConnection()->commit();
             $this->addFlash('success', 'Membre supprimé');
         } catch (UserConstraintException $e) {
+            $em->getConnection()->rollBack();
+            $em->clear();
             $this->addFlash('danger', $e->getMessage());
         }
 

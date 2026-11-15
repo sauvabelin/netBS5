@@ -21,7 +21,7 @@ class LatestAccountsCreatedList extends BaseListModel
     protected function buildItemsList()
     {
         return $this->entityManager->getRepository(LatestCreatedAccount::class)
-            ->findAll();
+            ->findBy([], ['createdAt' => 'DESC', 'id' => 'DESC']);
     }
 
     /**

@@ -66,7 +66,7 @@ final class LdapController extends AbstractController
         $groupRows = [];
         $notConfigured = null;
         if (array_filter([...$rules, ...$computedGroups], fn (array $view) => $view['problem'] !== null)) {
-            $notConfigured = 'Une règle est en erreur (voir ci-dessus) : la synchronisation est suspendue jusqu\'à sa correction.';
+            $notConfigured = 'Une règle contient une erreur (voir plus haut). La synchronisation reste en pause tant qu\'elle n\'est pas corrigée.';
         } else {
             try {
                 $groupRows = $this->groupRows($this->projection->groupOutlines());

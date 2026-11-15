@@ -30,25 +30,37 @@ class GroupeVoter extends FichierVoter
      */
     protected function accept($operation, $subject, BaseUser $user)
     {
+        $required = 'ROLE_' . strtoupper($operation);
+
         while($subject !== null) {
 
-            // Check attributions
             if($user->getMembre())
                 foreach ($user->getMembre()->getActivesAttributions() as $attribution)
-                    if ($attribution->getGroupe()->getId() === $subject->getId())
-                        foreach ($attribution->getFonction()->getRoles() as $role)
-                            if(strpos(strtoupper($role->getRole()), strtoupper($operation)) !== false)
-                                return true;
+                    if ($attribution->getGroupe()->getId() === $subject->getId()
+                        && $this->grants($attribution->getFonction()->getRoles(), $required))
+                        return true;
 
-            // Check autorisations
             foreach ($user->getAutorisations() as $autorisation)
-                if($autorisation->getGroupe()->getId() === $subject->getId())
-                    foreach($autorisation->getRoles() as $role)
-                        if(strpos(strtoupper($role->getRole()), strtoupper($operation)) !== false)
-                            return true;
+                if($autorisation->getGroupe()->getId() === $subject->getId()
+                    && $this->grants($autorisation->getRoles(), $required))
+                    return true;
 
             $subject = $subject->getParent();
         }
+
+        return false;
+    }
+
+    /**
+     * Exact match on the role or one it implies (ROLE_READ_EVERYWHERE implies ROLE_READ),
+     * so a role that merely contains the operation name (ROLE_CREATE_ATTRIBUTION) grants nothing.
+     */
+    private function grants(iterable $roles, string $required): bool
+    {
+        foreach ($roles as $role)
+            foreach ($role->getChildrenRecursive() as $implied)
+                if ($implied->getRole() === $required)
+                    return true;
 
         return false;
     }

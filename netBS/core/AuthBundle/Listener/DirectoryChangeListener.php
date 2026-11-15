@@ -51,7 +51,7 @@ final class DirectoryChangeListener
     private const RULE_CONTEXTS = ['groupe', 'attribution_sous_groupe', 'membre'];
 
     /** User fields the directory doesn't carry; changing only these doesn't queue a sync. */
-    private const IGNORED_USER_FIELDS = ['password', 'salt', 'passwordChangedAt', 'newPasswordRequired'];
+    private const IGNORED_USER_FIELDS = ['password', 'salt', 'passwordChangedAt'];
 
     private bool $changed = false;
 

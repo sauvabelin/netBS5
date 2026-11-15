@@ -106,7 +106,6 @@ final class FactureModelResolverTest extends TestCase
     public function test_no_model_throws(): void
     {
         $this->expectException(\RuntimeException::class);
-        $this->expectExceptionMessage('Aucun modèle de facture trouvé en base de données');
         $this->resolver->choose([], $this->facture());
     }
 

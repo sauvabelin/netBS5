@@ -16,7 +16,9 @@ use Symfony\Component\Yaml\Yaml;
  *
  * Behaviour for each role in each source's YAML:
  *  - Looked up by name; if missing, created.
- *  - If present, `poids`, `description`, and `parent` are reset to match.
+ *  - If present, `poids`, `description`, and `parent` are reset to match
+ *    (a top-level role of a source without root parent goes back to the root).
+ *    Only the tree changes: who holds which role is never touched.
  *  - Children recurse with the just-upserted node as their parent.
  *
  * Roles that exist in the DB but not in any YAML are left alone (the
@@ -104,7 +106,8 @@ final class RoleTreeSyncer
                     $role->setDescription($description);
                     $changed = true;
                 }
-                if ($parent !== null && ($role->getParent()?->getRole() !== $parent->getRole())) {
+                // A top-level role of a source without root parent goes back to the root.
+                if ($role->getParent()?->getRole() !== $parent?->getRole()) {
                     $role->setParent($parent);
                     $changed = true;
                 }

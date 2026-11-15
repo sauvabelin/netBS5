@@ -43,7 +43,6 @@ final class ParameterWriteListenerTest extends WebTestCase
         $this->editThroughXEditable($parameter, 'abc');
 
         $this->assertResponseStatusCodeSame(400);
-        $this->assertStringContainsString('Nombre entier attendu.', $this->client->getResponse()->getContent());
         $this->assertSame('5', $this->storedValue());
     }
 

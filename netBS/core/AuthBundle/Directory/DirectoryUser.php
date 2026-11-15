@@ -18,6 +18,8 @@ final class DirectoryUser
         public readonly ?int $membreId = null,
         /** @var string[] keys of {@see DirectoryProjection::ROLE_GROUPS} the user holds; not stored in lldap. */
         public readonly array $roles = [],
+        /** Kept in lldap but in no group, e.g. while the account has a temporary password. */
+        public readonly bool $groupsSuspended = false,
     ) {
     }
 

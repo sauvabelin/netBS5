@@ -29,8 +29,8 @@ class DirectoryPublicationRuleType extends AbstractType
             ])
             ->add('sousGroupesRuleJson', RuleType::class, [
                 'context'    => 'attribution_sous_groupe',
-                'label'      => 'Quels sous-groupes ? (seulement pour « certains sous-groupes »)',
-                'empty_text' => 'Aucune condition : à définir si vous avez choisi « certains sous-groupes ».',
+                'label'      => 'Quels sous-groupes ? (uniquement si vous avez choisi « certains sous-groupes »)',
+                'empty_text' => 'Aucune condition. À remplir seulement si vous avez choisi « certains sous-groupes ».',
             ]);
     }
 

@@ -7,6 +7,7 @@ use Doctrine\ORM\EntityManagerInterface;
 use NetBS\CoreBundle\Exceptions\UserConstraintException;
 use NetBS\CoreBundle\Model\XEditable;
 use NetBS\CoreBundle\Service\FormTypesRegistrer;
+use NetBS\SecureBundle\Mapping\BaseUser;
 use NetBS\SecureBundle\Voter\CRUD;
 use Psr\Log\LoggerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -26,6 +27,12 @@ class XEditableController extends AbstractController
             $typeClass  = $this->findType($xeditable->getData('type'), $registrer);
 
             if(!$this->isGranted(CRUD::UPDATE, $item))
+                return new JsonResponse(['message' => "Vous n'avez pas le droit de modifier cet élément."], 403);
+
+            // The client picks the field: on accounts, anything beyond the email
+            // (roles, flags, linked membre…) is admin-only.
+            if($item instanceof BaseUser && !$this->isGranted('ROLE_ADMIN')
+                && !in_array($xeditable->getField(), BaseUser::SELF_EDITABLE_FIELDS, true))
                 return new JsonResponse(['message' => "Vous n'avez pas le droit de modifier cet élément."], 403);
 
             $form       = $this->createFormBuilder($item, array('csrf_protection' => false))

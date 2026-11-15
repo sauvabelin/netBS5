@@ -17,6 +17,7 @@ security:
         gettoken:
             pattern: ^/api/v1/netBS/gettoken
             stateless: true
+            user_checker: NetBS\SecureBundle\Security\ActiveUserChecker
             json_login:
                 check_path: /api/v1/netBS/gettoken
                 success_handler: lexik_jwt_authentication.handler.authentication_success
@@ -26,11 +27,13 @@ security:
             pattern: ^/api/v1/netBS
             stateless: true
             provider: database
+            user_checker: NetBS\SecureBundle\Security\ActiveUserChecker
             jwt: ~
 
         oidc:
             pattern: ^/oidc-(login|consent|logout|error|refresh-hook)
             provider: database
+            user_checker: NetBS\SecureBundle\Security\ActiveUserChecker
             context: netbs   # share session with the netbs firewall so login carries over
             # Keeps the login_challenge in the login page URL (see OidcLoginChallenge).
             entry_point: NetBS\AuthBundle\Security\OidcLoginEntryPoint
@@ -43,6 +46,7 @@ security:
         netbs:
             pattern: ^/netBS
             context: netbs   # shared with the oidc firewall
+            user_checker: NetBS\SecureBundle\Security\ActiveUserChecker
             switch_user: true
             form_login:
                 login_path: netbs.secure.login.login
@@ -50,6 +54,10 @@ security:
                 default_target_path: netbs.core.home.dashboard
                 enable_csrf: true
                 success_handler: NetBS\AuthBundle\Security\OidcAwareLoginSuccessHandler
+            # Per username + IP (and 5x that per IP alone); a successful login resets the count.
+            login_throttling:
+                max_attempts: 5
+                interval: '15 minutes'
             remember_me:
                 secret: '%kernel.secret%'
                 lifetime: 604800
@@ -70,5 +78,10 @@ security:
         - { path: ^/oidc-logout, roles: PUBLIC_ACCESS }
         - { path: ^/oidc-error, roles: PUBLIC_ACCESS }
         - { path: ^/netBS/secure/user/my-account, roles: ROLE_USER }
+        # A temporary-password account has no role; FirstLoginGuard sends it here.
+        - { path: ^/netBS/secure/first-login, roles: IS_AUTHENTICATED_FULLY }
         - { path: ^/netBS/secure, roles: ROLE_ADMIN }
+        # Role checks go through NetBS RoleVoter, which resolves inherited and
+        # fonction-granted roles, so admins/commandants/QM pass too.
+        - { path: ^/netBS/facturation, roles: ROLE_TRESORIER }
         - { path: ^/netBS, roles: [IS_AUTHENTICATED_FULLY, ROLE_USER] }

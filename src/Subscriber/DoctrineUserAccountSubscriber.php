@@ -173,16 +173,19 @@ class DoctrineUserAccountSubscriber implements EventSubscriber
         $collision = $manager->getRepository(BSUser::class)->isHandleTaken([$username]);
 
         if ($collision) {
-            $this->requestStack->getSession()->getFlashBag()->add(
-                'warning',
-                sprintf(
-                    "Le membre %s %s a été créé sans compte utilisateur : un compte « %s » existe déjà. " .
-                    "Vous pouvez attacher le compte existant à ce membre, ou créer manuellement un nouveau compte avec un identifiant différent.",
-                    $membre->getPrenom(),
-                    $membre->getFamille()->getNom(),
-                    $username
-                )
+            $message = sprintf(
+                "Le membre %s %s a été créé sans compte utilisateur : un compte « %s » existe déjà. " .
+                "Vous pouvez attacher le compte existant à ce membre, ou créer manuellement un nouveau compte avec un identifiant différent.",
+                $membre->getPrenom(),
+                $membre->getFamille()->getNom(),
+                $username
             );
+            $this->logger->warning($message);
+            // Attributions are also saved outside a request (commands, workers): no session there.
+            $session = $this->requestStack->getCurrentRequest()?->hasSession()
+                ? $this->requestStack->getSession()
+                : null;
+            $session?->getFlashBag()->add('warning', $message);
             return;
         }
 

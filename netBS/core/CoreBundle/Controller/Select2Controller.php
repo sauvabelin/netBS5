@@ -3,6 +3,7 @@
 namespace NetBS\CoreBundle\Controller;
 
 use NetBS\CoreBundle\Select2\Select2ProviderManager;
+use NetBS\CoreBundle\Select2\UnrestrictedSelect2ProviderInterface;
 use NetBS\SecureBundle\Voter\CRUD;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
@@ -31,16 +32,7 @@ class Select2Controller extends AbstractController
         $results    = [];
         foreach($items as $item) {
 
-            // TODO: Do this better
-            $ok = false;
-            if (str_contains($request->headers->get('referer'), 'dynamic-list')) {
-                $ok = true;
-            }
-            if ($this->isGranted(CRUD::READ, $item)) {
-                $ok = true;
-            }
-
-            if ($ok) {
+            if ($provider instanceof UnrestrictedSelect2ProviderInterface || $this->isGranted(CRUD::READ, $item)) {
                 $row = ['id' => $provider->toId($item), 'text' => $provider->toString($item)];
                 if (method_exists($provider, 'toSubtitle')) {
                     $subtitle = $provider->toSubtitle($item);

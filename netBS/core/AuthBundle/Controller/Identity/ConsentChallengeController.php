@@ -138,7 +138,7 @@ final class ConsentChallengeController extends AbstractController
 
         return $this->render('@NetBSAuth/identity/error.html.twig', [
             'errorCode'   => 'access_denied',
-            'userMessage' => "Vous n'avez pas accès à {$clientName}.",
+            'userMessage' => "Tu n'as pas accès à {$clientName}.",
             'devDetails'  => null,
         ], new Response('', Response::HTTP_FORBIDDEN));
     }

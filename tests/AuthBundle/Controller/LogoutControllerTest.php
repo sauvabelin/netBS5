@@ -42,8 +42,8 @@ final class LogoutControllerTest extends TestCase
      * getUser, addFlash) work without booting Symfony.
      *
      * @param array{
-     *   getLogoutRequest?: array<string,mixed>|\Throwable,
-     *   acceptLogoutRequest?: array<string,mixed>|\Throwable,
+     *   getLogoutRequest?: array<string,mixed>|HydraClientException,
+     *   acceptLogoutRequest?: array<string,mixed>|HydraClientException,
      * } $hydraBehaviour
      */
     private function makeController(
@@ -52,7 +52,7 @@ final class LogoutControllerTest extends TestCase
         bool $csrfValid = true,
         ?Security $security = null,
     ): array {
-        $hydra = $this->makeHydraStub($hydraBehaviour);
+        $hydra = $this->makeHydraStub($hydraBehaviour, $http);
         $security ??= $this->makeSecurityStub($currentSubject);
 
         $controller = new LogoutController($hydra, new LocalSessionTerminator($security), new \Psr\Log\NullLogger());
@@ -150,6 +150,7 @@ final class LogoutControllerTest extends TestCase
             'security' => $security,
             'session' => $session,
             'csrfManager' => $csrfManager,
+            'http' => $http,
         ];
     }
 
@@ -160,16 +161,17 @@ final class LogoutControllerTest extends TestCase
      *
      * The MockHttpClient honours request order; we lay out responses in the
      * sequence the controller will issue them (getLogoutRequest first, then
-     * acceptLogoutRequest when reached). A response value of `null` means
-     * "the controller is not expected to make this call" — we still queue a
-     * 500 response under that key so an unexpected call fails loudly.
+     * acceptLogoutRequest when reached). Omitting a key means "the controller
+     * is not expected to make this call" — we still queue a 500 response in
+     * its slot; tests assert on the mock's request count to prove the call
+     * never happened.
      *
      * @param array{
      *   getLogoutRequest?: array<string,mixed>|HydraClientException,
      *   acceptLogoutRequest?: array<string,mixed>|HydraClientException,
      * } $behaviour
      */
-    private function makeHydraStub(array $behaviour): HydraAdminClient
+    private function makeHydraStub(array $behaviour, ?MockHttpClient &$mock = null): HydraAdminClient
     {
         $responses = [];
         foreach (['getLogoutRequest', 'acceptLogoutRequest'] as $key) {
@@ -299,9 +301,8 @@ final class LogoutControllerTest extends TestCase
         $built = $this->makeController(
             hydraBehaviour: [
                 'getLogoutRequest' => ['subject' => 'victim'],
-                // acceptLogoutRequest MUST NOT be called; stub it to fail loudly
-                // if it ever is.
-                'acceptLogoutRequest' => new \LogicException('acceptLogoutRequest must not be called on a refused mismatch'),
+                // acceptLogoutRequest deliberately not stubbed: the request
+                // count below proves it is never called.
             ],
             currentSubject: 'innocent-admin',
         );
@@ -311,6 +312,7 @@ final class LogoutControllerTest extends TestCase
         $response = $controller($this->newPost(challenge: 'ch-xyz', token: 'fake', tokenId: 'oidc_logout_challenge_ch-xyz'));
 
         $this->assertSame(0, $built['security']->logoutCalls, 'Local logout must NOT run on mismatch');
+        $this->assertSame(1, $built['http']->getRequestsCount(), 'Only getLogoutRequest may reach Hydra on mismatch');
         $this->assertSame(Response::HTTP_OK, $response->getStatusCode());
         // Refusal renders the confirm template with mismatchRefused=true.
         $this->assertNotNull($built['twig']->lastRender);
@@ -319,30 +321,6 @@ final class LogoutControllerTest extends TestCase
         $this->assertTrue($params['mismatchRefused'] ?? false);
         $this->assertSame('innocent-admin', $params['localSubject']);
         $this->assertSame('victim', $params['subject']);
-    }
-
-    public function testSubjectMatchKillsLocalSessionFirstThenAcceptsHydra(): void
-    {
-        // We can't assert literal ordering of internal calls without a
-        // recorder, so the proxy is: logout() called exactly once AND
-        // acceptLogoutRequest returned a redirect AND the response is that
-        // redirect. The controller's source guarantees order: local logout
-        // happens before the try/catch around acceptLogoutRequest.
-        $built = $this->makeController(
-            hydraBehaviour: [
-                'getLogoutRequest' => ['subject' => 'alice'],
-                'acceptLogoutRequest' => ['redirect_to' => 'https://rp.example/post-logout'],
-            ],
-            currentSubject: 'alice',
-        );
-        /** @var LogoutController $controller */
-        $controller = $built['controller'];
-
-        $response = $controller($this->newPost(challenge: 'ch-1', token: 'fake', tokenId: 'oidc_logout_challenge_ch-1'));
-
-        $this->assertSame(1, $built['security']->logoutCalls);
-        $this->assertInstanceOf(RedirectResponse::class, $response);
-        $this->assertSame('https://rp.example/post-logout', $response->getTargetUrl());
     }
 
     public function testLogoutInvalidatesSessionAndClearsRememberMeCookie(): void

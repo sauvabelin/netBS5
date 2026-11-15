@@ -18,7 +18,8 @@ interface DirectoryUserProviderInterface
 
     /**
      * Membre id => uid, for the accounts {@see directoryUsers()} lists that
-     * have a membre. Cheaper than directoryUsers(), for resolving one group.
+     * have a membre and may be in groups (not `groupsSuspended`). Cheaper than
+     * directoryUsers(), for resolving one group.
      *
      * @return array<int, string>
      */

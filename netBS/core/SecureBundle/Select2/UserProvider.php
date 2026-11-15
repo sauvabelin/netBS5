@@ -2,12 +2,12 @@
 
 namespace NetBS\SecureBundle\Select2;
 
-use NetBS\CoreBundle\Select2\Select2ProviderInterface;
+use NetBS\CoreBundle\Select2\UnrestrictedSelect2ProviderInterface;
 use NetBS\FichierBundle\Utils\Traits\SecureConfigTrait;
 use NetBS\CoreBundle\Utils\Traits\EntityManagerTrait;
 use NetBS\SecureBundle\Mapping\BaseUser;
 
-class UserProvider implements Select2ProviderInterface
+class UserProvider implements UnrestrictedSelect2ProviderInterface
 {
     use EntityManagerTrait, SecureConfigTrait;
 

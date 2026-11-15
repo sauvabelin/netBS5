@@ -21,12 +21,12 @@ class GroupeAmongBlock implements RuleBlock
 
     public function label(): string
     {
-        return 'le groupe est parmi';
+        return 'le groupe est l\'un de';
     }
 
     public function negatedLabel(): ?string
     {
-        return "le groupe n'est pas parmi";
+        return "le groupe n'est aucun de";
     }
 
     public function params(): array
@@ -36,7 +36,7 @@ class GroupeAmongBlock implements RuleBlock
 
     public function describe(array $display, bool $not): string
     {
-        return ($not ? "le groupe n'est pas parmi " : 'le groupe est parmi ') . $display['groupes'];
+        return ($not ? "le groupe n'est aucun de " : 'le groupe est l\'un de ') . $display['groupes'];
     }
 
     /** @param BaseGroupe $subject */

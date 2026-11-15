@@ -1,5 +1,11 @@
 {% extends '@NetBSCore/layout/base.layout.twig' %}
 
+{% block head %}
+    {# Full page load (no Turbo body swap) so password managers detect the form #}
+    <meta name="turbo-visit-control" content="reload">
+    <meta name="turbo-cache-control" content="no-cache">
+{% endblock %}
+
 {% block bodyClass %}be-splash-screen{% endblock %}
 
 {% block body %}

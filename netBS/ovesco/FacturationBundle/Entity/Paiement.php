@@ -192,6 +192,29 @@ class Paiement
             : $this->date;
     }
 
+    public function getInstructionId(): ?string
+    {
+        $details = $this->getTransactionDetails();
+
+        return $details instanceof EntryTransactionDetail ? $details->getReference()?->getInstructionId() : null;
+    }
+
+    /**
+     * Whether $other is the same bank transaction: by bank instruction id when
+     * both have one, otherwise by amount and effective payment day.
+     */
+    public function isSamePaymentAs(Paiement $other): bool
+    {
+        $mine   = $this->getInstructionId();
+        $theirs = $other->getInstructionId();
+        if ($mine !== null && $theirs !== null) {
+            return $mine === $theirs;
+        }
+
+        return round((float) $this->getMontant(), 2) === round((float) $other->getMontant(), 2)
+            && $this->getDateEffectivePaiement()->format('Y-m-d') === $other->getDateEffectivePaiement()->format('Y-m-d');
+    }
+
     public function __toString()
     {
         return "paiement_" . $this->getId();

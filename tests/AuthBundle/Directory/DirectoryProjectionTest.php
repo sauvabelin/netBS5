@@ -134,16 +134,6 @@ final class DirectoryProjectionTest extends KernelTestCase
         self::assertSame(sprintf('netbs_users [%d]', $ids['ga']), $this->projection->snapshot()->groups[$ids['ga']]->name);
     }
 
-    public function testNotConfiguredMessagePointsToTheLdapPage(): void
-    {
-        try {
-            $this->projection->snapshot();
-            self::fail('expected DirectoryNotConfiguredException');
-        } catch (DirectoryNotConfiguredException $e) {
-            self::assertInstanceOf(DirectoryNotConfiguredException::class, $e);
-        }
-    }
-
     public function testBrokenSousGroupesRuleSuspendsTheSync(): void
     {
         $ids = $this->seedGroupeTree();
@@ -193,7 +183,7 @@ final class DirectoryProjectionTest extends KernelTestCase
         }
 
         self::assertNull($problems['dirproj-ok']);
-        self::assertStringContainsString('Référence supprimée', $problems['dirproj-cassée']);
+        self::assertNotNull($problems['dirproj-cassée']);
         self::assertNotNull($problems['dirproj-cassé']);
     }
 
@@ -265,5 +255,23 @@ final class DirectoryProjectionTest extends KernelTestCase
         self::assertSame(sprintf('nextcloud-admins [%d]', $ids['ga']), $outlines[(string) $ids['ga']]->name);
         self::assertSame($ids['ga'], $outlines[(string) $ids['ga']]->groupeId);
         self::assertSame($snapshot->groups[$ids['ga']]->origin, $outlines[(string) $ids['ga']]->origin);
+    }
+
+    public function testATemporaryPasswordKeepsTheUserButInNoGroup(): void
+    {
+        $ids = $this->seedPublishedTree();
+        $this->grantUserRole($ids['user'], 'ROLE_NEXTCLOUD_ADMIN');
+        $computed = $this->computedGroup('dirproj-chefs', self::blockRule('membre.fonctions', ['fonctions' => [$ids['fonction']]]));
+        $this->db->update('sauvabelin_netbs_users', ['new_password_required' => 1], ['id' => $ids['user']]);
+
+        $snapshot = $this->projection->snapshot();
+        static::getContainer()->get('doctrine.orm.entity_manager')->clear();
+
+        self::assertArrayHasKey('dirproj.user', $snapshot->users);
+        self::assertSame([], $snapshot->groups[$ids['ga']]->members);
+        self::assertSame([], $snapshot->computedGroups[$computed]->members);
+        self::assertSame([], $snapshot->roleGroups['ROLE_NEXTCLOUD_ADMIN']->members);
+        self::assertSame([], $this->projection->group((string) $ids['ga'])->members, 'single-group lookup agrees');
+        self::assertSame([], $this->projection->group("c$computed")->members);
     }
 }

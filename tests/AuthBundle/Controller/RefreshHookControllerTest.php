@@ -248,4 +248,48 @@ final class RefreshHookControllerTest extends TestCase
         $decoded = json_decode((string) $response->getContent(), true, flags: JSON_THROW_ON_ERROR);
         $this->assertSame(['sub' => 'alice'], $decoded['session']['id_token']);
     }
+
+    public function testRejectsWhenPolicyNoLongerAllowsTheClient(): void
+    {
+        // e.g. the client flag was removed from the user since the token was issued.
+        $controller = $this->makeController(resolverReturns: $this->makeIdentity(), policyAllows: false);
+
+        $response = $controller(
+            $this->makeRequest(
+                secretHeader: self::VALID_SECRET,
+                body: json_encode(['subject' => 'alice', 'client_id' => 'acme-client'], JSON_THROW_ON_ERROR),
+            ),
+        );
+
+        $this->assertSame(Response::HTTP_FORBIDDEN, $response->getStatusCode());
+        $this->assertArrayNotHasKey('session', json_decode((string) $response->getContent(), true));
+    }
+
+    public function testMissingSecretHeaderIsUnauthorized(): void
+    {
+        $controller = $this->makeController(resolverReturns: $this->makeIdentity());
+
+        $response = $controller(
+            $this->makeRequest(secretHeader: null, body: json_encode(['subject' => 'alice', 'client_id' => 'acme-client'])),
+        );
+
+        $this->assertSame(Response::HTTP_UNAUTHORIZED, $response->getStatusCode());
+    }
+
+    /** @dataProvider badPayloads */
+    public function testBadPayloadIsBadRequest(string $body): void
+    {
+        $controller = $this->makeController(resolverReturns: $this->makeIdentity());
+
+        $response = $controller($this->makeRequest(secretHeader: self::VALID_SECRET, body: $body));
+
+        $this->assertSame(Response::HTTP_BAD_REQUEST, $response->getStatusCode());
+    }
+
+    public static function badPayloads(): iterable
+    {
+        yield 'malformed json' => ['{"subject": "alice",'];
+        yield 'non-string subject' => ['{"subject": ["alice"], "client_id": "acme-client"}'];
+        yield 'missing client id' => ['{"subject": "alice"}'];
+    }
 }

@@ -2,6 +2,7 @@
 
 namespace Ovesco\FacturationBundle\Controller;
 
+use Ovesco\FacturationBundle\Util\IdList;
 use Doctrine\ORM\EntityManagerInterface;
 use NetBS\CoreBundle\Searcher\SearcherManager;
 use NetBS\CoreBundle\Service\ListBridgeManager;
@@ -15,6 +16,7 @@ use NetBS\FichierBundle\Model\AdressableInterface;
 use NetBS\ListBundle\Service\ListManager;
 use Ovesco\FacturationBundle\Entity\Facture;
 use Ovesco\FacturationBundle\Model\MergeCreancesToFacture;
+use Ovesco\FacturationBundle\Service\FacturePackBuilder;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Annotation\Route;
@@ -43,14 +45,14 @@ class CreanceController extends AbstractController
         $mass = new MassCreances();
         $mass->setItemsClass($request->request->get('itemsClass'));
         if ($request->request->all('selectedIds'))
-            $mass->setSelectedIds(serialize($request->request->all('selectedIds')));
+            $mass->setSelectedIds(IdList::encode($request->request->all('selectedIds')));
 
         $form = $this->createForm(MassCreanceType::class, $mass);
         $form->handleRequest($request);
 
         if($form->isSubmitted() && $form->isValid()) {
 
-            $selectedIds    = unserialize($mass->getSelectedIds());
+            $selectedIds    = IdList::decode($mass->getSelectedIds());
             $class          = base64_decode($mass->getItemsClass());
             $items          = [];
 
@@ -98,12 +100,12 @@ class CreanceController extends AbstractController
      * @throws \Exception
      */
     #[Route('/check-merge', name: 'ovesco.facturation.creance.check_merge')]
-    public function checkMergeCreances(Request $request, EntityManagerInterface $em) {
+    public function checkMergeCreances(Request $request, EntityManagerInterface $em, FacturePackBuilder $packBuilder) {
 
         $data = json_decode($request->request->get('data'), true);
         $ids = $data['creanceIds'];
         $creances = $this->extractCreances($ids, $em);
-        $references = $this->generatePack($creances);
+        $references = $packBuilder->build($creances);
 
         return $this->render('@OvescoFacturation/facture/generator.html.twig', [
             'pack' => $references,
@@ -117,17 +119,17 @@ class CreanceController extends AbstractController
      * @throws \Exception
      */
     #[Route('/merge', name: 'ovesco.facturation.creance.merge')]
-    public function mergeCreances(Request $request, EntityManagerInterface $em) {
+    public function mergeCreances(Request $request, EntityManagerInterface $em, FacturePackBuilder $packBuilder) {
 
         $merger = new MergeCreancesToFacture();
-        $merger->setCreanceIds(serialize($request->request->all('creanceIds')));
+        $merger->setCreanceIds(IdList::encode($request->request->all('creanceIds')));
         $form = $this->createForm(MergeCreancesToFactureType::class, $merger);
         $form->handleRequest($request);
 
-        $creanceIds = unserialize($merger->getCreanceIds());
+        $creanceIds = IdList::decode($merger->getCreanceIds());
         $creances = $this->extractCreances($creanceIds, $em);
         try {
-            $factures = $this->generatePack($creances);
+            $factures = $packBuilder->build($creances);
 
             if ($form->isSubmitted() && $form->isValid()) {
 
@@ -165,32 +167,6 @@ class CreanceController extends AbstractController
 
         $query = $em->getRepository(Creance::class)->createQueryBuilder('c');
         return $query->where($query->expr()->in('c.id', $ids))->getQuery()->getResult();
-    }
-
-    /**
-     * @param Creance[] $creances
-     * @return array
-     * @throws \Exception
-     */
-    private function generatePack($creances) {
-
-        $references = [];
-        /* Les créances ayant la même adresse de débiteur sont réunies, une facture par entrée du tableau */
-        /** @var Creance $creance */
-        foreach($creances as $creance) {
-            if ($creance->getFacture() !== null)
-                throw $this->createAccessDeniedException("La créance " . $creance . " est déjà associée à une facture!");
-            $adresse = $creance->getDebiteur()->getSendableAdresse();
-            if (!$adresse) throw new \Exception("Debiteur " . $creance->getDebiteur() . " n'a pas d'adresse!");
-            if (!in_array($adresse->getId(), array_keys($references))) {
-                $facture = new Facture();
-                $facture->setDebiteur($adresse->getOwner());
-                $references[$adresse->getId()] = $facture;
-            }
-            $references[$adresse->getId()]->addCreance($creance);
-        }
-
-        return $references;
     }
 
     private function parseTitle($title, $debiteur) {

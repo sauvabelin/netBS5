@@ -22,4 +22,9 @@ class ExportConfigurationVoter extends NetBSVoter
     {
         return $subject->getUser()->isEqualTo($user);
     }
+
+    protected function everywhereRolesApply(): bool
+    {
+        return false;
+    }
 }

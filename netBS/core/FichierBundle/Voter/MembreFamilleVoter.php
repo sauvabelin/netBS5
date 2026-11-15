@@ -45,7 +45,7 @@ class MembreFamilleVoter extends GroupeVoter
      */
     protected function acceptMembre($operation, $subject, BaseUser $user)
     {
-        if($user->getMembre() && $subject->getId() === $user->getMembreId())
+        if($this->isSelfOperation($operation) && $user->getMembre() && $subject->getId() === $user->getMembreId())
             return true;
 
         foreach($subject->getActivesAttributions() as $attribution)
@@ -64,7 +64,7 @@ class MembreFamilleVoter extends GroupeVoter
      */
     protected function acceptFamille($operation, $subject, BaseUser $user)
     {
-        if($user->getMembre() && $subject->getId() === $user->getMembre()->getFamille()->getId())
+        if($this->isSelfOperation($operation) && $user->getMembre() && $subject->getId() === $user->getMembre()->getFamille()?->getId())
             return true;
 
         foreach($subject->getMembres() as $membre)
@@ -84,5 +84,14 @@ class MembreFamilleVoter extends GroupeVoter
     protected function acceptGeniteur($operation, $subject, BaseUser $user)
     {
         return $this->acceptFamille($operation, $subject->getFamille(), $user);
+    }
+
+    /**
+     * Your own membre/famille/géniteurs: you may see and edit them (edits are
+     * further limited by the entity's #[User] constraint), not create or delete.
+     */
+    private function isSelfOperation(string $operation): bool
+    {
+        return in_array($operation, [CRUD::READ, CRUD::UPDATE], true);
     }
 }
