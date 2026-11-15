@@ -4,9 +4,8 @@ namespace App\ApiController;
 
 use App\Model\Directory;
 use App\Model\GalerieConfig;
+use App\Model\LatestChanges;
 use App\Model\Markdown;
-use Doctrine\ORM\EntityManager;
-use Doctrine\ORM\EntityManagerInterface;
 use NetBS\CoreBundle\Service\ParameterManager;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -14,6 +13,8 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Serializer\SerializerInterface;
+use Symfony\Contracts\Cache\CacheInterface;
+use Symfony\Contracts\Cache\ItemInterface;
 
 /**
  * Class GalerieAPIController
@@ -38,61 +39,19 @@ class ApiGalerieController extends AbstractController
     }
 
     /**
-     * @param Request $request
-     * @return Response
+     * The ten albums that most recently received photos, read from the originals on disk.
+     * Cached briefly: it walks the whole galerie tree.
      */
     #[Route('/api/v1/public/netBS/galerie/latest-change', name: 'ovesco.galerie.public_api.latest-change')]
-    public function latestChangeAction(GalerieConfig $config, EntityManagerInterface $em) {
+    public function latestChangeAction(GalerieConfig $config, CacheInterface $cache): JsonResponse
+    {
+        $changes = $cache->get('galerie.latest_changes', function (ItemInterface $item) use ($config) {
+            $item->expiresAfter(300);
 
-        try {
-            $params = $em->getConnection()->getParams();
-            $host = $params['host'];
-            $user = $params['user'];
-            $pass = $params['password'];
+            return (new LatestChanges($config))->find(10);
+        });
 
-            $pdo = new \PDO("mysql:dbname=stammbox;host=$host", $user, $pass);
-            $query = $pdo->prepare("SELECT path, name, mtime FROM `oc_filecache` where storage = 313 and mimetype = 2 and parent != -1 order by mtime desc limit 70");
-            $query->execute();
-            $result = $query->fetchAll();
-            $descriptionQuery = $pdo->prepare("SELECT path, mtime FROM `oc_filecache` where name = 'description.md' order by mtime desc");
-            $descriptionQuery->execute();
-            $descriptions = $descriptionQuery->fetchAll();
-
-            $aggr = [];
-            $res = [];
-
-            foreach ($result as $item) {
-                if (!isset($aggr[$item["mtime"]]))
-                    $aggr[$item["mtime"]] = [];
-
-                $aggr[$item["mtime"]][] = $item;
-            }
-
-            foreach ($descriptions as $description)
-                if (isset($aggr[$description['mtime']]))
-                    unset($aggr[$description['mtime']]);
-
-            $countt = 0;
-            foreach ($aggr as $items) {
-                usort($items, function ($l1, $l2) {
-                    return strlen($l1['path']) > strlen($l2['path']) ? -1 : 1;
-                });
-
-                $res[] = [
-                    'hash' => (new Directory(utf8_encode($items[0]['path']), $config))->getHashPath(),
-                    'path' => utf8_encode($items[0]['path']),
-                    'name' => utf8_encode($items[0]['name']),
-                    'date' => date("d.m.Y", $items[0]['mtime'])
-                ];
-
-                $countt += 1;
-                if ($countt == 10) break;
-            }
-
-            return new JsonResponse($res);
-        } catch (\Exception $e) {
-            return new JsonResponse([]);
-        }
+        return new JsonResponse($changes);
     }
 
     /**

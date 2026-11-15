@@ -47,3 +47,7 @@ docs
 /TODO.md
 TODO.local.md
 *.todo.local.md
+
+###> galerie thumbnails ###
+/public/galerie/cache/
+###< galerie thumbnails ###
