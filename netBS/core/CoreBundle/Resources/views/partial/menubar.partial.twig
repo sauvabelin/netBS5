@@ -44,7 +44,7 @@
                         </li>
 
                     {% elseif item.route %}
-                        <li {% if item.route == route %}class="active"{% endif %}>
+                        <li {% if item.route == route and item.routeParams == routeParams %}class="active"{% endif %}>
                             <a href="{{ path(item.route, item.routeParams) }}">
                                 <span class="icon"><i class="{{ item.icon }}"></i></span>
                                 {{ item.label }}

@@ -28,6 +28,8 @@
     {{ dumpStyle() }}
     <!-- /dumpStyle -->
 
+    {% block head %}{% endblock %}
+
     {% block importmap %}{{ importmap('app') }}{% endblock %}
 </head>
 <body class="{% block bodyClass %}{% endblock %}">
