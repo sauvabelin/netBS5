@@ -7,11 +7,11 @@ use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 
 /**
- * Users have two names: the permanent `username` (OIDC subject, token
- * identifier) and the editable `loginUsername`. Both live in one namespace —
- * a string belongs to at most one user, whichever column it sits in — so a
- * handle typed at login and an identifier carried by a token can never point
- * at two different users. {@see \App\Validator\UniqueLoginHandle} enforces it.
+ * Users have two names: the permanent `username` (OIDC subject, LDAP uid,
+ * token identifier — never typed by anyone) and the editable `loginUsername`
+ * (displayed, and the only name accepted at sign-in). Both live in one
+ * namespace — a string belongs to at most one user, whichever column it sits
+ * in. {@see \App\Validator\UniqueLoginHandle} enforces it.
  */
 class BSUserRepository extends ServiceEntityRepository
 {
@@ -20,15 +20,10 @@ class BSUserRepository extends ServiceEntityRepository
         parent::__construct($registry, BSUser::class);
     }
 
-    /**
-     * Resolves a login handle or a permanent username to its user. The
-     * permanent username wins, so tokens (JWT, remember-me) always reload the
-     * user they were issued to.
-     */
-    public function findOneByHandle(string $handle): ?BSUser
+    /** The user a typed login name belongs to (sign-in, password reset). */
+    public function findOneByLoginUsername(string $loginUsername): ?BSUser
     {
-        return $this->findOneBy(['username' => $handle])
-            ?? $this->findOneBy(['loginUsername' => $handle]);
+        return $this->findOneBy(['loginUsername' => $loginUsername]);
     }
 
     /**

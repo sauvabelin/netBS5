@@ -77,6 +77,7 @@ final class IdentityUserResolverTest extends TestCase
     {
         $user = $this->createMock(BSUser::class);
         $user->method('getUsername')->willReturn($username);
+        $user->method('getLoginUsername')->willReturn($username);
         $user->method('getMembre')->willReturn(null);
         $user->method('getEmail')->willReturn($email);
         $user->method('getEmailBS')->willReturn($emailBS);

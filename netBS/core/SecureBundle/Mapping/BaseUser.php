@@ -109,7 +109,7 @@ class BaseUser implements
 
     public function __toString()
     {
-        return $this->membre ? $this->membre->getFullName() : $this->getUsername();
+        return $this->membre ? $this->membre->getFullName() : $this->getLoginUsername();
     }
 
     /**
@@ -164,6 +164,15 @@ class BaseUser implements
     }
 
     public function getUserIdentifier(): string
+    {
+        return $this->username;
+    }
+
+    /**
+     * The name shown to people and typed at sign-in. The username stays the
+     * permanent identifier behind the scenes; subclasses may let this differ.
+     */
+    public function getLoginUsername(): ?string
     {
         return $this->username;
     }

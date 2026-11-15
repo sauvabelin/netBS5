@@ -32,7 +32,7 @@
                 <div class="card mb-2">
                     <div class="card-header">
                         <a href="{{ path('netbs.secure.audit.user_show', {id: entry.user.id}) }}">
-                            {{ entry.user.username }}
+                            {{ entry.user.loginUsername }}
                         </a>
                         <span class="text-muted small">— {{ entry.grants|length }} accès</span>
                     </div>

@@ -34,7 +34,7 @@ class AutorisationController extends AbstractController
             $em->persist($form->getData());
             $em->flush();
 
-            $this->addFlash("success", "Autorisation pour {$autr->getUser()->getUsername()} ajoutée!");
+            $this->addFlash("success", "Autorisation pour {$autr->getUser()->getLoginUsername()} ajoutée!");
             return $this->redirectToRoute("netbs.secure.autorisation.list");
         }
 

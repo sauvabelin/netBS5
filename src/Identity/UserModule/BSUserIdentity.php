@@ -18,7 +18,7 @@ final class BSUserIdentity
         $membre = $user->getMembre();
         $name = $membre ? trim($membre->getFullName()) : '';
 
-        return $name !== '' ? $name : $user->getUsername();
+        return $name !== '' ? $name : $user->getLoginUsername();
     }
 
     /** Personal email, else the BS one; empty strings count as missing. */

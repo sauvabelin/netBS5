@@ -37,7 +37,7 @@ class UserProvider implements UnrestrictedSelect2ProviderInterface
      */
     public function toString($item)
     {
-        return $item->getUsername();
+        return $item->getLoginUsername();
     }
 
     /**
@@ -52,7 +52,7 @@ class UserProvider implements UnrestrictedSelect2ProviderInterface
             ->createQueryBuilder('x');
 
         return $query
-            ->where($query->expr()->like('x.username', ':n'))
+            ->where($query->expr()->like('x.loginUsername', ':n'))
             ->setParameter('n', '%'.$needle.'%')
             ->setMaxResults($limit)
             ->getQuery()

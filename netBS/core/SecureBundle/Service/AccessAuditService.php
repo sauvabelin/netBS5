@@ -104,8 +104,8 @@ final class AccessAuditService
         }
 
         usort($byUid, fn($a, $b) => strcmp(
-            (string) $a['user']->getUsername(),
-            (string) $b['user']->getUsername(),
+            (string) $a['user']->getLoginUsername(),
+            (string) $b['user']->getLoginUsername(),
         ));
 
         return [

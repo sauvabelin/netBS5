@@ -48,7 +48,7 @@
                                 <tr>
                                     <td>
                                         {% if selectedType == 'Utilisateur' %}
-                                            {{ entity.username }}
+                                            {{ entity.loginUsername }}
                                             {% if entity.membre %}<small class="text-muted">({{ entity.membre }})</small>{% endif %}
                                         {% else %}
                                             {{ entity }}
