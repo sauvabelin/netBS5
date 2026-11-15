@@ -23,7 +23,7 @@ class FactureContext implements RuleContext
     public function variables(): array
     {
         return [
-            'facture'   => new RuleVariable('La facture ; getCreances() et getRappels() sont des listes (.count() donne leur nombre)', [Facture::class]),
+            'facture'   => new RuleVariable('La facture. getCreances() et getRappels() renvoient des listes (.count() pour leur nombre).', [Facture::class]),
             'debiteur'  => new RuleVariable('Le débiteur, un membre ou une famille', [BaseMembre::class, BaseFamille::class]),
             'isFamille' => new RuleVariable('Vrai si le débiteur est une famille', ['booléen']),
         ];

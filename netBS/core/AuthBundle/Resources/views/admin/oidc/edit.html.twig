@@ -1,6 +1,6 @@
 {% extends '@NetBSCore/layout/backend.layout.twig' %}
 
-{% set title %}OAuth client — {{ client.name }}{% endset %}
+{% set title %}Client OAuth — {{ client.name }}{% endset %}
 
 {% macro uri_collection(field, label) %}
     <div class="mb-3 oidc-uri-collection"
@@ -12,10 +12,10 @@
                 <div class="input-group input-group-sm mb-1 oidc-uri-collection-item">
                     {{ form_widget(item, { attr: { class: 'form-control form-control-sm' } }) }}
                     <button type="button" class="btn btn-outline-secondary oidc-copy-btn"
-                            data-copy-from="prev-input" title="Copy">
+                            data-copy-from="prev-input" title="Copier">
                         <i class="fas fa-copy"></i>
                     </button>
-                    <button type="button" class="btn btn-outline-danger oidc-uri-collection-remove" title="Remove">
+                    <button type="button" class="btn btn-outline-danger oidc-uri-collection-remove" title="Retirer">
                         <i class="fas fa-times"></i>
                     </button>
                 </div>
@@ -23,7 +23,7 @@
         </div>
         {{ form_errors(field) }}
         <button type="button" class="btn btn-sm btn-outline-secondary oidc-uri-collection-add">
-            <i class="fas fa-plus"></i> Add
+            <i class="fas fa-plus"></i> Ajouter
         </button>
     </div>
 {% endmacro %}
@@ -32,7 +32,7 @@
     {% import _self as macros %}
     <div class="container-fluid">
         {% include '@NetBSCore/includes/header.include.twig' with {
-            header: 'OAuth client',
+            header: 'Client OAuth',
             subHeader: client.name
         } %}
 
@@ -45,8 +45,8 @@
                 {{ form_errors(form) }}
                 {{ form_row(form.name) }}
                 {{ form_row(form.scopes) }}
-                {{ macros.uri_collection(form.redirectUris, 'Redirect URIs') }}
-                {{ macros.uri_collection(form.postLogoutRedirectUris, 'Post-logout redirect URIs') }}
+                {{ macros.uri_collection(form.redirectUris, 'URI de redirection') }}
+                {{ macros.uri_collection(form.postLogoutRedirectUris, 'URI de redirection après déconnexion') }}
                 {% do form.redirectUris.setRendered() %}
                 {% do form.postLogoutRedirectUris.setRendered() %}
                 {{ form_row(form.backchannelLogoutUri) }}
@@ -54,18 +54,18 @@
                 {{ form_row(form.requiredFlag) }}
 
                 <div class="mt-3">
-                    <button type="submit" class="btn btn-primary">Save</button>
+                    <button type="submit" class="btn btn-primary">Enregistrer</button>
                 </div>
                 {{ form_end(form) }}
 
                 <div class="mt-3 d-flex justify-content-end">
                     <form method="post"
                           action="{{ path('auth.admin.oidc_clients.delete', { slug: client.slug }) }}"
-                          data-turbo-confirm="Permanently delete this client?"
+                          data-turbo-confirm="Supprimer définitivement ce client ?"
                           class="m-0">
                         <input type="hidden" name="_token" value="{{ csrf_token('oidc_client_delete_' ~ client.slug) }}">
                         <button type="submit" class="btn btn-outline-danger">
-                            <i class="fas fa-trash"></i> Delete
+                            <i class="fas fa-trash"></i> Supprimer
                         </button>
                     </form>
                 </div>
@@ -88,9 +88,9 @@
                         var row = document.createElement('div');
                         row.className = 'input-group input-group-sm mb-1 oidc-uri-collection-item';
                         row.innerHTML = html +
-                            '<button type="button" class="btn btn-outline-secondary oidc-copy-btn" data-copy-from="prev-input" title="Copy">' +
+                            '<button type="button" class="btn btn-outline-secondary oidc-copy-btn" data-copy-from="prev-input" title="Copier">' +
                             '<i class="fas fa-copy"></i></button>' +
-                            '<button type="button" class="btn btn-outline-danger oidc-uri-collection-remove" title="Remove">' +
+                            '<button type="button" class="btn btn-outline-danger oidc-uri-collection-remove" title="Retirer">' +
                             '<i class="fas fa-times"></i></button>';
                         row.querySelectorAll('input').forEach(function (i) {
                             i.classList.add('form-control', 'form-control-sm');

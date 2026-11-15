@@ -22,7 +22,7 @@ class MembreFonctionPoidsBlock implements RuleBlock
 
     public function label(): string
     {
-        return 'le membre a une fonction de poids';
+        return 'le membre a une fonction dont le poids est';
     }
 
     public function negatedLabel(): ?string
@@ -37,7 +37,7 @@ class MembreFonctionPoidsBlock implements RuleBlock
 
     public function describe(array $display, bool $not): string
     {
-        return ($not ? "le membre n'a pas de fonction de poids " : 'le membre a une fonction de poids ') . $display['op'] . ' ' . $display['poids'];
+        return ($not ? "le membre n'a aucune fonction dont le poids est " : 'le membre a une fonction dont le poids est ') . $display['op'] . ' ' . $display['poids'];
     }
 
     /** @param BaseMembre $subject */

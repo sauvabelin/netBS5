@@ -178,12 +178,12 @@ export default class extends Controller {
                 break;
             }
             case 'to-expert':
-                if (!this._isEmpty() && !window.confirm('Les conditions actuelles seront effacées et remplacées par une expression. Continuer ?')) return;
+                if (!this._isEmpty() && !window.confirm('Passer en expression avancée ? Les conditions actuelles seront effacées.')) return;
                 this.rule = { mode: 'expert', expression: '' };
                 this.glossaryTarget.open = true;
                 break;
             case 'to-blocks':
-                if (!this._isEmpty() && !window.confirm("L'expression sera effacée et remplacée par des conditions. Continuer ?")) return;
+                if (!this._isEmpty() && !window.confirm("Revenir aux conditions ? L'expression actuelle sera effacée.")) return;
                 this.rule = this._emptyRule();
                 break;
             default:
@@ -260,7 +260,7 @@ export default class extends Controller {
         // first row: « Si » (nothing inside a group); second row: the et / ou choice for the whole group
         if (index === 0) return root ? 'Si' : '';
         if (index === 1) {
-            return `<select class="form-select form-select-sm" data-field="op" data-path="${path}" title="Toutes les conditions (et) ou au moins une (ou)">
+            return `<select class="form-select form-select-sm" data-field="op" data-path="${path}" title="et : toutes les conditions doivent être remplies · ou : une seule suffit">
                 <option value="and" ${group.op === 'and' ? 'selected' : ''}>et</option>
                 <option value="or" ${group.op === 'or' ? 'selected' : ''}>ou</option>
             </select>`;
@@ -281,7 +281,7 @@ export default class extends Controller {
         const selected = condition.not ? `!${condition.block}` : condition.block;
 
         const options = [];
-        if (!block) options.push([selected, `condition supprimée ou inconnue (${condition.block})`]);
+        if (!block) options.push([selected, `condition qui n'existe plus (${condition.block})`]);
         Object.entries(blocks).forEach(([id, b]) => {
             options.push([id, b.label]);
             if (b.negatedLabel) options.push([`!${id}`, b.negatedLabel]);

@@ -65,7 +65,7 @@ final class LoginChallengeController extends AbstractController
             // E.g. the first-login page took longer than the challenge lives.
             $session = $request->hasSession() ? $request->getSession() : null;
             if ($session instanceof FlashBagAwareSessionInterface) {
-                $session->getFlashBag()->add('info', "La demande de connexion du service a expiré. Retourne sur le service et reconnecte-toi.");
+                $session->getFlashBag()->add('info', "La demande de connexion a expiré. Retourne sur le service et reconnecte-toi.");
             }
 
             return $this->redirectToRoute('netbs.core.home.dashboard');

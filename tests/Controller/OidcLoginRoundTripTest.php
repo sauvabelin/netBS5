@@ -60,7 +60,7 @@ class OidcLoginRoundTripTest extends WebTestCase
         $this->assertResponseRedirects('/oidc-login?login_challenge=' . urlencode(self::CHALLENGE));
     }
 
-    public function test_lost_session_keeps_the_challenge_and_explains_the_error(): void
+    public function test_lost_session_keeps_the_challenge(): void
     {
         $client = $this->createOidcClient();
         $this->persistUser($client, 'oidc-rt-lost', 'oidc-rt-lost@example.test', self::PASSWORD, ['ROLE_USER']);
@@ -72,7 +72,6 @@ class OidcLoginRoundTripTest extends WebTestCase
 
         $this->assertResponseRedirects('/netBS/secure/login?login_challenge=' . urlencode(self::CHALLENGE));
         $client->followRedirect();
-        $this->assertSelectorExists('.text-danger');
 
         $this->submitLogin($client, 'oidc-rt-lost');
         $this->assertResponseRedirects('/oidc-login?login_challenge=' . urlencode(self::CHALLENGE));

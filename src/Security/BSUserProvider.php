@@ -39,7 +39,8 @@ class BSUserProvider implements UserProviderInterface
 
         // By id, like Doctrine's entity provider: survives any rename.
         $fresh = $this->users->find($user->getId());
-        if ($fresh === null) {
+        // Deactivated since login: treat it as gone, so the open session is logged out.
+        if ($fresh === null || !$fresh->getIsActive()) {
             $e = new UserNotFoundException();
             $e->setUserIdentifier($user->getUserIdentifier());
             throw $e;

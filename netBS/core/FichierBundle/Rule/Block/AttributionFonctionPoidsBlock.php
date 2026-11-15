@@ -21,7 +21,7 @@ class AttributionFonctionPoidsBlock implements RuleBlock
 
     public function label(): string
     {
-        return 'sa fonction a un poids';
+        return 'le poids de sa fonction est';
     }
 
     public function negatedLabel(): ?string
@@ -36,7 +36,7 @@ class AttributionFonctionPoidsBlock implements RuleBlock
 
     public function describe(array $display, bool $not): string
     {
-        return ($not ? "sa fonction n'a pas un poids " : "sa fonction a un poids ") . $display['op'] . ' ' . $display['poids'];
+        return ($not ? "le poids de sa fonction n'est pas " : "le poids de sa fonction est ") . $display['op'] . ' ' . $display['poids'];
     }
 
     /** @param AttributionInSousGroupe $subject */

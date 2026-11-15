@@ -62,7 +62,7 @@ final class LdapGroupListModel extends BaseListModel
                 // Counted on hover (lazy-count controller): resolving every group is slow.
                 ClosureColumn::CLOSURE => function (LdapGroupRow $row) {
                     $url = htmlspecialchars($this->router->generate('auth.admin.ldap.group_count', ['key' => $row->key]), ENT_QUOTES, 'UTF-8');
-                    return "<span class=\"ldap-member-count text-muted\" data-lazy-count-url=\"{$url}\" title=\"Survoler la ligne pour compter\">…</span>";
+                    return "<span class=\"ldap-member-count text-muted\" data-lazy-count-url=\"{$url}\" title=\"Passez la souris sur la ligne pour afficher le nombre\">…</span>";
                 },
             ]);
     }

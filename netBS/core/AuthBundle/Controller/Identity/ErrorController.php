@@ -33,24 +33,24 @@ final class ErrorController extends AbstractController
      */
     private const ERROR_MESSAGES = [
         // RFC 6749 §4.1.2.1 / §4.2.2.1 / §5.2
-        'invalid_request'           => "La requête d'authentification est invalide.",
-        'invalid_client'            => "L'application cliente n'a pas pu être authentifiée.",
-        'invalid_grant'             => "L'autorisation a expiré ou n'est plus valide. Veuillez vous reconnecter.",
-        'unauthorized_client'       => "L'application cliente n'est pas autorisée à effectuer cette action.",
-        'unsupported_response_type' => "Le type de réponse demandé n'est pas pris en charge.",
-        'unsupported_grant_type'    => "Le type d'autorisation demandé n'est pas pris en charge.",
-        'invalid_scope'             => "Les permissions demandées sont invalides ou non autorisées.",
-        'access_denied'             => "Vous n'avez pas accès à cette application.",
-        'server_error'              => "Une erreur interne est survenue lors de l'authentification.",
-        'temporarily_unavailable'   => "Le service d'authentification est temporairement indisponible.",
+        'invalid_request'           => "La demande de connexion n'est pas valide.",
+        'invalid_client'            => "Cette application n'a pas pu être identifiée.",
+        'invalid_grant'             => "Ta connexion a expiré. Reconnecte-toi.",
+        'unauthorized_client'       => "Cette application n'a pas le droit de faire cette demande.",
+        'unsupported_response_type' => "Cette application a fait une demande que netBS ne gère pas.",
+        'unsupported_grant_type'    => "Cette application a fait une demande que netBS ne gère pas.",
+        'invalid_scope'             => "Cette application demande des accès auxquels elle n'a pas droit.",
+        'access_denied'             => "Tu n'as pas accès à cette application.",
+        'server_error'              => "Un problème interne a empêché la connexion. Réessaie dans un moment.",
+        'temporarily_unavailable'   => "Le service de connexion est momentanément indisponible. Réessaie dans quelques minutes.",
         // OIDC core §3.1.2.6
-        'login_required'            => "Une connexion est requise pour accéder à cette application.",
-        'consent_required'          => "Votre consentement est requis pour accéder à cette application.",
-        'interaction_required'      => "Une interaction utilisateur est requise pour continuer.",
-        'account_selection_required' => "Veuillez sélectionner un compte pour continuer.",
+        'login_required'            => "Tu dois te connecter pour accéder à cette application.",
+        'consent_required'          => "Tu dois autoriser cette application pour continuer.",
+        'interaction_required'      => "Une action de ta part est nécessaire pour continuer.",
+        'account_selection_required' => "Choisis un compte pour continuer.",
     ];
 
-    private const UNKNOWN_MESSAGE = "Une erreur d'authentification est survenue.";
+    private const UNKNOWN_MESSAGE = "La connexion a échoué.";
 
     public function __construct(
         private readonly KernelInterface $kernel,

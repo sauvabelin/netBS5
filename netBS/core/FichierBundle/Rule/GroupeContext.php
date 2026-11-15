@@ -22,7 +22,7 @@ class GroupeContext implements RuleContext
     public function variables(): array
     {
         return [
-            'groupe' => new RuleVariable('Le groupe ; getParent() donne son groupe parent', [BaseGroupe::class]),
+            'groupe' => new RuleVariable('Le groupe. getParent() renvoie son groupe parent.', [BaseGroupe::class]),
         ];
     }
 

@@ -133,7 +133,7 @@ final class DirectoryProjection
     public function describeMembres(DirectoryPublicationRule $rule): string
     {
         return $rule->getSousGroupes() === DirectoryPublicationRule::SOUS_GROUPES_REGLE
-            ? 'Membres du groupe et des sous-groupes quand ' . $this->describer->describe($rule->getSousGroupesRuleJson(), 'attribution_sous_groupe')
+            ? 'Membres du groupe, et des sous-groupes si ' . $this->describer->describe($rule->getSousGroupesRuleJson(), 'attribution_sous_groupe')
             : array_flip(DirectoryPublicationRule::getSousGroupesChoices())[$rule->getSousGroupes()];
     }
 
@@ -368,7 +368,7 @@ final class DirectoryProjection
 
     private function computedOrigin(DirectoryComputedGroup $entity): string
     {
-        return 'Groupe automatique — ' . $this->describeComputed($entity);
+        return 'Groupe automatique : ' . $this->describeComputed($entity);
     }
 
     /**

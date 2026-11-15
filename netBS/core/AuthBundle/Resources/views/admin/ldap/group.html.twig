@@ -40,9 +40,9 @@
                                 {% if lldapError is not null %}
                                     <span class="text-danger">lldap ne répond pas : {{ lldapError }}</span>
                                 {% elseif lldapGroup is null %}
-                                    pas encore créé, il le sera à la prochaine synchronisation
+                                    pas encore créé (il le sera à la prochaine synchronisation)
                                 {% elseif lldapGroup.displayName != group.name %}
-                                    nommé « {{ lldapGroup.displayName }} », sera renommé à la prochaine synchronisation
+                                    s'appelle encore « {{ lldapGroup.displayName }} » (renommé à la prochaine synchronisation)
                                 {% else %}
                                     présent
                                 {% endif %}

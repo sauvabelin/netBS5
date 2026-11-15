@@ -17,6 +17,7 @@ security:
         gettoken:
             pattern: ^/api/v1/netBS/gettoken
             stateless: true
+            user_checker: NetBS\SecureBundle\Security\ActiveUserChecker
             json_login:
                 check_path: /api/v1/netBS/gettoken
                 success_handler: lexik_jwt_authentication.handler.authentication_success
@@ -26,11 +27,13 @@ security:
             pattern: ^/api/v1/netBS
             stateless: true
             provider: database
+            user_checker: NetBS\SecureBundle\Security\ActiveUserChecker
             jwt: ~
 
         oidc:
             pattern: ^/oidc-(login|consent|logout|error|refresh-hook)
             provider: database
+            user_checker: NetBS\SecureBundle\Security\ActiveUserChecker
             context: netbs   # share session with the netbs firewall so login carries over
             # Keeps the login_challenge in the login page URL (see OidcLoginChallenge).
             entry_point: NetBS\AuthBundle\Security\OidcLoginEntryPoint
@@ -43,6 +46,7 @@ security:
         netbs:
             pattern: ^/netBS
             context: netbs   # shared with the oidc firewall
+            user_checker: NetBS\SecureBundle\Security\ActiveUserChecker
             switch_user: true
             form_login:
                 login_path: netbs.secure.login.login
@@ -50,6 +54,10 @@ security:
                 default_target_path: netbs.core.home.dashboard
                 enable_csrf: true
                 success_handler: NetBS\AuthBundle\Security\OidcAwareLoginSuccessHandler
+            # Per username + IP (and 5x that per IP alone); a successful login resets the count.
+            login_throttling:
+                max_attempts: 5
+                interval: '15 minutes'
             remember_me:
                 secret: '%kernel.secret%'
                 lifetime: 604800

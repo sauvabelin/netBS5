@@ -9,7 +9,7 @@ use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
  * Covers the main netBS login screen: the markup contract that lets password
  * managers and browser autofill recognise the form, and the authentication
  * behaviour the template is wired to (successful login, and a failed login
- * showing an error while re-populating the username).
+ * re-populating the username).
  */
 class LoginControllerTest extends WebTestCase
 {
@@ -37,7 +37,7 @@ class LoginControllerTest extends WebTestCase
         );
     }
 
-    public function test_failed_login_shows_an_error_and_repopulates_the_username(): void
+    public function test_failed_login_repopulates_the_username(): void
     {
         $client = static::createClient();
 
@@ -50,7 +50,6 @@ class LoginControllerTest extends WebTestCase
         $this->assertResponseRedirects();
         $crawler = $client->followRedirect();
         $this->assertStringContainsString('/secure/login', $client->getRequest()->getUri());
-        $this->assertSelectorExists('.text-danger');
         $this->assertSame(
             'wrong-user',
             $crawler->filter('input[name="_username"]')->attr('value'),

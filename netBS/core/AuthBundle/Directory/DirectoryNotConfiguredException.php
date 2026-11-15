@@ -13,12 +13,12 @@ final class DirectoryNotConfiguredException extends \RuntimeException
 {
     public function __construct(?string $message = null)
     {
-        parent::__construct($message ?? "Aucun groupe n'est partagé : ajoutez une règle de partage ou un groupe automatique. La synchronisation est en pause, sinon elle supprimerait tous les groupes partagés.");
+        parent::__construct($message ?? "Aucun groupe n'est partagé pour l'instant. Ajoutez une règle de partage ou un groupe automatique. D'ici là, la synchronisation est en pause pour ne pas supprimer les groupes déjà partagés.");
     }
 
     /** @param string $owner e.g. « Règle « Unités » » */
     public static function brokenRule(string $owner, string $problem): self
     {
-        return new self(sprintf('%s : %s. La synchronisation est suspendue jusqu\'à sa correction.', $owner, rtrim($problem, '.')));
+        return new self(sprintf('%s : %s. La synchronisation reste en pause tant que ce n\'est pas corrigé.', $owner, rtrim($problem, '.')));
     }
 }

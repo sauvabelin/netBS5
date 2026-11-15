@@ -6,7 +6,7 @@
     <div class="container-fluid">
         {% include '@NetBSCore/includes/header.include.twig' with {
             header: 'Authentification',
-            subHeader: 'OAuth / OIDC clients'
+            subHeader: 'Clients OAuth / OIDC'
         } %}
 
         <div class="row">
@@ -18,8 +18,8 @@
                             Le serveur d'authentification ne répond pas
                         </h5>
                         <p class="mb-3">
-                            Le client n'a pas pu être chargé depuis Hydra. Rien n'a été modifié.
-                            Réessayez dans un instant ; si le problème persiste, vérifiez que le service Hydra tourne.
+                            Impossible de charger le client depuis Hydra. Rien n'a été modifié.
+                        Réessayez dans un instant, et si ça continue, vérifiez que le service Hydra tourne.
                         </p>
                         {% if app.request.method == 'GET' %}
                             <a href="{{ app.request.uri }}" class="btn btn-primary">

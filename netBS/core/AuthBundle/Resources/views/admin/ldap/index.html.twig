@@ -26,9 +26,9 @@
                         </button>
                     </div>
                     <div class="card-body">
-                        <p class="text-muted small">Choisissez quels groupes netBS sont partagés avec les autres outils (Nextcloud, wiki…). Les règles sont lues dans l'ordre : un groupe suit la première règle qui le concerne. Un groupe qu'aucune règle ne concerne n'est pas partagé.</p>
+                        <p class="text-muted small">Choisissez quels groupes netBS sont visibles dans les autres outils (Nextcloud, wiki…). Les règles s'appliquent dans l'ordre : chaque groupe suit la première règle qui le concerne. Les groupes qu'aucune règle ne concerne ne sont pas partagés.</p>
                         {% if rules is empty %}
-                            <p class="mb-0">Aucune règle : aucun groupe n'est partagé.</p>
+                            <p class="mb-0">Aucune règle pour l'instant, donc aucun groupe n'est partagé.</p>
                         {% else %}
                             <table class="table table-sm align-middle mb-0">
                                 <thead>
@@ -75,7 +75,7 @@
                         </button>
                     </div>
                     <div class="card-body">
-                        <p class="text-muted small">Des groupes sans équivalent dans netBS : leurs membres sont tous ceux qui remplissent les conditions (ex. « tous les chefs actifs »).</p>
+                        <p class="text-muted small">Des groupes qui n'existent pas dans netBS. Leurs membres sont calculés à partir de conditions, par exemple « tous les chefs actifs ».</p>
                         {% if computedGroups is empty %}
                             <p class="mb-0">Aucun groupe automatique.</p>
                         {% else %}
