@@ -32,6 +32,12 @@ interface LldapClientInterface
     public const NETBS_QUOTA_ATTRIBUTE = 'netbs-quota';
     /** User attribute holding the account's main attribution, shown as its role. */
     public const NETBS_ROLE_USER_ATTRIBUTE = 'netbs-role';
+    /** Custom group attributes netBS owns, with their lldap type. */
+    public const GROUP_ATTRIBUTES = [
+        self::NETBS_ID_ATTRIBUTE => 'INTEGER',
+        self::NETBS_ROLE_ATTRIBUTE => 'STRING',
+        self::NETBS_COMPUTED_ATTRIBUTE => 'INTEGER',
+    ];
     /** Custom user attributes netBS owns, with their lldap type. */
     public const USER_ATTRIBUTES = [
         self::NETBS_EMAIL_ATTRIBUTE => 'STRING',

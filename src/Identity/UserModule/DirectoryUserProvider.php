@@ -59,7 +59,7 @@ final class DirectoryUserProvider implements DirectoryUserProviderInterface
                 )),
                 groupsSuspended: $account->mustChangePassword(),
                 contactEmail: BSUserIdentity::email($account),
-                quota: $account->getNextcloudQuota() === null ? null : (int) $account->getNextcloudQuota(),
+                quota: ($quota = $account->getNextcloudQuota()) === null ? null : (int) $quota,
                 role: ($membre?->getActiveAttribution()?->getLabel() ?: null),
             );
         }

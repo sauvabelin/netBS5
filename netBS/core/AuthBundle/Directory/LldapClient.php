@@ -77,28 +77,36 @@ final class LldapClient implements LldapClientInterface, ResetInterface
 
     public function groupAttributes(): array
     {
-        $data = $this->graphql('{ schema { groupSchema { attributes { name } } } }');
-        return array_column($data['schema']['groupSchema']['attributes'], 'name');
+        return $this->schemaAttributes('group');
     }
 
     public function addGroupAttribute(string $name, string $type): void
     {
-        $this->graphql(
-            'mutation($name: String!, $type: AttributeType!) { addGroupAttribute(name: $name, attributeType: $type, isList: false, isVisible: true, isEditable: false) { ok } }',
-            ['name' => $name, 'type' => $type],
-        );
+        $this->addAttribute('group', $name, $type);
     }
 
     public function userAttributes(): array
     {
-        $data = $this->graphql('{ schema { userSchema { attributes { name } } } }');
-        return array_column($data['schema']['userSchema']['attributes'], 'name');
+        return $this->schemaAttributes('user');
     }
 
     public function addUserAttribute(string $name, string $type): void
     {
+        $this->addAttribute('user', $name, $type);
+    }
+
+    /** @param 'user'|'group' $kind */
+    private function schemaAttributes(string $kind): array
+    {
+        $data = $this->graphql(sprintf('{ schema { %sSchema { attributes { name } } } }', $kind));
+        return array_column($data['schema'][$kind . 'Schema']['attributes'], 'name');
+    }
+
+    /** @param 'user'|'group' $kind */
+    private function addAttribute(string $kind, string $name, string $type): void
+    {
         $this->graphql(
-            'mutation($name: String!, $type: AttributeType!) { addUserAttribute(name: $name, attributeType: $type, isList: false, isVisible: true, isEditable: false) { ok } }',
+            sprintf('mutation($name: String!, $type: AttributeType!) { add%sAttribute(name: $name, attributeType: $type, isList: false, isVisible: true, isEditable: false) { ok } }', ucfirst($kind)),
             ['name' => $name, 'type' => $type],
         );
     }
