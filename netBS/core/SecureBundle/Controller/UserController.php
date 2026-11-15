@@ -51,12 +51,12 @@ class UserController extends AbstractController
             $user   = $form->getData();
 
             $manager->updateUser($user);
-            $this->addFlash("success", "{$user->getUsername()} mis à jour");
+            $this->addFlash("success", "{$user->getLoginUsername()} mis à jour");
             return $this->redirectToRoute('netbs.secure.user.list_users');
         }
 
         return $this->render('@NetBSCore/generic/form.generic.twig', array(
-            'header'    => "Modifier {$user->getUsername()}",
+            'header'    => "Modifier {$user->getLoginUsername()}",
             'form'      => $form->createView()
         ));
     }
@@ -102,7 +102,7 @@ class UserController extends AbstractController
             $user->setPassword($password);
             $manager->createUser($user);
 
-            $this->addFlash("success", "Utilisateur {$user->getUsername()} ajouté!");
+            $this->addFlash("success", "Utilisateur {$user->getLoginUsername()} ajouté!");
             return $this->redirectToRoute("netbs.secure.user.list_users");
         }
 

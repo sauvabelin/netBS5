@@ -10,25 +10,19 @@ use Symfony\Component\Security\Core\User\UserInterface;
 use Symfony\Component\Security\Core\User\UserProviderInterface;
 
 /**
- * Login forms submit the editable login handle; JWT and remember-me carry the
- * permanent username ({@see BSUser::getUserIdentifier()}). Both resolve here.
+ * Resolves the permanent username ({@see BSUser::getUserIdentifier()}) carried
+ * by JWTs, remember-me cookies and switch_user. Typed login names go through
+ * {@see LoginUsernameUserProvider} instead.
  */
 class BSUserProvider implements UserProviderInterface
 {
-    public function __construct(private readonly BSUserRepository $users)
+    public function __construct(protected readonly BSUserRepository $users)
     {
     }
 
     public function loadUserByIdentifier(string $identifier): UserInterface
     {
-        $user = $this->users->findOneByHandle($identifier);
-        if ($user === null) {
-            $e = new UserNotFoundException();
-            $e->setUserIdentifier($identifier);
-            throw $e;
-        }
-
-        return $user;
+        return $this->found($this->users->findOneBy(['username' => $identifier]), $identifier);
     }
 
     public function refreshUser(UserInterface $user): UserInterface
@@ -52,5 +46,16 @@ class BSUserProvider implements UserProviderInterface
     public function supportsClass(string $class): bool
     {
         return $class === BSUser::class || is_subclass_of($class, BSUser::class);
+    }
+
+    protected function found(?BSUser $user, string $identifier): BSUser
+    {
+        if ($user === null) {
+            $e = new UserNotFoundException();
+            $e->setUserIdentifier($identifier);
+            throw $e;
+        }
+
+        return $user;
     }
 }

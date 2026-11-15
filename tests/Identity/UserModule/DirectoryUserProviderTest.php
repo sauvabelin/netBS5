@@ -51,4 +51,24 @@ final class DirectoryUserProviderTest extends KernelTestCase
 
         self::assertSame([], $this->provider->directoryUsers()['dirproj.user']->roles);
     }
+
+    public function testRoleIsTheHeaviestActiveAttribution(): void
+    {
+        $ids = $this->seedGroupeTree();
+        $chef = $this->insert('netbs_fichier_fonctions', ['nom' => 'dirproj-chef', 'abbreviation' => 'dc', 'poids' => 50]);
+        $this->insert('netbs_fichier_attributions', [
+            'membre_id' => $ids['membre'], 'groupe_id' => $ids['gc'], 'fonction_id' => $chef,
+            'dateDebut' => '2020-01-01', 'createdAt' => $this->now(), 'updatedAt' => $this->now(),
+        ]);
+
+        self::assertSame('dirproj-chef - dirproj-GC', $this->provider->directoryUsers()['dirproj.user']->role);
+    }
+
+    public function testNoActiveAttributionMeansNoRole(): void
+    {
+        $ids = $this->seedGroupeTree();
+        $this->db->update('netbs_fichier_attributions', ['dateFin' => '2021-01-01'], ['id' => $ids['attribution']]);
+
+        self::assertNull($this->provider->directoryUsers()['dirproj.user']->role);
+    }
 }

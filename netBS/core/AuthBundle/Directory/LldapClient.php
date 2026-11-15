@@ -29,8 +29,18 @@ final class LldapClient implements LldapClientInterface, ResetInterface
 
     public function listUsers(): array
     {
-        $data = $this->graphql('{ users { id email displayName firstName lastName } }');
-        return $data['users'];
+        $data = $this->graphql('{ users { id email displayName firstName lastName attributes { name value } } }');
+
+        return array_map(static function (array $user): array {
+            $attributes = array_fill_keys(array_keys(self::USER_ATTRIBUTES), null);
+            foreach ($user['attributes'] as $attribute) {
+                if (array_key_exists($attribute['name'], $attributes) && $attribute['value'] !== []) {
+                    $attributes[$attribute['name']] = (string) $attribute['value'][0];
+                }
+            }
+
+            return ['attributes' => $attributes] + $user;
+        }, $data['users']);
     }
 
     public function listGroups(): array
@@ -67,32 +77,74 @@ final class LldapClient implements LldapClientInterface, ResetInterface
 
     public function groupAttributes(): array
     {
-        $data = $this->graphql('{ schema { groupSchema { attributes { name } } } }');
-        return array_column($data['schema']['groupSchema']['attributes'], 'name');
+        return $this->schemaAttributes('group');
     }
 
     public function addGroupAttribute(string $name, string $type): void
     {
+        $this->addAttribute('group', $name, $type);
+    }
+
+    public function userAttributes(): array
+    {
+        return $this->schemaAttributes('user');
+    }
+
+    public function addUserAttribute(string $name, string $type): void
+    {
+        $this->addAttribute('user', $name, $type);
+    }
+
+    /** @param 'user'|'group' $kind */
+    private function schemaAttributes(string $kind): array
+    {
+        $data = $this->graphql(sprintf('{ schema { %sSchema { attributes { name } } } }', $kind));
+        return array_column($data['schema'][$kind . 'Schema']['attributes'], 'name');
+    }
+
+    /** @param 'user'|'group' $kind */
+    private function addAttribute(string $kind, string $name, string $type): void
+    {
         $this->graphql(
-            'mutation($name: String!, $type: AttributeType!) { addGroupAttribute(name: $name, attributeType: $type, isList: false, isVisible: true, isEditable: false) { ok } }',
+            sprintf('mutation($name: String!, $type: AttributeType!) { add%sAttribute(name: $name, attributeType: $type, isList: false, isVisible: true, isEditable: false) { ok } }', ucfirst($kind)),
             ['name' => $name, 'type' => $type],
         );
     }
 
     public function createUser(DirectoryUser $user): void
     {
-        $this->graphql(
-            'mutation($user: CreateUserInput!) { createUser(user: $user) { id } }',
-            ['user' => ['id' => $user->uid] + $this->userFields($user)],
-        );
+        $fields = ['id' => $user->uid] + $this->userFields($user);
+        $set = $this->attributeValues($user);
+        if ($set !== []) {
+            $fields['attributes'] = $set;
+        }
+        $this->graphql('mutation($user: CreateUserInput!) { createUser(user: $user) { id } }', ['user' => $fields]);
     }
 
     public function updateUser(DirectoryUser $user): void
     {
-        $this->graphql(
-            'mutation($user: UpdateUserInput!) { updateUser(user: $user) { ok } }',
-            ['user' => ['id' => $user->uid] + $this->userFields($user)],
-        );
+        $fields = ['id' => $user->uid] + $this->userFields($user);
+        $set = $this->attributeValues($user);
+        if ($set !== []) {
+            $fields['insertAttributes'] = $set;
+        }
+        $unset = array_keys(array_filter($user->attributes(), static fn (?string $v) => $v === null));
+        if ($unset !== []) {
+            $fields['removeAttributes'] = $unset;
+        }
+        $this->graphql('mutation($user: UpdateUserInput!) { updateUser(user: $user) { ok } }', ['user' => $fields]);
+    }
+
+    /** @return list<array{name: string, value: string[]}> the attributes $user has a value for */
+    private function attributeValues(DirectoryUser $user): array
+    {
+        $values = [];
+        foreach ($user->attributes() as $name => $value) {
+            if ($value !== null) {
+                $values[] = ['name' => $name, 'value' => [$value]];
+            }
+        }
+        return $values;
     }
 
     public function deleteUser(string $uid): void

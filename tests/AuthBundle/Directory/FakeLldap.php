@@ -19,6 +19,8 @@ final class FakeLldap implements LldapClientInterface
     public array $groups = [];
     /** @var string[] group attribute names, in creation order */
     public array $attributes = [];
+    /** @var string[] user attribute names, in creation order */
+    public array $userAttributes = [];
     public ?string $failOnCreateUser = null;
     public ?string $failOnUpdateUser = null;
     /** Display name of a group whose creation fails. */
@@ -68,6 +70,17 @@ final class FakeLldap implements LldapClientInterface
     public function addGroupAttribute(string $name, string $type): void
     {
         $this->attributes[] = $name;
+    }
+
+    public function userAttributes(): array
+    {
+        $this->failIfDown();
+        return $this->userAttributes;
+    }
+
+    public function addUserAttribute(string $name, string $type): void
+    {
+        $this->userAttributes[] = $name;
     }
 
     public function createUser(DirectoryUser $user): void
@@ -144,7 +157,7 @@ final class FakeLldap implements LldapClientInterface
 
     private function row(string $uid, DirectoryUser $user): array
     {
-        return ['id' => $uid, 'email' => $user->email, 'displayName' => $user->displayName, 'firstName' => $user->firstName, 'lastName' => $user->lastName];
+        return ['id' => $uid, 'email' => $user->email, 'displayName' => $user->displayName, 'firstName' => $user->firstName, 'lastName' => $user->lastName, 'attributes' => $user->attributes()];
     }
 
     private function failIfDown(): void

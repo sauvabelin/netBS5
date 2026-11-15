@@ -6,8 +6,11 @@ security:
 
     providers:
         database:
-            # Resolves both the login handle (forms) and the permanent username (tokens).
+            # The permanent username, carried by JWTs, remember-me and switch_user.
             id: App\Security\BSUserProvider
+        login_username:
+            # The name typed at sign-in; the permanent username never signs in.
+            id: App\Security\LoginUsernameUserProvider
 
     firewalls:
         dev:
@@ -17,8 +20,10 @@ security:
         gettoken:
             pattern: ^/api/v1/netBS/gettoken
             stateless: true
+            provider: database
             user_checker: NetBS\SecureBundle\Security\ActiveUserChecker
             json_login:
+                provider: login_username
                 check_path: /api/v1/netBS/gettoken
                 success_handler: lexik_jwt_authentication.handler.authentication_success
                 failure_handler: lexik_jwt_authentication.handler.authentication_failure
@@ -38,6 +43,7 @@ security:
             # Keeps the login_challenge in the login page URL (see OidcLoginChallenge).
             entry_point: NetBS\AuthBundle\Security\OidcLoginEntryPoint
             form_login:
+                provider: login_username
                 login_path: netbs.secure.login.login
                 check_path: netbs.secure.login.login
                 default_target_path: oidc_login
@@ -46,9 +52,11 @@ security:
         netbs:
             pattern: ^/netBS
             context: netbs   # shared with the oidc firewall
+            provider: database
             user_checker: NetBS\SecureBundle\Security\ActiveUserChecker
             switch_user: true
             form_login:
+                provider: login_username
                 login_path: netbs.secure.login.login
                 check_path: netbs.secure.login.login
                 default_target_path: netbs.core.home.dashboard

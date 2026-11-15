@@ -170,7 +170,7 @@ class MailingTarget
             case self::TYPE_EMAIL:
                 return $this->targetEmail ?? '';
             case self::TYPE_USER:
-                return $this->targetUser ? $this->targetUser->getUsername() : '';
+                return $this->targetUser ? $this->targetUser->getLoginUsername() : '';
             case self::TYPE_UNITE:
                 return $this->targetGroup ? $this->targetGroup->getNom() : '';
             case self::TYPE_ROLE:

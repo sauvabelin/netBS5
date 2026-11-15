@@ -49,9 +49,9 @@ class UserHelper extends BaseHelper
     public function getRepresentation($item)
     {
         if(!$item->getMembre())
-            return $item->getUsername();
+            return $item->getLoginUsername();
 
-        return $item->getUsername() . " (" . $item->getMembre()->getFullName() . ")";
+        return $item->getLoginUsername() . " (" . $item->getMembre()->getFullName() . ")";
     }
 
     /**

@@ -20,13 +20,6 @@ final class DirectorySync
 {
     public const MANAGED_USERS_GROUP = 'netbs_users';
 
-    /** Group attributes the sync relies on, with their lldap type. */
-    private const GROUP_ATTRIBUTES = [
-        LldapClientInterface::NETBS_ID_ATTRIBUTE => 'INTEGER',
-        LldapClientInterface::NETBS_ROLE_ATTRIBUTE => 'STRING',
-        LldapClientInterface::NETBS_COMPUTED_ATTRIBUTE => 'INTEGER',
-    ];
-
     /** @var string[] */
     private array $changes = [];
     /** @var string[] */
@@ -48,13 +41,10 @@ final class DirectorySync
         $this->skippedUids = [];
         $this->deletedUids = [];
 
-        $existingAttributes = $this->client->groupAttributes();
-        foreach (self::GROUP_ATTRIBUTES as $name => $type) {
-            if (!in_array($name, $existingAttributes, true)) {
-                $this->apply($dryRun, sprintf('add group attribute %s', $name),
-                    fn () => $this->client->addGroupAttribute($name, $type));
-            }
-        }
+        $this->ensureAttributes('group', LldapClientInterface::GROUP_ATTRIBUTES, $this->client->groupAttributes(), $dryRun,
+            fn (string $name, string $type) => $this->client->addGroupAttribute($name, $type));
+        $this->ensureAttributes('user', LldapClientInterface::USER_ATTRIBUTES, $this->client->userAttributes(), $dryRun,
+            fn (string $name, string $type) => $this->client->addUserAttribute($name, $type));
 
         $currentGroups = $this->client->listGroups();
         $marker = $this->findMarkerGroup($currentGroups);
@@ -78,6 +68,17 @@ final class DirectorySync
         $this->syncGroups($desired, $currentGroups, $dryRun);
 
         return new DirectorySyncReport($this->changes, $this->errors, $snapshot);
+    }
+
+    /**
+     * @param array<string, string> $wanted   name => lldap type
+     * @param string[]              $existing names lldap already has
+     */
+    private function ensureAttributes(string $kind, array $wanted, array $existing, bool $dryRun, callable $add): void
+    {
+        foreach (array_diff_key($wanted, array_flip($existing)) as $name => $type) {
+            $this->apply($dryRun, sprintf('add %s attribute %s', $kind, $name), fn () => $add($name, $type));
+        }
     }
 
     private function findMarkerGroup(array $currentGroups): ?array

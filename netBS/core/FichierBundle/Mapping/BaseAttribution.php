@@ -99,13 +99,19 @@ abstract class BaseAttribution
         return $this->id;
     }
 
+    /** "Fonction - Groupe", as shown in the global search; empty when neither is set. */
+    public function getLabel(): string
+    {
+        $parts = [];
+        if ($this->fonction) $parts[] = $this->fonction->getNom();
+        if ($this->groupe) $parts[] = $this->groupe->getNom();
+        return implode(' - ', $parts);
+    }
+
     public function __toString()
     {
         try {
-            $parts = [];
-            if ($this->fonction) $parts[] = $this->fonction->getNom();
-            if ($this->groupe) $parts[] = $this->groupe->getNom();
-            $str = implode(' - ', $parts) ?: 'Attribution #' . $this->id;
+            $str = $this->getLabel() ?: 'Attribution #' . $this->id;
             if ($this->membre) {
                 $str .= ' (' . $this->membre->getFullName() . ')';
             }

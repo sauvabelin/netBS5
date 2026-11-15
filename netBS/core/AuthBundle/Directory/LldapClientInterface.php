@@ -10,7 +10,8 @@ namespace NetBS\AuthBundle\Directory;
  *
  * Shapes returned by the list methods:
  *   users:  [['id' => string, 'email' => string, 'displayName' => string,
- *             'firstName' => string, 'lastName' => string]]
+ *             'firstName' => string, 'lastName' => string,
+ *             'attributes' => array<string, ?string> (every USER_ATTRIBUTES name, null when absent)]]
  *   groups: [['id' => int, 'displayName' => string, 'netbsId' => ?int,
  *             'netbsRole' => ?string, 'netbsComputedId' => ?int, 'members' => string[]]]
  */
@@ -22,6 +23,27 @@ interface LldapClientInterface
     public const NETBS_ROLE_ATTRIBUTE = 'netbs-role';
     /** Group attribute holding the id of a computed group. */
     public const NETBS_COMPUTED_ATTRIBUTE = 'netbs-computed-id';
+    /**
+     * User attribute holding the account's real email, absent when `mail` is
+     * only lldap's mandatory placeholder. Services read this one for email.
+     */
+    public const NETBS_EMAIL_ATTRIBUTE = 'netbs-email';
+    /** User attribute holding the account's Nextcloud quota, in bytes. */
+    public const NETBS_QUOTA_ATTRIBUTE = 'netbs-quota';
+    /** User attribute holding the account's main attribution, shown as its role. */
+    public const NETBS_ROLE_USER_ATTRIBUTE = 'netbs-role';
+    /** Custom group attributes netBS owns, with their lldap type. */
+    public const GROUP_ATTRIBUTES = [
+        self::NETBS_ID_ATTRIBUTE => 'INTEGER',
+        self::NETBS_ROLE_ATTRIBUTE => 'STRING',
+        self::NETBS_COMPUTED_ATTRIBUTE => 'INTEGER',
+    ];
+    /** Custom user attributes netBS owns, with their lldap type. */
+    public const USER_ATTRIBUTES = [
+        self::NETBS_EMAIL_ATTRIBUTE => 'STRING',
+        self::NETBS_QUOTA_ATTRIBUTE => 'STRING',
+        self::NETBS_ROLE_USER_ATTRIBUTE => 'STRING',
+    ];
 
     public function listUsers(): array;
 
@@ -32,6 +54,12 @@ interface LldapClientInterface
 
     /** @param string $type lldap AttributeType: INTEGER, STRING, ... */
     public function addGroupAttribute(string $name, string $type): void;
+
+    /** @return string[] names of the custom user attributes */
+    public function userAttributes(): array;
+
+    /** @param string $type lldap AttributeType: INTEGER, STRING, ... */
+    public function addUserAttribute(string $name, string $type): void;
 
     public function createUser(DirectoryUser $user): void;
 

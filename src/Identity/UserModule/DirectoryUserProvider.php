@@ -27,13 +27,15 @@ final class DirectoryUserProvider implements DirectoryUserProviderInterface
     {
         /** @var BSUser[] $accounts */
         $accounts = $this->directoryAccounts()
-            ->select('u', 'm', 'ur', 'a', 'f', 'fr')
+            ->select('u', 'm', 'ur', 'a', 'f', 'fr', 'g')
             ->leftJoin('u.membre', 'm')
             // Fetched up front so getAllRoles() doesn't lazy-load per user.
             ->leftJoin('u.roles', 'ur')
             ->leftJoin('m.attributions', 'a')
             ->leftJoin('a.fonction', 'f')
             ->leftJoin('f.roles', 'fr')
+            // The role attribute names the attribution's groupe.
+            ->leftJoin('a.groupe', 'g')
             ->getQuery()
             ->getResult();
 
@@ -56,6 +58,9 @@ final class DirectoryUserProvider implements DirectoryUserProviderInterface
                     $account->getRolesAsString(),
                 )),
                 groupsSuspended: $account->mustChangePassword(),
+                contactEmail: BSUserIdentity::email($account),
+                quota: ($quota = $account->getNextcloudQuota()) === null ? null : (int) $quota,
+                role: ($membre?->getActiveAttribution()?->getLabel() ?: null),
             );
         }
 

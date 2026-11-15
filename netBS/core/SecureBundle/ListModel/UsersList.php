@@ -60,7 +60,7 @@ class UsersList extends AjaxModel
         $configuration
             ->addColumn("Nom d'utilisateur", function(BaseUser $user) {
 
-                $html   = $user->getUsername();
+                $html   = $user->getLoginUsername();
                 if(!$user->getIsActive())
                     $html .= " <span class='label label-danger'>Désactivé</span>";
                 return $html;

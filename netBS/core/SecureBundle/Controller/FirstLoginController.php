@@ -65,7 +65,7 @@ class FirstLoginController extends AbstractController
         return $this->render('@NetBSSecure/first_login/first_login.html.twig', [
             'form'     => $form->createView(),
             // The name typed on the login form, for password managers.
-            'username' => (method_exists($user, 'getLoginUsername') ? $user->getLoginUsername() : null) ?? $user->getUserIdentifier(),
+            'username' => $user->getLoginUsername() ?? $user->getUserIdentifier(),
         ], new Response('', $form->isSubmitted() ? Response::HTTP_UNPROCESSABLE_ENTITY : Response::HTTP_OK));
     }
 

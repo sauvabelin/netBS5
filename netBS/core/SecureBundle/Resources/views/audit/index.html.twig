@@ -76,7 +76,7 @@
                                     <tr>
                                         <th scope="row" class="ps-3 fw-normal">
                                             <a href="{{ path('netbs.secure.audit.user_show', {id: row.user.id}) }}"
-                                               class="text-decoration-none">{{ row.user.username }}</a>
+                                               class="text-decoration-none">{{ row.user.loginUsername }}</a>
                                         </th>
                                         {% for role in matrix.roles %}
                                             {% set cell = row.cells[role]|default(null) %}

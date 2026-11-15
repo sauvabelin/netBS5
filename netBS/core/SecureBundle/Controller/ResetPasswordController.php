@@ -141,7 +141,7 @@ class ResetPasswordController extends AbstractController
             return;
         }
 
-        $user = $this->em->getRepository(BSUser::class)->findOneByHandle($username);
+        $user = $this->em->getRepository(BSUser::class)->findOneByLoginUsername($username);
         if (!$user) {
             $this->jitter();
             return;

@@ -39,7 +39,7 @@ class UIController extends AbstractController
 
             $descr      = '';
             if($attr = $membre->getActiveAttribution())
-                $descr  = $attr->__toString();
+                $descr  = $attr->getLabel();
 
             $results[] = [
                 'name'          => $membre->getFullName(),
