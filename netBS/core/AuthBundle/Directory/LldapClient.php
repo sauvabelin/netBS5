@@ -29,8 +29,18 @@ final class LldapClient implements LldapClientInterface, ResetInterface
 
     public function listUsers(): array
     {
-        $data = $this->graphql('{ users { id email displayName firstName lastName } }');
-        return $data['users'];
+        $data = $this->graphql('{ users { id email displayName firstName lastName attributes { name value } } }');
+
+        return array_map(static function (array $user): array {
+            $attributes = array_fill_keys(array_keys(self::USER_ATTRIBUTES), null);
+            foreach ($user['attributes'] as $attribute) {
+                if (array_key_exists($attribute['name'], $attributes) && $attribute['value'] !== []) {
+                    $attributes[$attribute['name']] = (string) $attribute['value'][0];
+                }
+            }
+
+            return ['attributes' => $attributes] + $user;
+        }, $data['users']);
     }
 
     public function listGroups(): array
@@ -79,20 +89,54 @@ final class LldapClient implements LldapClientInterface, ResetInterface
         );
     }
 
-    public function createUser(DirectoryUser $user): void
+    public function userAttributes(): array
+    {
+        $data = $this->graphql('{ schema { userSchema { attributes { name } } } }');
+        return array_column($data['schema']['userSchema']['attributes'], 'name');
+    }
+
+    public function addUserAttribute(string $name, string $type): void
     {
         $this->graphql(
-            'mutation($user: CreateUserInput!) { createUser(user: $user) { id } }',
-            ['user' => ['id' => $user->uid] + $this->userFields($user)],
+            'mutation($name: String!, $type: AttributeType!) { addUserAttribute(name: $name, attributeType: $type, isList: false, isVisible: true, isEditable: false) { ok } }',
+            ['name' => $name, 'type' => $type],
         );
+    }
+
+    public function createUser(DirectoryUser $user): void
+    {
+        $fields = ['id' => $user->uid] + $this->userFields($user);
+        $set = $this->attributeValues($user);
+        if ($set !== []) {
+            $fields['attributes'] = $set;
+        }
+        $this->graphql('mutation($user: CreateUserInput!) { createUser(user: $user) { id } }', ['user' => $fields]);
     }
 
     public function updateUser(DirectoryUser $user): void
     {
-        $this->graphql(
-            'mutation($user: UpdateUserInput!) { updateUser(user: $user) { ok } }',
-            ['user' => ['id' => $user->uid] + $this->userFields($user)],
-        );
+        $fields = ['id' => $user->uid] + $this->userFields($user);
+        $set = $this->attributeValues($user);
+        if ($set !== []) {
+            $fields['insertAttributes'] = $set;
+        }
+        $unset = array_keys(array_filter($user->attributes(), static fn (?string $v) => $v === null));
+        if ($unset !== []) {
+            $fields['removeAttributes'] = $unset;
+        }
+        $this->graphql('mutation($user: UpdateUserInput!) { updateUser(user: $user) { ok } }', ['user' => $fields]);
+    }
+
+    /** @return list<array{name: string, value: string[]}> the attributes $user has a value for */
+    private function attributeValues(DirectoryUser $user): array
+    {
+        $values = [];
+        foreach ($user->attributes() as $name => $value) {
+            if ($value !== null) {
+                $values[] = ['name' => $name, 'value' => [$value]];
+            }
+        }
+        return $values;
     }
 
     public function deleteUser(string $uid): void

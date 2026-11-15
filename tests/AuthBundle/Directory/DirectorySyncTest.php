@@ -163,6 +163,7 @@ final class DirectorySyncTest extends TestCase
         $this->lldap->addUserToGroup('Alice', $this->lldap->createGroup(DirectorySync::MANAGED_USERS_GROUP, null));
         $this->lldap->addUserToGroup('Alice', $this->lldap->createGroup('Troupe X', 10));
         $this->lldap->attributes = ['netbs-id', 'netbs-role', 'netbs-computed-id'];
+        $this->lldap->userAttributes = ['netbs-email', 'netbs-quota', 'netbs-role'];
 
         $report = $this->sync([$this->user('alice')], [new DirectoryGroup(10, 'Troupe X', ['alice'])]);
 
@@ -273,6 +274,39 @@ final class DirectorySyncTest extends TestCase
     private function user(string $uid): DirectoryUser
     {
         return new DirectoryUser($uid, "$uid@example.org", ucfirst($uid), ucfirst($uid), 'Test');
+    }
+
+    public function testOnlyARealEmailIsCopiedToTheNetbsEmailAttribute(): void
+    {
+        $this->sync([
+            new DirectoryUser('alice', 'alice@example.org', 'Alice', 'Alice', 'Test', contactEmail: 'alice@example.org'),
+            new DirectoryUser('bob', 'bob@no-email.invalid', 'Bob', 'Bob', 'Test'),
+        ], []);
+
+        self::assertSame(['netbs-email', 'netbs-quota', 'netbs-role'], $this->lldap->userAttributes);
+        self::assertSame('alice@example.org', $this->lldap->users['alice']['attributes']['netbs-email']);
+        self::assertNull($this->lldap->users['bob']['attributes']['netbs-email']);
+    }
+
+    public function testTheNextcloudQuotaIsSyncedAndUpdated(): void
+    {
+        $this->sync([new DirectoryUser('alice', 'alice@example.org', 'Alice', 'Alice', 'Test', quota: 10485760)], []);
+        self::assertSame('10485760', $this->lldap->users['alice']['attributes']['netbs-quota']);
+
+        $report = $this->sync([new DirectoryUser('alice', 'alice@example.org', 'Alice', 'Alice', 'Test', quota: 52428800)], []);
+        self::assertSame(['update user alice'], $report->changes);
+        self::assertSame('52428800', $this->lldap->users['alice']['attributes']['netbs-quota']);
+    }
+
+    public function testAGainedOrLostRealEmailUpdatesTheUser(): void
+    {
+        $this->sync([new DirectoryUser('alice', 'alice@no-email.invalid', 'Alice', 'Alice', 'Test')], []);
+
+        $this->sync([new DirectoryUser('alice', 'alice@example.org', 'Alice', 'Alice', 'Test', contactEmail: 'alice@example.org')], []);
+        self::assertSame('alice@example.org', $this->lldap->users['alice']['attributes']['netbs-email']);
+
+        $this->sync([new DirectoryUser('alice', 'alice@no-email.invalid', 'Alice', 'Alice', 'Test')], []);
+        self::assertNull($this->lldap->users['alice']['attributes']['netbs-email']);
     }
 
     public function testDeletedUserIsNotRemovedFromItsGroupsAgain(): void

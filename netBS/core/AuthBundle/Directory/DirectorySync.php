@@ -55,6 +55,13 @@ final class DirectorySync
                     fn () => $this->client->addGroupAttribute($name, $type));
             }
         }
+        $existingUserAttributes = $this->client->userAttributes();
+        foreach (LldapClientInterface::USER_ATTRIBUTES as $name => $type) {
+            if (!in_array($name, $existingUserAttributes, true)) {
+                $this->apply($dryRun, sprintf('add user attribute %s', $name),
+                    fn () => $this->client->addUserAttribute($name, $type));
+            }
+        }
 
         $currentGroups = $this->client->listGroups();
         $marker = $this->findMarkerGroup($currentGroups);
