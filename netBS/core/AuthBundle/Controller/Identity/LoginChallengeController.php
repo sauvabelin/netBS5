@@ -34,8 +34,9 @@ final class LoginChallengeController extends AbstractController
      * login challenge, and only fails once the browser presents the consent
      * verifier again ("The consent verifier has already been used"). A
      * challenge comes back after a double-submitted login form, a reload or a
-     * restored tab, so the challenges accepted here are remembered for as long
-     * as Hydra keeps a login request alive.
+     * restored tab, so the challenges accepted here are remembered (with the
+     * URL to restart from) for as long as Hydra keeps a login request alive.
+     * Keys are hashed: challenges are long and hold characters PSR-6 rejects.
      */
     private const COMPLETED_KEY_PREFIX = 'oidc_login_completed.';
     private const COMPLETED_TTL = 3600;
@@ -61,6 +62,19 @@ final class LoginChallengeController extends AbstractController
             throw new \InvalidArgumentException('login_challenge missing');
         }
 
+        // Already accepted once: completing it again would end on Hydra's
+        // "verifier already used" error. Start the application's sign-in over
+        // instead; with the netBS session still alive it goes straight through.
+        $completed = $this->cache->getItem(self::COMPLETED_KEY_PREFIX . hash('sha256', $loginChallenge));
+        if ($completed->isHit()) {
+            $this->logger->info('oidc.login: challenge already completed, restarting the flow', [
+                'login_challenge' => $loginChallenge,
+                'decision'        => 'restart',
+            ]);
+
+            return new RedirectResponse($completed->get());
+        }
+
         try {
             $loginRequest = $this->hydra->getLoginRequest($loginChallenge);
         } catch (HydraClientException $e) {
@@ -84,20 +98,6 @@ final class LoginChallengeController extends AbstractController
             return $this->redirectToRoute('netbs.core.home.dashboard');
         }
         $clientId = $loginRequest['client']['client_id'] ?? null;
-
-        // Already accepted once: completing it again would end on Hydra's
-        // "verifier already used" error. Start the application's sign-in over
-        // instead; with the netBS session still alive it goes straight through.
-        $requestUrl = $loginRequest['request_url'] ?? null;
-        if ($this->wasCompleted($loginChallenge) && \is_string($requestUrl) && $requestUrl !== '') {
-            $this->logger->info('oidc.login: challenge already completed, restarting the flow', [
-                'login_challenge' => $loginChallenge,
-                'client_id'       => $clientId,
-                'decision'        => 'restart',
-            ]);
-
-            return new RedirectResponse($requestUrl);
-        }
 
         $user = $this->getUser();
         if (!$user) {
@@ -199,7 +199,10 @@ final class LoginChallengeController extends AbstractController
             'remember' => true,
             'remember_for' => 3600 * 12,
         ]);
-        $this->markCompleted($loginChallenge);
+        $requestUrl = $loginRequest['request_url'] ?? null;
+        if (\is_string($requestUrl) && $requestUrl !== '') {
+            $this->cache->save($completed->set($requestUrl)->expiresAfter(self::COMPLETED_TTL));
+        }
 
         $this->logger->info('oidc.login: accepted', [
             'subject'         => $currentSub,
@@ -215,23 +218,6 @@ final class LoginChallengeController extends AbstractController
     /**
      * @param array<string, mixed> $loginRequest
      */
-    private function wasCompleted(string $loginChallenge): bool
-    {
-        return $this->cache->getItem($this->completedKey($loginChallenge))->isHit();
-    }
-
-    private function markCompleted(string $loginChallenge): void
-    {
-        $item = $this->cache->getItem($this->completedKey($loginChallenge));
-        $this->cache->save($item->set(true)->expiresAfter(self::COMPLETED_TTL));
-    }
-
-    private function completedKey(string $loginChallenge): string
-    {
-        // Challenges are long and contain characters PSR-6 keys may not hold.
-        return self::COMPLETED_KEY_PREFIX . hash('sha256', $loginChallenge);
-    }
-
     private function needsReauthentication(Request $request, array $loginRequest, string $loginChallenge): bool
     {
         $session = $request->hasSession() ? $request->getSession() : null;

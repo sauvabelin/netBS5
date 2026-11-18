@@ -39,15 +39,16 @@
             déconnecté·e des services connectés.
         </p>
 
-        <form method="POST" action="{{ path('oidc_logout') }}" data-turbo="false">
+        <form method="POST" action="{{ path('oidc_logout') }}" data-turbo="false" data-controller="submit-busy" data-action="submit->submit-busy#submit">
             <input type="hidden" name="_token" value="{{ csrf_token(csrfTokenId) }}">
             {% if logoutChallenge %}
                 <input type="hidden" name="logout_challenge" value="{{ logoutChallenge }}">
             {% endif %}
-            <div class="d-grid gap-2">
+            <div class="d-grid gap-2" data-submit-busy-target="idle">
                 <button type="submit" class="btn btn-primary">Continuer</button>
                 <a href="{{ path('netbs.core.home.dashboard') }}" class="btn btn-secondary">Annuler</a>
             </div>
+            {% include '@NetBSAuth/layout/_submit_busy.html.twig' with {label: 'Déconnexion en cours…'} %}
         </form>
     {% else %}
         <p>
@@ -61,15 +62,16 @@
             {% endif %}
         </p>
 
-        <form method="POST" action="{{ path('oidc_logout') }}" data-turbo="false">
+        <form method="POST" action="{{ path('oidc_logout') }}" data-turbo="false" data-controller="submit-busy" data-action="submit->submit-busy#submit">
             <input type="hidden" name="_token" value="{{ csrf_token(csrfTokenId) }}">
             {% if logoutChallenge %}
                 <input type="hidden" name="logout_challenge" value="{{ logoutChallenge }}">
             {% endif %}
-            <div class="d-grid gap-2">
+            <div class="d-grid gap-2" data-submit-busy-target="idle">
                 <button type="submit" class="btn btn-danger">Oui, me déconnecter</button>
                 <a href="{{ path('netbs.core.home.dashboard') }}" class="btn btn-secondary">Annuler</a>
             </div>
+            {% include '@NetBSAuth/layout/_submit_busy.html.twig' with {label: 'Déconnexion en cours…'} %}
         </form>
     {% endif %}
 {% endblock %}

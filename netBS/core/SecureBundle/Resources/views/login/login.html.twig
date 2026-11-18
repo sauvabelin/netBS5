@@ -47,81 +47,59 @@
             </div>
 
             <div class="card-body">
-                <form id="login-form" action="{{ path('netbs.secure.login.login', login_params) }}" method="POST" data-turbo="false">
+                <form action="{{ path('netbs.secure.login.login', login_params) }}" method="POST" data-turbo="false" data-controller="submit-busy" data-action="submit->submit-busy#submit">
 
                     <input type="hidden" name="_csrf_token" value="{{ csrf_token('authenticate') }}">
                     {# A failed attempt comes back here with the OIDC challenge, not to the bare login page. #}
                     <input type="hidden" name="_failure_path" value="{{ path('netbs.secure.login.login', login_params) }}">
 
-                    {% if error %}
-                        <div class="alert alert-danger py-2 small" role="alert">
-                            <i class="fas fa-exclamation-circle me-1"></i>{{ error }}
-                        </div>
-                    {% endif %}
-
-                    <div class="form-group">
-                        <label for="username" class="form-label visually-hidden">Nom d'utilisateur</label>
-                        <div class="input-group">
-                            <input id="username" name="_username" type="text"
-                                   value="{{ last_username }}"
-                                   autocomplete="username" autocapitalize="none" autocorrect="off"
-                                   spellcheck="false" required autofocus
-                                   placeholder="Nom d'utilisateur" class="form-control">
-                        </div>
-                    </div>
-
-                    <div class="form-group">
-                        <label for="password" class="form-label visually-hidden">Mot de passe</label>
-                        <div class="input-group">
-                            <input id="password" name="_password" type="password"
-                                   autocomplete="current-password" required
-                                   placeholder="Mot de passe" class="form-control">
-                        </div>
-                    </div>
-
-                    <div class="form-group row">
-
-                        <div class="col-6">
-
-                            <div class="form-check">
-                                <input type="checkbox" class="form-check-input" id="remember" name="_remember_me">
-                                <label class="form-check-label" for="remember">Se souvenir</label>
+                    <div data-submit-busy-target="idle">
+                        {% if error %}
+                            <div class="alert alert-danger py-2 small" role="alert">
+                                <i class="fas fa-exclamation-circle me-1"></i>{{ error }}
                             </div>
+                        {% endif %}
 
+                        <div class="form-group">
+                            <label for="username" class="form-label visually-hidden">Nom d'utilisateur</label>
+                            <div class="input-group">
+                                <input id="username" name="_username" type="text"
+                                       value="{{ last_username }}"
+                                       autocomplete="username" autocapitalize="none" autocorrect="off"
+                                       spellcheck="false" required autofocus
+                                       placeholder="Nom d'utilisateur" class="form-control">
+                            </div>
                         </div>
-                        <div class="col-6 text-end">
-                            <a href="{{ path('netbs.secure.password_reset.request') }}">Mot de passe oublié&nbsp;?</a>
+
+                        <div class="form-group">
+                            <label for="password" class="form-label visually-hidden">Mot de passe</label>
+                            <div class="input-group">
+                                <input id="password" name="_password" type="password"
+                                       autocomplete="current-password" required
+                                       placeholder="Mot de passe" class="form-control">
+                            </div>
                         </div>
+
+                        <div class="form-group row">
+
+                            <div class="col-6">
+
+                                <div class="form-check">
+                                    <input type="checkbox" class="form-check-input" id="remember" name="_remember_me">
+                                    <label class="form-check-label" for="remember">Se souvenir</label>
+                                </div>
+
+                            </div>
+                            <div class="col-6 text-end">
+                                <a href="{{ path('netbs.secure.password_reset.request') }}">Mot de passe oublié&nbsp;?</a>
+                            </div>
+                        </div>
+                        <button type="submit" class="btn btn-primary w-100">Connexion</button>
                     </div>
-                    <button type="submit" class="btn btn-primary w-100">Connexion</button>
+
+                    {% include '@NetBSAuth/layout/_submit_busy.html.twig' with {label: 'Connexion en cours…'} %}
 
                 </form>
-                <script>
-                    // Submit once. A second submit (double tap, autofill submitting
-                    // while the button is tapped) races the first one: the first
-                    // login replaces the session, so the second fails its CSRF check
-                    // and the OIDC flow gets completed twice.
-                    (function () {
-                        var form = document.getElementById('login-form');
-                        var button = form.querySelector('button[type="submit"]');
-                        var sent = false;
-                        form.addEventListener('submit', function (event) {
-                            if (sent) {
-                                event.preventDefault();
-                                return;
-                            }
-                            sent = true;
-                            button.disabled = true;
-                        });
-                        // Back button restores the page from the bfcache: allow a new submit.
-                        window.addEventListener('pageshow', function (event) {
-                            if (event.persisted) {
-                                sent = false;
-                                button.disabled = false;
-                            }
-                        });
-                    })();
-                </script>
             </div>
         </div>
 

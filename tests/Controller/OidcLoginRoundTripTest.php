@@ -79,8 +79,6 @@ class OidcLoginRoundTripTest extends WebTestCase
 
     public function test_signed_in_user_on_the_login_page_continues_the_oidc_flow(): void
     {
-        // E.g. the first of two submits logged in and the second failed its
-        // CSRF check: the failure lands back on the login page, signed in.
         $client = $this->createOidcClient();
         $this->persistUser($client, 'oidc-rt-signed', 'oidc-rt-signed@example.test', self::PASSWORD, ['ROLE_USER']);
         $client->request('GET', '/netBS/secure/login', ['login_challenge' => self::CHALLENGE]);

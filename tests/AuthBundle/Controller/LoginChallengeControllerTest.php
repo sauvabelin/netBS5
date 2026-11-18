@@ -214,41 +214,38 @@ final class LoginChallengeControllerTest extends TestCase
         $this->assertSame('https://rp.example/cb', $response->getTargetUrl());
     }
 
-    public function testRepeatedChallengeRestartsTheFlowInsteadOfAcceptingAgain(): void
+    private function completeChallenge(ArrayAdapter $cache, string $challenge, string $query): void
     {
-        // A double-submitted login form (or a reload) brings the same
-        // challenge back. Hydra would accept it again and then refuse the
-        // reused consent verifier, so the flow restarts from the RP's URL.
-        $cache = new ArrayAdapter();
-        $first = $this->makeHydra([
-            $this->jsonResponse($this->loginRequestBody('state=s1')),
+        $hydra = $this->makeHydra([
+            $this->jsonResponse($this->loginRequestBody($query)),
             $this->jsonResponse(['redirect_to' => 'https://auth.example/oauth2/auth?login_verifier=v1']),
         ]);
-        $this->build($first, currentSubject: 'alice', cache: $cache)['controller']($this->loginRequest('ch-1'));
+        $this->build($hydra, currentSubject: 'alice', cache: $cache)['controller']($this->loginRequest($challenge));
+    }
 
-        $second = $this->makeHydra([
-            $this->jsonResponse($this->loginRequestBody('state=s1')),
-        ], $mock);
-        $response = $this->build($second, currentSubject: 'alice', cache: $cache)['controller']($this->loginRequest('ch-1'));
+    public function testRepeatedChallengeRestartsTheFlowInsteadOfAcceptingAgain(): void
+    {
+        // Accepting it again would end on Hydra's "consent verifier already used".
+        $cache = new ArrayAdapter();
+        $this->completeChallenge($cache, 'ch-1', 'state=s1');
+
+        $hydra = $this->makeHydra([], $mock);
+        $response = $this->build($hydra, currentSubject: 'alice', cache: $cache)['controller']($this->loginRequest('ch-1'));
 
         $this->assertSame('https://auth.example/oauth2/auth?client_id=acme&state=s1', $response->getTargetUrl());
-        $this->assertSame(1, $mock->getRequestsCount(), 'the challenge must not be accepted a second time');
+        $this->assertSame(0, $mock->getRequestsCount(), 'a completed challenge must not reach Hydra again');
     }
 
     public function testAnotherChallengeIsStillAcceptedAfterOneCompleted(): void
     {
         $cache = new ArrayAdapter();
-        $first = $this->makeHydra([
-            $this->jsonResponse($this->loginRequestBody('state=s1')),
-            $this->jsonResponse(['redirect_to' => 'https://auth.example/cb1']),
-        ]);
-        $this->build($first, currentSubject: 'alice', cache: $cache)['controller']($this->loginRequest('ch-1'));
+        $this->completeChallenge($cache, 'ch-1', 'state=s1');
 
-        $second = $this->makeHydra([
+        $hydra = $this->makeHydra([
             $this->jsonResponse($this->loginRequestBody('state=s2')),
             $this->jsonResponse(['redirect_to' => 'https://auth.example/cb2']),
         ]);
-        $response = $this->build($second, currentSubject: 'alice', cache: $cache)['controller']($this->loginRequest('ch-2'));
+        $response = $this->build($hydra, currentSubject: 'alice', cache: $cache)['controller']($this->loginRequest('ch-2'));
 
         $this->assertSame('https://auth.example/cb2', $response->getTargetUrl());
     }

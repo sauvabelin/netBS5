@@ -26,9 +26,7 @@ class LoginController extends AbstractController
         // the session was lost meanwhile (expired, "Invalid CSRF token" retry).
         $loginChallenge = OidcLoginChallenge::fromRequest($request);
 
-        // Already signed in (e.g. the first of two submits of this form went
-        // through, and the second one failed its CSRF check): nothing to ask,
-        // carry on with the application's sign-in.
+        // Signed in already (e.g. after a double submit): nothing to ask, continue the OIDC sign-in.
         if ($loginChallenge !== null && $this->getUser() !== null) {
             return $this->redirectToRoute('oidc_login', OidcLoginChallenge::routeParameters($loginChallenge));
         }
