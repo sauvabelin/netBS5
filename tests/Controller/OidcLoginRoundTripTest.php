@@ -77,6 +77,20 @@ class OidcLoginRoundTripTest extends WebTestCase
         $this->assertResponseRedirects('/oidc-login?login_challenge=' . urlencode(self::CHALLENGE));
     }
 
+    public function test_signed_in_user_on_the_login_page_continues_the_oidc_flow(): void
+    {
+        // E.g. the first of two submits logged in and the second failed its
+        // CSRF check: the failure lands back on the login page, signed in.
+        $client = $this->createOidcClient();
+        $this->persistUser($client, 'oidc-rt-signed', 'oidc-rt-signed@example.test', self::PASSWORD, ['ROLE_USER']);
+        $client->request('GET', '/netBS/secure/login', ['login_challenge' => self::CHALLENGE]);
+        $this->submitLogin($client, 'oidc-rt-signed');
+
+        $client->request('GET', '/netBS/secure/login', ['login_challenge' => self::CHALLENGE]);
+
+        $this->assertResponseRedirects('/oidc-login?login_challenge=' . urlencode(self::CHALLENGE));
+    }
+
     public function test_a_malformed_challenge_is_ignored(): void
     {
         $client = $this->createOidcClient();

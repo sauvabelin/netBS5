@@ -47,7 +47,7 @@
             </div>
 
             <div class="card-body">
-                <form action="{{ path('netbs.secure.login.login', login_params) }}" method="POST" data-turbo="false">
+                <form id="login-form" action="{{ path('netbs.secure.login.login', login_params) }}" method="POST" data-turbo="false">
 
                     <input type="hidden" name="_csrf_token" value="{{ csrf_token('authenticate') }}">
                     {# A failed attempt comes back here with the OIDC challenge, not to the bare login page. #}
@@ -96,6 +96,32 @@
                     <button type="submit" class="btn btn-primary w-100">Connexion</button>
 
                 </form>
+                <script>
+                    // Submit once. A second submit (double tap, autofill submitting
+                    // while the button is tapped) races the first one: the first
+                    // login replaces the session, so the second fails its CSRF check
+                    // and the OIDC flow gets completed twice.
+                    (function () {
+                        var form = document.getElementById('login-form');
+                        var button = form.querySelector('button[type="submit"]');
+                        var sent = false;
+                        form.addEventListener('submit', function (event) {
+                            if (sent) {
+                                event.preventDefault();
+                                return;
+                            }
+                            sent = true;
+                            button.disabled = true;
+                        });
+                        // Back button restores the page from the bfcache: allow a new submit.
+                        window.addEventListener('pageshow', function (event) {
+                            if (event.persisted) {
+                                sent = false;
+                                button.disabled = false;
+                            }
+                        });
+                    })();
+                </script>
             </div>
         </div>
 

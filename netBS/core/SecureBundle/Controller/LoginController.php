@@ -26,6 +26,13 @@ class LoginController extends AbstractController
         // the session was lost meanwhile (expired, "Invalid CSRF token" retry).
         $loginChallenge = OidcLoginChallenge::fromRequest($request);
 
+        // Already signed in (e.g. the first of two submits of this form went
+        // through, and the second one failed its CSRF check): nothing to ask,
+        // carry on with the application's sign-in.
+        if ($loginChallenge !== null && $this->getUser() !== null) {
+            return $this->redirectToRoute('oidc_login', OidcLoginChallenge::routeParameters($loginChallenge));
+        }
+
         return $this->render('@NetBSSecure/login/login.html.twig', array(
             'last_username' => $authenticationUtils->getLastUsername(),
             'error'         => self::errorMessage($authenticationUtils->getLastAuthenticationError()),

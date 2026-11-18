@@ -11,6 +11,7 @@ use NetBS\AuthBundle\Service\HydraAdminClient;
 use PHPUnit\Framework\TestCase;
 use Psr\Container\ContainerInterface;
 use Psr\Container\NotFoundExceptionInterface;
+use Symfony\Component\Cache\Adapter\ArrayAdapter;
 use Symfony\Component\HttpClient\MockHttpClient;
 use Symfony\Component\HttpClient\Response\MockResponse;
 use Symfony\Component\HttpFoundation\RedirectResponse;
@@ -68,6 +69,7 @@ final class LoginChallengeControllerTest extends TestCase
         HydraAdminClient $hydra,
         ?string $currentSubject,
         bool $impersonated = false,
+        ?ArrayAdapter $cache = null,
     ): array {
         $security = new class extends Security {
             public int $logoutCalls = 0;
@@ -82,7 +84,7 @@ final class LoginChallengeControllerTest extends TestCase
                 return null;
             }
         };
-        $controller = new LoginChallengeController($hydra, new LocalSessionTerminator($security), new \Psr\Log\NullLogger());
+        $controller = new LoginChallengeController($hydra, new LocalSessionTerminator($security), new \Psr\Log\NullLogger(), $cache ?? new ArrayAdapter());
 
         $router = new class implements UrlGeneratorInterface {
             public function generate(string $name, array $parameters = [], int $referenceType = self::ABSOLUTE_PATH): string
@@ -210,6 +212,45 @@ final class LoginChallengeControllerTest extends TestCase
 
         $this->assertInstanceOf(RedirectResponse::class, $response);
         $this->assertSame('https://rp.example/cb', $response->getTargetUrl());
+    }
+
+    public function testRepeatedChallengeRestartsTheFlowInsteadOfAcceptingAgain(): void
+    {
+        // A double-submitted login form (or a reload) brings the same
+        // challenge back. Hydra would accept it again and then refuse the
+        // reused consent verifier, so the flow restarts from the RP's URL.
+        $cache = new ArrayAdapter();
+        $first = $this->makeHydra([
+            $this->jsonResponse($this->loginRequestBody('state=s1')),
+            $this->jsonResponse(['redirect_to' => 'https://auth.example/oauth2/auth?login_verifier=v1']),
+        ]);
+        $this->build($first, currentSubject: 'alice', cache: $cache)['controller']($this->loginRequest('ch-1'));
+
+        $second = $this->makeHydra([
+            $this->jsonResponse($this->loginRequestBody('state=s1')),
+        ], $mock);
+        $response = $this->build($second, currentSubject: 'alice', cache: $cache)['controller']($this->loginRequest('ch-1'));
+
+        $this->assertSame('https://auth.example/oauth2/auth?client_id=acme&state=s1', $response->getTargetUrl());
+        $this->assertSame(1, $mock->getRequestsCount(), 'the challenge must not be accepted a second time');
+    }
+
+    public function testAnotherChallengeIsStillAcceptedAfterOneCompleted(): void
+    {
+        $cache = new ArrayAdapter();
+        $first = $this->makeHydra([
+            $this->jsonResponse($this->loginRequestBody('state=s1')),
+            $this->jsonResponse(['redirect_to' => 'https://auth.example/cb1']),
+        ]);
+        $this->build($first, currentSubject: 'alice', cache: $cache)['controller']($this->loginRequest('ch-1'));
+
+        $second = $this->makeHydra([
+            $this->jsonResponse($this->loginRequestBody('state=s2')),
+            $this->jsonResponse(['redirect_to' => 'https://auth.example/cb2']),
+        ]);
+        $response = $this->build($second, currentSubject: 'alice', cache: $cache)['controller']($this->loginRequest('ch-2'));
+
+        $this->assertSame('https://auth.example/cb2', $response->getTargetUrl());
     }
 
     public function testSubjectMismatchRevokesStaleHydraSession(): void
