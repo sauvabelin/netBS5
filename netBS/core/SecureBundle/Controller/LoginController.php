@@ -27,7 +27,8 @@ class LoginController extends AbstractController
         $loginChallenge = OidcLoginChallenge::fromRequest($request);
 
         // Signed in already (e.g. after a double submit): nothing to ask, continue the OIDC sign-in.
-        if ($loginChallenge !== null && $this->getUser() !== null) {
+        // Fully only: /oidc-login refuses a remember-me session and would send it back here, in a loop.
+        if ($loginChallenge !== null && $this->isGranted('IS_AUTHENTICATED_FULLY')) {
             return $this->redirectToRoute('oidc_login', OidcLoginChallenge::routeParameters($loginChallenge));
         }
 

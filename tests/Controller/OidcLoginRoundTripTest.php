@@ -89,6 +89,29 @@ class OidcLoginRoundTripTest extends WebTestCase
         $this->assertResponseRedirects('/oidc-login?login_challenge=' . urlencode(self::CHALLENGE));
     }
 
+    public function test_remembered_user_on_the_login_page_is_asked_for_the_password(): void
+    {
+        // /oidc-login needs a full login; sending a remember-me session there
+        // bounces straight back to this page, in a loop.
+        $client = $this->createOidcClient();
+        $this->persistUser($client, 'oidc-rt-remember', 'oidc-rt-remember@example.test', self::PASSWORD, ['ROLE_USER']);
+        $client->request('GET', '/netBS/secure/login', ['login_challenge' => self::CHALLENGE]);
+        $form = $client->getCrawler()->selectButton('Connexion')->form();
+        $form['_username'] = 'oidc-rt-remember';
+        $form['_password'] = self::PASSWORD;
+        $form['_remember_me']->tick();
+        $client->submit($form);
+        // Session gone, remember-me cookie left.
+        $remember = $client->getCookieJar()->get('REMEMBERME', '/netBS');
+        $this->assertNotNull($remember);
+        $client->getCookieJar()->clear();
+        $client->getCookieJar()->set($remember);
+
+        $client->request('GET', '/netBS/secure/login', ['login_challenge' => self::CHALLENGE]);
+
+        $this->assertResponseIsSuccessful();
+    }
+
     public function test_a_malformed_challenge_is_ignored(): void
     {
         $client = $this->createOidcClient();
