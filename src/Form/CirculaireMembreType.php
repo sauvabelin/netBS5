@@ -3,7 +3,7 @@
 namespace App\Form;
 
 use NetBS\CoreBundle\Form\Type\AjaxSelect2DocumentType;
-use NetBS\CoreBundle\Form\Type\DateMaskType;
+use NetBS\CoreBundle\Form\Type\DatepickerType;
 use NetBS\CoreBundle\Form\Type\MaskType;
 use NetBS\CoreBundle\Form\Type\SexeType;
 use NetBS\CoreBundle\Form\Type\TelephoneMaskType;
@@ -38,10 +38,10 @@ class CirculaireMembreType extends AbstractType
             ->add('nom', TextType::class, array('label' => 'Nom de famille'))
             ->add('numeroAvs', MaskType::class, array('label' => 'Numéro AVS', 'mask' => "'mask' : '999.9999.9999.99'", 'required' => false))
             ->add('sexe', SexeType::class, array('label' => 'Sexe'))
-            ->add('naissance', DateMaskType::class, array('label' => 'Date de naissance'))
+            ->add('naissance', DatepickerType::class, array('label' => 'Date de naissance'))
             ->add('adresse', TextType::class, array('label' => "Adresse", 'required' => false))
             ->add('npa', NumberType::class, array('label' => "NPA", 'required' => false))
-            ->add('inscription', DateMaskType::class, ['label' => 'Inscription'])
+            ->add('inscription', DatepickerType::class, ['label' => 'Inscription'])
             ->add('localite', TextType::class, array('label' => 'Localité', 'required' => false))
             ->add('pays', ChoiceType::class, array(
                 'label' => 'Pays',

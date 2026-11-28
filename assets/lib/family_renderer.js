@@ -9,15 +9,16 @@ function renderFamilyCard(family, selectedId) {
                 data-family-nom="${family.nom}"
                 data-action="click->family-search#selectFamily">
         <h4 style="margin:0 0 5px 0;">Famille ${family.nom}</h4>
-        ${renderGeniteurs(family.geniteurs)}
+        ${renderGeniteurs(family.geniteurs, family.nom)}
         ${renderMembres(family.membres)}
         ${renderAdresse(family.sendingAdresse)}
     </a>`;
 }
 
-function renderGeniteurs(geniteurs) {
+// A geniteur's nom is left empty when it is the family's (see BaseGeniteur::getVisualNom).
+function renderGeniteurs(geniteurs, familyNom) {
     if (!geniteurs || geniteurs.length === 0) return '';
-    const items = geniteurs.map((g) => `<div>${g.prenom} ${g.nom}</div>`).join('');
+    const items = geniteurs.map((g) => `<div>${g.prenom} ${g.nom || familyNom}</div>`).join('');
     return `<div><strong>Parents/Représentants légaux</strong>${items}</div>`;
 }
 
