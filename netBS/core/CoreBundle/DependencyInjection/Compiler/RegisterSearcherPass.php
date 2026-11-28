@@ -11,7 +11,7 @@ use Symfony\Component\DependencyInjection\Reference;
 
 class RegisterSearcherPass implements CompilerPassInterface
 {
-    public function process(ContainerBuilder $container)
+    public function process(ContainerBuilder $container): void
     {
         $manager    = $container->getDefinition(SearcherManager::class);
         $binder     = $container->getDefinition(QueryMaker::class);

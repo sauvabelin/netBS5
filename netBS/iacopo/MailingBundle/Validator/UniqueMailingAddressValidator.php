@@ -18,7 +18,7 @@ class UniqueMailingAddressValidator extends ConstraintValidator
         $this->entityManager = $entityManager;
     }
 
-    public function validate($value, Constraint $constraint)
+    public function validate($value, Constraint $constraint): void
     {
         if (!$constraint instanceof UniqueMailingAddress) {
             throw new UnexpectedTypeException($constraint, UniqueMailingAddress::class);

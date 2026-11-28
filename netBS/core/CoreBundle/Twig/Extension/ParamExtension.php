@@ -15,7 +15,7 @@ class ParamExtension extends AbstractExtension
         $this->params   = $manager;
     }
 
-    public function getFunctions() {
+    public function getFunctions(): array {
 
         return [
             new TwigFunction('param', [$this, 'getParameter'])

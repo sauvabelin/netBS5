@@ -11,7 +11,7 @@ use Symfony\Component\DependencyInjection\Reference;
 
 class RoleHierarchyPass implements CompilerPassInterface
 {
-    public function process(ContainerBuilder $container)
+    public function process(ContainerBuilder $container): void
     {
         $container->findDefinition('security.role_hierarchy')
             ->setClass(NetBSRoleHierarchy::class)

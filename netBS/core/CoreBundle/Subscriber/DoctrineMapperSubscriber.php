@@ -2,9 +2,7 @@
 
 namespace NetBS\CoreBundle\Subscriber;
 
-use Doctrine\Common\EventSubscriber;
 use Doctrine\ORM\Event\LoadClassMetadataEventArgs;
-use Doctrine\ORM\Events;
 use NetBS\CoreBundle\Entity\DynamicList;
 use NetBS\CoreBundle\Entity\ExportConfiguration;
 use NetBS\CoreBundle\Entity\AuditLog;
@@ -12,7 +10,7 @@ use NetBS\CoreBundle\Entity\Notification;
 use NetBS\CoreBundle\Entity\UserLog;
 use NetBS\SecureBundle\Service\SecureConfig;
 
-class DoctrineMapperSubscriber implements EventSubscriber
+class DoctrineMapperSubscriber
 {
     protected $secureConfig;
 
@@ -21,14 +19,7 @@ class DoctrineMapperSubscriber implements EventSubscriber
         $this->secureConfig = $secureConfig;
     }
 
-    public function getSubscribedEvents()
-    {
-        return [
-            Events::loadClassMetadata
-        ];
-    }
-
-    public function loadClassMetadata(LoadClassMetadataEventArgs $eventArgs) {
+    public function loadClassMetadata(LoadClassMetadataEventArgs $eventArgs): void {
 
         switch($eventArgs->getClassMetadata()->getName()) {
 

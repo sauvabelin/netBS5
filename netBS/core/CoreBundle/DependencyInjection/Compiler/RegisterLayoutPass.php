@@ -9,7 +9,7 @@ use Symfony\Component\DependencyInjection\Reference;
 
 class RegisterLayoutPass implements CompilerPassInterface
 {
-    public function process(ContainerBuilder $container)
+    public function process(ContainerBuilder $container): void
     {
         $definition = $container->findDefinition(LayoutManager::class);
 

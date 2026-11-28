@@ -15,7 +15,7 @@ class ListExtension extends AbstractExtension
         $this->engine = $engine;
     }
 
-    public function getFunctions() {
+    public function getFunctions(): array {
 
         return [
             new TwigFunction('render_list', array($this, 'renderListFunction'), array('is_safe' => array('html')))

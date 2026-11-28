@@ -16,7 +16,7 @@ class OutputExtension extends AbstractExtension
         $this->loaders = $loaderManager;
     }
 
-    public function getFunctions() {
+    public function getFunctions(): array {
 
         return [
 
@@ -25,7 +25,7 @@ class OutputExtension extends AbstractExtension
         ];
     }
 
-    public function getFilters() {
+    public function getFilters(): array {
 
         return [
 

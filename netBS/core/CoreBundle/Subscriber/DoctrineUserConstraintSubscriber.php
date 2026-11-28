@@ -2,13 +2,11 @@
 
 namespace NetBS\CoreBundle\Subscriber;
 
-use Doctrine\Common\EventSubscriber;
 use Doctrine\ORM\Event\PreUpdateEventArgs;
-use Doctrine\ORM\Events;
 use NetBS\CoreBundle\Exceptions\UserConstraintException;
 use NetBS\CoreBundle\Validator\Constraints\UserValidator;
 
-class DoctrineUserConstraintSubscriber implements EventSubscriber
+class DoctrineUserConstraintSubscriber
 {
     private $validator;
 
@@ -17,19 +15,7 @@ class DoctrineUserConstraintSubscriber implements EventSubscriber
         $this->validator    = $validator;
     }
 
-    /**
-     * Returns an array of events this subscriber wants to listen to.
-     *
-     * @return string[]
-     */
-    public function getSubscribedEvents()
-    {
-        return [
-            Events::preUpdate
-        ];
-    }
-
-    public function preUpdate(PreUpdateEventArgs $args) {
+    public function preUpdate(PreUpdateEventArgs $args): void {
 
         if(!$this->checkPermissions($args))
             throw new UserConstraintException("Vous n'êtes pas autorisé à modifier cette donnée");
@@ -37,7 +23,7 @@ class DoctrineUserConstraintSubscriber implements EventSubscriber
 
     private function checkPermissions(PreUpdateEventArgs $args) {
 
-        $constraint = $this->validator->getConstraint($args->getEntity());
+        $constraint = $this->validator->getConstraint($args->getObject());
 
         if(!$constraint)
             return true;

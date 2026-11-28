@@ -22,9 +22,8 @@ class DirectoryNormalizer implements NormalizerInterface
      * @param Directory $directory
      * @param null $format
      * @param array $context
-     * @return array|bool|float|int|string
      */
-    public function normalize($directory, string $format = null, array $context = array())
+    public function normalize(mixed $directory, ?string $format = null, array $context = []): array
     {
         $thumb  = $directory->getThumbnail();
         return [
@@ -37,8 +36,13 @@ class DirectoryNormalizer implements NormalizerInterface
         ];
     }
 
-    public function supportsNormalization($data, string $format = null)
+    public function supportsNormalization(mixed $data, ?string $format = null, array $context = []): bool
     {
         return $data instanceof Directory;
+    }
+
+    public function getSupportedTypes(?string $format): array
+    {
+        return [Directory::class => true];
     }
 }

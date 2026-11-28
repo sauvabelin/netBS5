@@ -11,7 +11,7 @@ use Symfony\Component\DependencyInjection\Reference;
 
 class Select2ProviderPass implements CompilerPassInterface
 {
-    public function process(ContainerBuilder $container)
+    public function process(ContainerBuilder $container): void
     {
         $manager    = $container->getDefinition(Select2ProviderManager::class);
 

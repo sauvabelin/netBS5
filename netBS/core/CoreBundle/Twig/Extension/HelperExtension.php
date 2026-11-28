@@ -18,7 +18,7 @@ class HelperExtension extends AbstractExtension
         return 'helper';
     }
 
-    public function getFunctions() {
+    public function getFunctions(): array {
 
         return [
 
@@ -26,7 +26,7 @@ class HelperExtension extends AbstractExtension
         ];
     }
 
-    public function getFilters() {
+    public function getFilters(): array {
 
         return [];
     }

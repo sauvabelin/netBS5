@@ -2,19 +2,18 @@
 
 namespace NetBS\CoreBundle\Subscriber;
 
-use Doctrine\Common\EventSubscriber;
 use Doctrine\Common\Util\ClassUtils;
 use Doctrine\ORM\EntityManagerInterface;
-use Doctrine\ORM\Event\LifecycleEventArgs;
 use Doctrine\ORM\Event\OnFlushEventArgs;
+use Doctrine\ORM\Event\PostPersistEventArgs;
+use Doctrine\ORM\Event\PreRemoveEventArgs;
 use Doctrine\ORM\Event\PreUpdateEventArgs;
-use Doctrine\ORM\Events;
 use NetBS\CoreBundle\Entity\AuditLog;
 use NetBS\CoreBundle\Service\LoggerManager;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInterface;
 
-class AuditLogSubscriber implements EventSubscriber
+class AuditLogSubscriber
 {
     private TokenStorageInterface $storage;
     private LoggerManager $manager;
@@ -36,28 +35,17 @@ class AuditLogSubscriber implements EventSubscriber
         $this->logger = $logger;
     }
 
-    public function getSubscribedEvents()
+    public function postPersist(PostPersistEventArgs $args): void
     {
-        return [
-            Events::postPersist,
-            Events::preUpdate,
-            Events::preRemove,
-            Events::onFlush,
-            Events::postFlush,
-        ];
-    }
-
-    public function postPersist(LifecycleEventArgs $args)
-    {
-        $object = $args->getEntity();
+        $object = $args->getObject();
         if (!$this->shouldLog($object)) return;
 
         $this->pendingLogs[] = $this->createAuditLogFor(AuditLog::ACTION_CREATE, $object);
     }
 
-    public function preUpdate(PreUpdateEventArgs $args)
+    public function preUpdate(PreUpdateEventArgs $args): void
     {
-        $object = $args->getEntity();
+        $object = $args->getObject();
         if (!$this->shouldLog($object)) return;
 
         foreach ($args->getEntityChangeSet() as $property => $values) {
@@ -83,9 +71,9 @@ class AuditLogSubscriber implements EventSubscriber
         }
     }
 
-    public function preRemove(LifecycleEventArgs $args)
+    public function preRemove(PreRemoveEventArgs $args): void
     {
-        $object = $args->getEntity();
+        $object = $args->getObject();
         if (!$this->shouldLog($object)) return;
 
         $this->pendingLogs[] = $this->createAuditLogFor(AuditLog::ACTION_DELETE, $object);
@@ -97,7 +85,7 @@ class AuditLogSubscriber implements EventSubscriber
      * recomputeSingleEntityChangeSet — those changes don't re-trigger preUpdate,
      * so we pick them up here by inspecting the UnitOfWork directly.
      */
-    public function onFlush(OnFlushEventArgs $args)
+    public function onFlush(OnFlushEventArgs $args): void
     {
         $uow = $args->getObjectManager()->getUnitOfWork();
 
@@ -134,7 +122,7 @@ class AuditLogSubscriber implements EventSubscriber
         return false;
     }
 
-    public function postFlush()
+    public function postFlush(): void
     {
         if ($this->flushing || empty($this->pendingLogs)) {
             return;

@@ -20,6 +20,8 @@ services:
       - "../src/Entity/"
       - "../src/Kernel.php"
       - "../src/Tests/"
+      # Only used as the class of liip's filesystem loader (OverrideServicePass).
+      - "../src/Imagine/GalerieLoader.php"
 
   App\Automatics\:
     resource: "../src/Automatics/"
@@ -81,7 +83,8 @@ services:
 
   App\Subscriber\DoctrineUserAccountSubscriber:
     tags:
-      - { name: doctrine.event_subscriber, connection: default }
+      - { name: doctrine.event_listener, event: postPersist, connection: default, priority: 10 }
+      - { name: doctrine.event_listener, event: postUpdate, connection: default, priority: 10 }
 
   App\Subscriber\EventUserAccountSubscriber:
     tags:

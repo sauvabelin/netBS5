@@ -10,20 +10,20 @@ use Symfony\Component\OptionsResolver\OptionsResolver;
 
 class MaskType extends AbstractType
 {
-    public function configureOptions(OptionsResolver $resolver)
+    public function configureOptions(OptionsResolver $resolver): void
     {
         $resolver
             ->setDefault('clearOnLostFocus', false)
             ->setRequired('mask');
     }
 
-    public function buildView(FormView $view, FormInterface $form, array $options)
+    public function buildView(FormView $view, FormInterface $form, array $options): void
     {
         $view->vars['attr']['data-controller'] = 'input-mask';
         $view->vars['attr']['data-input-mask-pattern-value'] = $options['mask'];
     }
 
-    public function getParent()
+    public function getParent(): ?string
     {
         return TextType::class;
     }

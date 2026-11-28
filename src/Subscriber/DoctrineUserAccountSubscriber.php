@@ -2,10 +2,9 @@
 
 namespace App\Subscriber;
 
-use Doctrine\Common\EventSubscriber;
-use Doctrine\ORM\Event\LifecycleEventArgs;
-use Doctrine\ORM\Events;
-use Doctrine\Persistence\ObjectManager;
+use Doctrine\ORM\EntityManagerInterface;
+use Doctrine\ORM\Event\PostPersistEventArgs;
+use Doctrine\ORM\Event\PostUpdateEventArgs;
 use NetBS\CoreBundle\Utils\StrUtil;
 use NetBS\FichierBundle\Mapping\BaseAttribution;
 use NetBS\FichierBundle\Mapping\BaseMembre;
@@ -28,7 +27,7 @@ use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
  * Gère la création de comptes utilisateur basés sur la création d'attributions
  * Aime pas du tout qu'on lui file des services qui dépendent de l'entity manager
  */
-class DoctrineUserAccountSubscriber implements EventSubscriber
+class DoctrineUserAccountSubscriber
 {
     private $encoder;
 
@@ -49,50 +48,27 @@ class DoctrineUserAccountSubscriber implements EventSubscriber
         $this->mailer   = $mailer;
     }
 
-    /**
-     * Returns an array of events this subscriber wants to listen to.
-     *
-     * @return array
-     */
-    public function getSubscribedEvents()
+    public function postPersist(PostPersistEventArgs $args): void
     {
-        return [
-            Events::postPersist,
-            Events::postUpdate,
-            Events::postRemove
-        ];
-    }
-
-    public function postPersist(LifecycleEventArgs $args)
-    {
-
-        $attribution = $args->getEntity();
+        $attribution = $args->getObject();
 
         if (!$attribution instanceof BaseAttribution)
             return;
 
-        $this->handleCreation($attribution, $args->getEntityManager());
+        $this->handleCreation($attribution, $args->getObjectManager());
     }
 
-    public function postUpdate(LifecycleEventArgs $args) {
+    public function postUpdate(PostUpdateEventArgs $args): void {
 
-        $attribution    = $args->getEntity();
+        $attribution    = $args->getObject();
 
         if(!$attribution instanceof BaseAttribution)
             return;
 
-        $this->handleCreation($attribution, $args->getEntityManager());
+        $this->handleCreation($attribution, $args->getObjectManager());
     }
 
-    public function postRemove(LifecycleEventArgs $args) {
-
-        $attribution    = $args->getEntity();
-
-        if(!$attribution instanceof BaseAttribution)
-            return;
-    }
-
-    private function handleCreation(BaseAttribution $attribution, ObjectManager $manager) {
+    private function handleCreation(BaseAttribution $attribution, EntityManagerInterface $manager) {
 
         if (!$this->shouldCreateAccount($attribution))
             return;
@@ -161,7 +137,7 @@ class DoctrineUserAccountSubscriber implements EventSubscriber
         return true;
     }
 
-    private function createUser(BaseMembre $membre, ObjectManager $manager) {
+    private function createUser(BaseMembre $membre, EntityManagerInterface $manager) {
 
         if($this->roleUser === null)
             $this->roleUser = $manager->getRepository(Role::class)->findOneBy(array('role' => 'ROLE_USER'));

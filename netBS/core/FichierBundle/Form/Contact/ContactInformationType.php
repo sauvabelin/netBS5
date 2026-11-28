@@ -18,7 +18,7 @@ class ContactInformationType extends AbstractType
         $this->config   = $config;
     }
 
-    public function buildForm(FormBuilderInterface $builder, array $options)
+    public function buildForm(FormBuilderInterface $builder, array $options): void
     {
         $builder
             ->add('adresses', CollectionType::class, array(
@@ -45,7 +45,7 @@ class ContactInformationType extends AbstractType
         ;
     }
 
-    public function configureOptions(OptionsResolver $resolver)
+    public function configureOptions(OptionsResolver $resolver): void
     {
         $resolver->setDefaults([
             'data_class'    => $this->config->getContactInformationClass()

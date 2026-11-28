@@ -1,16 +1,16 @@
 net_bs_secure:
     resource: "@NetBSSecureBundle/Controller/"
-    type:     annotation
+    type:     attribute
     prefix:   /secure
 
 net_bs_fichier:
     resource: "@NetBSFichierBundle/Controller/"
-    type:     annotation
+    type:     attribute
     prefix:   /fichier
 
 net_bs_core:
     resource: "@NetBSCoreBundle/Controller/"
-    type:     annotation
+    type:     attribute
     prefix:   /
 
 home:

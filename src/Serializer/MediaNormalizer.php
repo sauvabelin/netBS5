@@ -30,9 +30,8 @@ class MediaNormalizer implements NormalizerInterface
      * @param Media $media
      * @param null $format
      * @param array $context
-     * @return array|bool|float|int|string
      */
-    public function normalize($media, string $format = null, array $context = array())
+    public function normalize(mixed $media, ?string $format = null, array $context = []): array
     {
         return [
             'filename'  => $media->getName(),
@@ -43,8 +42,13 @@ class MediaNormalizer implements NormalizerInterface
         ];
     }
 
-    public function supportsNormalization($data, string $format = null)
+    public function supportsNormalization(mixed $data, ?string $format = null, array $context = []): bool
     {
         return $data instanceof Media;
+    }
+
+    public function getSupportedTypes(?string $format): array
+    {
+        return [Media::class => true];
     }
 }

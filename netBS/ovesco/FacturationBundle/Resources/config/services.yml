@@ -31,7 +31,8 @@ services:
 
     Ovesco\FacturationBundle\Subscriber\DoctrineDebiteurSubscriber:
         tags:
-            - { name: doctrine.event_subscriber }
+            # priority 10: keeps it ahead of the other postLoad listeners, as when it was a subscriber
+            - { name: doctrine.event_listener, event: postLoad, priority: 10 }
 
     Ovesco\FacturationBundle\Exporter\CSVPaiements:
         tags:

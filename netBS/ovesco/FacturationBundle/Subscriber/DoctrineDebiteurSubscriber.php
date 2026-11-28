@@ -2,9 +2,7 @@
 
 namespace Ovesco\FacturationBundle\Subscriber;
 
-use Doctrine\Common\EventSubscriber;
-use Doctrine\ORM\Event\LifecycleEventArgs;
-use Doctrine\ORM\Event\PreFlushEventArgs;
+use Doctrine\ORM\Event\PostLoadEventArgs;
 use NetBS\FichierBundle\Mapping\BaseFamille;
 use NetBS\FichierBundle\Mapping\BaseMembre;
 use NetBS\FichierBundle\Service\FichierConfig;
@@ -13,7 +11,7 @@ use Ovesco\FacturationBundle\Entity\Facture;
 use Psr\Log\LoggerInterface;
 use Psr\Log\NullLogger;
 
-class DoctrineDebiteurSubscriber implements EventSubscriber
+class DoctrineDebiteurSubscriber
 {
     const MEMBRE    = 'membre';
     const FAMILLE   = 'famille';
@@ -28,16 +26,9 @@ class DoctrineDebiteurSubscriber implements EventSubscriber
         $this->logger   = $logger ?? new NullLogger();
     }
 
-    public function getSubscribedEvents()
-    {
-        return [
-            'postLoad'
-        ];
-    }
+    public function postLoad(PostLoadEventArgs $args): void {
 
-    public function postLoad(LifecycleEventArgs $args) {
-
-        $item       = $args->getEntity();
+        $item       = $args->getObject();
 
         if(!$item instanceof Facture && !$item instanceof Creance)
             return;
@@ -47,7 +38,7 @@ class DoctrineDebiteurSubscriber implements EventSubscriber
         if ($data[0] === self::MEMBRE) $class = $this->config->getMembreClass();
         else if ($data[0] === self::FAMILLE) $class = $this->config->getFamilleClass();
 
-        $em             = $args->getEntityManager();
+        $em             = $args->getObjectManager();
         // Debiteurs (Membre/Famille/Geniteur) use Gedmo SoftDeleteable, so a "deleted" debiteur
         // is hidden by the filter but its row still exists. Bypass the filter during lookup
         // so historical factures keep displaying their original debiteur even after deletion.

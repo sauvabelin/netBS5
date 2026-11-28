@@ -195,15 +195,6 @@
     "nikic/php-parser": {
         "version": "v4.13.2"
     },
-    "paragonie/constant_time_encoding": {
-        "version": "v2.5.0"
-    },
-    "paragonie/random_compat": {
-        "version": "v9.99.100"
-    },
-    "phpseclib/phpseclib": {
-        "version": "3.0.13"
-    },
     "predis/predis": {
         "version": "v1.1.10"
     },
@@ -230,9 +221,6 @@
     },
     "psr/log": {
         "version": "2.0.0"
-    },
-    "ralouphie/getallheaders": {
-        "version": "3.0.3"
     },
     "setasign/fpdf": {
         "version": "1.8.4"
@@ -541,6 +529,18 @@
     },
     "symfony/runtime": {
         "version": "v5.4.3"
+    },
+    "symfony/scheduler": {
+        "version": "7.4",
+        "recipe": {
+            "repo": "github.com/symfony/recipes",
+            "branch": "main",
+            "version": "7.2",
+            "ref": "caea3c928ee9e1b21288fd76aef36f16ea355515"
+        },
+        "files": [
+            "src/Schedule.php"
+        ]
     },
     "symfony/security-bundle": {
         "version": "5.4",

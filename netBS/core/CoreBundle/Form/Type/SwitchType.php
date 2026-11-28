@@ -8,14 +8,14 @@ use Symfony\Component\OptionsResolver\OptionsResolver;
 
 class SwitchType extends AbstractType
 {
-    public function configureOptions(OptionsResolver $resolver)
+    public function configureOptions(OptionsResolver $resolver): void
     {
         $resolver->setDefaults(array(
             'required'  => false
         ));
     }
 
-    public function getParent()
+    public function getParent(): ?string
     {
         return CheckboxType::class;
     }

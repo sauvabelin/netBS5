@@ -26,7 +26,7 @@ class AutorisationType extends AbstractType
         $this->fichierConfig    = $fichierConfig;
     }
 
-    public function buildForm(FormBuilderInterface $builder, array $options)
+    public function buildForm(FormBuilderInterface $builder, array $options): void
     {
         $builder
             ->add('user', AjaxSelect2DocumentType::class, [
@@ -44,7 +44,7 @@ class AutorisationType extends AbstractType
             ]);
     }
 
-    public function configureOptions(OptionsResolver $resolver)
+    public function configureOptions(OptionsResolver $resolver): void
     {
         $resolver
             ->setDefaults([

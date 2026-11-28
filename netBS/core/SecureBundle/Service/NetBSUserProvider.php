@@ -74,7 +74,7 @@ class NetBSUserProvider extends BaseUserProvider
         return $this->loadUserByIdentifier($user->getUsername());
     }
 
-    public function supportsClass($class)
+    public function supportsClass($class): bool
     {
         return $this->config->getUserClass();
     }

@@ -26,7 +26,7 @@ class ListCollector extends DataCollector
         $this->engine           = $engine;
     }
 
-    public function collect(Request $request, Response $response, \Throwable $exception = null)
+    public function collect(Request $request, Response $response, \Throwable $exception = null): void
     {
         $this->data = [
             'registeredListModels'  => $this->getRegisteredListModels(),
@@ -40,7 +40,7 @@ class ListCollector extends DataCollector
         return $this->data;
     }
 
-    public function getName()
+    public function getName(): string
     {
         return 'netbs.list.collector';
     }
@@ -75,7 +75,7 @@ class ListCollector extends DataCollector
         return $models;
     }
 
-    public function reset()
+    public function reset(): void
     {
     }
 }

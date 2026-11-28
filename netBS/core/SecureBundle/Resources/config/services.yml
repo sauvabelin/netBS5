@@ -84,7 +84,7 @@ services:
 
     NetBS\SecureBundle\Subscriber\DoctrineMapperSubscriber:
         tags:
-            - { name: doctrine.event_subscriber }
+            - { name: doctrine.event_listener, event: loadClassMetadata, priority: 10 }
 
     NetBS\SecureBundle\Form\UserType:
         tags:

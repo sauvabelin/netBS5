@@ -8,12 +8,12 @@ use Symfony\Component\OptionsResolver\OptionsResolver;
 
 class FactureIdType extends AbstractType
 {
-    public function getParent()
+    public function getParent(): ?string
     {
         return NumberType::class;
     }
 
-    public function configureOptions(OptionsResolver $resolver)
+    public function configureOptions(OptionsResolver $resolver): void
     {
         $resolver->setDefault('required', false);
     }

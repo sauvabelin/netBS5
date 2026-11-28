@@ -18,7 +18,7 @@ class ObtentionDistinctionType extends AbstractType
         $this->config   = $config;
     }
 
-    public function buildForm(FormBuilderInterface $builder, array $options)
+    public function buildForm(FormBuilderInterface $builder, array $options): void
     {
         $builder
             ->add('membre', AjaxSelect2DocumentType::class, array(
@@ -34,7 +34,7 @@ class ObtentionDistinctionType extends AbstractType
         ;
     }
 
-    public function configureOptions(OptionsResolver $resolver)
+    public function configureOptions(OptionsResolver $resolver): void
     {
         $resolver->setDefaults(array(
             'data_class' => $this->config->getObtentionDistinctionClass()

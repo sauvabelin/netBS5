@@ -22,7 +22,7 @@ class AssetsExtension extends AbstractExtension
         };
     }
 
-    public function getFunctions() {
+    public function getFunctions(): array {
 
         return [
 

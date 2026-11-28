@@ -45,7 +45,7 @@ class XEditableExtension extends AbstractExtension
         return 'xeditable';
     }
 
-    public function getFunctions() {
+    public function getFunctions(): array {
 
         return [
             new TwigFunction('xeditable', array($this, 'toXeditable')),
@@ -54,7 +54,7 @@ class XEditableExtension extends AbstractExtension
         ];
     }
 
-    public function getFilters() {
+    public function getFilters(): array {
 
         return [
             new TwigFilter('xEditableChoices', array($this, 'toChoices'), array('is_safe' => array('html'))),

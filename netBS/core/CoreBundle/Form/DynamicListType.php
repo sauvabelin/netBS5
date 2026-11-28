@@ -31,13 +31,13 @@ class DynamicListType extends AbstractType
         $this->secureConfig = $config;
     }
 
-    public function configureOptions(OptionsResolver $resolver)
+    public function configureOptions(OptionsResolver $resolver): void
     {
         parent::configureOptions($resolver);
         $resolver->setDefault('itemClass', null);
     }
 
-    public function buildForm(FormBuilderInterface $builder, array $options)
+    public function buildForm(FormBuilderInterface $builder, array $options): void
     {
         $itemClass = $options['itemClass'];
         $choices = [];

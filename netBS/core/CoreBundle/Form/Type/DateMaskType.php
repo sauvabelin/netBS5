@@ -9,7 +9,7 @@ use Symfony\Component\OptionsResolver\OptionsResolver;
 
 class DateMaskType extends MaskType
 {
-    public function configureOptions(OptionsResolver $resolver)
+    public function configureOptions(OptionsResolver $resolver): void
     {
         parent::configureOptions($resolver);
         $format = (new \DateTime())->format(DateFormat::DATE);
@@ -17,7 +17,7 @@ class DateMaskType extends MaskType
         $resolver->setDefault('mask', "'mask' : '$format'");
     }
 
-    public function buildForm(FormBuilderInterface $builder, array $options)
+    public function buildForm(FormBuilderInterface $builder, array $options): void
     {
         parent::buildForm($builder, $options);
         $builder->addViewTransformer(new CallbackTransformer(
@@ -35,7 +35,7 @@ class DateMaskType extends MaskType
         );
     }
 
-    public function getParent()
+    public function getParent(): ?string
     {
         return MaskType::class;
     }

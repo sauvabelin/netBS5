@@ -12,7 +12,7 @@ use Symfony\Component\DependencyInjection\Reference;
 
 class RegisterLogRepresentersPass implements CompilerPassInterface
 {
-    public function process(ContainerBuilder $container)
+    public function process(ContainerBuilder $container): void
     {
         $manager    = $container->getDefinition(LoggerManager::class);
         $manager->addMethodCall('setEntityManager', [new Reference(EntityManagerInterface::class)]);

@@ -22,7 +22,7 @@ class QrFactureConfigType extends FPDFType
         $this->manager = $manager;
     }
 
-    public function buildForm(FormBuilderInterface $builder, array $options)
+    public function buildForm(FormBuilderInterface $builder, array $options): void
     {
         parent::buildForm($builder, $options);
 
@@ -49,7 +49,7 @@ class QrFactureConfigType extends FPDFType
         ;
     }
 
-    public function configureOptions(OptionsResolver $resolver)
+    public function configureOptions(OptionsResolver $resolver): void
     {
         $resolver->setDefaults(['data_class' => QrFactureConfig::class]);
     }

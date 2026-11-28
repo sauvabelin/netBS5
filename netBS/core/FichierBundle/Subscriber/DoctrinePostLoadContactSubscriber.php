@@ -2,15 +2,13 @@
 
 namespace NetBS\FichierBundle\Subscriber;
 
-use Doctrine\Common\EventSubscriber;
-use Doctrine\ORM\Event\LifecycleEventArgs;
-use Doctrine\ORM\Events;
+use Doctrine\ORM\Event\PrePersistEventArgs;
 use NetBS\FichierBundle\Mapping\BaseFamille;
 use NetBS\FichierBundle\Mapping\BaseGeniteur;
 use NetBS\FichierBundle\Mapping\BaseMembre;
 use NetBS\FichierBundle\Service\FichierConfig;
 
-class DoctrinePostLoadContactSubscriber implements EventSubscriber
+class DoctrinePostLoadContactSubscriber
 {
     protected $config;
 
@@ -19,14 +17,7 @@ class DoctrinePostLoadContactSubscriber implements EventSubscriber
         $this->config = $config;
     }
 
-    public function getSubscribedEvents()
-    {
-        return [
-            Events::prePersist
-        ];
-    }
-
-    public function prePersist(LifecycleEventArgs $events) {
+    public function prePersist(PrePersistEventArgs $events): void {
 
         if(!in_array(get_class($events->getObject()), [
             $this->config->getGeniteurClass(),

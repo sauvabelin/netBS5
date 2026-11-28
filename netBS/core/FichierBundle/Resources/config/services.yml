@@ -113,13 +113,16 @@ services:
         tags:
             - { name: kernel.event_listener, event: netbs.menu.extend, method: onMenuConfigure, priority: 80 }
 
+    # Doctrine listeners use priority 10 so they keep running before the gedmo
+    # (stof) listeners, as they did when registered as subscribers.
     NetBS\FichierBundle\Subscriber\DoctrineMapperSubscriber:
         tags:
-            - { name: doctrine.event_subscriber }
+            - { name: doctrine.event_listener, event: loadClassMetadata, priority: 10 }
+            - { name: doctrine.event_listener, event: prePersist, priority: 10 }
 
     NetBS\FichierBundle\Subscriber\DoctrinePostLoadContactSubscriber:
         tags:
-            - { name: doctrine.event_subscriber }
+            - { name: doctrine.event_listener, event: prePersist, priority: 10 }
 
     NetBS\FichierBundle\Loader\AdressableLoader:
         tags:

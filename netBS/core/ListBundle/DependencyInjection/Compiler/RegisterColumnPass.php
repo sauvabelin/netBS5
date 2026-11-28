@@ -9,7 +9,7 @@ use Symfony\Component\DependencyInjection\Reference;
 
 class RegisterColumnPass implements CompilerPassInterface
 {
-    public function process(ContainerBuilder $container)
+    public function process(ContainerBuilder $container): void
     {
         $manager    = $container->findDefinition(ColumnManager::class);
 

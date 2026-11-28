@@ -27,7 +27,7 @@ class AjaxSelect2DocumentType extends AbstractType
         $this->providerManager  = $providerManager;
     }
 
-    public function configureOptions(OptionsResolver $resolver)
+    public function configureOptions(OptionsResolver $resolver): void
     {
         $resolver->setDefaults(array(
             'multiple'      => false,
@@ -37,7 +37,7 @@ class AjaxSelect2DocumentType extends AbstractType
         $resolver->setRequired('class');
     }
 
-    public function buildForm(FormBuilderInterface $builder, array $options)
+    public function buildForm(FormBuilderInterface $builder, array $options): void
     {
         $builder->addViewTransformer(new CallbackTransformer(
 
@@ -84,7 +84,7 @@ class AjaxSelect2DocumentType extends AbstractType
 
     }
 
-    public function buildView(FormView $view, FormInterface $form, array $options)
+    public function buildView(FormView $view, FormInterface $form, array $options): void
     {
         $provider   = $this->providerManager->getProvider($options['class']);
         $choices    = [];
@@ -119,7 +119,7 @@ class AjaxSelect2DocumentType extends AbstractType
         );
     }
 
-    public function getParent()
+    public function getParent(): ?string
     {
         return TextType::class;
     }

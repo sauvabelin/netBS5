@@ -2,15 +2,13 @@
 
 namespace NetBS\SecureBundle\Subscriber;
 
-use Doctrine\Common\EventSubscriber;
 use Doctrine\ORM\Event\LoadClassMetadataEventArgs;
-use Doctrine\ORM\Events;
 use NetBS\FichierBundle\Service\FichierConfig;
 use NetBS\SecureBundle\Service\SecureConfig;
 use Doctrine\ORM\Mapping\JoinColumn;
 use Doctrine\ORM\Mapping\JoinTable;
 
-class DoctrineMapperSubscriber implements EventSubscriber
+class DoctrineMapperSubscriber
 {
     protected $fichierConfig;
 
@@ -22,14 +20,7 @@ class DoctrineMapperSubscriber implements EventSubscriber
         $this->secureConfig     = $secureConfig;
     }
 
-    public function getSubscribedEvents()
-    {
-        return [
-            Events::loadClassMetadata
-        ];
-    }
-
-    public function loadClassMetadata(LoadClassMetadataEventArgs $eventArgs) {
+    public function loadClassMetadata(LoadClassMetadataEventArgs $eventArgs): void {
 
         switch($eventArgs->getClassMetadata()->getName()) {
 

@@ -14,12 +14,12 @@ use Symfony\Component\OptionsResolver\OptionsResolver;
 
 class DatepickerType extends AbstractType
 {
-    public function configureOptions(OptionsResolver $resolver)
+    public function configureOptions(OptionsResolver $resolver): void
     {
         $resolver->setDefaults([]);
     }
 
-    public function buildForm(FormBuilderInterface $builder, array $options)
+    public function buildForm(FormBuilderInterface $builder, array $options): void
     {
         $phpFormat = DateFormat::DATE;
 
@@ -45,7 +45,7 @@ class DatepickerType extends AbstractType
         ));
     }
 
-    public function buildView(FormView $view, FormInterface $form, array $options)
+    public function buildView(FormView $view, FormInterface $form, array $options): void
     {
         $phpFormat = DateFormat::DATE;
         $flatpickrFormat = $this->phpToFlatpickrFormat($phpFormat);
@@ -87,7 +87,7 @@ class DatepickerType extends AbstractType
         return $result;
     }
 
-    public function getParent()
+    public function getParent(): ?string
     {
         return TextType::class;
     }

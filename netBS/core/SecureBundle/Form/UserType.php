@@ -28,7 +28,7 @@ class UserType extends AbstractType
         $this->secureConfig     = $secureConfig;
     }
 
-    public function buildForm(FormBuilderInterface $builder, array $options)
+    public function buildForm(FormBuilderInterface $builder, array $options): void
     {
         $builder
             ->add('loginUsername', TextType::class, [
@@ -62,7 +62,7 @@ class UserType extends AbstractType
         ;
     }
 
-    public function configureOptions(OptionsResolver $resolver)
+    public function configureOptions(OptionsResolver $resolver): void
     {
         $resolver
             ->setDefaults([

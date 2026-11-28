@@ -31,7 +31,7 @@ class DebiteurType extends AbstractType
         $this->config   = $config;
     }
 
-    public function configureOptions(OptionsResolver $resolver)
+    public function configureOptions(OptionsResolver $resolver): void
     {
         $resolver->setDefaults([
             'class'     => $this->provider->getManagedClass(),
@@ -39,7 +39,7 @@ class DebiteurType extends AbstractType
         ]);
     }
 
-    public function buildForm(FormBuilderInterface $builder, array $options)
+    public function buildForm(FormBuilderInterface $builder, array $options): void
     {
         $builder->resetViewTransformers();
         $builder->addViewTransformer(new CallbackTransformer(function($objet) {
@@ -50,7 +50,7 @@ class DebiteurType extends AbstractType
         }));
     }
 
-    public function buildView(FormView $view, FormInterface $form, array $options)
+    public function buildView(FormView $view, FormInterface $form, array $options): void
     {
         $choices    = [];
         $provider   = $this->provider;
@@ -76,7 +76,7 @@ class DebiteurType extends AbstractType
         );
     }
 
-    public function getParent()
+    public function getParent(): ?string
     {
         return AjaxSelect2DocumentType::class;
     }

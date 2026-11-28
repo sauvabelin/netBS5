@@ -2,15 +2,13 @@
 
 namespace NetBS\FichierBundle\Subscriber;
 
-use Doctrine\Common\EventSubscriber;
 use Doctrine\Common\Util\ClassUtils;
-use Doctrine\ORM\Event\LifecycleEventArgs;
 use Doctrine\ORM\Event\LoadClassMetadataEventArgs;
-use Doctrine\ORM\Events;
+use Doctrine\ORM\Event\PrePersistEventArgs;
 use NetBS\FichierBundle\Service\FichierConfig;
 use NetBS\SecureBundle\Service\SecureConfig;
 
-class DoctrineMapperSubscriber implements EventSubscriber
+class DoctrineMapperSubscriber
 {
     protected $config;
 
@@ -22,15 +20,7 @@ class DoctrineMapperSubscriber implements EventSubscriber
         $this->secureConfig = $secureConfig;
     }
 
-    public function getSubscribedEvents()
-    {
-        return [
-            Events::loadClassMetadata,
-            Events::prePersist
-        ];
-    }
-
-    public function prePersist(LifecycleEventArgs $eventArgs) {
+    public function prePersist(PrePersistEventArgs $eventArgs): void {
 
         switch(ClassUtils::getClass($eventArgs->getObject()))
         {
@@ -39,7 +29,7 @@ class DoctrineMapperSubscriber implements EventSubscriber
         }
     }
     
-    public function loadClassMetadata(LoadClassMetadataEventArgs $eventArgs) {
+    public function loadClassMetadata(LoadClassMetadataEventArgs $eventArgs): void {
 
 
         switch($eventArgs->getClassMetadata()->getName())

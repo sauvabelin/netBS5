@@ -10,7 +10,7 @@ use Symfony\Component\DependencyInjection\Reference;
 
 class RegisterDynamicsModel implements CompilerPassInterface
 {
-    public function process(ContainerBuilder $container)
+    public function process(ContainerBuilder $container): void
     {
         $manager        = $container->getDefinition(DynamicListManager::class);
         $bridges        = $container->getDefinition(ListBridgeManager::class);

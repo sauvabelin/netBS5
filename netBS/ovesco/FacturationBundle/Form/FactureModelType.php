@@ -33,7 +33,7 @@ class FactureModelType extends AbstractType
     {
     }
 
-    public function buildForm(FormBuilderInterface $builder, array $options)
+    public function buildForm(FormBuilderInterface $builder, array $options): void
     {
         $builder
             ->add('name', TextType::class, ['label' => 'Nom du modèle'])
@@ -80,7 +80,7 @@ class FactureModelType extends AbstractType
         });
     }
 
-    public function buildView(FormView $view, FormInterface $form, array $options)
+    public function buildView(FormView $view, FormInterface $form, array $options): void
     {
         $model = $form->getData();
         $view->vars['placeholders']     = $this->renderer->placeholders();
@@ -88,7 +88,7 @@ class FactureModelType extends AbstractType
             && $model->getTextesFormat() === FactureModel::TEXTES_ANCIEN;
     }
 
-    public function configureOptions(OptionsResolver $resolver)
+    public function configureOptions(OptionsResolver $resolver): void
     {
         $resolver->setDefaults(['data_class' => FactureModel::class]);
     }

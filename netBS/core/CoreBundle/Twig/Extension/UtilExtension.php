@@ -15,7 +15,7 @@ class UtilExtension extends AbstractExtension
         return 'util';
     }
 
-    public function getFunctions() {
+    public function getFunctions(): array {
 
         return [
 
@@ -25,7 +25,7 @@ class UtilExtension extends AbstractExtension
         ];
     }
 
-    public function getFilters() {
+    public function getFilters(): array {
 
         return [
 

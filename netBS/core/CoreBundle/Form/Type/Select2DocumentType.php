@@ -10,13 +10,13 @@ use Symfony\Component\Form\FormView;
 class Select2DocumentType extends AbstractType
 {
 
-    public function buildView(FormView $view, FormInterface $form, array $options)
+    public function buildView(FormView $view, FormInterface $form, array $options): void
     {
         $view->vars['attr']['data-type']    = 'select2';
         $view->vars['data-ajax-class']      = $options['class'];
     }
 
-    public function getParent()
+    public function getParent(): ?string
     {
         return EntityType::class;
     }

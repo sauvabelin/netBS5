@@ -6,13 +6,13 @@ use Symfony\Component\OptionsResolver\OptionsResolver;
 
 class TelephoneMaskType extends MaskType
 {
-    public function configureOptions(OptionsResolver $resolver)
+    public function configureOptions(OptionsResolver $resolver): void
     {
         parent::configureOptions($resolver);
         $resolver->setDefault('mask', "'mask' : '999/999.99.99'");
     }
 
-    public function getParent()
+    public function getParent(): ?string
     {
         return MaskType::class;
     }

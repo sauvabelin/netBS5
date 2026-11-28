@@ -8,7 +8,7 @@ use Symfony\Component\Security\Core\Authorization\Voter\RoleVoter as RV;
 
 class RoleVoter extends RV
 {
-    public function extractRoles(TokenInterface $token)
+    public function extractRoles(TokenInterface $token): array
     {
         $roles = $token->getUser() instanceof BaseUser ? $token->getUser()->getAllRoles() : [];
         return array_unique(array_map(function ($role) {

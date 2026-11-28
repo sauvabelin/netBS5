@@ -24,7 +24,7 @@ class SearchBaseMembreInformationType extends AbstractType
         $this->config   = $config;
     }
 
-    public function buildForm(FormBuilderInterface $builder, array $options)
+    public function buildForm(FormBuilderInterface $builder, array $options): void
     {
         $builder
             ->add('prenom', TextType::class, array('label' => 'Prénom', 'required' => false))
@@ -53,7 +53,7 @@ class SearchBaseMembreInformationType extends AbstractType
         ;
     }
 
-    public function configureOptions(OptionsResolver $resolver)
+    public function configureOptions(OptionsResolver $resolver): void
     {
         $resolver->setDefaults(array(
             'data_class' => SearchBaseMembreInformation::class

@@ -13,7 +13,7 @@ class ValidMailingTarget extends Constraint
     public $message = 'Le champ {{ field }} est requis pour le type "{{ type }}".';
     public $circularReferenceMessage = 'Une liste ne peut pas se référencer elle-même.';
 
-    public function getTargets()
+    public function getTargets(): string|array
     {
         return self::CLASS_CONSTRAINT;
     }

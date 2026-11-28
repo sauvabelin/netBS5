@@ -7,7 +7,7 @@ use Symfony\Component\Form\AbstractType;
 
 class SearchNoAPMBSType extends AbstractType
 {
-    public function getParent()
+    public function getParent(): ?string
     {
         return SwitchType::class;
     }

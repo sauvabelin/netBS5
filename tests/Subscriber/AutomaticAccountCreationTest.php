@@ -11,7 +11,7 @@ use App\Settings\BsReferences;
 use App\Subscriber\DoctrineUserAccountSubscriber;
 use App\Tests\Support\RealRuleEngineTrait;
 use Doctrine\ORM\EntityManagerInterface;
-use Doctrine\ORM\Event\LifecycleEventArgs;
+use Doctrine\ORM\Event\PostPersistEventArgs;
 use NetBS\CoreBundle\Service\ParameterManager;
 use NetBS\FichierBundle\Entity\Attribution;
 use NetBS\FichierBundle\Entity\Famille;
@@ -118,7 +118,7 @@ final class AutomaticAccountCreationTest extends KernelTestCase
         $attribution->setDateDebut(new \DateTime('-1 day'));
         $attribution->setMembre($this->membre);
 
-        $this->subscriber()->postPersist(new LifecycleEventArgs($attribution, $this->em));
+        $this->subscriber()->postPersist(new PostPersistEventArgs($attribution, $this->em));
     }
 
     private function otherUser(string $username, ?string $loginUsername = null, bool $deleted = false, bool $linked = false): void

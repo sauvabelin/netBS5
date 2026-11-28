@@ -16,7 +16,7 @@ class DynamicListShareType extends AbstractType
         $this->secureConfig = $config;
     }
 
-    public function buildForm(FormBuilderInterface $builder, array $options)
+    public function buildForm(FormBuilderInterface $builder, array $options): void
     {
         $builder
             ->add('shares', AjaxSelect2DocumentType::class, [

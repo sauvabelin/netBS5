@@ -2,10 +2,8 @@
 
 namespace NetBS\CoreBundle\Subscriber;
 
-use Doctrine\Common\EventSubscriber;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\Event\OnFlushEventArgs;
-use Doctrine\ORM\Events;
 use Doctrine\ORM\Mapping\ClassMetadata;
 use Doctrine\ORM\UnitOfWork;
 
@@ -19,13 +17,8 @@ use Doctrine\ORM\UnitOfWork;
  * When an entity's deletedAt field is cleared (restore), all cascade-remove
  * children whose deletedAt matches the parent's original timestamp are also restored.
  */
-class CascadeSoftDeleteSubscriber implements EventSubscriber
+class CascadeSoftDeleteSubscriber
 {
-    public function getSubscribedEvents(): array
-    {
-        return [Events::onFlush];
-    }
-
     public function onFlush(OnFlushEventArgs $args): void
     {
         $em  = $args->getObjectManager();

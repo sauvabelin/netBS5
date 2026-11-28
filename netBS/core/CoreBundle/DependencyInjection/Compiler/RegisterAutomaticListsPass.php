@@ -10,7 +10,7 @@ use Symfony\Component\DependencyInjection\Reference;
 
 class RegisterAutomaticListsPass implements CompilerPassInterface
 {
-    public function process(ContainerBuilder $container)
+    public function process(ContainerBuilder $container): void
     {
         $manager    = $container->getDefinition(AutomaticListsManager::class);
 

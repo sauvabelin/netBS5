@@ -148,21 +148,28 @@ services:
         tags:
             - { name: netbs.searcher.binder }
 
+    # Doctrine listeners use priority 10 so they keep running before the gedmo
+    # (stof) listeners, as they did when registered as subscribers. AuditLog must
+    # stay ahead of CascadeSoftDelete on onFlush (same priority: file order).
     NetBS\CoreBundle\Subscriber\DoctrineMapperSubscriber:
         tags:
-            - { name: doctrine.event_subscriber }
+            - { name: doctrine.event_listener, event: loadClassMetadata, priority: 10 }
 
     NetBS\CoreBundle\Subscriber\DoctrineUserConstraintSubscriber:
         tags:
-            - { name: doctrine.event_subscriber }
+            - { name: doctrine.event_listener, event: preUpdate, priority: 10 }
 
     NetBS\CoreBundle\Subscriber\AuditLogSubscriber:
         tags:
-            - { name: doctrine.event_subscriber }
+            - { name: doctrine.event_listener, event: postPersist, priority: 10 }
+            - { name: doctrine.event_listener, event: preUpdate, priority: 10 }
+            - { name: doctrine.event_listener, event: preRemove, priority: 10 }
+            - { name: doctrine.event_listener, event: onFlush, priority: 10 }
+            - { name: doctrine.event_listener, event: postFlush, priority: 10 }
 
     NetBS\CoreBundle\Subscriber\CascadeSoftDeleteSubscriber:
         tags:
-            - { name: doctrine.event_subscriber }
+            - { name: doctrine.event_listener, event: onFlush, priority: 10 }
 
     NetBS\CoreBundle\Profiler\NetBSCollector:
         tags:

@@ -24,7 +24,7 @@ use Symfony\Component\OptionsResolver\OptionsResolver;
 
 class SearchPaiementType extends AbstractType
 {
-    public function buildForm(FormBuilderInterface $builder, array $options)
+    public function buildForm(FormBuilderInterface $builder, array $options): void
     {
         $builder
             ->add('factureId', FactureIdType::class, ['label' => 'Numéro de facture'])
@@ -36,7 +36,7 @@ class SearchPaiementType extends AbstractType
         ;
     }
 
-    public function configureOptions(OptionsResolver $resolver)
+    public function configureOptions(OptionsResolver $resolver): void
     {
         $resolver->setDefaults([
             'data_class'    => SearchPaiement::class

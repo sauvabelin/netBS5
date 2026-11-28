@@ -27,7 +27,7 @@ class InstallCommand extends Command
     /**
      * {@inheritdoc}
      */
-    protected function configure()
+    protected function configure(): void
     {
         $this
             ->setName('netbs:install')
@@ -40,7 +40,7 @@ class InstallCommand extends Command
     /**
      * {@inheritdoc}
      */
-    protected function execute(InputInterface $input, OutputInterface $output)
+    protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $purge      = $this->getBoolValue($input->getOption('purge'));
         $dummy      = $this->getBoolValue($input->getOption('dummy'));

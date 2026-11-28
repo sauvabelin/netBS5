@@ -12,7 +12,7 @@ class UniqueMailingAddress extends Constraint
 {
     public $message = 'Cette adresse est déjà utilisée dans le système.';
 
-    public function getTargets()
+    public function getTargets(): string|array
     {
         return self::CLASS_CONSTRAINT;
     }

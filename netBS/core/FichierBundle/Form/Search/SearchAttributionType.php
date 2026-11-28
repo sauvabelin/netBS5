@@ -19,7 +19,7 @@ class SearchAttributionType extends AbstractType
         $this->config   = $config;
     }
 
-    public function buildForm(FormBuilderInterface $builder, array $options)
+    public function buildForm(FormBuilderInterface $builder, array $options): void
     {
         $builder
             ->add('fonction',  AjaxSelect2DocumentType::class, array(
@@ -40,7 +40,7 @@ class SearchAttributionType extends AbstractType
         ;
     }
 
-    public function configureOptions(OptionsResolver $resolver)
+    public function configureOptions(OptionsResolver $resolver): void
     {
         $resolver->setDefaults(array(
             'data_class' => SearchAttribution::class

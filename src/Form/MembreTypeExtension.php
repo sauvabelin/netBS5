@@ -9,7 +9,7 @@ use Symfony\Component\Form\FormBuilderInterface;
 
 class MembreTypeExtension extends AbstractTypeExtension
 {
-    public function buildForm(FormBuilderInterface $builder, array $options)
+    public function buildForm(FormBuilderInterface $builder, array $options): void
     {
         $builder->add('numeroBS', NumberType::class, array('label' => 'Numéro BS'));
     }

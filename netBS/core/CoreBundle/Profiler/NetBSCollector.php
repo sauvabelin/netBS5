@@ -38,7 +38,7 @@ class NetBSCollector extends DataCollector
         return $this->data;
     }
 
-    public function collect(Request $request, Response $response, \Throwable $exception = null)
+    public function collect(Request $request, Response $response, \Throwable $exception = null): void
     {
         $bridges    = [];
         $exporters  = [];
@@ -69,12 +69,12 @@ class NetBSCollector extends DataCollector
         $this->data['exporters']    = $exporters;
     }
 
-    public function getName()
+    public function getName(): string
     {
         return 'netbs.core.netbs_collector';
     }
 
-    public function reset()
+    public function reset(): void
     {
     }
 }

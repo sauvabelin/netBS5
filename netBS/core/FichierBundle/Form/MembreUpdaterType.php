@@ -19,7 +19,7 @@ class MembreUpdaterType extends AbstractType
         $this->config   = $config;
     }
 
-    public function buildForm(FormBuilderInterface $builder, array $options)
+    public function buildForm(FormBuilderInterface $builder, array $options): void
     {
         $builder
             ->add('naissance', DatepickerType::class, ['label' => "Date de naissance"])
@@ -29,7 +29,7 @@ class MembreUpdaterType extends AbstractType
             ]);
     }
 
-    public function configureOptions(OptionsResolver $resolver)
+    public function configureOptions(OptionsResolver $resolver): void
     {
         $resolver->setDefaults([
             'data_class'    => $this->config->getMembreClass()

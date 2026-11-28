@@ -14,7 +14,7 @@ use Symfony\Component\Form\FormBuilderInterface;
 
 class PersonneType extends ContactInformationType
 {
-    public function buildForm(FormBuilderInterface $builder, array $options)
+    public function buildForm(FormBuilderInterface $builder, array $options): void
     {
         parent::buildForm($builder, $options);
 

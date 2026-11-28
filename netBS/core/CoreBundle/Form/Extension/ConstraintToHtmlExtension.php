@@ -32,7 +32,7 @@ class ConstraintToHtmlExtension extends AbstractTypeExtension
         $this->em = $em;
     }
 
-    public function buildForm(FormBuilderInterface $builder, array $options)
+    public function buildForm(FormBuilderInterface $builder, array $options): void
     {
         // Priority -1: run after Symfony's own validation so we only add errors to fields that passed validator checks.
         $builder->addEventListener(FormEvents::POST_SUBMIT, function (FormEvent $event) {
@@ -79,7 +79,7 @@ class ConstraintToHtmlExtension extends AbstractTypeExtension
         return $child->getErrors()->count() > 0;
     }
 
-    public function finishView(FormView $view, FormInterface $form, array $options)
+    public function finishView(FormView $view, FormInterface $form, array $options): void
     {
         if (!$options['mapped'] || !$form->getParent()) {
             return;

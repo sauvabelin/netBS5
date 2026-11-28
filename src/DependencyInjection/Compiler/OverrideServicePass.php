@@ -20,7 +20,7 @@ use Symfony\Component\DependencyInjection\Reference;
 
 class OverrideServicePass implements CompilerPassInterface
 {
-    public function process(ContainerBuilder $container)
+    public function process(ContainerBuilder $container): void
     {
         $container->getDefinition(MembreLogRepresenter::class)->setClass(MembreRepresenter::class);
         $container->getDefinition(UsersList::class)->setClass(BSUserList::class);
