@@ -4,6 +4,7 @@ namespace App\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
 use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Symfony\Component\Validator\Constraints as Assert;
 
 #[ORM\Table(name: 'apmbs_intendant')]
@@ -50,13 +51,25 @@ class Intendant {
     protected $cabanes;
 
     /**
-     * @var ArrayCollection
+     * Reservations whose intendantDebut is this intendant.
+     *
+     * @var Collection<int, APMBSReservation>
      */
-    #[ORM\ManyToMany(targetEntity: APMBSReservation::class, mappedBy: 'intendant')]
-    protected $reservations;
+    #[ORM\OneToMany(targetEntity: APMBSReservation::class, mappedBy: 'intendantDebut')]
+    protected $reservationsDebut;
+
+    /**
+     * Reservations whose intendantFin is this intendant.
+     *
+     * @var Collection<int, APMBSReservation>
+     */
+    #[ORM\OneToMany(targetEntity: APMBSReservation::class, mappedBy: 'intendantFin')]
+    protected $reservationsFin;
 
     public function __construct() {
         $this->cabanes = new ArrayCollection();
+        $this->reservationsDebut = new ArrayCollection();
+        $this->reservationsFin = new ArrayCollection();
     }
 
     public function __toString()
@@ -98,6 +111,20 @@ class Intendant {
 
     public function getCabanes() {
         return $this->cabanes;
+    }
+
+    /**
+     * @return Collection<int, APMBSReservation>
+     */
+    public function getReservationsDebut(): Collection {
+        return $this->reservationsDebut;
+    }
+
+    /**
+     * @return Collection<int, APMBSReservation>
+     */
+    public function getReservationsFin(): Collection {
+        return $this->reservationsFin;
     }
 
     public function setCabanes($cabanes): void {

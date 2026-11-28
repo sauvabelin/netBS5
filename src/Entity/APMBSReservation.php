@@ -147,13 +147,13 @@ class APMBSReservation {
     /**
      * @var ArrayCollection
      */
-    #[ORM\ManyToOne(targetEntity: Intendant::class)]
+    #[ORM\ManyToOne(targetEntity: Intendant::class, inversedBy: 'reservationsDebut')]
     protected $intendantDebut;
 
     /**
      * @var ArrayCollection
      */
-    #[ORM\ManyToOne(targetEntity: Intendant::class)]
+    #[ORM\ManyToOne(targetEntity: Intendant::class, inversedBy: 'reservationsFin')]
     protected $intendantFin;
 
     /**
